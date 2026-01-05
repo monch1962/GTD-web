@@ -2,7 +2,7 @@
  * Storage Layer - Handles localStorage and remote-storage integration
  */
 
-import RemoteStorage from 'remote-storage';
+import { RemoteStorage } from 'remote-storage';
 
 export class Storage {
     constructor(userId = null) {
@@ -112,7 +112,8 @@ export class Storage {
             // Use the most recently updated data
             if (remoteTasks && localTasks) {
                 const tasks = this.mergeData(localTasks, remoteTasks, 'updatedAt');
-                await this.setItem('gtd_tasks', tasks);
+                // Save directly to localStorage to avoid sync loop
+                localStorage.setItem('gtd_tasks', JSON.stringify(tasks));
             } else if (remoteTasks && !localTasks) {
                 localStorage.setItem('gtd_tasks', JSON.stringify(remoteTasks));
             }
@@ -123,7 +124,8 @@ export class Storage {
 
             if (remoteProjects && localProjects) {
                 const projects = this.mergeData(localProjects, remoteProjects, 'updatedAt');
-                await this.setItem('gtd_projects', projects);
+                // Save directly to localStorage to avoid sync loop
+                localStorage.setItem('gtd_projects', JSON.stringify(projects));
             } else if (remoteProjects && !localProjects) {
                 localStorage.setItem('gtd_projects', JSON.stringify(remoteProjects));
             }
@@ -169,7 +171,10 @@ export class Storage {
      */
     updateSyncStatus(status) {
         const syncButton = document.getElementById('sync-status');
+        if (!syncButton) return;
+
         const syncText = syncButton.querySelector('.sync-text');
+        if (!syncText) return;
 
         syncButton.classList.remove('syncing', 'error');
 

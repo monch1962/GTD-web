@@ -244,6 +244,48 @@ class GTDApp {
             div.classList.add('completed');
         }
 
+        // Add overdue class
+        if (task.isOverdue && task.isOverdue()) {
+            div.classList.add('overdue');
+        }
+
+        // Add deferred class
+        if (!task.isAvailable()) {
+            div.classList.add('deferred');
+        }
+
+        // Format due date for display
+        let dueDateDisplay = '';
+        if (task.dueDate) {
+            const dueDate = new Date(task.dueDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            let dueLabel = '';
+            if (task.isDueToday()) {
+                dueLabel = 'Today';
+            } else if (task.isDueWithin(7)) {
+                dueLabel = dueDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+            } else {
+                dueLabel = dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            }
+
+            const isOverdue = task.isOverdue();
+            dueDateDisplay = `<span class="task-due-date ${isOverdue ? 'overdue' : ''}">
+                <i class="fas fa-calendar${isOverdue ? '-times' : '-day'}"></i> ${dueLabel}
+            </span>`;
+        }
+
+        // Defer date display
+        let deferDateDisplay = '';
+        if (task.deferDate && !task.isAvailable()) {
+            deferDateDisplay = `<span class="task-defer-date">
+                <i class="fas fa-hourglass-half"></i> Until ${new Date(task.deferDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            </span>`;
+        }
+
         div.innerHTML = `
             <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>
             <div class="task-content">
@@ -253,6 +295,8 @@ class GTDApp {
                     ${task.tags.length > 0 ? task.tags.map(tag => `<span class="task-tag">${this.escapeHtml(tag)}</span>`).join('') : ''}
                     ${task.energy ? `<span class="task-energy"><i class="fas fa-bolt"></i> ${task.energy}</span>` : ''}
                     ${task.time ? `<span class="task-time"><i class="fas fa-clock"></i> ${task.time}m</span>` : ''}
+                    ${dueDateDisplay}
+                    ${deferDateDisplay}
                     ${task.projectId ? `<span class="task-project">${this.getProjectTitle(task.projectId)}</span>` : ''}
                 </div>
             </div>
@@ -377,7 +421,7 @@ class GTDApp {
         `;
     }
 
-    quickAddTask(title) {
+    async quickAddTask(title) {
         const task = new Task({
             title: title,
             status: this.currentView === 'all' ? 'inbox' : this.currentView,
@@ -385,7 +429,7 @@ class GTDApp {
         });
 
         this.tasks.push(task);
-        this.saveTasks();
+        await this.saveTasks();
         this.renderView();
         this.updateCounts();
         this.updateTagFilter();
@@ -433,6 +477,8 @@ class GTDApp {
             document.getElementById('task-energy').value = task.energy || '';
             document.getElementById('task-time').value = task.time || '';
             document.getElementById('task-project').value = task.projectId || '';
+            document.getElementById('task-due-date').value = task.dueDate || '';
+            document.getElementById('task-defer-date').value = task.deferDate || '';
             document.getElementById('task-tags').value = task.tags.join(', ');
         } else {
             title.textContent = 'Add Task';
@@ -460,6 +506,8 @@ class GTDApp {
             energy: document.getElementById('task-energy').value,
             time: parseInt(document.getElementById('task-time').value) || 0,
             projectId: document.getElementById('task-project').value || null,
+            dueDate: document.getElementById('task-due-date').value || null,
+            deferDate: document.getElementById('task-defer-date').value || null,
             tags: tags
         };
 

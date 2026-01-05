@@ -15,6 +15,8 @@ export class Task {
         this.tags = data.tags || [];
         this.completed = data.completed || false;
         this.completedAt = data.completedAt || null;
+        this.dueDate = data.dueDate || null; // YYYY-MM-DD format
+        this.deferDate = data.deferDate || null; // YYYY-MM-DD format
         this.createdAt = data.createdAt || new Date().toISOString();
         this.updatedAt = data.updatedAt || new Date().toISOString();
     }
@@ -36,6 +38,8 @@ export class Task {
             tags: this.tags,
             completed: this.completed,
             completedAt: this.completedAt,
+            dueDate: this.dueDate,
+            deferDate: this.deferDate,
             createdAt: this.createdAt,
             updatedAt: this.updatedAt
         };
@@ -59,6 +63,54 @@ export class Task {
             this.status = 'inbox';
         }
         this.updatedAt = new Date().toISOString();
+    }
+
+    /**
+     * Check if task is available (not deferred or defer date has passed)
+     */
+    isAvailable() {
+        if (!this.deferDate) return true;
+        const deferDate = new Date(this.deferDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return deferDate <= today;
+    }
+
+    /**
+     * Check if task is overdue (due date has passed and not completed)
+     */
+    isOverdue() {
+        if (!this.dueDate || this.completed) return false;
+        const dueDate = new Date(this.dueDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return dueDate < today;
+    }
+
+    /**
+     * Check if task is due today
+     */
+    isDueToday() {
+        if (!this.dueDate || this.completed) return false;
+        const dueDate = new Date(this.dueDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        return dueDate >= today && dueDate < tomorrow;
+    }
+
+    /**
+     * Check if task is due within the next N days
+     */
+    isDueWithin(days) {
+        if (!this.dueDate || this.completed) return false;
+        const dueDate = new Date(this.dueDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const futureDate = new Date(today);
+        futureDate.setDate(futureDate.getDate() + days);
+        return dueDate >= today && dueDate < futureDate;
     }
 }
 
