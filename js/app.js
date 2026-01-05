@@ -1300,39 +1300,115 @@ class GTDApp {
             return;
         }
 
-        // Calculate date range
+        // Build dependency graph and calculate task positions
+        const taskDates = {}; // Store calculated start and end dates for each task
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // First pass: assign dates to tasks with explicit dates
+        projectTasks.forEach(task => {
+            let startDate = null;
+            let endDate = null;
+
+            if (task.deferDate) {
+                startDate = new Date(task.deferDate);
+            }
+            if (task.dueDate) {
+                endDate = new Date(task.dueDate);
+            }
+
+            // If only defer date, set end date to defer date (1 day duration)
+            if (startDate && !endDate) {
+                endDate = new Date(startDate);
+            }
+
+            // If only due date, set start date to due date (1 day duration)
+            if (endDate && !startDate) {
+                startDate = new Date(endDate);
+            }
+
+            // If no dates, default to today with 1 day duration
+            if (!startDate && !endDate) {
+                startDate = new Date(today);
+                endDate = new Date(today);
+            }
+
+            taskDates[task.id] = {
+                start: startDate,
+                end: endDate,
+                calculated: !task.dueDate && !task.deferDate
+            };
+        });
+
+        // Second pass: align dependent tasks
+        let maxIterations = 10; // Prevent infinite loops
+        let iteration = 0;
+
+        while (iteration < maxIterations) {
+            let madeChanges = false;
+
+            projectTasks.forEach(task => {
+                if (task.waitingForTaskIds && task.waitingForTaskIds.length > 0) {
+                    const currentStart = taskDates[task.id].start;
+                    let latestDependencyEnd = null;
+
+                    // Find the latest end date among all dependencies
+                    task.waitingForTaskIds.forEach(depTaskId => {
+                        const depDates = taskDates[depTaskId];
+                        if (depDates && depDates.end) {
+                            if (!latestDependencyEnd || depDates.end > latestDependencyEnd) {
+                                latestDependencyEnd = new Date(depDates.end);
+                            }
+                        }
+                    });
+
+                    // Set this task to start the day after the latest dependency ends
+                    if (latestDependencyEnd) {
+                        const newStart = new Date(latestDependencyEnd);
+                        newStart.setDate(newStart.getDate() + 1);
+
+                        // Only use defer date if it's later than dependency end date
+                        if (task.deferDate) {
+                            const deferDate = new Date(task.deferDate);
+                            if (deferDate > newStart) {
+                                newStart.setTime(deferDate.getTime());
+                            }
+                        }
+
+                        // Update if this would push the task later
+                        if (newStart > currentStart) {
+                            taskDates[task.id].start = newStart;
+
+                            // Update end date if it was calculated (not explicitly set)
+                            if (taskDates[task.id].calculated || !task.dueDate) {
+                                taskDates[task.id].end = new Date(newStart);
+                            } else if (task.dueDate) {
+                                // Keep explicit due date
+                                taskDates[task.id].end = new Date(task.dueDate);
+                            }
+
+                            madeChanges = true;
+                        }
+                    }
+                }
+            });
+
+            iteration++;
+            if (!madeChanges) break;
+        }
+
+        // Calculate date range from all tasks
         let minDate = null;
         let maxDate = null;
 
-        projectTasks.forEach(task => {
-            const dates = [];
-            if (task.deferDate) dates.push(new Date(task.deferDate));
-            if (task.dueDate) dates.push(new Date(task.dueDate));
-
-            dates.forEach(date => {
-                if (!minDate || date < minDate) minDate = date;
-                if (!maxDate || date > maxDate) maxDate = date;
-            });
+        Object.values(taskDates).forEach(dates => {
+            if (!minDate || dates.start < minDate) minDate = new Date(dates.start);
+            if (!maxDate || dates.end > maxDate) maxDate = new Date(dates.end);
         });
 
         // Add buffer days
-        if (minDate) {
-            minDate = new Date(minDate);
-            minDate.setDate(minDate.getDate() - 2);
-        }
-        if (maxDate) {
-            maxDate = new Date(maxDate);
-            maxDate.setDate(maxDate.getDate() + 7);
-        }
-
-        // If no dates found, use today ± 14 days
-        if (!minDate || !maxDate) {
-            const today = new Date();
-            minDate = new Date(today);
-            minDate.setDate(minDate.getDate() - 7);
-            maxDate = new Date(today);
-            maxDate.setDate(maxDate.getDate() + 21);
-        }
+        minDate.setDate(minDate.getDate() - 2);
+        maxDate.setDate(maxDate.getDate() + 7);
 
         const dayWidth = 40; // pixels per day
         const headerHeight = 60;
@@ -1393,6 +1469,11 @@ class GTDApp {
             const y = headerHeight + (index * taskRowHeight) + 15;
             const taskName = this.escapeHtml(task.title).substring(0, 40) + (task.title.length > 40 ? '...' : '');
 
+            // Get calculated dates
+            const dates = taskDates[task.id];
+            const startDate = dates.start;
+            const endDate = dates.end;
+
             // Task label with completion indicator
             const completionIcon = task.completed ? '✓ ' : '';
             html += `
@@ -1401,44 +1482,10 @@ class GTDApp {
                 </text>
             `;
 
-            // Calculate task bar position and width
-            let startDate = null;
-            let endDate = null;
-
-            if (task.deferDate) {
-                startDate = new Date(task.deferDate);
-            }
-
-            if (task.dueDate) {
-                endDate = new Date(task.dueDate);
-            }
-
-            // If only defer date, set end date to defer date + 3 days
-            if (startDate && !endDate) {
-                endDate = new Date(startDate);
-                endDate.setDate(endDate.getDate() + 3);
-            }
-
-            // If only due date, set start date to due date - 3 days
-            if (endDate && !startDate) {
-                startDate = new Date(endDate);
-                startDate.setDate(startDate.getDate() - 3);
-            }
-
-            // If neither date, position in middle with default width
-            let barWidth, barX;
-            if (!startDate && !endDate) {
-                // Center in the visible timeline
-                const midDays = totalDays / 2;
-                barX = 200 + (midDays * dayWidth) - (dayWidth * 2);
-                barWidth = dayWidth * 4;
-            } else {
-                // Calculate position
-                const startOffset = Math.max(0, (startDate - minDate) / (1000 * 60 * 60 * 24));
-                const endOffset = Math.max(0, (endDate - minDate) / (1000 * 60 * 60 * 24));
-                barX = 200 + (startOffset * dayWidth);
-                barWidth = Math.max(dayWidth, (endOffset - startOffset) * dayWidth);
-            }
+            // Calculate position (all tasks are 1 day = dayWidth)
+            const startOffset = Math.max(0, (startDate - minDate) / (1000 * 60 * 60 * 24));
+            const barX = 200 + (startOffset * dayWidth);
+            const barWidth = dayWidth; // Always 1 day width
 
             // Store position for dependency lines
             taskPositions[task.id] = {
@@ -1462,8 +1509,9 @@ class GTDApp {
                 barColor = '#e74c3c';
             }
 
-            // Dim tasks without dates
-            if (!task.dueDate && !task.deferDate) {
+            // Draw task bar (use dashed for calculated dates, solid for explicit dates)
+            const isCalculated = dates.calculated;
+            if (isCalculated && !task.dueDate && !task.deferDate) {
                 html += `
                     <rect x="${barX}" y="${y}" width="${barWidth}" height="30" rx="4" fill="${barColor}" opacity="0.4" stroke-dasharray="4"/>
                 `;
@@ -1477,29 +1525,18 @@ class GTDApp {
             // Task title on bar
             html += `
                 <text x="${barX + barWidth/2}" y="${y + 19}" text-anchor="middle" font-size="11" fill="white" font-weight="500">
-                    ${task.title.length > 20 ? this.escapeHtml(task.title).substring(0, 20) + '...' : this.escapeHtml(task.title)}
+                    ${task.title.length > 15 ? this.escapeHtml(task.title).substring(0, 15) + '...' : this.escapeHtml(task.title)}
                 </text>
             `;
 
-            // Add due date label if exists
-            if (task.dueDate) {
-                const dueLabel = new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                html += `
-                    <text x="${barX + barWidth + 5}" y="${y + 19}" font-size="10" fill="#e74c3c">
-                        Due: ${dueLabel}
-                    </text>
-                `;
-            }
-
-            // Add defer date label if exists
-            if (task.deferDate) {
-                const deferLabel = new Date(task.deferDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                html += `
-                    <text x="${barX - 5}" y="${y + 19}" font-size="10" fill="#856404" text-anchor="end">
-                        From: ${deferLabel}
-                    </text>
-                `;
-            }
+            // Add date label (show formatted date)
+            const dateLabel = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const dateColor = isCalculated ? '#856404' : '#666';
+            html += `
+                <text x="${barX + barWidth + 5}" y="${y + 19}" font-size="10" fill="${dateColor}">
+                    ${dateLabel}
+                </text>
+            `;
         });
 
         // Draw dependency lines
@@ -1543,9 +1580,9 @@ class GTDApp {
             <rect x="385" y="${legendY - 10}" width="15" height="15" rx="3" fill="#e74c3c" opacity="0.8"/>
             <text x="405" y="${legendY + 2}" font-size="11" fill="#666">Overdue</text>
             <rect x="465" y="${legendY - 10}" width="15" height="15" rx="3" fill="#4a90d9" opacity="0.4" stroke-dasharray="2"/>
-            <text x="485" y="${legendY + 2}" font-size="11" fill="#666">No Dates</text>
-            <line x1="550" y1="${legendY - 2}" x2="580" y2="${legendY - 2}" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)" opacity="0.6"/>
-            <text x="590" y="${legendY + 2}" font-size="11" fill="#666">Dependency</text>
+            <text x="485" y="${legendY + 2}" font-size="11" fill="#666">Auto-placed</text>
+            <line x1="570" y1="${legendY - 2}" x2="600" y2="${legendY - 2}" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)" opacity="0.6"/>
+            <text x="610" y="${legendY + 2}" font-size="11" fill="#666">Dependency</text>
         `;
 
         html += `
