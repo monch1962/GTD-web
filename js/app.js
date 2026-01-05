@@ -315,7 +315,7 @@ class GTDApp {
         };
 
         // Monitor context input for new tags
-        const tagsInput = document.getElementById('task-tags');
+        const tagsInput = document.getElementById('task-contexts');
         let lastValue = '';
 
         tagsInput.addEventListener('input', () => {
@@ -1260,7 +1260,7 @@ class GTDApp {
             document.getElementById('project-title').value = project.title;
             document.getElementById('project-description').value = project.description || '';
             document.getElementById('project-status').value = project.status || 'active';
-            document.getElementById('project-tags').value = project.contexts ? project.contexts.join(', ') : '';
+            document.getElementById('project-contexts').value = project.contexts ? project.contexts.join(', ') : '';
         } else {
             title.textContent = 'Add Project';
             document.getElementById('project-id').value = '';
@@ -1599,7 +1599,7 @@ class GTDApp {
 
     async saveProjectFromForm() {
         const projectId = document.getElementById('project-id').value;
-        const tagsValue = document.getElementById('project-tags').value;
+        const tagsValue = document.getElementById('project-contexts').value;
         const tags = tagsValue ? tagsValue.split(',').map(t => t.trim()).filter(t => t) : [];
 
         const projectData = {
