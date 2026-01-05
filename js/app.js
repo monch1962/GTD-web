@@ -7,6 +7,7 @@ import { Task, Project, Reference } from './models.js';
 import { Storage } from './storage.js';
 import { ElementIds, StorageKeys, TaskStatus, Views, RecurrenceLabels } from './constants.js';
 import { getElement, setTextContent, escapeHtml } from './dom-utils.js';
+import { TaskParser } from './nlp-parser.js';
 
 class GTDApp {
     constructor() {
@@ -21,6 +22,7 @@ class GTDApp {
             time: ''
         };
         this.pendingTaskData = null;
+        this.parser = new TaskParser();
     }
 
     async init() {
@@ -288,6 +290,21 @@ class GTDApp {
         suggestionsButton.addEventListener('click', () => {
             this.showSuggestions();
         });
+
+        // Setup NLP examples toggle
+        const toggleHelpBtn = document.getElementById('toggle-nlp-help');
+        if (toggleHelpBtn) {
+            toggleHelpBtn.addEventListener('click', () => {
+                const examplesDiv = document.getElementById('nlp-examples');
+                if (examplesDiv) {
+                    const isVisible = examplesDiv.style.display !== 'none';
+                    examplesDiv.style.display = isVisible ? 'none' : 'block';
+                    toggleHelpBtn.innerHTML = isVisible
+                        ? '<i class="fas fa-info-circle"></i> See examples'
+                        : '<i class="fas fa-chevron-up"></i> Hide examples';
+                }
+            });
+        }
     }
 
     setupCustomTagHandler() {
@@ -965,10 +982,18 @@ class GTDApp {
     }
 
     async quickAddTask(title) {
+        // Use natural language parser to extract task properties
+        const parsed = this.parser.parse(title);
+
         const task = new Task({
-            title: title,
+            title: parsed.title || title,
             status: this.currentView === 'all' ? 'inbox' : this.currentView,
-            type: 'task'
+            type: 'task',
+            contexts: parsed.contexts,
+            energy: parsed.energy,
+            time: parsed.time,
+            dueDate: parsed.dueDate,
+            recurrence: parsed.recurrence
         });
 
         this.tasks.push(task);

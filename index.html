@@ -90,15 +90,24 @@
             </header>
 
             <div class="quick-add">
-                <input type="text" id="quick-add-input" placeholder="Quick add... (Press Enter to add)">
+                <input type="text" id="quick-add-input" placeholder="Quick add... (Try: &quot;Call John @work tomorrow high energy&quot;)">
+                <div style="margin-top: var(--spacing-sm);">
+                    <button class="btn btn-secondary" id="toggle-nlp-help" style="font-size: 0.75rem; padding: 2px 8px;">
+                        <i class="fas fa-info-circle"></i> See examples
+                    </button>
+                    <div id="nlp-examples" style="display: none; margin-top: var(--spacing-sm); padding: var(--spacing-sm); background: var(--bg-secondary); border-radius: var(--radius-sm); font-size: 0.8rem;">
+                        <strong>Natural language examples:</strong>
+                        <ul style="margin: var(--spacing-xs) 0 0 var(--spacing-sm) 0; padding-left: 20px;">
+                            <li><code>Call John @work tomorrow high energy</code></li>
+                            <li><code>Team meeting @computer weekly recurring</code></li>
+                            <li><code>Pay bills @home monthly due 15th</code></li>
+                            <li><code>Quick email 15min low energy</code></li>
+                            <li><code>Gym workout @personal daily</code></li>
+                            <li><code>Review project in 3 days</code></li>
+                        </ul>
+                    </div>
+                </div>
                 <div class="quick-contexts">
-                    <span class="quick-context-label">Quick contexts:</span>
-                    <button class="quick-context" data-context="@home">@home</button>
-                    <button class="quick-context" data-context="@work">@work</button>
-                    <button class="quick-context" data-context="@personal">@personal</button>
-                    <button class="quick-context" data-context="@computer">@computer</button>
-                    <button class="quick-context" data-context="@phone">@phone</button>
-                    <button class="btn-create-context" id="btn-create-context">
                         <i class="fas fa-plus"></i> Create Context
                     </button>
                 </div>
