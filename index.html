@@ -228,7 +228,8 @@
 
                     <div class="form-group">
                         <label for="task-contexts">Contexts (comma separated)</label>
-                        <input type="text" id="task-contexts" placeholder="@home, @computer, important">
+                        <input type="text" id="task-contexts" placeholder="@home, @computer, @urgent">
+                        <small style="color: var(--text-secondary);">Contexts must start with @ (e.g., @home, @work, @urgent)</small>
                         <div class="quick-contexts-modal">
                             <button class="quick-context-modal" data-context="@home">@home</button>
                             <button class="quick-context-modal" data-context="@work">@work</button>
@@ -283,7 +284,8 @@
 
                     <div class="form-group">
                         <label for="project-contexts">Contexts (comma separated)</label>
-                        <input type="text" id="project-contexts" placeholder="work, personal">
+                        <input type="text" id="project-contexts" placeholder="@work, @personal">
+                        <small style="color: var(--text-secondary);">Contexts must start with @ (e.g., @home, @work)</small>
                     </div>
 
                     <div class="form-actions">
@@ -309,9 +311,9 @@
             <form id="context-form" class="task-form">
                 <div class="form-group">
                     <label for="context-name">Context Name *</label>
-                    <input type="text" id="context-name" required placeholder="e.g., urgent, review, priority">
+                    <input type="text" id="context-name" required placeholder="@urgent, @review, @priority">
                     <small style="color: var(--text-secondary); margin-top: 4px; display: block;">
-                        Tip: Use @ for context tags (e.g., @errands) or plain text for categories
+                        Contexts must start with @ symbol (e.g., @errands, @work, @urgent). The @ will be added automatically if missing.
                     </small>
                 </div>
 

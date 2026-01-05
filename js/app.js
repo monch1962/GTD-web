@@ -1241,7 +1241,10 @@ class GTDApp {
     async saveTaskFromForm() {
         const taskId = document.getElementById('task-id').value;
         const tagsValue = document.getElementById('task-contexts').value;
-        const tags = tagsValue ? tagsValue.split(',').map(t => t.trim()).filter(t => t) : [];
+        let tags = tagsValue ? tagsValue.split(',').map(t => t.trim()).filter(t => t) : [];
+
+        // Ensure all contexts start with @
+        tags = tags.map(context => this.normalizeContextName(context));
 
         let status = document.getElementById('task-status').value;
         const projectId = document.getElementById('task-project').value || null;
@@ -1541,7 +1544,10 @@ class GTDApp {
     async saveProjectFromForm() {
         const projectId = document.getElementById('project-id').value;
         const tagsValue = document.getElementById('project-contexts').value;
-        const tags = tagsValue ? tagsValue.split(',').map(t => t.trim()).filter(t => t) : [];
+        let tags = tagsValue ? tagsValue.split(',').map(t => t.trim()).filter(t => t) : [];
+
+        // Ensure all contexts start with @
+        tags = tags.map(context => this.normalizeContextName(context));
 
         const projectData = {
             title: document.getElementById('project-title').value,
@@ -1835,6 +1841,20 @@ class GTDApp {
         return project ? project.title : '';
     }
 
+    /**
+     * Normalize context name to ensure it starts with @
+     * @param {string} context - Context name to normalize
+     * @returns {string} - Normalized context name starting with @
+     */
+    normalizeContextName(context) {
+        if (!context || typeof context !== 'string') return context;
+        const trimmed = context.trim();
+        // If it already starts with @, return as is
+        if (trimmed.startsWith('@')) return trimmed;
+        // Otherwise, prepend @
+        return `@${trimmed}`;
+    }
+
     // Context Modal Methods
     openTagModal() {
         const modal = document.getElementById('context-modal');
@@ -1866,6 +1886,9 @@ class GTDApp {
             return;
         }
 
+        // Normalize context name (ensure it starts with @)
+        const normalizedName = this.normalizeContextName(tagName);
+
         // Get existing tags
         const defaultContexts = ['@home', '@work', '@personal', '@computer', '@phone'];
         const customContexts = JSON.parse(localStorage.getItem('gtd_custom_contexts') || '[]');
@@ -1873,17 +1896,17 @@ class GTDApp {
 
         // Check for duplicates (case-insensitive)
         const isDuplicate = allContexts.some(existingTag =>
-            existingTag.toLowerCase() === tagName.toLowerCase()
+            existingTag.toLowerCase() === normalizedName.toLowerCase()
         );
 
         if (isDuplicate) {
-            errorDiv.textContent = `A context with the name "${tagName}" already exists`;
+            errorDiv.textContent = `A context with the name "${normalizedName}" already exists`;
             errorDiv.style.display = 'block';
             return;
         }
 
-        // Save the new context
-        customContexts.push(tagName);
+        // Save the new context with normalized name
+        customContexts.push(normalizedName);
         localStorage.setItem('gtd_custom_contexts', JSON.stringify(customContexts));
 
         // Re-render custom tags
