@@ -124,6 +124,68 @@ body {
     font-size: 0.75rem;
 }
 
+.projects-dropdown-toggle {
+    cursor: pointer;
+    position: relative;
+}
+
+.dropdown-arrow {
+    font-size: 0.75rem;
+    transition: transform 0.2s;
+    margin-left: auto;
+}
+
+.projects-dropdown-toggle.expanded .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.projects-dropdown {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    padding-left: 2.5rem;
+}
+
+.projects-dropdown.expanded {
+    max-height: 500px;
+    transition: max-height 0.3s ease-in;
+}
+
+.project-dropdown-item {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-sm) var(--spacing-lg);
+    color: var(--text-light);
+    text-decoration: none;
+    transition: background-color 0.2s;
+    font-size: 0.875rem;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.project-dropdown-item:hover {
+    background-color: rgba(255,255,255,0.05);
+}
+
+.project-dropdown-item.drag-over {
+    background-color: rgba(74, 144, 217, 0.2);
+    border-color: var(--primary-color);
+}
+
+.project-dropdown-item i {
+    margin-right: var(--spacing-sm);
+    font-size: 0.875rem;
+    opacity: 0.7;
+}
+
+.project-dropdown-item .task-count {
+    margin-left: auto;
+    background-color: rgba(255,255,255,0.15);
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+}
+
 .sidebar-footer {
     padding: var(--spacing-md) var(--spacing-lg);
     border-top: 1px solid rgba(255,255,255,0.1);
@@ -193,6 +255,8 @@ body {
 .content-header h2 {
     font-size: 1.5rem;
     font-weight: 600;
+    display: flex;
+    align-items: center;
 }
 
 .filters {
@@ -338,7 +402,7 @@ body {
     margin-bottom: var(--spacing-sm);
     display: flex;
     align-items: flex-start;
-    transition: box-shadow 0.2s;
+    transition: box-shadow 0.2s, transform 0.2s;
 }
 
 .task-item:hover {
@@ -359,6 +423,37 @@ body {
 
 .task-item.deferred {
     opacity: 0.7;
+}
+
+.task-drag-handle {
+    cursor: grab;
+    color: var(--text-secondary);
+    margin-right: var(--spacing-sm);
+    opacity: 0.3;
+    transition: opacity 0.2s;
+    display: flex;
+    align-items: center;
+    padding-top: 2px;
+}
+
+.task-item:hover .task-drag-handle {
+    opacity: 0.6;
+}
+
+.task-drag-handle:hover {
+    opacity: 1 !important;
+    cursor: grab;
+}
+
+.task-drag-handle:active {
+    cursor: grabbing;
+}
+
+.task-item.dragging {
+    opacity: 0.5;
+    transform: rotate(2deg);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-color);
 }
 
 .task-due-date {
@@ -479,7 +574,7 @@ body {
     padding: var(--spacing-lg);
     margin-bottom: var(--spacing-md);
     cursor: pointer;
-    transition: box-shadow 0.2s;
+    transition: box-shadow 0.2s, transform 0.2s;
 }
 
 .project-card:hover {
@@ -491,6 +586,37 @@ body {
     justify-content: space-between;
     align-items: flex-start;
     margin-bottom: var(--spacing-sm);
+    gap: var(--spacing-sm);
+}
+
+.project-drag-handle {
+    cursor: grab;
+    color: var(--text-secondary);
+    opacity: 0.3;
+    transition: opacity 0.2s;
+    display: flex;
+    align-items: center;
+    padding-top: 2px;
+}
+
+.project-card:hover .project-drag-handle {
+    opacity: 0.6;
+}
+
+.project-drag-handle:hover {
+    opacity: 1 !important;
+    cursor: grab;
+}
+
+.project-drag-handle:active {
+    cursor: grabbing;
+}
+
+.project-card.dragging {
+    opacity: 0.5;
+    transform: rotate(2deg);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-color);
 }
 
 .project-title {

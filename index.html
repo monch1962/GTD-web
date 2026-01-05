@@ -40,11 +40,15 @@
                 </div>
 
                 <div class="nav-section">
-                    <a href="#" class="nav-item" data-view="projects">
+                    <div class="nav-item projects-dropdown-toggle">
                         <i class="fas fa-folder"></i>
                         <span>Projects</span>
                         <span class="count" id="projects-count">0</span>
-                    </a>
+                        <i class="fas fa-chevron-down dropdown-arrow"></i>
+                    </div>
+                    <div class="projects-dropdown" id="projects-dropdown">
+                        <!-- Projects will be dynamically added here -->
+                    </div>
                     <a href="#" class="nav-item" data-view="reference">
                         <i class="fas fa-book"></i>
                         <span>Reference</span>

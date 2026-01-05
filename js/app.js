@@ -12,6 +12,7 @@ class GTDApp {
         this.tasks = [];
         this.projects = [];
         this.currentView = 'inbox';
+        this.currentProjectId = null;
         this.filters = {
             tag: '',
             energy: '',
@@ -67,6 +68,10 @@ class GTDApp {
             // Update counts
             this.updateCounts();
 
+            console.log('Step 9: Rendering projects dropdown...');
+            // Render projects dropdown
+            this.renderProjectsDropdown();
+
             console.log('Step 9: Updating tag filter...');
             // Update tag filter
             this.updateTagFilter();
@@ -103,6 +108,24 @@ class GTDApp {
                 this.switchView(view);
             });
         });
+
+        // Projects dropdown toggle
+        const projectsToggle = document.querySelector('.projects-dropdown-toggle');
+        if (projectsToggle) {
+            projectsToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                const dropdown = document.getElementById('projects-dropdown');
+                const isExpanded = projectsToggle.classList.contains('expanded');
+
+                if (isExpanded) {
+                    projectsToggle.classList.remove('expanded');
+                    dropdown.classList.remove('expanded');
+                } else {
+                    projectsToggle.classList.add('expanded');
+                    dropdown.classList.add('expanded');
+                }
+            });
+        }
 
         // Quick add
         const quickAddInput = document.getElementById('quick-add-input');
@@ -411,6 +434,9 @@ class GTDApp {
     }
 
     switchView(view) {
+        // Clear project filter when switching views
+        this.currentProjectId = null;
+
         // Update active nav item
         document.querySelectorAll('.nav-item').forEach(item => {
             item.classList.remove('active');
@@ -453,6 +479,44 @@ class GTDApp {
         this.renderView();
     }
 
+    viewProjectTasks(projectId) {
+        this.currentProjectId = projectId;
+
+        // Update active state (no nav item should be active for project view)
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+        });
+
+        // Show tasks container
+        const tasksContainer = document.getElementById('tasks-container');
+        const projectsContainer = document.getElementById('projects-container');
+        const referenceContainer = document.getElementById('reference-container');
+
+        tasksContainer.style.display = 'block';
+        projectsContainer.style.display = 'none';
+        referenceContainer.style.display = 'none';
+
+        // Update view title with project name and back button
+        const project = this.projects.find(p => p.id === projectId);
+        const viewTitle = document.getElementById('view-title');
+        if (project) {
+            viewTitle.innerHTML = `
+                <button class="btn btn-secondary" id="back-to-projects" style="margin-right: 0.5rem;">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+                ${this.escapeHtml(project.title)} - Tasks
+            `;
+
+            // Add back button handler
+            document.getElementById('back-to-projects').addEventListener('click', () => {
+                this.currentProjectId = null;
+                this.switchView('projects');
+            });
+        }
+
+        this.renderTasks();
+    }
+
     renderView() {
         if (this.currentView === 'projects') {
             this.renderProjects();
@@ -467,9 +531,19 @@ class GTDApp {
         const container = document.getElementById('tasks-container');
         let filteredTasks = this.tasks.filter(task => !task.completed);
 
-        // Filter by view
-        if (this.currentView !== 'all') {
-            filteredTasks = filteredTasks.filter(task => task.status === this.currentView);
+        // Filter by project if viewing a specific project
+        if (this.currentProjectId) {
+            filteredTasks = filteredTasks.filter(task => task.projectId === this.currentProjectId);
+        } else {
+            // Filter by view (only when not viewing a specific project)
+            if (this.currentView !== 'all') {
+                filteredTasks = filteredTasks.filter(task => task.status === this.currentView);
+            }
+
+            // For Inbox view, exclude tasks that are assigned to projects
+            if (this.currentView === 'inbox') {
+                filteredTasks = filteredTasks.filter(task => !task.projectId);
+            }
         }
 
         // Apply additional filters
@@ -497,19 +571,27 @@ class GTDApp {
             return;
         }
 
-        // Sort by updated date
-        filteredTasks.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+        // Sort by position, then by updated date
+        filteredTasks.sort((a, b) => {
+            if (a.position !== b.position) {
+                return a.position - b.position;
+            }
+            return new Date(b.updatedAt) - new Date(a.updatedAt);
+        });
 
         // Render tasks
-        filteredTasks.forEach(task => {
-            const taskElement = this.createTaskElement(task);
+        filteredTasks.forEach((task, index) => {
+            const taskElement = this.createTaskElement(task, index);
             container.appendChild(taskElement);
         });
     }
 
-    createTaskElement(task) {
+    createTaskElement(task, index) {
         const div = document.createElement('div');
         div.className = 'task-item';
+        div.draggable = true;
+        div.dataset.taskId = task.id;
+
         if (task.completed) {
             div.classList.add('completed');
         }
@@ -523,6 +605,11 @@ class GTDApp {
         if (!task.isAvailable()) {
             div.classList.add('deferred');
         }
+
+        // Add drag handle icon
+        const dragHandle = document.createElement('div');
+        dragHandle.className = 'task-drag-handle';
+        dragHandle.innerHTML = '<i class="fas fa-grip-vertical"></i>';
 
         // Format due date for display
         let dueDateDisplay = '';
@@ -582,6 +669,7 @@ class GTDApp {
         }
 
         div.innerHTML = `
+            ${dragHandle.outerHTML}
             <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>
             <div class="task-content">
                 <div class="task-title">${this.escapeHtml(task.title)}</div>
@@ -605,6 +693,58 @@ class GTDApp {
                 </button>
             </div>
         `;
+
+        // Drag and drop event listeners
+        div.addEventListener('dragstart', (e) => {
+            div.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', task.id);
+
+            // Auto-expand projects dropdown when dragging starts
+            const projectsToggle = document.querySelector('.projects-dropdown-toggle');
+            const projectsDropdown = document.getElementById('projects-dropdown');
+            if (projectsToggle && projectsDropdown && !projectsDropdown.classList.contains('expanded')) {
+                projectsToggle.classList.add('expanded');
+                projectsDropdown.classList.add('expanded');
+            }
+        });
+
+        div.addEventListener('dragend', async () => {
+            div.classList.remove('dragging');
+
+            // Collapse projects dropdown if no item is being hovered
+            setTimeout(() => {
+                const dragOver = document.querySelector('.project-dropdown-item.drag-over');
+                if (!dragOver) {
+                    const projectsToggle = document.querySelector('.projects-dropdown-toggle');
+                    const projectsDropdown = document.getElementById('projects-dropdown');
+                    if (projectsToggle && projectsDropdown) {
+                        projectsToggle.classList.remove('expanded');
+                        projectsDropdown.classList.remove('expanded');
+                    }
+                }
+            }, 100);
+        });
+
+        div.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const draggingItem = document.querySelector('.dragging');
+            if (draggingItem && draggingItem !== div) {
+                const container = div.parentNode;
+                const afterElement = getDragAfterElement(container, e.clientY);
+                if (afterElement == null) {
+                    container.appendChild(draggingItem);
+                } else {
+                    container.insertBefore(draggingItem, afterElement);
+                }
+            }
+        });
+
+        div.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            const taskId = e.dataTransfer.getData('text/plain');
+            await this.updateTaskPositions();
+        });
 
         // Event listeners
         const checkbox = div.querySelector('.task-checkbox');
@@ -634,6 +774,14 @@ class GTDApp {
             return;
         }
 
+        // Sort by position, then by updated date
+        filteredProjects.sort((a, b) => {
+            if (a.position !== b.position) {
+                return a.position - b.position;
+            }
+            return new Date(b.updatedAt) - new Date(a.updatedAt);
+        });
+
         filteredProjects.forEach(project => {
             const projectElement = this.createProjectElement(project);
             container.appendChild(projectElement);
@@ -643,6 +791,8 @@ class GTDApp {
     createProjectElement(project) {
         const div = document.createElement('div');
         div.className = 'project-card';
+        div.draggable = true;
+        div.dataset.projectId = project.id;
 
         const projectTasks = this.tasks.filter(t => t.projectId === project.id && !t.completed);
         const taskCount = projectTasks.length;
@@ -658,6 +808,9 @@ class GTDApp {
 
         div.innerHTML = `
             <div class="project-header">
+                <div class="project-drag-handle">
+                    <i class="fas fa-grip-vertical"></i>
+                </div>
                 <div class="project-title">${this.escapeHtml(project.title)}</div>
                 <span class="project-status ${project.status}">${project.status}</span>
             </div>
@@ -687,6 +840,36 @@ class GTDApp {
             </div>
         `;
 
+        // Drag and drop event listeners
+        div.addEventListener('dragstart', (e) => {
+            div.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', project.id);
+        });
+
+        div.addEventListener('dragend', () => {
+            div.classList.remove('dragging');
+        });
+
+        div.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const draggingItem = document.querySelector('.project-card.dragging');
+            if (draggingItem && draggingItem !== div) {
+                const container = div.parentNode;
+                const afterElement = getDragAfterElement(container, e.clientY);
+                if (afterElement == null) {
+                    container.appendChild(draggingItem);
+                } else {
+                    container.insertBefore(draggingItem, afterElement);
+                }
+            }
+        });
+
+        div.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            await this.updateProjectPositions();
+        });
+
         const editBtn = div.querySelector('.edit-project');
         editBtn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -703,20 +886,13 @@ class GTDApp {
         if (viewTasksBtn) {
             viewTasksBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                // Filter to show only this project's tasks
-                this.switchView('all');
-
-                // Set a project filter (we'll reuse tag filter temporarily)
-                // or we could navigate to All Items with project pre-selected
-                this.renderView();
+                // View only this project's tasks
+                this.viewProjectTasks(project.id);
             });
         }
 
         div.addEventListener('dblclick', () => {
-            this.switchView('all');
-            this.filters.tag = '';
-            document.getElementById('tag-filter').value = '';
-            this.renderView();
+            this.viewProjectTasks(project.id);
         });
 
         return div;
@@ -1107,6 +1283,7 @@ class GTDApp {
         this.closeProjectModal();
         this.renderView();
         this.updateCounts();
+        this.renderProjectsDropdown();
         this.updateTagFilter();
 
         // If we came from task modal, reopen it with the new project selected
@@ -1203,6 +1380,7 @@ class GTDApp {
         await this.saveTasks();
         this.renderView();
         this.updateCounts();
+        this.renderProjectsDropdown();
     }
 
     async saveTasks() {
@@ -1217,7 +1395,7 @@ class GTDApp {
 
     updateCounts() {
         const counts = {
-            inbox: this.tasks.filter(t => t.status === 'inbox' && !t.completed).length,
+            inbox: this.tasks.filter(t => t.status === 'inbox' && !t.completed && !t.projectId).length,
             next: this.tasks.filter(t => t.status === 'next' && !t.completed).length,
             waiting: this.tasks.filter(t => t.status === 'waiting' && !t.completed).length,
             someday: this.tasks.filter(t => t.status === 'someday' && !t.completed).length,
@@ -1253,6 +1431,111 @@ class GTDApp {
         });
 
         tagFilter.value = currentValue;
+    }
+
+    renderProjectsDropdown() {
+        const dropdown = document.getElementById('projects-dropdown');
+        if (!dropdown) return;
+
+        // Sort projects by position
+        const sortedProjects = [...this.projects].sort((a, b) => {
+            if (a.position !== b.position) {
+                return a.position - b.position;
+            }
+            return new Date(b.updatedAt) - new Date(a.updatedAt);
+        });
+
+        dropdown.innerHTML = '';
+
+        if (sortedProjects.length === 0) {
+            dropdown.innerHTML = '<div class="project-dropdown-item" style="opacity: 0.5; cursor: default;">No projects</div>';
+            return;
+        }
+
+        sortedProjects.forEach(project => {
+            const taskCount = this.tasks.filter(t => t.projectId === project.id && !t.completed).length;
+
+            const item = document.createElement('div');
+            item.className = 'project-dropdown-item';
+            item.dataset.projectId = project.id;
+            item.innerHTML = `
+                <i class="fas fa-folder"></i>
+                <span>${this.escapeHtml(project.title)}</span>
+                <span class="task-count">${taskCount}</span>
+            `;
+
+            // Click handler to view project tasks
+            item.addEventListener('click', (e) => {
+                // Don't trigger if we just finished a drop operation
+                if (e.target.closest('.project-dropdown-item').dataset.preventClick === 'true') {
+                    e.target.closest('.project-dropdown-item').dataset.preventClick = 'false';
+                    return;
+                }
+                this.viewProjectTasks(project.id);
+                // Close dropdown after selection
+                const toggle = document.querySelector('.projects-dropdown-toggle');
+                toggle.classList.remove('expanded');
+                dropdown.classList.remove('expanded');
+            });
+
+            // Drag and drop handlers for assigning tasks to projects
+            item.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                item.classList.add('drag-over');
+            });
+
+            item.addEventListener('dragleave', () => {
+                item.classList.remove('drag-over');
+            });
+
+            item.addEventListener('drop', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                item.classList.remove('drag-over');
+
+                // Prevent click event from firing after drop
+                item.dataset.preventClick = 'true';
+                setTimeout(() => { item.dataset.preventClick = 'false'; }, 100);
+
+                const taskId = e.dataTransfer.getData('text/plain');
+                if (!taskId) return;
+
+                await this.assignTaskToProject(taskId, project.id);
+
+                // Close dropdown after assignment
+                const toggle = document.querySelector('.projects-dropdown-toggle');
+                toggle.classList.remove('expanded');
+                dropdown.classList.remove('expanded');
+            });
+
+            dropdown.appendChild(item);
+        });
+    }
+
+    async assignTaskToProject(taskId, projectId) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        // Update task
+        task.projectId = projectId;
+
+        // If task was in Inbox, move it to Next Actions
+        if (task.status === 'inbox') {
+            task.status = 'next';
+        }
+
+        task.updatedAt = new Date().toISOString();
+
+        // Save changes
+        await this.saveTasks();
+
+        // Refresh UI
+        this.renderView();
+        this.updateCounts();
+        this.renderProjectsDropdown();
+
+        console.log(`Task "${task.title}" assigned to project ${this.getProjectTitle(projectId)}`);
     }
 
     getProjectTitle(projectId) {
@@ -1367,6 +1650,68 @@ class GTDApp {
 
         console.log(`Tag "${tagName}" deleted successfully`);
     }
+
+    async updateTaskPositions() {
+        const container = document.querySelector('.tasks-container');
+        if (!container) return;
+
+        const taskElements = container.querySelectorAll('.task-item');
+
+        // Update position for each task based on its DOM order
+        taskElements.forEach((element, index) => {
+            const taskId = element.dataset.taskId;
+            const task = this.tasks.find(t => t.id === taskId);
+            if (task) {
+                task.position = index;
+                task.updatedAt = new Date().toISOString();
+            }
+        });
+
+        // Save the updated positions
+        await this.saveTasks();
+        console.log('Task positions updated');
+    }
+
+    async updateProjectPositions() {
+        const container = document.querySelector('.projects-container');
+        if (!container) return;
+
+        const projectElements = container.querySelectorAll('.project-card');
+
+        // Update position for each project based on its DOM order
+        projectElements.forEach((element, index) => {
+            const projectId = element.dataset.projectId;
+            const project = this.projects.find(p => p.id === projectId);
+            if (project) {
+                project.position = index;
+                project.updatedAt = new Date().toISOString();
+            }
+        });
+
+        // Save the updated positions
+        await this.saveProjects();
+        // Update dropdown to reflect new order
+        this.renderProjectsDropdown();
+        console.log('Project positions updated');
+    }
+}
+
+// Helper function for drag-and-drop
+function getDragAfterElement(container, y) {
+    // Select either task items or project cards based on what's in the container
+    const taskItems = [...container.querySelectorAll('.task-item:not(.dragging)')];
+    const projectCards = [...container.querySelectorAll('.project-card:not(.dragging)')];
+    const draggableElements = taskItems.length > 0 ? taskItems : projectCards;
+
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
 
 // Initialize app

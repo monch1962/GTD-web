@@ -19,6 +19,7 @@ export class Task {
         this.deferDate = data.deferDate || null; // YYYY-MM-DD format
         this.waitingForTaskIds = data.waitingForTaskIds || []; // Array of task IDs this task depends on
         this.waitingForDescription = data.waitingForDescription || ''; // Description of what/who being waited on
+        this.position = data.position || 0; // Position for custom ordering
         this.createdAt = data.createdAt || new Date().toISOString();
         this.updatedAt = data.updatedAt || new Date().toISOString();
     }
@@ -44,6 +45,7 @@ export class Task {
             deferDate: this.deferDate,
             waitingForTaskIds: this.waitingForTaskIds,
             waitingForDescription: this.waitingForDescription,
+            position: this.position,
             createdAt: this.createdAt,
             updatedAt: this.updatedAt
         };
@@ -154,6 +156,7 @@ export class Project {
         this.description = data.description || '';
         this.status = data.status || 'active'; // active, someday, completed
         this.tags = data.tags || [];
+        this.position = data.position || 0; // Position for custom ordering
         this.createdAt = data.createdAt || new Date().toISOString();
         this.updatedAt = data.updatedAt || new Date().toISOString();
     }
@@ -169,6 +172,7 @@ export class Project {
             description: this.description,
             status: this.status,
             tags: this.tags,
+            position: this.position,
             createdAt: this.createdAt,
             updatedAt: this.updatedAt
         };
