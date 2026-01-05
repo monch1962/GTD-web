@@ -1,140 +1,297 @@
-# GTD Web - Getting Things Done Application
+# GTD Web
 
-A clean, focused GTD (Getting Things Done) web application that runs in your browser with automatic cloud synchronization across devices.
+A full-featured Getting Things Done (GTD) productivity application that runs entirely in your browser. Implement David Allen's GTD methodology to stay organized and productive.
+
+![GTD Web](https://img.shields.io/badge/version-1.0.0-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
 
 ## Features
 
-- **Complete GTD Workflow**: Inbox, Next Actions, Waiting For, Someday/Maybe, Projects, and Reference
-- **Clean Interface**: Minimal design inspired by Nirvana HQ
-- **Smart Filtering**: Filter tasks by tags, energy level, and time required
-- **Automatic Sync**: Data stored locally in localStorage and transparently synced to the cloud
-- **Cross-Device Access**: Use the same app on multiple devices with automatic sync
-- **Project Management**: Organize tasks into projects
-- **Tag System**: Context tags for easy organization
-- **Energy & Time Tracking**: Track energy required and time estimates
+### Core GTD Workflow
+- **Inbox** - Quick capture for all new tasks and ideas
+- **Next Actions** - Actionable tasks you can do right now
+- **Waiting For** - Tasks blocked on dependencies or external factors
+- **Someday/Maybe** - Tasks for future consideration
+- **Projects** - Multi-step outcomes with task tracking
+- **Reference** - Non-actionable information storage
+
+### Advanced Features
+- **Task Dependencies** - Set tasks that must complete before others become actionable
+- **Smart Tagging System** - Default context tags (@home, @work, @personal, @computer, @phone) plus custom tags
+- **Due Dates & Defer Dates** - Schedule deadlines and hide tasks until they're relevant
+- **Energy & Time Filters** - Find tasks matching your current energy and available time
+- **Project Management** - Create projects and assign tasks to them
+- **Automatic Workflow** - Tasks move from Inbox to Next Actions when assigned to projects
+- **Visual Indicators** - See overdue tasks, blocked tasks, and pending dependencies at a glance
+
+### User Experience
+- **Quick Task Capture** - Fast task entry with keyboard shortcuts
+- **Custom Tags** - Create, use, and delete your own tags
+- **Filter by Context** - Quickly find tasks by tag, energy level, or time
+- **Responsive Design** - Works on desktop and mobile browsers
+- **Local-First Storage** - All data stays private in your browser
 
 ## Installation
 
-1. Install dependencies:
+### Prerequisites
+- Node.js (v16 or higher)
+- npm (comes with Node.js)
+
+### Setup
+
+1. **Clone or download the repository**
+   ```bash
+   cd /path/to/GTD-web
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Start the application**
+   ```bash
+   npm start
+   ```
+
+4. **Open in your browser**
+   ```
+   http://localhost:8080
+   ```
+
+That's it! The application runs entirely in the browser with no backend required.
+
+## Running Tests
+
+The project includes comprehensive unit tests for the data models.
+
 ```bash
-npm install
+# Run all tests
+npm test
+
+# Run tests with coverage
+npm test -- --coverage
+
+# Run tests in watch mode
+npm test -- --watch
 ```
 
-2. Start the development server:
-```bash
-npm start
-```
+## Usage Guide
 
-3. Open your browser to `http://localhost:8080`
+### Getting Started with GTD
 
-## Project Structure
+1. **Capture Everything** - Use the Inbox to quickly capture all tasks, ideas, and commitments
+2. **Process Your Inbox** - Decide what each item means and where it belongs
+3. **Organize by Context** - Use tags like @home, @work, @computer to categorize
+4. **Review Regularly** - Check your Waiting For, Someday/Maybe, and Projects weekly
+5. **Do by Context** - Filter by tag, energy, and time to find the right task
 
+### Creating Tasks
+
+**Quick Add (Fastest)**
+1. Type your task in the quick-add input box
+2. Optionally click tag buttons to add them
+3. Press Enter
+
+**Detailed Add**
+1. Click the "Add Task" button
+2. Fill in the form:
+   - Title and description
+   - Status (Inbox, Next Actions, Waiting For, etc.)
+   - Energy level (high, medium, low)
+   - Time estimate
+   - Due date and defer date
+   - Project assignment
+   - Tags
+3. Click Save
+
+### Managing Projects
+
+1. Go to "Projects" in the sidebar
+2. Click "Add Project"
+3. Enter project details (title, description, status, tags)
+4. Save
+5. Assign tasks to the project when creating/editing them
+
+**Pro Tip:** When you assign an Inbox task to a project, it automatically moves to Next Actions!
+
+### Using Task Dependencies
+
+Create workflows where tasks automatically become actionable when others complete:
+
+1. Create Task A: "Design mockups" (Next Actions)
+2. Create Task B: "Get approval" (Waiting For)
+3. In Task B, select Task A as a dependency
+4. When Task A is completed, Task B automatically moves to Next Actions!
+
+Perfect for:
+- Multi-step processes
+- Approval workflows
+- Sequential tasks
+- Team dependencies
+
+### Working with Tags
+
+**Default Context Tags:**
+- `@home` - Tasks to do at home
+- `@work` - Work-related tasks
+- `@personal` - Personal tasks
+- `@computer` - Tasks requiring a computer
+- `@phone` - Tasks requiring a phone
+
+**Creating Custom Tags:**
+1. Click the green "Create Tag" button
+2. Enter tag name
+3. Click "Create Tag"
+4. The tag appears as a clickable button
+
+**Deleting Tags:**
+1. Click the × button on any custom tag
+2. Confirm deletion
+3. Tag is removed from ALL tasks and projects
+
+### Filtering Tasks
+
+Use the filters in the header to find the right task:
+
+- **Tag Filter** - Show only tasks with a specific tag
+- **Energy Filter** - Find tasks matching your energy (high/medium/low)
+- **Time Filter** - Find tasks that fit your available time
+
+Filters work together for powerful task discovery!
+
+### Understanding Task Status
+
+| Status | Description | When to Use |
+|--------|-------------|--------------|
+| **Inbox** | Unprocessed items | Initial capture, process later |
+| **Next Actions** | Actionable now | Physical, visible tasks you can do |
+| **Waiting For** | Blocked externally | Waiting on someone/something else |
+| **Someday/Maybe** | Not actionable now | Future ideas, maybe later |
+| **Completed** | Done | Finished tasks (archive) |
+
+### Date Management
+
+**Due Dates**
+- Set deadlines for time-sensitive tasks
+- Overdue tasks show with red highlighting
+- "Today" appears for tasks due today
+
+**Defer Dates**
+- Hide tasks until they become relevant
+- Great for future tasks you don't want to see yet
+- Tasks appear in Next Actions when defer date arrives
+
+## Data Storage
+
+### Local Storage
+- All data is stored in your browser's localStorage
+- Your tasks stay private on your device
+- Works offline
+- No account or internet connection required
+
+### Backup & Export
+To back up your data:
+1. Open browser DevTools (F12)
+2. Go to Application → Local Storage
+3. Find `gtd_tasks`, `gtd_projects`, `gtd_custom_tags`
+4. Copy and save the values
+
+To restore:
+1. Open the same DevTools section
+2. Paste the saved values back
+3. Refresh the page
+
+### Clearing Data
+- Clearing browser data will delete all tasks
+- Consider exporting important data regularly
+- Use browser sync to sync data across devices
+
+## Development
+
+### Project Structure
 ```
 GTD-web/
 ├── index.html          # Main HTML file
 ├── css/
 │   └── styles.css      # Application styles
 ├── js/
-│   ├── models.js       # Data models (Task, Project, Reference)
-│   ├── storage.js      # Storage layer with remote-storage integration
-│   └── app.js          # Main application logic
-├── package.json        # Node.js dependencies
-└── README.md           # This file
+│   ├── app.js          # Main application logic
+│   ├── models.js       # Task, Project, Reference models
+│   └── storage.js      # LocalStorage wrapper
+├── __tests__/
+│   └── storage.test.js # Storage layer tests
+├── package.json        # Dependencies and scripts
+└── README.md          # This file
 ```
 
-## How It Works
+### Adding New Features
 
-### Data Storage
+1. **Models** - Add new properties to classes in `js/models.js`
+2. **Storage** - Update persistence in `js/storage.js`
+3. **UI** - Modify `js/app.js` for user interactions
+4. **Styles** - Add CSS in `css/styles.css`
+5. **Tests** - Write tests in `__tests__`
 
-The app uses a two-tier storage system:
+### Code Style
+- ES6+ JavaScript modules
+- Async/await for asynchronous operations
+- Clear naming and comments
+- Comprehensive error handling
 
-1. **Local Storage**: All data is immediately saved to localStorage for instant access
-2. **Remote Sync**: Data is automatically synced to [remote-storage](https://github.com/FrigadeHQ/remote-storage) cloud service
+## Troubleshooting
 
-### User Identification
+### Tasks not appearing
+- Check browser console for errors (F12)
+- Verify data in localStorage
+- Try refreshing the page
 
-- Each browser instance generates a unique user ID
-- The user ID is stored in localStorage (`gtd_user_id`)
-- To sync across devices, you'll need to use the same user ID
+### Tags not saving
+- Check if tag name conflicts with existing tags (case-insensitive)
+- Look at browser console for error messages
+- Verify localStorage has available space
 
-### Manual Sync
+### App stuck on "Loading..."
+- Open browser DevTools console
+- Check for JavaScript errors
+- Try clearing cache and refreshing
 
-Click the "Synced" button in the sidebar to manually trigger a sync.
+## Browser Compatibility
 
-## GTD Workflow
+- Chrome/Edge (recommended)
+- Firefox
+- Safari
+- Opera
 
-### 1. Inbox
-Quick capture of all incoming tasks, ideas, and commitments.
-
-### 2. Next Actions
-Actionable tasks that can be done now. Filter by:
-- **Energy Required**: High, Medium, Low
-- **Time Available**: 5 min, 15 min, 30 min, 1 hour, 2+ hours
-- **Tags**: Context-based filtering
-
-### 3. Waiting For
-Items delegated to others or waiting on external conditions.
-
-### 4. Someday/Maybe
-Things you might want to do someday, but not now.
-
-### 5. Projects
-Multi-step outcomes that require multiple tasks.
-
-### 6. Reference
-Non-actionable reference material and information.
-
-## Usage Tips
-
-### Quick Add
-Use the quick add input at the top to quickly capture tasks. Press Enter to add.
-
-### Editing Tasks
-- Click the edit icon (✏️) on any task to open the edit modal
-- Double-click a project card to view all tasks
-- Check the checkbox to mark tasks complete
-
-### Organizing with Tags
-- Add tags to tasks using the @ symbol (e.g., @home, @work, @computer)
-- Use the tag filter to show only tasks with specific tags
-- Tags are automatically added to the filter dropdown
-
-### Time & Energy
-- Set time estimates in minutes
-- Mark energy levels to match your current state
-- Use filters to find tasks that match your available time and energy
-
-## Syncing Across Devices
-
-To use the same data on multiple devices:
-
-1. Find your user ID in the sidebar footer
-2. Open browser DevTools → Console
-3. Run: `localStorage.getItem('gtd_user_id')`
-4. Copy that user ID
-5. On another device, open the app
-6. In DevTools Console, run: `localStorage.setItem('gtd_user_id', 'YOUR_USER_ID')`
-7. Refresh the page
-8. Click the Sync button
-
-## Data Privacy
-
-- Data is stored locally in your browser
-- Remote sync uses the free remote-storage community server
-- For production use, consider deploying your own remote-storage server
-- Do not store sensitive passwords or personal information
-
-## Technologies Used
-
-- **Vanilla JavaScript**: No framework dependencies
-- **remote-storage**: Cross-device synchronization
-- **CSS Variables**: Easy theming
-- **Font Awesome**: Icons
+Requires a modern browser with ES6 module support.
 
 ## License
 
-MIT
+MIT License - feel free to use this application for personal or commercial purposes.
 
 ## Contributing
 
-Feel free to submit issues and pull requests!
+Contributions are welcome! Please feel free to submit issues or pull requests.
+
+## Credits
+
+Created as a full-featured GTD implementation following David Allen's Getting Things Done methodology.
+
+## Roadmap
+
+Future enhancements being considered:
+- [ ] Cloud sync (browser-compatible solution)
+- [ ] Data export/import (JSON, CSV)
+- [ ] Dark mode theme
+- [ ] Calendar view
+- [ ] Mobile app (PWA)
+- [ ] Collaborative features
+- [ ] Advanced reporting/analytics
+
+## Support
+
+For issues, questions, or suggestions, please open an issue on the project repository.
+
+---
+
+**Stay organized. Get things done.** ✅

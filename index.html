@@ -57,6 +57,10 @@
                         <i class="fas fa-list"></i>
                         <span>All Items</span>
                     </a>
+                    <a href="#" class="nav-item" id="help-button">
+                        <i class="fas fa-question-circle"></i>
+                        <span>Help</span>
+                    </a>
                 </div>
             </nav>
 
@@ -99,6 +103,17 @@
 
             <div class="quick-add">
                 <input type="text" id="quick-add-input" placeholder="Quick add... (Press Enter to add)">
+                <div class="quick-tags">
+                    <span class="quick-tag-label">Quick tags:</span>
+                    <button class="quick-tag" data-tag="@home">@home</button>
+                    <button class="quick-tag" data-tag="@work">@work</button>
+                    <button class="quick-tag" data-tag="@personal">@personal</button>
+                    <button class="quick-tag" data-tag="@computer">@computer</button>
+                    <button class="quick-tag" data-tag="@phone">@phone</button>
+                    <button class="btn-create-tag" id="btn-create-tag">
+                        <i class="fas fa-plus"></i> Create Tag
+                    </button>
+                </div>
             </div>
 
             <div id="tasks-container" class="tasks-container">
@@ -194,9 +209,30 @@
                         </div>
                     </div>
 
+                    <div class="form-group" id="waiting-for-section" style="display: none;">
+                        <label for="task-waiting-for-description">Waiting For Description</label>
+                        <input type="text" id="task-waiting-for-description" placeholder="e.g., Response from John, Design team approval">
+                        <small style="color: var(--text-secondary);">What/who are you waiting for?</small>
+                    </div>
+
+                    <div class="form-group" id="waiting-for-deps-section" style="display: none;">
+                        <label for="task-waiting-for-tasks">Waiting For (Task Dependencies)</label>
+                        <div id="waiting-for-tasks-list" style="max-height: 150px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: var(--spacing-sm); margin-bottom: var(--spacing-sm);">
+                            <p style="color: var(--text-secondary); font-size: 0.875rem;">No task dependencies selected</p>
+                        </div>
+                        <small style="color: var(--text-secondary);">Select tasks that must be completed before this task becomes actionable</small>
+                    </div>
+
                     <div class="form-group">
                         <label for="task-tags">Tags (comma separated)</label>
                         <input type="text" id="task-tags" placeholder="@home, @computer, important">
+                        <div class="quick-tags-modal">
+                            <button class="quick-tag-modal" data-tag="@home">@home</button>
+                            <button class="quick-tag-modal" data-tag="@work">@work</button>
+                            <button class="quick-tag-modal" data-tag="@personal">@personal</button>
+                            <button class="quick-tag-modal" data-tag="@computer">@computer</button>
+                            <button class="quick-tag-modal" data-tag="@phone">@phone</button>
+                        </div>
                     </div>
 
                     <div class="form-actions">
@@ -256,6 +292,128 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tag Creation Modal -->
+    <div id="tag-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="tag-modal-title">Create New Tag</h3>
+                <button class="close-button" id="close-tag-modal">&times;</button>
+            </div>
+            <form id="tag-form" class="task-form">
+                <div class="form-group">
+                    <label for="tag-name">Tag Name *</label>
+                    <input type="text" id="tag-name" required placeholder="e.g., urgent, review, priority">
+                    <small style="color: var(--text-secondary); margin-top: 4px; display: block;">
+                        Tip: Use @ for context tags (e.g., @errands) or plain text for categories
+                    </small>
+                </div>
+
+                <div id="tag-error" style="color: var(--danger-color); display: none; margin-bottom: 1rem;"></div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Create Tag
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="cancel-tag-modal">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="help-modal" class="modal">
+        <div class="modal-content" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h3>GTD Web - Help & Instructions</h3>
+                <button class="close-button" id="close-help-modal">&times;</button>
+            </div>
+            <div class="help-content" style="padding: var(--spacing-lg);">
+                <h4>Getting Started with GTD</h4>
+                <p>Welcome to GTD Web! This app implements David Allen's Getting Things Done methodology to help you stay organized and productive.</p>
+
+                <h5>Core Concepts</h5>
+                <ul>
+                    <li><strong>Inbox</strong> - Quick capture for all new tasks and ideas. Process these regularly.</li>
+                    <li><strong>Next Actions</strong> - Actionable tasks you can do right now.</li>
+                    <li><strong>Waiting For</strong> - Tasks you're waiting on someone/something else for.</li>
+                    <li><strong>Someday/Maybe</strong> - Tasks you might do later, but not now.</li>
+                    <li><strong>Projects</strong> - Multi-step outcomes that require multiple tasks.</li>
+                    <li><strong>Reference</strong> - Non-actionable information you want to keep.</li>
+                </ul>
+
+                <h5>Creating Tasks</h5>
+                <ol>
+                    <li><strong>Quick Add</strong> - Type in the input box and press Enter for fast capture</li>
+                    <li><strong>Detailed Add</strong> - Click "Add Task" button for full details</li>
+                    <li>Set status, energy level, time estimates, due dates, and defer dates</li>
+                    <li>Assign to projects and add tags</li>
+                </ol>
+
+                <h5>Managing Projects</h5>
+                <ol>
+                    <li>Go to "Projects" view</li>
+                    <li>Click "Add Project" button</li>
+                    <li>Enter title, description, and tags</li>
+                    <li>Assign tasks to projects when creating/editing them</li>
+                    <li><strong>Note:</strong> When you assign an Inbox task to a project, it automatically moves to Next Actions</li>
+                </ol>
+
+                <h5>Using Tags</h5>
+                <ul>
+                    <li><strong>Default Tags:</strong> @home, @work, @personal, @computer, @phone</li>
+                    <li><strong>Custom Tags:</strong> Click the green "Create Tag" button to make your own</li>
+                    <li><strong>Delete Tags:</strong> Click the × button on custom tags to delete them (removes from all tasks/projects)</li>
+                    <li>Click tag buttons to quickly add them to tasks</li>
+                    <li>Use the tag filter in the header to filter tasks by tag</li>
+                </ul>
+
+                <h5>Task Dependencies (Waiting For)</h5>
+                <ol>
+                    <li>Create or edit a task</li>
+                    <li>Set status to "Waiting For"</li>
+                    <li><strong>Description:</strong> What/who are you waiting for? (e.g., "Response from John")</li>
+                    <li><strong>Dependencies:</strong> Select tasks that must complete first</li>
+                    <li>When dependencies are met, tasks automatically move to Next Actions!</li>
+                </ol>
+
+                <h5>Dates & Deadlines</h5>
+                <ul>
+                    <li><strong>Due Date</strong> - When a task must be done. Overdue tasks show in red.</li>
+                    <li><strong>Defer Date</strong> - Hide a task until this date (great for future tasks)</li>
+                    <li>Tasks with defer dates won't show in Next Actions until the date arrives</li>
+                </ul>
+
+                <h5>Filtering Tasks</h5>
+                <ul>
+                    <li><strong>Tag Filter</strong> - Filter by any tag</li>
+                    <li><strong>Energy Filter</strong> - Find tasks matching your energy level</li>
+                    <li><strong>Time Filter</strong> - Find tasks that fit your available time</li>
+                    <li>Filters work together for powerful task discovery</li>
+                </ul>
+
+                <h5>Workflow Tips</h5>
+                <ol>
+                    <li><strong>Capture Everything</strong> - Don't trust your memory, use the Inbox</li>
+                    <li><strong>Process Inbox Daily</strong> - Decide what each item means and where it goes</li>
+                    <li><strong>Review Weekly</strong> - Check all projects, waiting items, and someday/maybe tasks</li>
+                    <li><strong>Do by Context</strong> - Use tags to filter by @home, @work, @computer, etc.</li>
+                    <li><strong>Match Energy</strong> - Use the energy filter when tired or energized</li>
+                </ol>
+
+                <h5>Keyboard Shortcuts</h5>
+                <ul>
+                    <li><strong>Enter</strong> - Quick add task (in quick input field)</li>
+                    <li><strong>Escape</strong> - Close modals</li>
+                </ul>
+
+                <h5>Data Storage</h5>
+                <p>All data is stored locally in your browser's localStorage. Your tasks stay private on your device. Clearing browser data will delete your tasks, so consider backing up regularly.</p>
             </div>
         </div>
     </div>

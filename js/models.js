@@ -17,6 +17,8 @@ export class Task {
         this.completedAt = data.completedAt || null;
         this.dueDate = data.dueDate || null; // YYYY-MM-DD format
         this.deferDate = data.deferDate || null; // YYYY-MM-DD format
+        this.waitingForTaskIds = data.waitingForTaskIds || []; // Array of task IDs this task depends on
+        this.waitingForDescription = data.waitingForDescription || ''; // Description of what/who being waited on
         this.createdAt = data.createdAt || new Date().toISOString();
         this.updatedAt = data.updatedAt || new Date().toISOString();
     }
@@ -40,6 +42,8 @@ export class Task {
             completedAt: this.completedAt,
             dueDate: this.dueDate,
             deferDate: this.deferDate,
+            waitingForTaskIds: this.waitingForTaskIds,
+            waitingForDescription: this.waitingForDescription,
             createdAt: this.createdAt,
             updatedAt: this.updatedAt
         };
@@ -111,6 +115,35 @@ export class Task {
         const futureDate = new Date(today);
         futureDate.setDate(futureDate.getDate() + days);
         return dueDate >= today && dueDate < futureDate;
+    }
+
+    /**
+     * Check if task dependencies are met (for waiting tasks)
+     * Requires all dependent tasks to be completed
+     */
+    areDependenciesMet(allTasks) {
+        if (!this.waitingForTaskIds || this.waitingForTaskIds.length === 0) {
+            return true; // No dependencies
+        }
+
+        // Check if all dependent tasks are completed
+        return this.waitingForTaskIds.every(depTaskId => {
+            const depTask = allTasks.find(t => t.id === depTaskId);
+            return depTask && depTask.completed;
+        });
+    }
+
+    /**
+     * Get pending (not completed) dependencies
+     */
+    getPendingDependencies(allTasks) {
+        if (!this.waitingForTaskIds || this.waitingForTaskIds.length === 0) {
+            return [];
+        }
+
+        return this.waitingForTaskIds
+            .map(depTaskId => allTasks.find(t => t.id === depTaskId))
+            .filter(task => task && !task.completed);
     }
 }
 

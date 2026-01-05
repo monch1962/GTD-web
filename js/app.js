@@ -17,31 +17,71 @@ class GTDApp {
             energy: '',
             time: ''
         };
+        this.pendingTaskData = null;
     }
 
     async init() {
-        // Initialize storage
-        await this.storage.init();
+        try {
+            console.log('Step 1: Initializing storage...');
+            // Initialize storage
+            await this.storage.init();
+            console.log('Storage initialized');
 
-        // Load data
-        await this.loadData();
+            console.log('Step 2: Loading data...');
+            // Load data
+            await this.loadData();
+            console.log('Data loaded:', this.tasks.length, 'tasks,', this.projects.length, 'projects');
 
-        // Display user ID
-        document.getElementById('user-id').textContent = this.storage.userId.substr(0, 12) + '...';
+            console.log('Step 3: Setting up event listeners...');
+            // Setup event listeners
+            this.setupEventListeners();
 
-        // Setup event listeners
-        this.setupEventListeners();
+            console.log('Step 4: Updating user ID display...');
+            // Display user ID
+            const userIdElement = document.getElementById('user-id');
+            if (userIdElement && this.storage.userId) {
+                userIdElement.textContent = this.storage.userId.substr(0, 12) + '...';
+            }
 
-        // Render initial view
-        this.renderView();
+            console.log('Step 5: Rendering custom tags...');
+            // Render custom tags
+            try {
+                this.renderCustomTags();
+            } catch (tagError) {
+                console.warn('Custom tags rendering failed:', tagError);
+            }
 
-        // Update counts
-        this.updateCounts();
+            console.log('Step 6: Checking waiting tasks dependencies...');
+            // Check if any waiting tasks should be unblocked
+            try {
+                await this.checkWaitingTasksDependencies();
+            } catch (depError) {
+                console.warn('Dependency check failed:', depError);
+            }
 
-        // Update tag filter
-        this.updateTagFilter();
+            console.log('Step 7: Rendering initial view...');
+            // Render initial view
+            this.renderView();
 
-        console.log('GTD Web initialized successfully');
+            console.log('Step 8: Updating counts...');
+            // Update counts
+            this.updateCounts();
+
+            console.log('Step 9: Updating tag filter...');
+            // Update tag filter
+            this.updateTagFilter();
+
+            console.log('GTD Web initialized successfully');
+        } catch (error) {
+            console.error('Error initializing GTD Web:', error);
+            console.error('Error stack:', error.stack);
+            // Still try to render something even if init failed
+            try {
+                this.renderView();
+            } catch (renderError) {
+                console.error('Error rendering view:', renderError);
+            }
+        }
     }
 
     async loadData() {
@@ -138,6 +178,236 @@ class GTDApp {
             this.renderView();
             this.updateCounts();
         });
+
+        // Quick tags in quick-add
+        document.querySelectorAll('.quick-tag').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tag = btn.dataset.tag;
+                const quickAddInput = document.getElementById('quick-add-input');
+                if (quickAddInput.value) {
+                    quickAddInput.value += ` ${tag}`;
+                } else {
+                    quickAddInput.value = tag;
+                }
+                quickAddInput.focus();
+            });
+        });
+
+        // Quick tags in modal
+        document.querySelectorAll('.quick-tag-modal').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tag = btn.dataset.tag;
+                const tagsInput = document.getElementById('task-tags');
+                const currentValue = tagsInput.value.trim();
+
+                // Check if tag already exists
+                const tags = currentValue ? currentValue.split(',').map(t => t.trim()) : [];
+                if (!tags.includes(tag)) {
+                    if (currentValue) {
+                        tagsInput.value = `${currentValue}, ${tag}`;
+                    } else {
+                        tagsInput.value = tag;
+                    }
+                }
+            });
+        });
+
+        // Add custom tag button handler
+        this.setupCustomTagHandler();
+
+        // Tag modal
+        document.getElementById('btn-create-tag').addEventListener('click', () => {
+            this.openTagModal();
+        });
+
+        document.getElementById('tag-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.saveTagFromForm();
+        });
+
+        document.getElementById('close-tag-modal').addEventListener('click', () => {
+            this.closeTagModal();
+        });
+
+        document.getElementById('cancel-tag-modal').addEventListener('click', () => {
+            this.closeTagModal();
+        });
+
+        document.getElementById('tag-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'tag-modal') {
+                this.closeTagModal();
+            }
+        });
+
+        // Help modal
+        document.getElementById('help-button').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('help-modal').classList.add('active');
+        });
+
+        document.getElementById('close-help-modal').addEventListener('click', () => {
+            document.getElementById('help-modal').classList.remove('active');
+        });
+
+        document.getElementById('help-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'help-modal') {
+                document.getElementById('help-modal').classList.remove('active');
+            }
+        });
+    }
+
+    setupCustomTagHandler() {
+        // Get or create custom tags from localStorage
+        const getCustomTags = () => {
+            const tags = localStorage.getItem('gtd_custom_tags');
+            return tags ? JSON.parse(tags) : [];
+        };
+
+        const defaultTags = ['@home', '@work', '@personal', '@computer', '@phone'];
+
+        const saveCustomTag = (tag) => {
+            const tags = getCustomTags();
+            const allTags = [...defaultTags, ...tags];
+
+            // Check for duplicates (case-insensitive)
+            const isDuplicate = allTags.some(existingTag =>
+                existingTag.toLowerCase() === tag.toLowerCase()
+            );
+
+            if (!isDuplicate && !tags.includes(tag)) {
+                tags.push(tag);
+                localStorage.setItem('gtd_custom_tags', JSON.stringify(tags));
+                this.renderCustomTags();
+            }
+        };
+
+        // Monitor tag input for new tags
+        const tagsInput = document.getElementById('task-tags');
+        let lastValue = '';
+
+        tagsInput.addEventListener('input', () => {
+            const currentValue = tagsInput.value;
+            if (currentValue !== lastValue) {
+                // Extract tags from input
+                const tags = currentValue.split(',').map(t => t.trim()).filter(t => t);
+
+                // Save any new custom tags (excluding default @ tags)
+                tags.forEach(tag => {
+                    if (tag && !tag.startsWith('@') && !getCustomTags().includes(tag)) {
+                        saveCustomTag(tag);
+                    }
+                });
+
+                lastValue = currentValue;
+            }
+        });
+    }
+
+    renderCustomTags() {
+        const customTags = JSON.parse(localStorage.getItem('gtd_custom_tags') || '[]');
+
+        // Quick-add section custom tags
+        const quickTagsContainer = document.querySelector('.quick-tags');
+        if (quickTagsContainer) {
+            // Remove existing custom tags
+            quickTagsContainer.querySelectorAll('.custom-tag').forEach(el => el.remove());
+
+            // Add custom tags with delete button
+            customTags.forEach(tag => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'custom-tag-wrapper';
+                wrapper.style.display = 'inline-flex';
+                wrapper.style.alignItems = 'center';
+                wrapper.style.gap = '4px';
+
+                const btn = document.createElement('button');
+                btn.className = 'quick-tag custom-tag';
+                btn.dataset.tag = tag;
+                btn.addEventListener('click', (e) => {
+                    // Don't trigger if clicking the delete button
+                    if (e.target.classList.contains('custom-tag-delete')) return;
+
+                    const quickAddInput = document.getElementById('quick-add-input');
+                    if (quickAddInput.value) {
+                        quickAddInput.value += ` ${tag}`;
+                    } else {
+                        quickAddInput.value = tag;
+                    }
+                    quickAddInput.focus();
+                });
+
+                const label = document.createElement('span');
+                label.textContent = tag;
+                btn.appendChild(label);
+
+                // Add delete button
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'custom-tag-delete';
+                deleteBtn.innerHTML = '&times;';
+                deleteBtn.title = `Delete tag "${tag}"`;
+                deleteBtn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    await this.deleteTag(tag);
+                });
+
+                btn.appendChild(deleteBtn);
+                wrapper.appendChild(btn);
+                quickTagsContainer.appendChild(wrapper);
+            });
+        }
+
+        // Modal custom tags
+        const modalTagsContainer = document.querySelector('.quick-tags-modal');
+        if (modalTagsContainer) {
+            // Remove existing custom tags
+            modalTagsContainer.querySelectorAll('.custom-tag-modal').forEach(el => el.remove());
+
+            // Add custom tags with delete button
+            customTags.forEach(tag => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'custom-tag-wrapper';
+                wrapper.style.display = 'inline-flex';
+                wrapper.style.alignItems = 'center';
+                wrapper.style.gap = '4px';
+
+                const btn = document.createElement('button');
+                btn.className = 'quick-tag-modal custom-tag-modal';
+                btn.dataset.tag = tag;
+                btn.addEventListener('click', (e) => {
+                    // Don't trigger if clicking the delete button
+                    if (e.target.classList.contains('custom-tag-delete')) return;
+
+                    const tagsInput = document.getElementById('task-tags');
+                    const currentValue = tagsInput.value.trim();
+                    const tags = currentValue ? currentValue.split(',').map(t => t.trim()) : [];
+                    if (!tags.includes(tag)) {
+                        if (currentValue) {
+                            tagsInput.value = `${currentValue}, ${tag}`;
+                        } else {
+                            tagsInput.value = tag;
+                        }
+                    }
+                });
+
+                const label = document.createElement('span');
+                label.textContent = tag;
+                btn.appendChild(label);
+
+                // Add delete button
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'custom-tag-delete';
+                deleteBtn.innerHTML = '&times;';
+                deleteBtn.title = `Delete tag "${tag}"`;
+                deleteBtn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    await this.deleteTag(tag);
+                });
+
+                btn.appendChild(deleteBtn);
+                wrapper.appendChild(btn);
+                modalTagsContainer.appendChild(wrapper);
+            });
+        }
     }
 
     switchView(view) {
@@ -286,6 +556,31 @@ class GTDApp {
             </span>`;
         }
 
+        // Waiting For display
+        let waitingForDisplay = '';
+        if (task.status === 'waiting') {
+            const parts = [];
+
+            if (task.waitingForDescription) {
+                parts.push(`<i class="fas fa-hourglass-half"></i> Waiting: ${this.escapeHtml(task.waitingForDescription)}`);
+            }
+
+            if (task.waitingForTaskIds && task.waitingForTaskIds.length > 0) {
+                const pendingDeps = task.getPendingDependencies(this.tasks);
+                if (pendingDeps.length > 0) {
+                    const depNames = pendingDeps.map(t => this.escapeHtml(t.title)).join(', ');
+                    parts.push(`<i class="fas fa-link"></i> Blocked by: ${depNames}`);
+                } else {
+                    // Dependencies met but still in waiting status
+                    parts.push(`<i class="fas fa-check-circle"></i> Dependencies met!`);
+                }
+            }
+
+            if (parts.length > 0) {
+                waitingForDisplay = `<span class="task-waiting-for">${parts.join(' | ')}</span>`;
+            }
+        }
+
         div.innerHTML = `
             <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>
             <div class="task-content">
@@ -297,6 +592,7 @@ class GTDApp {
                     ${task.time ? `<span class="task-time"><i class="fas fa-clock"></i> ${task.time}m</span>` : ''}
                     ${dueDateDisplay}
                     ${deferDateDisplay}
+                    ${waitingForDisplay}
                     ${task.projectId ? `<span class="task-project">${this.getProjectTitle(task.projectId)}</span>` : ''}
                 </div>
             </div>
@@ -348,7 +644,17 @@ class GTDApp {
         const div = document.createElement('div');
         div.className = 'project-card';
 
-        const taskCount = this.tasks.filter(t => t.projectId === project.id && !t.completed).length;
+        const projectTasks = this.tasks.filter(t => t.projectId === project.id && !t.completed);
+        const taskCount = projectTasks.length;
+
+        // Get next few incomplete tasks
+        const upcomingTasks = projectTasks.slice(0, 3);
+        const tasksPreview = upcomingTasks.map(task =>
+            `<div class="project-task-preview">
+                <i class="far fa-circle"></i>
+                <span>${this.escapeHtml(task.title)}</span>
+            </div>`
+        ).join('');
 
         div.innerHTML = `
             <div class="project-header">
@@ -356,12 +662,21 @@ class GTDApp {
                 <span class="project-status ${project.status}">${project.status}</span>
             </div>
             ${project.description ? `<div class="project-description">${this.escapeHtml(project.description)}</div>` : ''}
+            ${taskCount > 0 ? `
+                <div class="project-tasks">
+                    ${tasksPreview}
+                    ${taskCount > 3 ? `<div class="project-tasks-more">+${taskCount - 3} more tasks</div>` : ''}
+                </div>
+            ` : ''}
             <div class="project-meta">
                 <div class="project-tags">
                     ${project.tags.map(tag => `<span class="task-tag">${this.escapeHtml(tag)}</span>`).join('')}
                 </div>
                 <div class="project-actions">
-                    <span>${taskCount} tasks</span>
+                    <button class="btn-view-tasks" title="View tasks">
+                        <i class="fas fa-list"></i>
+                        ${taskCount} task${taskCount !== 1 ? 's' : ''}
+                    </button>
                     <button class="task-action-btn edit-project" title="Edit">
                         <i class="fas fa-edit"></i>
                     </button>
@@ -383,6 +698,19 @@ class GTDApp {
             e.stopPropagation();
             this.deleteProject(project.id);
         });
+
+        const viewTasksBtn = div.querySelector('.btn-view-tasks');
+        if (viewTasksBtn) {
+            viewTasksBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Filter to show only this project's tasks
+                this.switchView('all');
+
+                // Set a project filter (we'll reuse tag filter temporarily)
+                // or we could navigate to All Items with project pre-selected
+                this.renderView();
+            });
+        }
 
         div.addEventListener('dblclick', () => {
             this.switchView('all');
@@ -444,8 +772,60 @@ class GTDApp {
                 task.markComplete();
             }
             await this.saveTasks();
+
+            // Check if any waiting tasks now have their dependencies met
+            await this.checkWaitingTasksDependencies();
+
             this.renderView();
             this.updateCounts();
+        }
+    }
+
+    async checkWaitingTasksDependencies() {
+        let movedCount = 0;
+
+        // Check all waiting tasks
+        this.tasks.forEach(task => {
+            if (task.status === 'waiting') {
+                let shouldMove = false;
+                let reason = '';
+
+                // Check if task dependencies are met
+                if (task.waitingForTaskIds && task.waitingForTaskIds.length > 0) {
+                    if (task.areDependenciesMet(this.tasks)) {
+                        shouldMove = true;
+                        reason = 'dependencies met';
+                    }
+                }
+                // If no task dependencies, check if defer date has arrived
+                else if (!task.waitingForTaskIds || task.waitingForTaskIds.length === 0) {
+                    if (task.deferDate && task.isAvailable()) {
+                        shouldMove = true;
+                        reason = 'defer date arrived';
+                    }
+                    // If no defer date and no description, it's just waiting - move it
+                    else if (!task.deferDate && !task.waitingForDescription) {
+                        shouldMove = true;
+                        reason = 'no longer blocked';
+                    }
+                }
+
+                if (shouldMove) {
+                    // Move to Next Actions
+                    task.status = 'next';
+                    task.waitingForTaskIds = []; // Clear dependencies
+                    task.waitingForDescription = ''; // Clear description
+                    task.updatedAt = new Date().toISOString();
+                    movedCount++;
+                    console.log(`Task "${task.title}" moved from Waiting For to Next Actions - ${reason}!`);
+                }
+            }
+        });
+
+        if (movedCount > 0) {
+            await this.saveTasks();
+            // Optional: Show notification to user
+            console.log(`${movedCount} task(s) moved from Waiting For to Next Actions`);
         }
     }
 
@@ -460,12 +840,43 @@ class GTDApp {
         // Update project options
         const projectSelect = document.getElementById('task-project');
         projectSelect.innerHTML = '<option value="">No Project</option>';
+
+        // Add option to create new project
+        const createOption = document.createElement('option');
+        createOption.value = '__create_new__';
+        createOption.textContent = '+ Create new project...';
+        createOption.style.fontWeight = 'bold';
+        createOption.style.color = 'var(--primary-color)';
+        projectSelect.appendChild(createOption);
+
+        // Add existing projects
         this.projects.forEach(project => {
             const option = document.createElement('option');
             option.value = project.id;
             option.textContent = project.title;
             projectSelect.appendChild(option);
         });
+
+        // Handle create new project selection
+        projectSelect.addEventListener('change', (e) => {
+            if (e.target.value === '__create_new__') {
+                // Remember the current form data
+                const formData = {
+                    title: document.getElementById('task-title').value,
+                    description: document.getElementById('task-description').value,
+                    status: document.getElementById('task-status').value,
+                    energy: document.getElementById('task-energy').value,
+                    time: document.getElementById('task-time').value,
+                    tags: document.getElementById('task-tags').value,
+                    dueDate: document.getElementById('task-due-date').value,
+                    deferDate: document.getElementById('task-defer-date').value
+                };
+
+                // Close task modal and open project modal
+                this.closeTaskModal();
+                this.openProjectModal(null, formData);
+            }
+        }, { once: true });
 
         if (task) {
             title.textContent = 'Edit Task';
@@ -479,12 +890,33 @@ class GTDApp {
             document.getElementById('task-project').value = task.projectId || '';
             document.getElementById('task-due-date').value = task.dueDate || '';
             document.getElementById('task-defer-date').value = task.deferDate || '';
+            document.getElementById('task-waiting-for-description').value = task.waitingForDescription || '';
             document.getElementById('task-tags').value = task.tags.join(', ');
         } else {
             title.textContent = 'Add Task';
             document.getElementById('task-id').value = '';
             document.getElementById('task-status').value = this.currentView === 'all' ? 'inbox' : this.currentView;
+            document.getElementById('task-waiting-for-description').value = '';
         }
+
+        // Setup status change listener to show/hide waiting for fields
+        const statusSelect = document.getElementById('task-status');
+        const waitingForSection = document.getElementById('waiting-for-section');
+        const waitingForDepsSection = document.getElementById('waiting-for-deps-section');
+
+        const updateWaitingForFields = () => {
+            if (statusSelect.value === 'waiting') {
+                waitingForSection.style.display = 'block';
+                waitingForDepsSection.style.display = 'block';
+                this.renderWaitingForTasksList(task);
+            } else {
+                waitingForSection.style.display = 'none';
+                waitingForDepsSection.style.display = 'none';
+            }
+        };
+
+        statusSelect.addEventListener('change', updateWaitingForFields);
+        updateWaitingForFields(); // Initial call
 
         modal.classList.add('active');
     }
@@ -493,21 +925,103 @@ class GTDApp {
         document.getElementById('task-modal').classList.remove('active');
     }
 
+    renderWaitingForTasksList(currentTask) {
+        const container = document.getElementById('waiting-for-tasks-list');
+        const currentTaskId = currentTask ? currentTask.id : null;
+
+        // Get all incomplete tasks except the current one
+        const availableTasks = this.tasks.filter(t =>
+            !t.completed && t.id !== currentTaskId && t.status !== 'completed'
+        );
+
+        if (availableTasks.length === 0) {
+            container.innerHTML = '<p style="color: var(--text-secondary); font-size: 0.875rem;">No other tasks available</p>';
+            return;
+        }
+
+        container.innerHTML = '';
+
+        availableTasks.forEach(task => {
+            const wrapper = document.createElement('div');
+            wrapper.style.display = 'flex';
+            wrapper.style.alignItems = 'center';
+            wrapper.style.padding = '4px 0';
+            wrapper.style.borderBottom = '1px solid var(--bg-secondary)';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = `dep-task-${task.id}`;
+            checkbox.value = task.id;
+            checkbox.style.marginRight = '8px';
+
+            // Check if this task is already a dependency
+            if (currentTask && currentTask.waitingForTaskIds && currentTask.waitingForTaskIds.includes(task.id)) {
+                checkbox.checked = true;
+            }
+
+            const label = document.createElement('label');
+            label.htmlFor = `dep-task-${task.id}`;
+            label.textContent = task.title;
+            label.style.flex = '1';
+            label.style.fontSize = '0.875rem';
+            label.style.cursor = 'pointer';
+
+            const status = document.createElement('span');
+            status.textContent = `[${task.status}]`;
+            status.style.fontSize = '0.75rem';
+            status.style.color = 'var(--text-secondary)';
+            status.style.marginLeft = '8px';
+
+            wrapper.appendChild(checkbox);
+            wrapper.appendChild(label);
+            wrapper.appendChild(status);
+            container.appendChild(wrapper);
+        });
+    }
+
+    getSelectedWaitingForTasks() {
+        const selectedIds = [];
+        const checkboxes = document.querySelectorAll('#waiting-for-tasks-list input[type="checkbox"]:checked');
+        checkboxes.forEach(cb => {
+            selectedIds.push(cb.value);
+        });
+        return selectedIds;
+    }
+
     async saveTaskFromForm() {
         const taskId = document.getElementById('task-id').value;
         const tagsValue = document.getElementById('task-tags').value;
         const tags = tagsValue ? tagsValue.split(',').map(t => t.trim()).filter(t => t) : [];
 
+        let status = document.getElementById('task-status').value;
+        const projectId = document.getElementById('task-project').value || null;
+
+        // GTD Rule: If task is being assigned to a project and is in Inbox,
+        // automatically move it to Next Actions
+        if (projectId && status === 'inbox') {
+            status = 'next';
+        }
+
+        // Get waiting for data
+        const waitingForDescription = document.getElementById('task-waiting-for-description').value || '';
+        let waitingForTaskIds = [];
+
+        if (status === 'waiting') {
+            waitingForTaskIds = this.getSelectedWaitingForTasks();
+        }
+
         const taskData = {
             title: document.getElementById('task-title').value,
             description: document.getElementById('task-description').value,
             type: document.getElementById('task-type').value,
-            status: document.getElementById('task-status').value,
+            status: status,
             energy: document.getElementById('task-energy').value,
             time: parseInt(document.getElementById('task-time').value) || 0,
-            projectId: document.getElementById('task-project').value || null,
+            projectId: projectId,
             dueDate: document.getElementById('task-due-date').value || null,
             deferDate: document.getElementById('task-defer-date').value || null,
+            waitingForDescription: waitingForDescription,
+            waitingForTaskIds: waitingForTaskIds,
             tags: tags
         };
 
@@ -531,12 +1045,15 @@ class GTDApp {
         this.updateTagFilter();
     }
 
-    openProjectModal(project = null) {
+    openProjectModal(project = null, pendingTaskData = null) {
         const modal = document.getElementById('project-modal');
         const form = document.getElementById('project-form');
         const title = document.getElementById('project-modal-title');
 
         form.reset();
+
+        // Store pending task data if coming from task modal
+        this.pendingTaskData = pendingTaskData;
 
         if (project) {
             title.textContent = 'Edit Project';
@@ -555,6 +1072,7 @@ class GTDApp {
 
     closeProjectModal() {
         document.getElementById('project-modal').classList.remove('active');
+        this.pendingTaskData = null;
     }
 
     async saveProjectFromForm() {
@@ -569,6 +1087,8 @@ class GTDApp {
             tags: tags
         };
 
+        let newProjectId = null;
+
         if (projectId) {
             // Update existing project
             const project = this.projects.find(p => p.id === projectId);
@@ -580,6 +1100,7 @@ class GTDApp {
             // Create new project
             const project = new Project(projectData);
             this.projects.push(project);
+            newProjectId = project.id;
         }
 
         await this.saveProjects();
@@ -587,6 +1108,74 @@ class GTDApp {
         this.renderView();
         this.updateCounts();
         this.updateTagFilter();
+
+        // If we came from task modal, reopen it with the new project selected
+        if (this.pendingTaskData) {
+            this.openTaskModalWithData(this.pendingTaskData, newProjectId);
+            this.pendingTaskData = null;
+        }
+    }
+
+    openTaskModalWithData(formData, projectId = null) {
+        const modal = document.getElementById('task-modal');
+        const title = document.getElementById('modal-title');
+
+        title.textContent = 'Add Task';
+        document.getElementById('task-id').value = '';
+        document.getElementById('task-title').value = formData.title || '';
+        document.getElementById('task-description').value = formData.description || '';
+        document.getElementById('task-status').value = formData.status || 'inbox';
+        document.getElementById('task-energy').value = formData.energy || '';
+        document.getElementById('task-time').value = formData.time || '';
+        document.getElementById('task-tags').value = formData.tags || '';
+        document.getElementById('task-due-date').value = formData.dueDate || '';
+        document.getElementById('task-defer-date').value = formData.deferDate || '';
+
+        // Update project options
+        const projectSelect = document.getElementById('task-project');
+        projectSelect.innerHTML = '<option value="">No Project</option>';
+
+        // Add option to create new project
+        const createOption = document.createElement('option');
+        createOption.value = '__create_new__';
+        createOption.textContent = '+ Create new project...';
+        createOption.style.fontWeight = 'bold';
+        createOption.style.color = 'var(--primary-color)';
+        projectSelect.appendChild(createOption);
+
+        // Add existing projects
+        this.projects.forEach(project => {
+            const option = document.createElement('option');
+            option.value = project.id;
+            option.textContent = project.title;
+            projectSelect.appendChild(option);
+        });
+
+        // Select the newly created project
+        if (projectId) {
+            projectSelect.value = projectId;
+        }
+
+        // Handle create new project selection
+        projectSelect.addEventListener('change', (e) => {
+            if (e.target.value === '__create_new__') {
+                const formData = {
+                    title: document.getElementById('task-title').value,
+                    description: document.getElementById('task-description').value,
+                    status: document.getElementById('task-status').value,
+                    energy: document.getElementById('task-energy').value,
+                    time: document.getElementById('task-time').value,
+                    tags: document.getElementById('task-tags').value,
+                    dueDate: document.getElementById('task-due-date').value,
+                    deferDate: document.getElementById('task-defer-date').value
+                };
+
+                this.closeTaskModal();
+                this.openProjectModal(null, formData);
+            }
+        }, { once: true });
+
+        modal.classList.add('active');
     }
 
     async deleteTask(taskId) {
@@ -676,6 +1265,108 @@ class GTDApp {
         div.textContent = text;
         return div.innerHTML;
     }
+
+    // Tag Modal Methods
+    openTagModal() {
+        const modal = document.getElementById('tag-modal');
+        const form = document.getElementById('tag-form');
+        const errorDiv = document.getElementById('tag-error');
+
+        form.reset();
+        errorDiv.style.display = 'none';
+        modal.classList.add('active');
+
+        // Focus on the input
+        setTimeout(() => {
+            document.getElementById('tag-name').focus();
+        }, 100);
+    }
+
+    closeTagModal() {
+        document.getElementById('tag-modal').classList.remove('active');
+        document.getElementById('tag-error').style.display = 'none';
+    }
+
+    saveTagFromForm() {
+        const tagName = document.getElementById('tag-name').value.trim();
+        const errorDiv = document.getElementById('tag-error');
+
+        if (!tagName) {
+            errorDiv.textContent = 'Tag name is required';
+            errorDiv.style.display = 'block';
+            return;
+        }
+
+        // Get existing tags
+        const defaultTags = ['@home', '@work', '@personal', '@computer', '@phone'];
+        const customTags = JSON.parse(localStorage.getItem('gtd_custom_tags') || '[]');
+        const allTags = [...defaultTags, ...customTags];
+
+        // Check for duplicates (case-insensitive)
+        const isDuplicate = allTags.some(existingTag =>
+            existingTag.toLowerCase() === tagName.toLowerCase()
+        );
+
+        if (isDuplicate) {
+            errorDiv.textContent = `A tag with the name "${tagName}" already exists`;
+            errorDiv.style.display = 'block';
+            return;
+        }
+
+        // Save the new tag
+        customTags.push(tagName);
+        localStorage.setItem('gtd_custom_tags', JSON.stringify(customTags));
+
+        // Re-render custom tags
+        this.renderCustomTags();
+
+        // Close modal and show success
+        this.closeTagModal();
+        console.log('Tag created successfully:', tagName);
+    }
+
+    async deleteTag(tagName) {
+        // Confirm deletion
+        const confirmed = confirm(`Are you sure you want to delete the tag "${tagName}"?\n\nThis will remove the tag from all tasks and projects that use it.`);
+        if (!confirmed) return;
+
+        // Count affected items
+        const affectedTasks = this.tasks.filter(task => task.tags.includes(tagName));
+        const affectedProjects = this.projects.filter(project => project.tags.includes(tagName));
+
+        console.log(`Deleting tag "${tagName}" from ${affectedTasks.length} tasks and ${affectedProjects.length} projects`);
+
+        // Remove tag from all tasks
+        this.tasks.forEach(task => {
+            if (task.tags.includes(tagName)) {
+                task.tags = task.tags.filter(t => t !== tagName);
+                task.updatedAt = new Date().toISOString();
+            }
+        });
+
+        // Remove tag from all projects
+        this.projects.forEach(project => {
+            if (project.tags.includes(tagName)) {
+                project.tags = project.tags.filter(t => t !== tagName);
+                project.updatedAt = new Date().toISOString();
+            }
+        });
+
+        // Remove from custom tags list
+        const customTags = JSON.parse(localStorage.getItem('gtd_custom_tags') || '[]');
+        const updatedTags = customTags.filter(t => t !== tagName);
+        localStorage.setItem('gtd_custom_tags', JSON.stringify(updatedTags));
+
+        // Save changes
+        await this.saveTasks();
+        await this.saveProjects();
+
+        // Re-render
+        this.renderCustomTags();
+        this.renderView();
+
+        console.log(`Tag "${tagName}" deleted successfully`);
+    }
 }
 
 // Initialize app
@@ -691,4 +1382,37 @@ document.addEventListener('DOMContentLoaded', () => {
     addButton.innerHTML = '<i class="fas fa-plus"></i> Add Task';
     addButton.addEventListener('click', () => app.openTaskModal());
     quickAdd.appendChild(addButton);
+});
+
+// Add button to open project modal in projects view
+document.addEventListener('DOMContentLoaded', () => {
+    const setupProjectButton = () => {
+        const projectsContainer = document.getElementById('projects-container');
+        if (!projectsContainer) return;
+
+        // Remove existing button if any
+        const existingButton = projectsContainer.querySelector('.add-project-btn');
+        if (existingButton) existingButton.remove();
+
+        // Create add project button
+        const addButton = document.createElement('button');
+        addButton.className = 'btn btn-primary add-project-btn';
+        addButton.style.cssText = 'margin-bottom: 1rem;';
+        addButton.innerHTML = '<i class="fas fa-plus"></i> Add Project';
+        addButton.addEventListener('click', () => app.openProjectModal());
+
+        projectsContainer.insertBefore(addButton, projectsContainer.firstChild);
+    };
+
+    // Setup initially and when switching to projects view
+    setupProjectButton();
+
+    // Hook into switchView to add button when viewing projects
+    const originalSwitchView = app.switchView.bind(app);
+    app.switchView = function(view) {
+        originalSwitchView(view);
+        if (view === 'projects') {
+            setTimeout(setupProjectButton, 0);
+        }
+    };
 });

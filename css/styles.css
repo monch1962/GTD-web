@@ -228,6 +228,98 @@ body {
     border-color: var(--primary-color);
 }
 
+.quick-tags {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+.quick-tag-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.quick-tag,
+.quick-tag-modal {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 4px 12px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-primary);
+}
+
+.quick-tag:hover,
+.quick-tag-modal:hover {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.quick-tag.custom-tag,
+.quick-tag-modal.custom-tag-modal {
+    background-color: #e8f4f8;
+    border-color: #4a90d9;
+    color: #2c5f8d;
+}
+
+.quick-tag.custom-tag:hover,
+.quick-tag-modal.custom-tag-modal:hover {
+    background-color: #4a90d9;
+    color: white;
+}
+
+.quick-tags-modal {
+    display: flex;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-xs);
+    flex-wrap: wrap;
+}
+
+.btn-create-tag {
+    background-color: var(--success-color);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 4px 12px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 500;
+}
+
+.btn-create-tag:hover {
+    background-color: #4cae4c;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.custom-tag-delete {
+    margin-left: 4px;
+    padding: 0 4px;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.875rem;
+    line-height: 1;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.custom-tag-delete:hover {
+    background-color: var(--danger-color);
+    color: white;
+}
+
 /* Task Container */
 .tasks-container,
 .projects-container,
@@ -292,6 +384,17 @@ body {
     border-radius: 12px;
     background-color: #fff3cd;
     color: #856404;
+}
+
+.task-waiting-for {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background-color: #e7f3ff;
+    color: #004085;
+    font-size: 0.875rem;
 }
 
 .task-checkbox {
@@ -423,6 +526,34 @@ body {
     margin-bottom: var(--spacing-md);
 }
 
+.project-tasks {
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-sm);
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+}
+
+.project-task-preview {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-xs) 0;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+}
+
+.project-task-preview i {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+}
+
+.project-tasks-more {
+    color: var(--primary-color);
+    font-size: 0.875rem;
+    font-style: italic;
+    margin-top: var(--spacing-xs);
+}
+
 .project-meta {
     display: flex;
     justify-content: space-between;
@@ -434,11 +565,33 @@ body {
 .project-tags {
     display: flex;
     gap: var(--spacing-xs);
+    flex-wrap: wrap;
 }
 
 .project-actions {
     display: flex;
     gap: var(--spacing-sm);
+    align-items: center;
+}
+
+.btn-view-tasks {
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 4px 12px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+}
+
+.btn-view-tasks:hover {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
 }
 
 /* Modal */

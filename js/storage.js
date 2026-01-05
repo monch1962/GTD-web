@@ -2,26 +2,18 @@
  * Storage Layer - Handles localStorage and remote-storage integration
  */
 
-import { RemoteStorage } from 'remote-storage';
-
 export class Storage {
     constructor(userId = null) {
         this.userId = userId || this.getUserId();
         this.remoteStorage = null;
-        this.syncEnabled = true;
+        this.syncEnabled = false; // Disabled for now
         this.listeners = new Map();
     }
 
     async init() {
-        // Initialize remote-storage with user ID
-        this.remoteStorage = new RemoteStorage({
-            userId: this.userId,
-            instanceId: 'gtd-web-app'
-        });
-
-        // Load initial data from remote storage
-        await this.syncFromRemote();
-
+        // Remote storage temporarily disabled due to ES module compatibility issues
+        // TODO: Implement cloud sync using a browser-compatible solution
+        console.log('Storage initialized with localStorage only');
         return this;
     }
 
