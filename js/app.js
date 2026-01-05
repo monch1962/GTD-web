@@ -5,6 +5,8 @@
 
 import { Task, Project, Reference } from './models.js';
 import { Storage } from './storage.js';
+import { ElementIds, StorageKeys, TaskStatus, Views } from './constants.js';
+import { getElement, setTextContent, escapeHtml } from './dom-utils.js';
 
 class GTDApp {
     constructor() {
@@ -23,69 +25,46 @@ class GTDApp {
 
     async init() {
         try {
-            console.log('Step 1: Initializing storage...');
-            // Initialize storage
-            await this.storage.init();
-            console.log('Storage initialized');
-
-            console.log('Step 2: Loading data...');
-            // Load data
+            await this.initializeStorage();
             await this.loadData();
-            console.log('Data loaded:', this.tasks.length, 'tasks,', this.projects.length, 'projects');
-
-            console.log('Step 3: Setting up event listeners...');
-            // Setup event listeners
             this.setupEventListeners();
-
-            console.log('Step 4: Updating user ID display...');
-            // Display user ID
-            const userIdElement = document.getElementById('user-id');
-            if (userIdElement && this.storage.userId) {
-                userIdElement.textContent = this.storage.userId.substr(0, 12) + '...';
-            }
-
-            console.log('Step 5: Rendering custom tags...');
-            // Render custom tags
-            try {
-                this.renderCustomContexts();
-            } catch (tagError) {
-                console.warn('Custom tags rendering failed:', tagError);
-            }
-
-            console.log('Step 6: Checking waiting tasks dependencies...');
-            // Check if any waiting tasks should be unblocked
-            try {
-                await this.checkWaitingTasksDependencies();
-            } catch (depError) {
-                console.warn('Dependency check failed:', depError);
-            }
-
-            console.log('Step 7: Rendering initial view...');
-            // Render initial view
+            this.displayUserId();
+            this.initializeCustomContexts();
+            await this.checkWaitingTasksDependencies();
             this.renderView();
-
-            console.log('Step 8: Updating counts...');
-            // Update counts
             this.updateCounts();
-
-            console.log('Step 9: Rendering projects dropdown...');
-            // Render projects dropdown
             this.renderProjectsDropdown();
-
-            console.log('Step 9: Updating context filter...');
-            // Update context filter
             this.updateContextFilter();
-
-            console.log('GTD Web initialized successfully');
         } catch (error) {
-            console.error('Error initializing GTD Web:', error);
-            console.error('Error stack:', error.stack);
-            // Still try to render something even if init failed
-            try {
-                this.renderView();
-            } catch (renderError) {
-                console.error('Error rendering view:', renderError);
-            }
+            this.handleInitializationError(error);
+        }
+    }
+
+    async initializeStorage() {
+        await this.storage.init();
+    }
+
+    displayUserId() {
+        const userIdElement = document.getElementById(ElementIds.userId);
+        if (userIdElement && this.storage.userId) {
+            userIdElement.textContent = this.storage.userId.substr(0, 12) + '...';
+        }
+    }
+
+    initializeCustomContexts() {
+        try {
+            this.renderCustomContexts();
+        } catch (error) {
+            console.warn('Failed to render custom contexts:', error);
+        }
+    }
+
+    handleInitializationError(error) {
+        console.error('Error initializing GTD Web:', error);
+        try {
+            this.renderView();
+        } catch (renderError) {
+            console.error('Error rendering view after initialization failure:', renderError);
         }
     }
 
@@ -100,7 +79,16 @@ class GTDApp {
     }
 
     setupEventListeners() {
-        // Navigation
+        this.setupNavigationListeners();
+        this.setupProjectsDropdown();
+        this.setupQuickAdd();
+        this.setupFormListeners();
+        this.setupModalListeners();
+        this.setupFilterListeners();
+        this.setupSyncButton();
+    }
+
+    setupNavigationListeners() {
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -108,114 +96,107 @@ class GTDApp {
                 this.switchView(view);
             });
         });
+    }
 
-        // Projects dropdown toggle
+    setupProjectsDropdown() {
         const projectsToggle = document.querySelector('.projects-dropdown-toggle');
-        if (projectsToggle) {
-            projectsToggle.addEventListener('click', (e) => {
-                e.preventDefault();
-                const dropdown = document.getElementById('projects-dropdown');
-                const isExpanded = projectsToggle.classList.contains('expanded');
+        if (!projectsToggle) return;
 
-                if (isExpanded) {
-                    projectsToggle.classList.remove('expanded');
-                    dropdown.classList.remove('expanded');
-                } else {
-                    projectsToggle.classList.add('expanded');
-                    dropdown.classList.add('expanded');
-                }
-            });
-        }
+        projectsToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            const dropdown = document.getElementById('projects-dropdown');
+            const isExpanded = projectsToggle.classList.contains('expanded');
 
-        // Quick add
+            if (isExpanded) {
+                projectsToggle.classList.remove('expanded');
+                dropdown.classList.remove('expanded');
+            } else {
+                projectsToggle.classList.add('expanded');
+                dropdown.classList.add('expanded');
+            }
+        });
+    }
+
+    setupQuickAdd() {
         const quickAddInput = document.getElementById('quick-add-input');
+        if (!quickAddInput) return;
+
         quickAddInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && quickAddInput.value.trim()) {
                 this.quickAddTask(quickAddInput.value.trim());
                 quickAddInput.value = '';
             }
         });
+    }
 
-        // Task form
-        document.getElementById('task-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.saveTaskFromForm();
-        });
-
-        // Project form
-        document.getElementById('project-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.saveProjectFromForm();
-        });
-
-        // Modal close buttons
-        document.getElementById('close-modal').addEventListener('click', () => {
-            this.closeTaskModal();
-        });
-
-        document.getElementById('cancel-modal').addEventListener('click', () => {
-            this.closeTaskModal();
-        });
-
-        document.getElementById('close-project-modal').addEventListener('click', () => {
-            this.closeProjectModal();
-        });
-
-        document.getElementById('cancel-project-modal').addEventListener('click', () => {
-            this.closeProjectModal();
-        });
-
-        document.getElementById('close-gantt-modal').addEventListener('click', () => {
-            this.closeGanttModal();
-        });
-
-        // Close modal on background click
-        document.getElementById('task-modal').addEventListener('click', (e) => {
-            if (e.target.id === 'task-modal') {
-                this.closeTaskModal();
-            }
-        });
-
-        document.getElementById('project-modal').addEventListener('click', (e) => {
-            if (e.target.id === 'project-modal') {
-                this.closeProjectModal();
-            }
-        });
-
-        document.getElementById('gantt-modal').addEventListener('click', (e) => {
-            if (e.target.id === 'gantt-modal') {
-                this.closeGanttModal();
-            }
-        });
-
-        // Filters
-        // Filters - only add listeners if elements exist
-        const contextFilter = document.getElementById('context-filter');
-        if (contextFilter) {
-            contextFilter.addEventListener('change', (e) => {
-                this.filters.context = e.target.value;
-                this.renderView();
+    setupFormListeners() {
+        const taskForm = document.getElementById('task-form');
+        if (taskForm) {
+            taskForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.saveTaskFromForm();
             });
         }
 
-        const energyFilter = document.getElementById('energy-filter');
-        if (energyFilter) {
-            energyFilter.addEventListener('change', (e) => {
-                this.filters.energy = e.target.value;
-                this.renderView();
+        const projectForm = document.getElementById('project-form');
+        if (projectForm) {
+            projectForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.saveProjectFromForm();
             });
         }
+    }
 
-        const timeFilter = document.getElementById('time-filter');
-        if (timeFilter) {
-            timeFilter.addEventListener('change', (e) => {
-                this.filters.time = e.target.value;
-                this.renderView();
+    setupModalListeners() {
+        // Task modal close buttons
+        this.setupModalCloseButtons('task-modal', ['close-modal', 'cancel-modal'], () => this.closeTaskModal());
+        // Project modal close buttons
+        this.setupModalCloseButtons('project-modal', ['close-project-modal', 'cancel-project-modal'], () => this.closeProjectModal());
+        // Gantt modal close button
+        this.setupModalCloseButtons('gantt-modal', ['close-gantt-modal'], () => this.closeGanttModal());
+    }
+
+    setupModalCloseButtons(modalId, buttonIds, closeHandler) {
+        // Setup button click handlers
+        buttonIds.forEach(buttonId => {
+            const button = document.getElementById(buttonId);
+            if (button) {
+                button.addEventListener('click', closeHandler);
+            }
+        });
+
+        // Setup background click handler
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target.id === modalId) {
+                    closeHandler();
+                }
             });
         }
+    }
 
-        // Sync button
-        document.getElementById('sync-status').addEventListener('click', async () => {
+    setupFilterListeners() {
+        this.setupFilter('context-filter', 'context');
+        this.setupFilter('energy-filter', 'energy');
+        this.setupFilter('time-filter', 'time');
+    }
+
+    setupFilter(elementId, filterKey) {
+        const filter = document.getElementById(elementId);
+        if (!filter) return;
+
+        filter.addEventListener('change', (e) => {
+            this.filters[filterKey] = e.target.value;
+            this.renderView();
+        });
+    }
+
+    setupSyncButton() {
+        const syncButton = document.getElementById('sync-status');
+        if (!syncButton) return;
+
+        syncButton.addEventListener('click', async () => {
             await this.storage.sync();
             await this.loadData();
             this.renderView();
@@ -524,7 +505,7 @@ class GTDApp {
                 <button class="btn btn-secondary" id="back-to-projects" style="margin-right: 0.5rem;">
                     <i class="fas fa-arrow-left"></i> Back
                 </button>
-                ${this.escapeHtml(project.title)} - Tasks
+                ${escapeHtml(project.title)} - Tasks
                 <button class="btn btn-primary" id="show-gantt-chart" style="margin-left: 1rem;">
                     <i class="fas fa-chart-bar"></i> Gantt Chart
                 </button>
@@ -682,14 +663,14 @@ class GTDApp {
 
         // Show waiting description if present (only for waiting status)
         if (task.status === 'waiting' && task.waitingForDescription) {
-            parts.push(`<i class="fas fa-hourglass-half"></i> Waiting: ${this.escapeHtml(task.waitingForDescription)}`);
+            parts.push(`<i class="fas fa-hourglass-half"></i> Waiting: ${escapeHtml(task.waitingForDescription)}`);
         }
 
         // Show dependencies for any task that has them
         if (task.waitingForTaskIds && task.waitingForTaskIds.length > 0) {
             const pendingDeps = task.getPendingDependencies(this.tasks);
             if (pendingDeps.length > 0) {
-                const depNames = pendingDeps.map(t => this.escapeHtml(t.title)).join(', ');
+                const depNames = pendingDeps.map(t => escapeHtml(t.title)).join(', ');
                 parts.push(`<i class="fas fa-link"></i> Blocked by: ${depNames}`);
             } else {
                 // Dependencies met - show indicator
@@ -710,10 +691,10 @@ class GTDApp {
             ${dragHandle.outerHTML}
             <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>
             <div class="task-content">
-                <div class="task-title">${this.escapeHtml(task.title)}</div>
-                ${task.description ? `<div class="task-description">${this.escapeHtml(task.description)}</div>` : ''}
+                <div class="task-title">${escapeHtml(task.title)}</div>
+                ${task.description ? `<div class="task-description">${escapeHtml(task.description)}</div>` : ''}
                 <div class="task-meta">
-                    ${task.contexts && task.contexts.length > 0 ? task.contexts.map(context => `<span class="task-context">${this.escapeHtml(context)}</span>`).join('') : ''}
+                    ${task.contexts && task.contexts.length > 0 ? task.contexts.map(context => `<span class="task-context">${escapeHtml(context)}</span>`).join('') : ''}
                     ${task.energy ? `<span class="task-energy"><i class="fas fa-bolt"></i> ${task.energy}</span>` : ''}
                     ${task.time ? `<span class="task-time"><i class="fas fa-clock"></i> ${task.time}m</span>` : ''}
                     ${dueDateDisplay}
@@ -840,7 +821,7 @@ class GTDApp {
         const tasksPreview = upcomingTasks.map(task =>
             `<div class="project-task-preview">
                 <i class="far fa-circle"></i>
-                <span>${this.escapeHtml(task.title)}</span>
+                <span>${escapeHtml(task.title)}</span>
             </div>`
         ).join('');
 
@@ -849,10 +830,10 @@ class GTDApp {
                 <div class="project-drag-handle">
                     <i class="fas fa-grip-vertical"></i>
                 </div>
-                <div class="project-title">${this.escapeHtml(project.title)}</div>
+                <div class="project-title">${escapeHtml(project.title)}</div>
                 <span class="project-status ${project.status}">${project.status}</span>
             </div>
-            ${project.description ? `<div class="project-description">${this.escapeHtml(project.description)}</div>` : ''}
+            ${project.description ? `<div class="project-description">${escapeHtml(project.description)}</div>` : ''}
             ${taskCount > 0 ? `
                 <div class="project-tasks">
                     ${tasksPreview}
@@ -861,7 +842,7 @@ class GTDApp {
             ` : ''}
             <div class="project-meta">
                 <div class="project-tags">
-                    ${project.contexts ? project.contexts.map(context => `<span class="task-context">${this.escapeHtml(context)}</span>`).join('') : ''}
+                    ${project.contexts ? project.contexts.map(context => `<span class="task-context">${escapeHtml(context)}</span>`).join('') : ''}
                 </div>
                 <div class="project-actions">
                     <button class="btn-view-tasks" title="View tasks">
@@ -1031,15 +1012,12 @@ class GTDApp {
                     task.waitingForDescription = ''; // Clear description
                     task.updatedAt = new Date().toISOString();
                     movedCount++;
-                    console.log(`Task "${task.title}" moved from Waiting For to Next Actions - ${reason}!`);
                 }
             }
         });
 
         if (movedCount > 0) {
             await this.saveTasks();
-            // Optional: Show notification to user
-            console.log(`${movedCount} task(s) moved from Waiting For to Next Actions`);
         }
     }
 
@@ -1468,7 +1446,7 @@ class GTDApp {
             `;
 
             // Task title (truncate if needed)
-            const title = this.escapeHtml(task.title);
+            const title = escapeHtml(task.title);
             const truncatedTitle = title.length > 25 ? title.substring(0, 25) + '...' : title;
 
             // Completion indicator
@@ -1735,7 +1713,7 @@ class GTDApp {
             item.dataset.projectId = project.id;
             item.innerHTML = `
                 <i class="fas fa-folder"></i>
-                <span>${this.escapeHtml(project.title)}</span>
+                <span>${escapeHtml(project.title)}</span>
                 <span class="task-count">${taskCount}</span>
             `;
 
@@ -1810,18 +1788,11 @@ class GTDApp {
         this.updateCounts();
         this.renderProjectsDropdown();
 
-        console.log(`Task "${task.title}" assigned to project ${this.getProjectTitle(projectId)}`);
     }
 
     getProjectTitle(projectId) {
         const project = this.projects.find(p => p.id === projectId);
         return project ? project.title : '';
-    }
-
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
     }
 
     // Context Modal Methods
@@ -1880,7 +1851,6 @@ class GTDApp {
 
         // Close modal and show success
         this.closeTagModal();
-        console.log('Context created successfully:', tagName);
     }
 
     async deleteTag(tagName) {
@@ -1891,8 +1861,6 @@ class GTDApp {
         // Count affected items
         const affectedTasks = this.tasks.filter(task => task.contexts && task.contexts.includes(tagName));
         const affectedProjects = this.projects.filter(project => project.contexts && project.contexts.includes(tagName));
-
-        console.log(`Deleting context "${tagName}" from ${affectedTasks.length} tasks and ${affectedProjects.length} projects`);
 
         // Remove context from all tasks
         this.tasks.forEach(task => {
@@ -1922,8 +1890,6 @@ class GTDApp {
         // Re-render
         this.renderCustomContexts();
         this.renderView();
-
-        console.log(`Context "${tagName}" deleted successfully`);
     }
 
     async updateTaskPositions() {
@@ -1944,7 +1910,6 @@ class GTDApp {
 
         // Save the updated positions
         await this.saveTasks();
-        console.log('Task positions updated');
     }
 
     async updateProjectPositions() {
@@ -1967,7 +1932,6 @@ class GTDApp {
         await this.saveProjects();
         // Update dropdown to reflect new order
         this.renderProjectsDropdown();
-        console.log('Project positions updated');
     }
 }
 
