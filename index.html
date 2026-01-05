@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GTD Web - Getting Things Done</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1><i class="fas fa-check-circle"></i> GTD Web</h1>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <a href="#" class="nav-item active" data-view="inbox">
+                        <i class="fas fa-inbox"></i>
+                        <span>Inbox</span>
+                        <span class="count" id="inbox-count">0</span>
+                    </a>
+                    <a href="#" class="nav-item" data-view="next">
+                        <i class="fas fa-bolt"></i>
+                        <span>Next Actions</span>
+                        <span class="count" id="next-count">0</span>
+                    </a>
+                    <a href="#" class="nav-item" data-view="waiting">
+                        <i class="fas fa-clock"></i>
+                        <span>Waiting For</span>
+                        <span class="count" id="waiting-count">0</span>
+                    </a>
+                    <a href="#" class="nav-item" data-view="someday">
+                        <i class="fas fa-cloud"></i>
+                        <span>Someday/Maybe</span>
+                        <span class="count" id="someday-count">0</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <a href="#" class="nav-item" data-view="projects">
+                        <i class="fas fa-folder"></i>
+                        <span>Projects</span>
+                        <span class="count" id="projects-count">0</span>
+                    </a>
+                    <a href="#" class="nav-item" data-view="reference">
+                        <i class="fas fa-book"></i>
+                        <span>Reference</span>
+                        <span class="count" id="reference-count">0</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <a href="#" class="nav-item" data-view="all">
+                        <i class="fas fa-list"></i>
+                        <span>All Items</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info" id="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="user-id">Loading...</span>
+                </div>
+                <button id="sync-status" class="sync-button">
+                    <i class="fas fa-sync"></i>
+                    <span class="sync-text">Synced</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h2 id="view-title">Inbox</h2>
+                <div class="filters">
+                    <select id="tag-filter" class="filter-select">
+                        <option value="">All Tags</option>
+                    </select>
+                    <select id="energy-filter" class="filter-select">
+                        <option value="">Any Energy</option>
+                        <option value="high">High Energy</option>
+                        <option value="medium">Medium Energy</option>
+                        <option value="low">Low Energy</option>
+                    </select>
+                    <select id="time-filter" class="filter-select">
+                        <option value="">Any Time</option>
+                        <option value="5">5 minutes</option>
+                        <option value="15">15 minutes</option>
+                        <option value="30">30 minutes</option>
+                        <option value="60">1 hour</option>
+                        <option value="120">2+ hours</option>
+                    </select>
+                </div>
+            </header>
+
+            <div class="quick-add">
+                <input type="text" id="quick-add-input" placeholder="Quick add... (Press Enter to add)">
+            </div>
+
+            <div id="tasks-container" class="tasks-container">
+                <!-- Tasks will be rendered here -->
+            </div>
+
+            <div id="projects-container" class="projects-container" style="display: none;">
+                <!-- Projects will be rendered here -->
+            </div>
+
+            <div id="reference-container" class="reference-container" style="display: none;">
+                <!-- Reference items will be rendered here -->
+            </div>
+        </main>
+
+        <!-- Task/Edit Modal -->
+        <div id="task-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="modal-title">Add Task</h3>
+                    <button class="close-button" id="close-modal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form id="task-form" class="task-form">
+                    <input type="hidden" id="task-id">
+
+                    <div class="form-group">
+                        <label for="task-title">Title *</label>
+                        <input type="text" id="task-title" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="task-description">Description</label>
+                        <textarea id="task-description" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="task-type">Type</label>
+                            <select id="task-type">
+                                <option value="task">Task</option>
+                                <option value="project">Project</option>
+                                <option value="reference">Reference</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="task-status">Status</label>
+                            <select id="task-status">
+                                <option value="inbox">Inbox</option>
+                                <option value="next">Next Action</option>
+                                <option value="waiting">Waiting For</option>
+                                <option value="someday">Someday/Maybe</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="task-energy">Energy Required</label>
+                            <select id="task-energy">
+                                <option value="">None</option>
+                                <option value="high">High</option>
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="task-time">Time Required (min)</label>
+                            <input type="number" id="task-time" min="0" step="5" placeholder="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="task-project">Project</label>
+                        <select id="task-project">
+                            <option value="">No Project</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="task-tags">Tags (comma separated)</label>
+                        <input type="text" id="task-tags" placeholder="@home, @computer, important">
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="cancel-modal">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Project Modal -->
+        <div id="project-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="project-modal-title">Add Project</h3>
+                    <button class="close-button" id="close-project-modal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form id="project-form" class="task-form">
+                    <input type="hidden" id="project-id">
+
+                    <div class="form-group">
+                        <label for="project-title">Title *</label>
+                        <input type="text" id="project-title" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="project-description">Description</label>
+                        <textarea id="project-description" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="project-status">Status</label>
+                        <select id="project-status">
+                            <option value="active">Active</option>
+                            <option value="someday">Someday/Maybe</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="project-tags">Tags (comma separated)</label>
+                        <input type="text" id="project-tags" placeholder="work, personal">
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="cancel-project-modal">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
