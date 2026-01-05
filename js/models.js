@@ -12,7 +12,7 @@ export class Task {
         this.energy = data.energy || ''; // high, medium, low
         this.time = data.time || 0; // minutes
         this.projectId = data.projectId || null;
-        this.tags = data.tags || [];
+        this.contexts = data.contexts || data.tags || []; // Support migration from old 'tags'
         this.completed = data.completed || false;
         this.completedAt = data.completedAt || null;
         this.dueDate = data.dueDate || null; // YYYY-MM-DD format
@@ -38,7 +38,7 @@ export class Task {
             energy: this.energy,
             time: this.time,
             projectId: this.projectId,
-            tags: this.tags,
+            contexts: this.contexts,
             completed: this.completed,
             completedAt: this.completedAt,
             dueDate: this.dueDate,
@@ -155,7 +155,7 @@ export class Project {
         this.title = data.title || '';
         this.description = data.description || '';
         this.status = data.status || 'active'; // active, someday, completed
-        this.tags = data.tags || [];
+        this.contexts = data.contexts || data.tags || []; // Support migration from old 'tags'
         this.position = data.position || 0; // Position for custom ordering
         this.createdAt = data.createdAt || new Date().toISOString();
         this.updatedAt = data.updatedAt || new Date().toISOString();
@@ -171,7 +171,7 @@ export class Project {
             title: this.title,
             description: this.description,
             status: this.status,
-            tags: this.tags,
+            contexts: this.contexts,
             position: this.position,
             createdAt: this.createdAt,
             updatedAt: this.updatedAt
@@ -188,7 +188,7 @@ export class Reference {
         this.id = data.id || this.generateId();
         this.title = data.title || '';
         this.description = data.description || '';
-        this.tags = data.tags || [];
+        this.contexts = data.contexts || data.tags || []; // Support migration from old 'tags'
         this.url = data.url || '';
         this.createdAt = data.createdAt || new Date().toISOString();
         this.updatedAt = data.updatedAt || new Date().toISOString();
@@ -203,7 +203,7 @@ export class Reference {
             id: this.id,
             title: this.title,
             description: this.description,
-            tags: this.tags,
+            contexts: this.contexts,
             url: this.url,
             createdAt: this.createdAt,
             updatedAt: this.updatedAt

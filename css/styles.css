@@ -292,7 +292,7 @@ body {
     border-color: var(--primary-color);
 }
 
-.quick-tags {
+.quick-contexts {
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
@@ -300,14 +300,14 @@ body {
     flex-wrap: wrap;
 }
 
-.quick-tag-label {
+.quick-context-label {
     font-size: 0.875rem;
     color: var(--text-secondary);
     font-weight: 500;
 }
 
-.quick-tag,
-.quick-tag-modal {
+.quick-context,
+.quick-context-modal {
     background-color: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
@@ -318,34 +318,34 @@ body {
     color: var(--text-primary);
 }
 
-.quick-tag:hover,
-.quick-tag-modal:hover {
+.quick-context:hover,
+.quick-context-modal:hover {
     background-color: var(--primary-color);
     color: white;
     border-color: var(--primary-color);
 }
 
-.quick-tag.custom-tag,
-.quick-tag-modal.custom-tag-modal {
+.quick-context.custom-context,
+.quick-context-modal.custom-context-modal {
     background-color: #e8f4f8;
     border-color: #4a90d9;
     color: #2c5f8d;
 }
 
-.quick-tag.custom-tag:hover,
-.quick-tag-modal.custom-tag-modal:hover {
+.quick-context.custom-context:hover,
+.quick-context-modal.custom-context-modal:hover {
     background-color: #4a90d9;
     color: white;
 }
 
-.quick-tags-modal {
+.quick-contexts-modal {
     display: flex;
     gap: var(--spacing-xs);
     margin-top: var(--spacing-xs);
     flex-wrap: wrap;
 }
 
-.btn-create-tag {
+.btn-create-context {
     background-color: var(--success-color);
     border: none;
     border-radius: var(--radius-sm);
@@ -360,13 +360,13 @@ body {
     font-weight: 500;
 }
 
-.btn-create-tag:hover {
+.btn-create-context:hover {
     background-color: #4cae4c;
     transform: translateY(-1px);
     box-shadow: var(--shadow-sm);
 }
 
-.custom-tag-delete {
+.custom-context-delete {
     margin-left: 4px;
     padding: 0 4px;
     background: none;
@@ -379,7 +379,7 @@ body {
     transition: all 0.2s;
 }
 
-.custom-tag-delete:hover {
+.custom-context-delete:hover {
     background-color: var(--danger-color);
     color: white;
 }
@@ -523,7 +523,7 @@ body {
     color: var(--text-secondary);
 }
 
-.task-tag {
+.task-context {
     background-color: var(--bg-secondary);
     padding: 2px 8px;
     border-radius: 12px;
@@ -688,7 +688,7 @@ body {
     color: var(--text-secondary);
 }
 
-.project-tags {
+.project-contexts {
     display: flex;
     gap: var(--spacing-xs);
     flex-wrap: wrap;

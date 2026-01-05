@@ -14,7 +14,7 @@ class GTDApp {
         this.currentView = 'inbox';
         this.currentProjectId = null;
         this.filters = {
-            tag: '',
+            context: '',
             energy: '',
             time: ''
         };
@@ -47,7 +47,7 @@ class GTDApp {
             console.log('Step 5: Rendering custom tags...');
             // Render custom tags
             try {
-                this.renderCustomTags();
+                this.renderCustomContexts();
             } catch (tagError) {
                 console.warn('Custom tags rendering failed:', tagError);
             }
@@ -72,9 +72,9 @@ class GTDApp {
             // Render projects dropdown
             this.renderProjectsDropdown();
 
-            console.log('Step 9: Updating tag filter...');
-            // Update tag filter
-            this.updateTagFilter();
+            console.log('Step 9: Updating context filter...');
+            // Update context filter
+            this.updateContextFilter();
 
             console.log('GTD Web initialized successfully');
         } catch (error) {
@@ -189,8 +189,8 @@ class GTDApp {
         });
 
         // Filters
-        document.getElementById('tag-filter').addEventListener('change', (e) => {
-            this.filters.tag = e.target.value;
+        document.getElementById('context-filter').addEventListener('change', (e) => {
+            this.filters.context = e.target.value;
             this.renderView();
         });
 
@@ -213,61 +213,61 @@ class GTDApp {
         });
 
         // Quick tags in quick-add
-        document.querySelectorAll('.quick-tag').forEach(btn => {
+        document.querySelectorAll('.quick-context').forEach(btn => {
             btn.addEventListener('click', () => {
-                const tag = btn.dataset.tag;
+                const context = btn.dataset.context;
                 const quickAddInput = document.getElementById('quick-add-input');
                 if (quickAddInput.value) {
-                    quickAddInput.value += ` ${tag}`;
+                    quickAddInput.value += ` ${context}`;
                 } else {
-                    quickAddInput.value = tag;
+                    quickAddInput.value = context;
                 }
                 quickAddInput.focus();
             });
         });
 
         // Quick tags in modal
-        document.querySelectorAll('.quick-tag-modal').forEach(btn => {
+        document.querySelectorAll('.quick-context-modal').forEach(btn => {
             btn.addEventListener('click', () => {
-                const tag = btn.dataset.tag;
+                const context = btn.dataset.context;
                 const tagsInput = document.getElementById('task-tags');
                 const currentValue = tagsInput.value.trim();
 
-                // Check if tag already exists
+                // Check if context already exists
                 const tags = currentValue ? currentValue.split(',').map(t => t.trim()) : [];
-                if (!tags.includes(tag)) {
+                if (!tags.includes(context)) {
                     if (currentValue) {
-                        tagsInput.value = `${currentValue}, ${tag}`;
+                        tagsInput.value = `${currentValue}, ${context}`;
                     } else {
-                        tagsInput.value = tag;
+                        tagsInput.value = context;
                     }
                 }
             });
         });
 
-        // Add custom tag button handler
+        // Add custom context button handler
         this.setupCustomTagHandler();
 
-        // Tag modal
-        document.getElementById('btn-create-tag').addEventListener('click', () => {
+        // Context modal
+        document.getElementById('btn-create-context').addEventListener('click', () => {
             this.openTagModal();
         });
 
-        document.getElementById('tag-form').addEventListener('submit', (e) => {
+        document.getElementById('context-form').addEventListener('submit', (e) => {
             e.preventDefault();
             this.saveTagFromForm();
         });
 
-        document.getElementById('close-tag-modal').addEventListener('click', () => {
+        document.getElementById('close-context-modal').addEventListener('click', () => {
             this.closeTagModal();
         });
 
-        document.getElementById('cancel-tag-modal').addEventListener('click', () => {
+        document.getElementById('cancel-context-modal').addEventListener('click', () => {
             this.closeTagModal();
         });
 
-        document.getElementById('tag-modal').addEventListener('click', (e) => {
-            if (e.target.id === 'tag-modal') {
+        document.getElementById('context-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'context-modal') {
                 this.closeTagModal();
             }
         });
@@ -291,30 +291,30 @@ class GTDApp {
 
     setupCustomTagHandler() {
         // Get or create custom tags from localStorage
-        const getCustomTags = () => {
-            const tags = localStorage.getItem('gtd_custom_tags');
+        const getCustomContexts = () => {
+            const tags = localStorage.getItem('gtd_custom_contexts');
             return tags ? JSON.parse(tags) : [];
         };
 
-        const defaultTags = ['@home', '@work', '@personal', '@computer', '@phone'];
+        const defaultContexts = ['@home', '@work', '@personal', '@computer', '@phone'];
 
-        const saveCustomTag = (tag) => {
-            const tags = getCustomTags();
-            const allTags = [...defaultTags, ...tags];
+        const saveCustomTag = (context) => {
+            const tags = getCustomContexts();
+            const allContexts = [...defaultContexts, ...contexts];
 
             // Check for duplicates (case-insensitive)
-            const isDuplicate = allTags.some(existingTag =>
-                existingTag.toLowerCase() === tag.toLowerCase()
+            const isDuplicate = allContexts.some(existingTag =>
+                existingTag.toLowerCase() === context.toLowerCase()
             );
 
-            if (!isDuplicate && !tags.includes(tag)) {
-                tags.push(tag);
-                localStorage.setItem('gtd_custom_tags', JSON.stringify(tags));
-                this.renderCustomTags();
+            if (!isDuplicate && !tags.includes(context)) {
+                tags.push(context);
+                localStorage.setItem('gtd_custom_contexts', JSON.stringify(tags));
+                this.renderCustomContexts();
             }
         };
 
-        // Monitor tag input for new tags
+        // Monitor context input for new tags
         const tagsInput = document.getElementById('task-tags');
         let lastValue = '';
 
@@ -325,9 +325,9 @@ class GTDApp {
                 const tags = currentValue.split(',').map(t => t.trim()).filter(t => t);
 
                 // Save any new custom tags (excluding default @ tags)
-                tags.forEach(tag => {
-                    if (tag && !tag.startsWith('@') && !getCustomTags().includes(tag)) {
-                        saveCustomTag(tag);
+                tags.forEach(context => {
+                    if (context && !context.startsWith('@') && !getCustomContexts().includes(context)) {
+                        saveCustomTag(context);
                     }
                 });
 
@@ -336,109 +336,109 @@ class GTDApp {
         });
     }
 
-    renderCustomTags() {
-        const customTags = JSON.parse(localStorage.getItem('gtd_custom_tags') || '[]');
+    renderCustomContexts() {
+        const customContexts = JSON.parse(localStorage.getItem('gtd_custom_contexts') || '[]');
 
         // Quick-add section custom tags
-        const quickTagsContainer = document.querySelector('.quick-tags');
-        if (quickTagsContainer) {
+        const quickContextsContainer = document.querySelector('.quick-contexts');
+        if (quickContextsContainer) {
             // Remove existing custom tags
-            quickTagsContainer.querySelectorAll('.custom-tag').forEach(el => el.remove());
+            quickContextsContainer.querySelectorAll('.custom-context').forEach(el => el.remove());
 
             // Add custom tags with delete button
-            customTags.forEach(tag => {
+            customContexts.forEach(context => {
                 const wrapper = document.createElement('div');
-                wrapper.className = 'custom-tag-wrapper';
+                wrapper.className = 'custom-context-wrapper';
                 wrapper.style.display = 'inline-flex';
                 wrapper.style.alignItems = 'center';
                 wrapper.style.gap = '4px';
 
                 const btn = document.createElement('button');
-                btn.className = 'quick-tag custom-tag';
-                btn.dataset.tag = tag;
+                btn.className = 'quick-context custom-context';
+                btn.dataset.context = context;
                 btn.addEventListener('click', (e) => {
                     // Don't trigger if clicking the delete button
-                    if (e.target.classList.contains('custom-tag-delete')) return;
+                    if (e.target.classList.contains('custom-context-delete')) return;
 
                     const quickAddInput = document.getElementById('quick-add-input');
                     if (quickAddInput.value) {
-                        quickAddInput.value += ` ${tag}`;
+                        quickAddInput.value += ` ${context}`;
                     } else {
-                        quickAddInput.value = tag;
+                        quickAddInput.value = context;
                     }
                     quickAddInput.focus();
                 });
 
                 const label = document.createElement('span');
-                label.textContent = tag;
+                label.textContent = context;
                 btn.appendChild(label);
 
                 // Add delete button
                 const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'custom-tag-delete';
+                deleteBtn.className = 'custom-context-delete';
                 deleteBtn.innerHTML = '&times;';
-                deleteBtn.title = `Delete tag "${tag}"`;
+                deleteBtn.title = `Delete context "${context}"`;
                 deleteBtn.addEventListener('click', async (e) => {
                     e.stopPropagation();
-                    await this.deleteTag(tag);
+                    await this.deleteTag(context);
                 });
 
                 btn.appendChild(deleteBtn);
                 wrapper.appendChild(btn);
-                quickTagsContainer.appendChild(wrapper);
+                quickContextsContainer.appendChild(wrapper);
             });
         }
 
         // Modal custom tags
-        const modalTagsContainer = document.querySelector('.quick-tags-modal');
-        if (modalTagsContainer) {
+        const modalContextsContainer = document.querySelector('.quick-contexts-modal');
+        if (modalContextsContainer) {
             // Remove existing custom tags
-            modalTagsContainer.querySelectorAll('.custom-tag-modal').forEach(el => el.remove());
+            modalContextsContainer.querySelectorAll('.custom-context-modal').forEach(el => el.remove());
 
             // Add custom tags with delete button
-            customTags.forEach(tag => {
+            customContexts.forEach(context => {
                 const wrapper = document.createElement('div');
-                wrapper.className = 'custom-tag-wrapper';
+                wrapper.className = 'custom-context-wrapper';
                 wrapper.style.display = 'inline-flex';
                 wrapper.style.alignItems = 'center';
                 wrapper.style.gap = '4px';
 
                 const btn = document.createElement('button');
-                btn.className = 'quick-tag-modal custom-tag-modal';
-                btn.dataset.tag = tag;
+                btn.className = 'quick-context-modal custom-context-modal';
+                btn.dataset.context = context;
                 btn.addEventListener('click', (e) => {
                     // Don't trigger if clicking the delete button
-                    if (e.target.classList.contains('custom-tag-delete')) return;
+                    if (e.target.classList.contains('custom-context-delete')) return;
 
                     const tagsInput = document.getElementById('task-tags');
                     const currentValue = tagsInput.value.trim();
                     const tags = currentValue ? currentValue.split(',').map(t => t.trim()) : [];
-                    if (!tags.includes(tag)) {
+                    if (!tags.includes(context)) {
                         if (currentValue) {
-                            tagsInput.value = `${currentValue}, ${tag}`;
+                            tagsInput.value = `${currentValue}, ${context}`;
                         } else {
-                            tagsInput.value = tag;
+                            tagsInput.value = context;
                         }
                     }
                 });
 
                 const label = document.createElement('span');
-                label.textContent = tag;
+                label.textContent = context;
                 btn.appendChild(label);
 
                 // Add delete button
                 const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'custom-tag-delete';
+                deleteBtn.className = 'custom-context-delete';
                 deleteBtn.innerHTML = '&times;';
-                deleteBtn.title = `Delete tag "${tag}"`;
+                deleteBtn.title = `Delete context "${context}"`;
                 deleteBtn.addEventListener('click', async (e) => {
                     e.stopPropagation();
-                    await this.deleteTag(tag);
+                    await this.deleteTag(context);
                 });
 
                 btn.appendChild(deleteBtn);
                 wrapper.appendChild(btn);
-                modalTagsContainer.appendChild(wrapper);
+                modalContextsContainer.appendChild(wrapper);
             });
         }
     }
@@ -565,8 +565,8 @@ class GTDApp {
         }
 
         // Apply additional filters
-        if (this.filters.tag) {
-            filteredTasks = filteredTasks.filter(task => task.tags.includes(this.filters.tag));
+        if (this.filters.context) {
+            filteredTasks = filteredTasks.filter(task => task.contexts.includes(this.filters.context));
         }
 
         if (this.filters.energy) {
@@ -693,7 +693,7 @@ class GTDApp {
                 <div class="task-title">${this.escapeHtml(task.title)}</div>
                 ${task.description ? `<div class="task-description">${this.escapeHtml(task.description)}</div>` : ''}
                 <div class="task-meta">
-                    ${task.tags.length > 0 ? task.tags.map(tag => `<span class="task-tag">${this.escapeHtml(tag)}</span>`).join('') : ''}
+                    ${task.contexts.length > 0 ? task.contexts.map(context => `<span class="task-context">${this.escapeHtml(context)}</span>`).join('') : ''}
                     ${task.energy ? `<span class="task-energy"><i class="fas fa-bolt"></i> ${task.energy}</span>` : ''}
                     ${task.time ? `<span class="task-time"><i class="fas fa-clock"></i> ${task.time}m</span>` : ''}
                     ${dueDateDisplay}
@@ -781,8 +781,8 @@ class GTDApp {
         const container = document.getElementById('projects-container');
         let filteredProjects = this.projects;
 
-        if (this.filters.tag) {
-            filteredProjects = filteredProjects.filter(project => project.tags.includes(this.filters.tag));
+        if (this.filters.context) {
+            filteredProjects = filteredProjects.filter(project => project.contexts.includes(this.filters.context));
         }
 
         container.innerHTML = '';
@@ -841,7 +841,7 @@ class GTDApp {
             ` : ''}
             <div class="project-meta">
                 <div class="project-tags">
-                    ${project.tags.map(tag => `<span class="task-tag">${this.escapeHtml(tag)}</span>`).join('')}
+                    ${project.contexts.map(context => `<span class="task-context">${this.escapeHtml(context)}</span>`).join('')}
                 </div>
                 <div class="project-actions">
                     <button class="btn-view-tasks" title="View tasks">
@@ -954,7 +954,7 @@ class GTDApp {
         await this.saveTasks();
         this.renderView();
         this.updateCounts();
-        this.updateTagFilter();
+        this.updateContextFilter();
     }
 
     async toggleTaskComplete(taskId) {
@@ -1085,7 +1085,7 @@ class GTDApp {
             document.getElementById('task-due-date').value = task.dueDate || '';
             document.getElementById('task-defer-date').value = task.deferDate || '';
             document.getElementById('task-waiting-for-description').value = task.waitingForDescription || '';
-            document.getElementById('task-tags').value = task.tags.join(', ');
+            document.getElementById('task-tags').value = task.contexts.join(', ');
         } else {
             title.textContent = 'Add Task';
             document.getElementById('task-id').value = '';
@@ -1241,7 +1241,7 @@ class GTDApp {
         this.closeTaskModal();
         this.renderView();
         this.updateCounts();
-        this.updateTagFilter();
+        this.updateContextFilter();
     }
 
     openProjectModal(project = null, pendingTaskData = null) {
@@ -1260,7 +1260,7 @@ class GTDApp {
             document.getElementById('project-title').value = project.title;
             document.getElementById('project-description').value = project.description || '';
             document.getElementById('project-status').value = project.status || 'active';
-            document.getElementById('project-tags').value = project.tags.join(', ');
+            document.getElementById('project-tags').value = project.contexts.join(', ');
         } else {
             title.textContent = 'Add Project';
             document.getElementById('project-id').value = '';
@@ -1630,7 +1630,7 @@ class GTDApp {
         this.renderView();
         this.updateCounts();
         this.renderProjectsDropdown();
-        this.updateTagFilter();
+        this.updateContextFilter();
 
         // If we came from task modal, reopen it with the new project selected
         if (this.pendingTaskData) {
@@ -1650,7 +1650,7 @@ class GTDApp {
         document.getElementById('task-status').value = formData.status || 'inbox';
         document.getElementById('task-energy').value = formData.energy || '';
         document.getElementById('task-time').value = formData.time || '';
-        document.getElementById('task-tags').value = formData.tags || '';
+        document.getElementById('task-tags').value = formData.contexts || '';
         document.getElementById('task-due-date').value = formData.dueDate || '';
         document.getElementById('task-defer-date').value = formData.deferDate || '';
 
@@ -1756,27 +1756,27 @@ class GTDApp {
         document.getElementById('reference-count').textContent = this.tasks.filter(t => t.type === 'reference').length || '';
     }
 
-    updateTagFilter() {
-        const allTags = new Set();
+    updateContextFilter() {
+        const allContexts = new Set();
         this.tasks.forEach(task => {
-            task.tags.forEach(tag => allTags.add(tag));
+            task.contexts.forEach(context => allContexts.add(context));
         });
         this.projects.forEach(project => {
-            project.tags.forEach(tag => allTags.add(tag));
+            project.contexts.forEach(context => allContexts.add(context));
         });
 
-        const tagFilter = document.getElementById('tag-filter');
-        const currentValue = tagFilter.value;
-        tagFilter.innerHTML = '<option value="">All Tags</option>';
+        const contextFilter = document.getElementById('context-filter');
+        const currentValue = contextFilter.value;
+        contextFilter.innerHTML = '<option value="">All Contexts</option>';
 
-        Array.from(allTags).sort().forEach(tag => {
+        Array.from(allContexts).sort().forEach(context => {
             const option = document.createElement('option');
-            option.value = tag;
-            option.textContent = tag;
-            tagFilter.appendChild(option);
+            option.value = context;
+            option.textContent = context;
+            contextFilter.appendChild(option);
         });
 
-        tagFilter.value = currentValue;
+        contextFilter.value = currentValue;
     }
 
     renderProjectsDropdown() {
@@ -1895,11 +1895,11 @@ class GTDApp {
         return div.innerHTML;
     }
 
-    // Tag Modal Methods
+    // Context Modal Methods
     openTagModal() {
-        const modal = document.getElementById('tag-modal');
-        const form = document.getElementById('tag-form');
-        const errorDiv = document.getElementById('tag-error');
+        const modal = document.getElementById('context-modal');
+        const form = document.getElementById('context-form');
+        const errorDiv = document.getElementById('context-error');
 
         form.reset();
         errorDiv.style.display = 'none';
@@ -1907,94 +1907,94 @@ class GTDApp {
 
         // Focus on the input
         setTimeout(() => {
-            document.getElementById('tag-name').focus();
+            document.getElementById('context-name').focus();
         }, 100);
     }
 
     closeTagModal() {
-        document.getElementById('tag-modal').classList.remove('active');
-        document.getElementById('tag-error').style.display = 'none';
+        document.getElementById('context-modal').classList.remove('active');
+        document.getElementById('context-error').style.display = 'none';
     }
 
     saveTagFromForm() {
-        const tagName = document.getElementById('tag-name').value.trim();
-        const errorDiv = document.getElementById('tag-error');
+        const tagName = document.getElementById('context-name').value.trim();
+        const errorDiv = document.getElementById('context-error');
 
         if (!tagName) {
-            errorDiv.textContent = 'Tag name is required';
+            errorDiv.textContent = 'Context name is required';
             errorDiv.style.display = 'block';
             return;
         }
 
         // Get existing tags
-        const defaultTags = ['@home', '@work', '@personal', '@computer', '@phone'];
-        const customTags = JSON.parse(localStorage.getItem('gtd_custom_tags') || '[]');
-        const allTags = [...defaultTags, ...customTags];
+        const defaultContexts = ['@home', '@work', '@personal', '@computer', '@phone'];
+        const customContexts = JSON.parse(localStorage.getItem('gtd_custom_contexts') || '[]');
+        const allContexts = [...defaultContexts, ...customContexts];
 
         // Check for duplicates (case-insensitive)
-        const isDuplicate = allTags.some(existingTag =>
+        const isDuplicate = allContexts.some(existingTag =>
             existingTag.toLowerCase() === tagName.toLowerCase()
         );
 
         if (isDuplicate) {
-            errorDiv.textContent = `A tag with the name "${tagName}" already exists`;
+            errorDiv.textContent = `A context with the name "${tagName}" already exists`;
             errorDiv.style.display = 'block';
             return;
         }
 
-        // Save the new tag
-        customTags.push(tagName);
-        localStorage.setItem('gtd_custom_tags', JSON.stringify(customTags));
+        // Save the new context
+        customContexts.push(tagName);
+        localStorage.setItem('gtd_custom_contexts', JSON.stringify(customContexts));
 
         // Re-render custom tags
-        this.renderCustomTags();
+        this.renderCustomContexts();
 
         // Close modal and show success
         this.closeTagModal();
-        console.log('Tag created successfully:', tagName);
+        console.log('Context created successfully:', tagName);
     }
 
     async deleteTag(tagName) {
         // Confirm deletion
-        const confirmed = confirm(`Are you sure you want to delete the tag "${tagName}"?\n\nThis will remove the tag from all tasks and projects that use it.`);
+        const confirmed = confirm(`Are you sure you want to delete the context "${tagName}"?\n\nThis will remove the context from all tasks and projects that use it.`);
         if (!confirmed) return;
 
         // Count affected items
-        const affectedTasks = this.tasks.filter(task => task.tags.includes(tagName));
-        const affectedProjects = this.projects.filter(project => project.tags.includes(tagName));
+        const affectedTasks = this.tasks.filter(task => task.contexts.includes(tagName));
+        const affectedProjects = this.projects.filter(project => project.contexts.includes(tagName));
 
-        console.log(`Deleting tag "${tagName}" from ${affectedTasks.length} tasks and ${affectedProjects.length} projects`);
+        console.log(`Deleting context "${tagName}" from ${affectedTasks.length} tasks and ${affectedProjects.length} projects`);
 
-        // Remove tag from all tasks
+        // Remove context from all tasks
         this.tasks.forEach(task => {
-            if (task.tags.includes(tagName)) {
-                task.tags = task.tags.filter(t => t !== tagName);
+            if (task.contexts.includes(tagName)) {
+                task.contexts = task.contexts.filter(t => t !== tagName);
                 task.updatedAt = new Date().toISOString();
             }
         });
 
-        // Remove tag from all projects
+        // Remove context from all projects
         this.projects.forEach(project => {
-            if (project.tags.includes(tagName)) {
-                project.tags = project.tags.filter(t => t !== tagName);
+            if (project.contexts.includes(tagName)) {
+                project.contexts = project.contexts.filter(t => t !== tagName);
                 project.updatedAt = new Date().toISOString();
             }
         });
 
         // Remove from custom tags list
-        const customTags = JSON.parse(localStorage.getItem('gtd_custom_tags') || '[]');
-        const updatedTags = customTags.filter(t => t !== tagName);
-        localStorage.setItem('gtd_custom_tags', JSON.stringify(updatedTags));
+        const customContexts = JSON.parse(localStorage.getItem('gtd_custom_contexts') || '[]');
+        const updatedContexts = customContexts.filter(t => t !== tagName);
+        localStorage.setItem('gtd_custom_contexts', JSON.stringify(updatedContexts));
 
         // Save changes
         await this.saveTasks();
         await this.saveProjects();
 
         // Re-render
-        this.renderCustomTags();
+        this.renderCustomContexts();
         this.renderView();
 
-        console.log(`Tag "${tagName}" deleted successfully`);
+        console.log(`Context "${tagName}" deleted successfully`);
     }
 
     async updateTaskPositions() {

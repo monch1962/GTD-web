@@ -17,7 +17,7 @@ A full-featured Getting Things Done (GTD) productivity application that runs ent
 
 ### Advanced Features
 - **Task Dependencies** - Set tasks that must complete before others become actionable
-- **Smart Tagging System** - Default context tags (@home, @work, @personal, @computer, @phone) plus custom tags
+- **Smart Contextging System** - Default context contexts (@home, @work, @personal, @computer, @phone) plus custom contexts
 - **Due Dates & Defer Dates** - Schedule deadlines and hide tasks until they're relevant
 - **Energy & Time Filters** - Find tasks matching your current energy and available time
 - **Project Management** - Create projects and assign tasks to them
@@ -26,8 +26,8 @@ A full-featured Getting Things Done (GTD) productivity application that runs ent
 
 ### User Experience
 - **Quick Task Capture** - Fast task entry with keyboard shortcuts
-- **Custom Tags** - Create, use, and delete your own tags
-- **Filter by Context** - Quickly find tasks by tag, energy level, or time
+- **Custom Contexts** - Create, use, and delete your own contexts
+- **Filter by Context** - Quickly find tasks by context, energy level, or time
 - **Responsive Design** - Works on desktop and mobile browsers
 - **Local-First Storage** - All data stays private in your browser
 
@@ -82,15 +82,15 @@ npm test -- --watch
 
 1. **Capture Everything** - Use the Inbox to quickly capture all tasks, ideas, and commitments
 2. **Process Your Inbox** - Decide what each item means and where it belongs
-3. **Organize by Context** - Use tags like @home, @work, @computer to categorize
+3. **Organize by Context** - Use contexts like @home, @work, @computer to categorize
 4. **Review Regularly** - Check your Waiting For, Someday/Maybe, and Projects weekly
-5. **Do by Context** - Filter by tag, energy, and time to find the right task
+5. **Do by Context** - Filter by context, energy, and time to find the right task
 
 ### Creating Tasks
 
 **Quick Add (Fastest)**
 1. Type your task in the quick-add input box
-2. Optionally click tag buttons to add them
+2. Optionally click context buttons to add them
 3. Press Enter
 
 **Detailed Add**
@@ -102,14 +102,14 @@ npm test -- --watch
    - Time estimate
    - Due date and defer date
    - Project assignment
-   - Tags
+   - Contexts
 3. Click Save
 
 ### Managing Projects
 
 1. Go to "Projects" in the sidebar
 2. Click "Add Project"
-3. Enter project details (title, description, status, tags)
+3. Enter project details (title, description, status, contexts)
 4. Save
 5. Assign tasks to the project when creating/editing them
 
@@ -130,31 +130,31 @@ Perfect for:
 - Sequential tasks
 - Team dependencies
 
-### Working with Tags
+### Working with Contexts
 
-**Default Context Tags:**
+**Default Context Contexts:**
 - `@home` - Tasks to do at home
 - `@work` - Work-related tasks
 - `@personal` - Personal tasks
 - `@computer` - Tasks requiring a computer
 - `@phone` - Tasks requiring a phone
 
-**Creating Custom Tags:**
-1. Click the green "Create Tag" button
-2. Enter tag name
-3. Click "Create Tag"
-4. The tag appears as a clickable button
+**Creating Custom Contexts:**
+1. Click the green "Create Context" button
+2. Enter context name
+3. Click "Create Context"
+4. The context appears as a clickable button
 
-**Deleting Tags:**
-1. Click the × button on any custom tag
+**Deleting Contexts:**
+1. Click the × button on any custom context
 2. Confirm deletion
-3. Tag is removed from ALL tasks and projects
+3. Context is removed from ALL tasks and projects
 
 ### Filtering Tasks
 
 Use the filters in the header to find the right task:
 
-- **Tag Filter** - Show only tasks with a specific tag
+- **Context Filter** - Show only tasks with a specific context
 - **Energy Filter** - Find tasks matching your energy (high/medium/low)
 - **Time Filter** - Find tasks that fit your available time
 
@@ -194,7 +194,7 @@ Filters work together for powerful task discovery!
 To back up your data:
 1. Open browser DevTools (F12)
 2. Go to Application → Local Storage
-3. Find `gtd_tasks`, `gtd_projects`, `gtd_custom_tags`
+3. Find `gtd_tasks`, `gtd_projects`, `gtd_custom_contexts`
 4. Copy and save the values
 
 To restore:
@@ -246,8 +246,8 @@ GTD-web/
 - Verify data in localStorage
 - Try refreshing the page
 
-### Tags not saving
-- Check if tag name conflicts with existing tags (case-insensitive)
+### Contexts not saving
+- Check if context name conflicts with existing contexts (case-insensitive)
 - Look at browser console for error messages
 - Verify localStorage has available space
 
