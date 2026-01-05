@@ -2,7 +2,7 @@
 
 A full-featured Getting Things Done (GTD) productivity application that runs entirely in your browser. Implement David Allen's GTD methodology to stay organized and productive.
 
-![GTD Web](https://img.shields.io/badge/version-1.0.0-blue)
+![GTD Web](https://img.shields.io/badge/version-1.1.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ## Features
@@ -16,18 +16,20 @@ A full-featured Getting Things Done (GTD) productivity application that runs ent
 - **Reference** - Non-actionable information storage
 
 ### Advanced Features
+- **Recurring Tasks** - Set tasks to repeat daily, weekly, monthly, or yearly
 - **Task Dependencies** - Set tasks that must complete before others become actionable
-- **Smart Contextging System** - Default context contexts (@home, @work, @personal, @computer, @phone) plus custom contexts
+- **Smart Context System** - Default contexts (@home, @work, @personal, @computer, @phone) plus custom contexts
+  - All contexts automatically start with @ for easy identification
+- **Gantt Charts** - Visual dependency diagrams for projects
 - **Due Dates & Defer Dates** - Schedule deadlines and hide tasks until they're relevant
-- **Energy & Time Filters** - Find tasks matching your current energy and available time
 - **Project Management** - Create projects and assign tasks to them
 - **Automatic Workflow** - Tasks move from Inbox to Next Actions when assigned to projects
 - **Visual Indicators** - See overdue tasks, blocked tasks, and pending dependencies at a glance
 
 ### User Experience
 - **Quick Task Capture** - Fast task entry with keyboard shortcuts
-- **Custom Contexts** - Create, use, and delete your own contexts
-- **Filter by Context** - Quickly find tasks by context, energy level, or time
+- **Custom Contexts** - Create your own contexts (auto-formatted with @ prefix)
+- **Drag & Drop** - Reorder tasks and assign tasks to projects by dragging
 - **Responsive Design** - Works on desktop and mobile browsers
 - **Local-First Storage** - All data stays private in your browser
 
@@ -84,7 +86,7 @@ npm test -- --watch
 2. **Process Your Inbox** - Decide what each item means and where it belongs
 3. **Organize by Context** - Use contexts like @home, @work, @computer to categorize
 4. **Review Regularly** - Check your Waiting For, Someday/Maybe, and Projects weekly
-5. **Do by Context** - Filter by context, energy, and time to find the right task
+5. **Do by Context** - Find the right task for your current context and situation
 
 ### Creating Tasks
 
@@ -130,9 +132,40 @@ Perfect for:
 - Sequential tasks
 - Team dependencies
 
+### Creating Recurring Tasks
+
+Automate repetitive tasks by setting them to recur:
+
+1. Create or edit a task
+2. Set a recurrence interval:
+   - **Daily** - Tasks you do every day (e.g., "Check email")
+   - **Weekly** - Weekly routines (e.g., "Team standup")
+   - **Monthly** - Monthly tasks (e.g., "Pay bills")
+   - **Yearly** - Annual tasks (e.g., "Performance review")
+3. Optionally set a recurrence end date
+4. Save the task
+5. When you complete the task, a new instance is automatically created with the next due date
+
+**Features:**
+- Tasks maintain all properties (contexts, project, energy, time)
+- Optional end dates to stop recurrence after a certain date
+- Visual indicator shows recurrence interval (↻ Daily, etc.)
+- Based on task's due date, or current date if no due date set
+
+Perfect for:
+- Daily habits and routines
+- Weekly meetings and reports
+- Monthly bills and reviews
+- Annual maintenance tasks
+
 ### Working with Contexts
 
-**Default Context Contexts:**
+**About Contexts:**
+- All contexts must start with `@` symbol (e.g., `@home`, `@work`)
+- The `@` is automatically added if you forget it
+- Contexts help you organize tasks by situation/location
+
+**Default Contexts:**
 - `@home` - Tasks to do at home
 - `@work` - Work-related tasks
 - `@personal` - Personal tasks
@@ -141,24 +174,31 @@ Perfect for:
 
 **Creating Custom Contexts:**
 1. Click the green "Create Context" button
-2. Enter context name
-3. Click "Create Context"
-4. The context appears as a clickable button
+2. Enter context name (e.g., "urgent" or "@errands")
+3. The `@` is added automatically if needed
+4. Click "Create Context"
+5. The context appears as a clickable button
 
 **Deleting Contexts:**
 1. Click the × button on any custom context
 2. Confirm deletion
 3. Context is removed from ALL tasks and projects
 
-### Filtering Tasks
+### Viewing Project Dependencies (Gantt Chart)
 
-Use the filters in the header to find the right task:
+Visualize task relationships within a project:
 
-- **Context Filter** - Show only tasks with a specific context
-- **Energy Filter** - Find tasks matching your energy (high/medium/low)
-- **Time Filter** - Find tasks that fit your available time
+1. Go to "Projects" in the sidebar
+2. Click on a project to view its tasks
+3. Click the "Gantt Chart" button
+4. See tasks organized by dependency level with arrows showing relationships
 
-Filters work together for powerful task discovery!
+**Features:**
+- Tasks with unmet dependencies show as "Waiting" (orange)
+- Tasks ready to start show as "Next" (blue)
+- Completed tasks show as "Completed" (green)
+- Arrows indicate task dependencies
+- Dependencies only work within the same project
 
 ### Understanding Task Status
 
@@ -218,9 +258,13 @@ GTD-web/
 ├── js/
 │   ├── app.js          # Main application logic
 │   ├── models.js       # Task, Project, Reference models
-│   └── storage.js      # LocalStorage wrapper
+│   ├── storage.js      # LocalStorage wrapper
+│   ├── constants.js    # Configuration constants
+│   ├── dom-utils.js    # DOM manipulation utilities
+│   └── validation.js   # Validation helpers
 ├── __tests__/
-│   └── storage.test.js # Storage layer tests
+│   ├── storage.test.js # Storage layer tests
+│   └── models.test.js  # Model tests
 ├── package.json        # Dependencies and scripts
 └── README.md          # This file
 ```
@@ -256,6 +300,12 @@ GTD-web/
 - Check for JavaScript errors
 - Try clearing cache and refreshing
 
+### Recurring tasks not creating new instances
+- Ensure the task has a recurrence interval set
+- Check if recurrence end date has passed
+- Verify the task is actually being completed (checkbox checked)
+- Look for browser console errors
+
 ## Browser Compatibility
 
 - Chrome/Edge (recommended)
@@ -277,6 +327,17 @@ Contributions are welcome! Please feel free to submit issues or pull requests.
 
 Created as a full-featured GTD implementation following David Allen's Getting Things Done methodology.
 
+## Recent Updates
+
+### Version 1.1.0 (Current)
+- ✨ Added recurring tasks (daily, weekly, monthly, yearly)
+- ✨ Added Gantt charts for project dependency visualization
+- ✨ Added drag-and-drop task management
+- ✨ Enforced @ prefix requirement for all contexts
+- 🔧 Refactored codebase for better maintainability
+- 🔧 Simplified Inbox view for faster task capture
+- 🐛 Fixed multiple bugs with dependencies and status display
+
 ## Roadmap
 
 Future enhancements being considered:
@@ -287,6 +348,9 @@ Future enhancements being considered:
 - [ ] Mobile app (PWA)
 - [ ] Collaborative features
 - [ ] Advanced reporting/analytics
+- [ ] Subtasks support
+- [ ] Tags/labels system
+- [ ] Search functionality
 
 ## Support
 
