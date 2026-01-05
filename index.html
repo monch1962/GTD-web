@@ -3,9 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Getting Things Done web app with smart task management">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>GTD Web - Getting Things Done</title>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
 </head>
 <body>
     <div class="app-container">
@@ -77,21 +82,135 @@
                     <i class="fas fa-sync"></i>
                     <span class="sync-text">Synced</span>
                 </button>
+                <div style="display: flex; gap: var(--spacing-xs); margin-top: var(--spacing-sm);">
+                    <button id="btn-export" class="btn btn-secondary" style="flex: 1; font-size: 0.75rem; padding: 4px 8px;" title="Export all data to JSON">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                    <button id="btn-import" class="btn btn-secondary" style="flex: 1; font-size: 0.75rem; padding: 4px 8px;" title="Import data from JSON">
+                        <i class="fas fa-upload"></i> Import
+                    </button>
+                </div>
+                <input type="file" id="import-file-input" accept=".json" style="display: none;">
             </div>
         </aside>
 
         <!-- Main Content -->
         <main class="main-content">
             <header class="content-header">
-                <h2 id="view-title">Inbox</h2>
-                <button id="btn-suggestions" class="btn btn-primary" style="margin-left: auto;">
-                    <i class="fas fa-lightbulb"></i> What should I work on?
-                </button>
+                <div style="flex: 1; max-width: 400px; margin-right: var(--spacing-md);">
+                    <div style="position: relative;">
+                        <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-secondary);"></i>
+                        <input type="text" id="global-search" placeholder="Search tasks..." style="width: 100%; padding: 8px 10px 8px 32px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 0.9rem;">
+                        <button id="clear-search" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-secondary); cursor: pointer; display: none;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <h2 id="view-title" style="margin: 0;">Inbox</h2>
+                <div style="display: flex; gap: var(--spacing-sm);">
+                    <button id="btn-dark-mode" class="btn btn-secondary" title="Toggle Dark Mode">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <button id="btn-calendar-view" class="btn btn-secondary" title="Calendar View">
+                        <i class="fas fa-calendar-alt"></i>
+                    </button>
+                    <button id="btn-focus-mode" class="btn btn-secondary" title="Focus Mode">
+                        <i class="fas fa-bullseye"></i>
+                    </button>
+                    <button id="btn-new-project" class="btn btn-secondary" title="New Project">
+                        <i class="fas fa-folder-plus"></i>
+                    </button>
+                    <button id="btn-weekly-review" class="btn btn-secondary" title="Weekly Review">
+                        <i class="fas fa-calendar-week"></i>
+                    </button>
+                    <button id="btn-dashboard" class="btn btn-secondary" title="Dashboard">
+                        <i class="fas fa-chart-bar"></i>
+                    </button>
+                    <button id="btn-bulk-select" class="btn btn-secondary" style="display: none;">
+                        <i class="fas fa-check-square"></i> Select Multiple
+                    </button>
+                    <button id="btn-suggestions" class="btn btn-primary">
+                        <i class="fas fa-lightbulb"></i> What should I work on?
+                    </button>
+                </div>
             </header>
+
+            <!-- Advanced Search Panel -->
+            <div id="advanced-search-panel" style="display: none; margin-bottom: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-sm); margin-bottom: var(--spacing-sm);">
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; margin-bottom: 4px;">Context</label>
+                        <select id="search-context" style="width: 100%; padding: 6px; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                            <option value="">Any Context</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; margin-bottom: 4px;">Energy</label>
+                        <select id="search-energy" style="width: 100%; padding: 6px; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                            <option value="">Any Energy</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; margin-bottom: 4px;">Status</label>
+                        <select id="search-status" style="width: 100%; padding: 6px; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                            <option value="">Any Status</option>
+                            <option value="inbox">Inbox</option>
+                            <option value="next">Next Actions</option>
+                            <option value="waiting">Waiting For</option>
+                            <option value="someday">Someday/Maybe</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; margin-bottom: 4px;">Due Date</label>
+                        <select id="search-due" style="width: 100%; padding: 6px; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                            <option value="">Any Time</option>
+                            <option value="overdue">Overdue</option>
+                            <option value="today">Due Today</option>
+                            <option value="week">Due This Week</option>
+                            <option value="month">Due This Month</option>
+                            <option value="nodate">No Due Date</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display: flex; gap: var(--spacing-sm); justify-content: space-between; align-items: center;">
+                    <div>
+                        <button id="save-search" class="btn btn-secondary" style="font-size: 0.85rem;">
+                            <i class="fas fa-save"></i> Save Search
+                        </button>
+                        <select id="saved-searches" style="margin-left: var(--spacing-sm); padding: 6px; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                            <option value="">Saved Searches...</option>
+                        </select>
+                        <button id="delete-saved-search" class="btn btn-secondary" style="font-size: 0.85rem; margin-left: var(--spacing-xs); display: none;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    <button id="clear-advanced-search" class="btn btn-secondary" style="font-size: 0.85rem;">
+                        <i class="fas fa-times"></i> Clear Filters
+                    </button>
+                </div>
+            </div>
+
+            <div id="bulk-actions-bar" style="display: none; margin-bottom: var(--spacing-md); padding: var(--spacing-sm); background: var(--bg-secondary); border-radius: var(--radius-md); align-items: center; justify-content: space-between;">
+                <span style="font-size: 0.9rem;"><strong><span id="bulk-selected-count">0</span></strong> tasks selected</span>
+                <div style="display: flex; gap: var(--spacing-sm);">
+                    <button id="btn-bulk-complete" class="btn btn-success">
+                        <i class="fas fa-check"></i> Complete
+                    </button>
+                    <button id="btn-bulk-cancel" class="btn btn-secondary">
+                        Cancel
+                    </button>
+                </div>
+            </div>
 
             <div class="quick-add">
                 <input type="text" id="quick-add-input" placeholder="Quick add... (Try: &quot;Call John @work tomorrow high energy&quot;)">
                 <div style="margin-top: var(--spacing-sm);">
+                    <button class="btn btn-secondary" id="toggle-templates" style="font-size: 0.75rem; padding: 2px 8px; margin-right: var(--spacing-xs);">
+                        <i class="fas fa-clone"></i> Quick Templates
+                    </button>
                     <button class="btn btn-secondary" id="toggle-nlp-help" style="font-size: 0.75rem; padding: 2px 8px;">
                         <i class="fas fa-info-circle"></i> See examples
                     </button>
@@ -106,14 +225,16 @@
                             <li><code>Review project in 3 days</code></li>
                         </ul>
                     </div>
+                    <div id="templates-dropdown" style="display: none; margin-top: var(--spacing-sm); padding: var(--spacing-sm); background: var(--bg-secondary); border-radius: var(--radius-sm); font-size: 0.8rem;">
+                        <strong>Quick Templates:</strong>
+                        <div id="templates-list" style="margin-top: var(--spacing-xs); display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-xs);">
+                            <!-- Templates will be populated by JavaScript -->
+                        </div>
+                    </div>
                 </div>
                 <div class="quick-contexts">
                     <span class="quick-context-label">Quick contexts:</span>
-                    <button class="quick-context" data-context="@home">@home</button>
-                    <button class="quick-context" data-context="@work">@work</button>
-                    <button class="quick-context" data-context="@personal">@personal</button>
-                    <button class="quick-context" data-context="@computer">@computer</button>
-                    <button class="quick-context" data-context="@phone">@phone</button>
+                    <!-- Default context buttons will be rendered here dynamically by JavaScript -->
                     <button class="btn-create-context" id="btn-create-context">
                         <i class="fas fa-plus"></i> Create Context
                     </button>
@@ -250,11 +371,26 @@
                         <input type="text" id="task-contexts" placeholder="@home, @computer, @urgent">
                         <small style="color: var(--text-secondary);">Contexts must start with @ (e.g., @home, @work, @urgent)</small>
                         <div class="quick-contexts-modal">
-                            <button class="quick-context-modal" data-context="@home">@home</button>
-                            <button class="quick-context-modal" data-context="@work">@work</button>
-                            <button class="quick-context-modal" data-context="@personal">@personal</button>
-                            <button class="quick-context-modal" data-context="@computer">@computer</button>
-                            <button class="quick-context-modal" data-context="@phone">@phone</button>
+                            <!-- Default context buttons will be rendered here dynamically by JavaScript -->
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="task-notes">Notes</label>
+                        <textarea id="task-notes" rows="4" placeholder="Add notes, progress updates, or any other information about this task..."></textarea>
+                        <small style="color: var(--text-secondary);">Track progress, store ideas, or add any other information</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Subtasks / Checklist</label>
+                        <div id="subtasks-container" style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: var(--spacing-sm); margin-bottom: var(--spacing-sm);">
+                            <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: var(--spacing-sm);">No subtasks yet. Add subtasks to break down this task into smaller steps.</p>
+                        </div>
+                        <div style="display: flex; gap: var(--spacing-sm);">
+                            <input type="text" id="new-subtask-input" placeholder="Add a subtask..." style="flex: 1; padding: 6px; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                            <button type="button" class="btn btn-secondary" id="btn-add-subtask">
+                                <i class="fas fa-plus"></i> Add
+                            </button>
                         </div>
                     </div>
 
@@ -452,6 +588,75 @@
             <div class="gantt-container" id="gantt-chart">
                 <!-- Gantt chart will be rendered here -->
             </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Modal -->
+    <div id="dashboard-modal" class="modal">
+        <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h2>Productivity Dashboard</h2>
+                <button class="close-button" id="close-dashboard-modal">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: var(--spacing-lg);">
+                <div id="dashboard-content">
+                    <!-- Dashboard will be rendered here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Weekly Review Modal -->
+    <div id="weekly-review-modal" class="modal">
+        <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h2>Weekly Review</h2>
+                <button class="close-button" id="close-weekly-review-modal">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: var(--spacing-lg);">
+                <div id="weekly-review-content">
+                    <!-- Weekly review will be rendered here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendar View Modal -->
+    <div id="calendar-modal" class="modal">
+        <div class="modal-content" style="max-width: 1000px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h2>Calendar View</h2>
+                <button class="close-button" id="close-calendar-modal">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: var(--spacing-lg);">
+                <div id="calendar-content">
+                    <!-- Calendar will be rendered here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Focus Mode Overlay -->
+    <div id="focus-mode-overlay" class="focus-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-primary); z-index: 10000; padding: var(--spacing-lg); display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg);">
+            <button id="btn-exit-focus" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Exit Focus
+            </button>
+            <div id="pomodoro-timer" style="font-size: 3rem; font-weight: bold; color: var(--primary-color);">25:00</div>
+            <div style="display: flex; gap: var(--spacing-sm);">
+                <button id="btn-pomodoro-start" class="btn btn-success">
+                    <i class="fas fa-play"></i> Start
+                </button>
+                <button id="btn-pomodoro-pause" class="btn btn-warning" style="display: none;">
+                    <i class="fas fa-pause"></i> Pause
+                </button>
+                <button id="btn-pomodoro-reset" class="btn btn-secondary">
+                    <i class="fas fa-redo"></i> Reset
+                </button>
+            </div>
+        </div>
+        <div id="focus-task-container" style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; max-width: 800px; margin: 0 auto;">
+            <!-- Focus task will be rendered here -->
         </div>
     </div>
 

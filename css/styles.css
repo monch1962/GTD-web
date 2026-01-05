@@ -31,6 +31,53 @@
     --radius-lg: 8px;
 }
 
+body.dark-mode {
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #2d2d2d;
+    --bg-sidebar: #0d0d0d;
+    --bg-hover: #3d3d3d;
+
+    --text-primary: #e0e0e0;
+    --text-secondary: #a0a0a0;
+    --text-light: #2c3e50;
+
+    --border-color: #444;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.3);
+    --shadow-lg: 0 10px 25px rgba(0,0,0,0.4);
+}
+
+body.dark-mode .sidebar {
+    background-color: var(--bg-sidebar);
+}
+
+body.dark-mode .task-item {
+    background-color: var(--bg-primary);
+    border-color: var(--border-color);
+}
+
+body.dark-mode .task-item:hover {
+    background-color: var(--bg-hover);
+}
+
+body.dark-mode input,
+body.dark-mode textarea,
+body.dark-mode select {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+body.dark-mode .modal-content {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+body.dark-mode .task-time-spent {
+    background-color: #2d4a2d;
+    color: #90ee90;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -456,6 +503,12 @@ body {
     border-color: var(--primary-color);
 }
 
+.task-item.selected {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    background-color: rgba(99, 102, 241, 0.05);
+}
+
 .task-due-date {
     display: flex;
     align-items: center;
@@ -562,8 +615,30 @@ body {
     color: var(--primary-color);
 }
 
+.task-action-btn.timer-active {
+    color: var(--success-color);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
 .task-action-btn.delete:hover {
     color: var(--danger-color);
+}
+
+/* Time spent display */
+.task-time-spent {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    font-size: 0.8rem;
 }
 
 /* Project Card */
