@@ -19,6 +19,9 @@ export class Task {
         this.deferDate = data.deferDate || null; // YYYY-MM-DD format
         this.waitingForTaskIds = data.waitingForTaskIds || []; // Array of task IDs this task depends on
         this.waitingForDescription = data.waitingForDescription || ''; // Description of what/who being waited on
+        this.recurrence = data.recurrence || ''; // '', 'daily', 'weekly', 'monthly', 'yearly'
+        this.recurrenceEndDate = data.recurrenceEndDate || null; // Optional end date for recurrence
+        this.recurrenceParentId = data.recurrenceParentId || null; // ID of parent recurring task
         this.position = data.position || 0; // Position for custom ordering
         this.createdAt = data.createdAt || new Date().toISOString();
         this.updatedAt = data.updatedAt || new Date().toISOString();
@@ -45,6 +48,9 @@ export class Task {
             deferDate: this.deferDate,
             waitingForTaskIds: this.waitingForTaskIds,
             waitingForDescription: this.waitingForDescription,
+            recurrence: this.recurrence,
+            recurrenceEndDate: this.recurrenceEndDate,
+            recurrenceParentId: this.recurrenceParentId,
             position: this.position,
             createdAt: this.createdAt,
             updatedAt: this.updatedAt
@@ -146,6 +152,83 @@ export class Task {
         return this.waitingForTaskIds
             .map(depTaskId => allTasks.find(t => t.id === depTaskId))
             .filter(task => task && !task.completed);
+    }
+
+    /**
+     * Check if task is recurring
+     */
+    isRecurring() {
+        return this.recurrence && this.recurrence !== '';
+    }
+
+    /**
+     * Check if recurrence should end (has passed end date)
+     */
+    shouldRecurrenceEnd() {
+        if (!this.recurrenceEndDate) return false;
+        const endDate = new Date(this.recurrenceEndDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return endDate < today;
+    }
+
+    /**
+     * Calculate the next occurrence date based on recurrence interval
+     * Uses the due date if available, otherwise uses today's date
+     */
+    getNextOccurrenceDate() {
+        const baseDate = this.dueDate ? new Date(this.dueDate) : new Date();
+        baseDate.setHours(0, 0, 0, 0);
+
+        const nextDate = new Date(baseDate);
+
+        switch (this.recurrence) {
+            case 'daily':
+                nextDate.setDate(nextDate.getDate() + 1);
+                break;
+            case 'weekly':
+                nextDate.setDate(nextDate.getDate() + 7);
+                break;
+            case 'monthly':
+                nextDate.setMonth(nextDate.getMonth() + 1);
+                break;
+            case 'yearly':
+                nextDate.setFullYear(nextDate.getFullYear() + 1);
+                break;
+            default:
+                return null;
+        }
+
+        return nextDate.toISOString().split('T')[0]; // Return as YYYY-MM-DD
+    }
+
+    /**
+     * Create a new instance of this recurring task
+     * Returns a new Task object with updated dates and same properties
+     */
+    createNextInstance() {
+        if (!this.isRecurring() || this.shouldRecurrenceEnd()) {
+            return null;
+        }
+
+        const nextDueDate = this.getNextOccurrenceDate();
+
+        const nextTaskData = {
+            title: this.title,
+            description: this.description,
+            type: this.type,
+            status: this.status === 'completed' ? 'inbox' : this.status,
+            energy: this.energy,
+            time: this.time,
+            projectId: this.projectId,
+            contexts: [...this.contexts],
+            dueDate: nextDueDate,
+            recurrence: this.recurrence,
+            recurrenceEndDate: this.recurrenceEndDate,
+            recurrenceParentId: this.recurrenceParentId || this.id // Keep track of original recurring task
+        };
+
+        return new Task(nextTaskData);
     }
 }
 

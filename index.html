@@ -213,6 +213,24 @@
                         </div>
                     </div>
 
+                    <div class="form-group">
+                        <label for="task-recurrence">Recurrence</label>
+                        <select id="task-recurrence">
+                            <option value="">No Recurrence</option>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                            <option value="yearly">Yearly</option>
+                        </select>
+                        <small style="color: var(--text-secondary);">Automatically create a new task when this task is completed</small>
+                    </div>
+
+                    <div class="form-group" id="recurrence-end-date-group" style="display: none;">
+                        <label for="task-recurrence-end-date">Recurrence End Date</label>
+                        <input type="date" id="task-recurrence-end-date">
+                        <small style="color: var(--text-secondary);">Optional: Stop creating recurring tasks after this date</small>
+                    </div>
+
                     <div class="form-group" id="waiting-for-section" style="display: none;">
                         <label for="task-waiting-for-description">Waiting For Description</label>
                         <input type="text" id="task-waiting-for-description" placeholder="e.g., Response from John, Design team approval">

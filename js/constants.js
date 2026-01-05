@@ -118,3 +118,20 @@ export const GanttConfig = {
     marginTop: 50,
     maxTitleLength: 25
 };
+
+// Recurrence intervals
+export const RecurrenceInterval = {
+    NONE: '',
+    DAILY: 'daily',
+    WEEKLY: 'weekly',
+    MONTHLY: 'monthly',
+    YEARLY: 'yearly'
+};
+
+// Recurrence display labels
+export const RecurrenceLabels = {
+    daily: 'Daily',
+    weekly: 'Weekly',
+    monthly: 'Monthly',
+    yearly: 'Yearly'
+};

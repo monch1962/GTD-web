@@ -5,7 +5,7 @@
 
 import { Task, Project, Reference } from './models.js';
 import { Storage } from './storage.js';
-import { ElementIds, StorageKeys, TaskStatus, Views } from './constants.js';
+import { ElementIds, StorageKeys, TaskStatus, Views, RecurrenceLabels } from './constants.js';
 import { getElement, setTextContent, escapeHtml } from './dom-utils.js';
 
 class GTDApp {
@@ -687,6 +687,15 @@ class GTDApp {
             waitingForDisplay = `<span class="task-waiting-for">${parts.join(' | ')}</span>`;
         }
 
+        // Recurrence display
+        let recurrenceDisplay = '';
+        if (task.isRecurring()) {
+            const label = RecurrenceLabels[task.recurrence] || task.recurrence;
+            recurrenceDisplay = `<span class="task-context" style="background-color: #e8f4f8; border-color: #4a90d9; color: #2c5f8d;">
+                <i class="fas fa-redo"></i> ${label}
+            </span>`;
+        }
+
         div.innerHTML = `
             ${dragHandle.outerHTML}
             <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>
@@ -695,6 +704,7 @@ class GTDApp {
                 ${task.description ? `<div class="task-description">${escapeHtml(task.description)}</div>` : ''}
                 <div class="task-meta">
                     ${task.contexts && task.contexts.length > 0 ? task.contexts.map(context => `<span class="task-context">${escapeHtml(context)}</span>`).join('') : ''}
+                    ${recurrenceDisplay}
                     ${task.energy ? `<span class="task-energy"><i class="fas fa-bolt"></i> ${task.energy}</span>` : ''}
                     ${task.time ? `<span class="task-time"><i class="fas fa-clock"></i> ${task.time}m</span>` : ''}
                     ${dueDateDisplay}
@@ -965,6 +975,15 @@ class GTDApp {
                 task.markIncomplete();
             } else {
                 task.markComplete();
+
+                // Check if task is recurring and create next instance
+                if (task.isRecurring() && !task.shouldRecurrenceEnd()) {
+                    const nextInstance = task.createNextInstance();
+                    if (nextInstance) {
+                        this.tasks.push(nextInstance);
+                        await this.saveTasks();
+                    }
+                }
             }
             await this.saveTasks();
 
@@ -1084,11 +1103,15 @@ class GTDApp {
             document.getElementById('task-defer-date').value = task.deferDate || '';
             document.getElementById('task-waiting-for-description').value = task.waitingForDescription || '';
             document.getElementById('task-contexts').value = task.contexts ? task.contexts.join(', ') : '';
+            document.getElementById('task-recurrence').value = task.recurrence || '';
+            document.getElementById('task-recurrence-end-date').value = task.recurrenceEndDate || '';
         } else {
             title.textContent = 'Add Task';
             document.getElementById('task-id').value = '';
             document.getElementById('task-status').value = this.currentView === 'all' ? 'inbox' : this.currentView;
             document.getElementById('task-waiting-for-description').value = '';
+            document.getElementById('task-recurrence').value = '';
+            document.getElementById('task-recurrence-end-date').value = '';
 
             // Set default project if provided (when adding from project view)
             if (defaultProjectId) {
@@ -1116,6 +1139,21 @@ class GTDApp {
 
         statusSelect.addEventListener('change', updateWaitingForFields);
         updateWaitingForFields(); // Initial call
+
+        // Setup recurrence change listener to show/hide end date field
+        const recurrenceSelect = document.getElementById('task-recurrence');
+        const recurrenceEndDateGroup = document.getElementById('recurrence-end-date-group');
+
+        const updateRecurrenceFields = () => {
+            if (recurrenceSelect.value && recurrenceSelect.value !== '') {
+                recurrenceEndDateGroup.style.display = 'block';
+            } else {
+                recurrenceEndDateGroup.style.display = 'none';
+            }
+        };
+
+        recurrenceSelect.addEventListener('change', updateRecurrenceFields);
+        updateRecurrenceFields(); // Initial call
 
         modal.classList.add('active');
     }
@@ -1230,7 +1268,9 @@ class GTDApp {
             dueDate: document.getElementById('task-due-date').value || null,
             deferDate: document.getElementById('task-defer-date').value || null,
             waitingForDescription: waitingForDescription,
-            waitingForTaskIds: waitingForTaskIds
+            waitingForTaskIds: waitingForTaskIds,
+            recurrence: document.getElementById('task-recurrence').value || '',
+            recurrenceEndDate: document.getElementById('task-recurrence-end-date').value || null
         };
 
         if (taskId) {
