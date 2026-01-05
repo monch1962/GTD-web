@@ -1023,7 +1023,7 @@ class GTDApp {
         }
     }
 
-    openTaskModal(task = null) {
+    openTaskModal(task = null, defaultProjectId = null) {
         const modal = document.getElementById('task-modal');
         const form = document.getElementById('task-form');
         const title = document.getElementById('modal-title');
@@ -1091,6 +1091,11 @@ class GTDApp {
             document.getElementById('task-id').value = '';
             document.getElementById('task-status').value = this.currentView === 'all' ? 'inbox' : this.currentView;
             document.getElementById('task-waiting-for-description').value = '';
+
+            // Set default project if provided (when adding from project view)
+            if (defaultProjectId) {
+                document.getElementById('task-project').value = defaultProjectId;
+            }
         }
 
         // Setup status change listener to show/hide waiting for fields
@@ -2066,7 +2071,7 @@ document.addEventListener('DOMContentLoaded', () => {
     addButton.className = 'btn btn-primary';
     addButton.style.marginTop = '0.5rem';
     addButton.innerHTML = '<i class="fas fa-plus"></i> Add Task';
-    addButton.addEventListener('click', () => app.openTaskModal());
+    addButton.addEventListener('click', () => app.openTaskModal(null, app.currentProjectId));
     quickAdd.appendChild(addButton);
 });
 
