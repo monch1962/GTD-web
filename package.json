@@ -1,6 +1,6 @@
 {
   "name": "gtd-web",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Getting Things Done web app with remote-storage sync",
   "main": "js/app.js",
   "scripts": {
