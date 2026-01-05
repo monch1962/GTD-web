@@ -189,20 +189,30 @@ class GTDApp {
         });
 
         // Filters
-        document.getElementById('context-filter').addEventListener('change', (e) => {
-            this.filters.context = e.target.value;
-            this.renderView();
-        });
+        // Filters - only add listeners if elements exist
+        const contextFilter = document.getElementById('context-filter');
+        if (contextFilter) {
+            contextFilter.addEventListener('change', (e) => {
+                this.filters.context = e.target.value;
+                this.renderView();
+            });
+        }
 
-        document.getElementById('energy-filter').addEventListener('change', (e) => {
-            this.filters.energy = e.target.value;
-            this.renderView();
-        });
+        const energyFilter = document.getElementById('energy-filter');
+        if (energyFilter) {
+            energyFilter.addEventListener('change', (e) => {
+                this.filters.energy = e.target.value;
+                this.renderView();
+            });
+        }
 
-        document.getElementById('time-filter').addEventListener('change', (e) => {
-            this.filters.time = e.target.value;
-            this.renderView();
-        });
+        const timeFilter = document.getElementById('time-filter');
+        if (timeFilter) {
+            timeFilter.addEventListener('change', (e) => {
+                this.filters.time = e.target.value;
+                this.renderView();
+            });
+        }
 
         // Sync button
         document.getElementById('sync-status').addEventListener('click', async () => {
@@ -562,6 +572,11 @@ class GTDApp {
             if (this.currentView === 'inbox') {
                 filteredTasks = filteredTasks.filter(task => !task.projectId);
             }
+
+            // For Next view, exclude tasks with unmet dependencies
+            if (this.currentView === 'next') {
+                filteredTasks = filteredTasks.filter(task => task.areDependenciesMet(this.tasks));
+            }
         }
 
         // Apply additional filters
@@ -663,27 +678,32 @@ class GTDApp {
 
         // Waiting For display
         let waitingForDisplay = '';
-        if (task.status === 'waiting') {
-            const parts = [];
+        const parts = [];
 
-            if (task.waitingForDescription) {
-                parts.push(`<i class="fas fa-hourglass-half"></i> Waiting: ${this.escapeHtml(task.waitingForDescription)}`);
-            }
+        // Show waiting description if present (only for waiting status)
+        if (task.status === 'waiting' && task.waitingForDescription) {
+            parts.push(`<i class="fas fa-hourglass-half"></i> Waiting: ${this.escapeHtml(task.waitingForDescription)}`);
+        }
 
-            if (task.waitingForTaskIds && task.waitingForTaskIds.length > 0) {
-                const pendingDeps = task.getPendingDependencies(this.tasks);
-                if (pendingDeps.length > 0) {
-                    const depNames = pendingDeps.map(t => this.escapeHtml(t.title)).join(', ');
-                    parts.push(`<i class="fas fa-link"></i> Blocked by: ${depNames}`);
-                } else {
-                    // Dependencies met but still in waiting status
+        // Show dependencies for any task that has them
+        if (task.waitingForTaskIds && task.waitingForTaskIds.length > 0) {
+            const pendingDeps = task.getPendingDependencies(this.tasks);
+            if (pendingDeps.length > 0) {
+                const depNames = pendingDeps.map(t => this.escapeHtml(t.title)).join(', ');
+                parts.push(`<i class="fas fa-link"></i> Blocked by: ${depNames}`);
+            } else {
+                // Dependencies met - show indicator
+                if (task.status === 'waiting') {
                     parts.push(`<i class="fas fa-check-circle"></i> Dependencies met!`);
+                } else {
+                    // For non-waiting tasks, just show that dependencies exist
+                    parts.push(`<i class="fas fa-check-circle"></i> Dependencies met`);
                 }
             }
+        }
 
-            if (parts.length > 0) {
-                waitingForDisplay = `<span class="task-waiting-for">${parts.join(' | ')}</span>`;
-            }
+        if (parts.length > 0) {
+            waitingForDisplay = `<span class="task-waiting-for">${parts.join(' | ')}</span>`;
         }
 
         div.innerHTML = `
@@ -1163,7 +1183,10 @@ class GTDApp {
             checkbox.type = 'checkbox';
             checkbox.id = `dep-task-${task.id}`;
             checkbox.value = task.id;
+            checkbox.style.width = '16px';
+            checkbox.style.height = '16px';
             checkbox.style.marginRight = '8px';
+            checkbox.style.flexShrink = '0';
 
             // Check if this task is already a dependency
             if (currentTask && currentTask.waitingForTaskIds && currentTask.waitingForTaskIds.includes(task.id)) {
@@ -1419,13 +1442,17 @@ class GTDApp {
             const pos = taskPositions[task.id];
             if (!pos) return;
 
-            // Task bar color based on status
+            // Determine effective status (tasks with unmet dependencies show as waiting)
+            const hasUnmetDependencies = !task.completed && task.waitingForTaskIds && task.waitingForTaskIds.length > 0 && !task.areDependenciesMet(this.tasks);
+            const effectiveStatus = hasUnmetDependencies ? 'waiting' : task.status;
+
+            // Task bar color based on effective status
             let barColor = '#5cb85c'; // completed
             if (!task.completed) {
-                if (task.status === 'inbox') barColor = '#95a5a6';
-                else if (task.status === 'next') barColor = '#4a90d9';
-                else if (task.status === 'waiting') barColor = '#f39c12';
-                else if (task.status === 'someday') barColor = '#9b59b6';
+                if (effectiveStatus === 'inbox') barColor = '#95a5a6';
+                else if (effectiveStatus === 'next') barColor = '#4a90d9';
+                else if (effectiveStatus === 'waiting') barColor = '#f39c12';
+                else if (effectiveStatus === 'someday') barColor = '#9b59b6';
             }
 
             // Overdue indication
@@ -1456,10 +1483,10 @@ class GTDApp {
 
             // Status text
             const statusText = task.completed ? 'Completed' :
-                              task.status === 'inbox' ? 'Inbox' :
-                              task.status === 'next' ? 'Next' :
-                              task.status === 'waiting' ? 'Waiting' :
-                              task.status === 'someday' ? 'Someday' : task.status;
+                              effectiveStatus === 'inbox' ? 'Inbox' :
+                              effectiveStatus === 'next' ? 'Next' :
+                              effectiveStatus === 'waiting' ? 'Waiting' :
+                              effectiveStatus === 'someday' ? 'Someday' : effectiveStatus;
             html += `
                 <text x="${pos.x + 10}" y="${pos.y + 45}" font-size="11" fill="white" opacity="0.9">
                     ${statusText}
@@ -1638,7 +1665,7 @@ class GTDApp {
     updateCounts() {
         const counts = {
             inbox: this.tasks.filter(t => t.status === 'inbox' && !t.completed && !t.projectId).length,
-            next: this.tasks.filter(t => t.status === 'next' && !t.completed).length,
+            next: this.tasks.filter(t => t.status === 'next' && !t.completed && t.areDependenciesMet(this.tasks)).length,
             waiting: this.tasks.filter(t => t.status === 'waiting' && !t.completed).length,
             someday: this.tasks.filter(t => t.status === 'someday' && !t.completed).length,
             projects: this.projects.filter(p => p.status === 'active').length
@@ -1653,6 +1680,9 @@ class GTDApp {
     }
 
     updateContextFilter() {
+        const contextFilter = document.getElementById('context-filter');
+        if (!contextFilter) return; // Skip if filter element doesn't exist
+
         const allContexts = new Set();
         this.tasks.forEach(task => {
             if (task.contexts) {
@@ -1665,7 +1695,6 @@ class GTDApp {
             }
         });
 
-        const contextFilter = document.getElementById('context-filter');
         const currentValue = contextFilter.value;
         contextFilter.innerHTML = '<option value="">All Contexts</option>';
 
@@ -1963,17 +1992,6 @@ function getDragAfterElement(container, y) {
 // Initialize app
 const app = new GTDApp();
 document.addEventListener('DOMContentLoaded', () => app.init());
-
-// Add button to open task modal
-document.addEventListener('DOMContentLoaded', () => {
-    const quickAdd = document.querySelector('.quick-add');
-    const addButton = document.createElement('button');
-    addButton.className = 'btn btn-primary';
-    addButton.style.marginTop = '0.5rem';
-    addButton.innerHTML = '<i class="fas fa-plus"></i> Add Task';
-    addButton.addEventListener('click', () => app.openTaskModal(null, app.currentProjectId));
-    quickAdd.appendChild(addButton);
-});
 
 // Add button to open project modal in projects view
 document.addEventListener('DOMContentLoaded', () => {
