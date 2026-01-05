@@ -738,6 +738,18 @@ body {
     display: flex;
 }
 
+/* Gantt Chart Container */
+.gantt-container {
+    padding: var(--spacing-lg);
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+    min-height: 400px;
+}
+
+.gantt-container svg {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
 .modal-content {
     background-color: var(--bg-primary);
     border-radius: var(--radius-lg);

@@ -165,6 +165,10 @@ class GTDApp {
             this.closeProjectModal();
         });
 
+        document.getElementById('close-gantt-modal').addEventListener('click', () => {
+            this.closeGanttModal();
+        });
+
         // Close modal on background click
         document.getElementById('task-modal').addEventListener('click', (e) => {
             if (e.target.id === 'task-modal') {
@@ -175,6 +179,12 @@ class GTDApp {
         document.getElementById('project-modal').addEventListener('click', (e) => {
             if (e.target.id === 'project-modal') {
                 this.closeProjectModal();
+            }
+        });
+
+        document.getElementById('gantt-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'gantt-modal') {
+                this.closeGanttModal();
             }
         });
 
@@ -505,12 +515,20 @@ class GTDApp {
                     <i class="fas fa-arrow-left"></i> Back
                 </button>
                 ${this.escapeHtml(project.title)} - Tasks
+                <button class="btn btn-primary" id="show-gantt-chart" style="margin-left: 1rem;">
+                    <i class="fas fa-chart-bar"></i> Gantt Chart
+                </button>
             `;
 
             // Add back button handler
             document.getElementById('back-to-projects').addEventListener('click', () => {
                 this.currentProjectId = null;
                 this.switchView('projects');
+            });
+
+            // Add Gantt chart button handler
+            document.getElementById('show-gantt-chart').addEventListener('click', () => {
+                this.openGanttChart(project);
             });
         }
 
@@ -1249,6 +1267,293 @@ class GTDApp {
     closeProjectModal() {
         document.getElementById('project-modal').classList.remove('active');
         this.pendingTaskData = null;
+    }
+
+    openGanttChart(project) {
+        const modal = document.getElementById('gantt-modal');
+        const title = document.getElementById('gantt-modal-title');
+        title.textContent = `${project.title} - Gantt Chart`;
+
+        modal.classList.add('active');
+        this.renderGanttChart(project);
+    }
+
+    closeGanttModal() {
+        document.getElementById('gantt-modal').classList.remove('active');
+    }
+
+    renderGanttChart(project) {
+        const container = document.getElementById('gantt-chart');
+        if (!container) return;
+
+        // Get all tasks for this project (including completed ones)
+        const projectTasks = this.tasks.filter(t => t.projectId === project.id);
+
+        if (projectTasks.length === 0) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+                    <i class="fas fa-chart-bar" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                    <h3>No Tasks in This Project</h3>
+                    <p>Add tasks to this project to see them in the Gantt chart.</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Calculate date range
+        let minDate = null;
+        let maxDate = null;
+
+        projectTasks.forEach(task => {
+            const dates = [];
+            if (task.deferDate) dates.push(new Date(task.deferDate));
+            if (task.dueDate) dates.push(new Date(task.dueDate));
+
+            dates.forEach(date => {
+                if (!minDate || date < minDate) minDate = date;
+                if (!maxDate || date > maxDate) maxDate = date;
+            });
+        });
+
+        // Add buffer days
+        if (minDate) {
+            minDate = new Date(minDate);
+            minDate.setDate(minDate.getDate() - 2);
+        }
+        if (maxDate) {
+            maxDate = new Date(maxDate);
+            maxDate.setDate(maxDate.getDate() + 7);
+        }
+
+        // If no dates found, use today ± 14 days
+        if (!minDate || !maxDate) {
+            const today = new Date();
+            minDate = new Date(today);
+            minDate.setDate(minDate.getDate() - 7);
+            maxDate = new Date(today);
+            maxDate.setDate(maxDate.getDate() + 21);
+        }
+
+        const dayWidth = 40; // pixels per day
+        const headerHeight = 60;
+        const taskRowHeight = 50;
+        const totalDays = Math.ceil((maxDate - minDate) / (1000 * 60 * 60 * 24));
+
+        const chartWidth = Math.max(totalDays * dayWidth + 200, 800);
+        const chartHeight = headerHeight + (projectTasks.length * taskRowHeight) + 100;
+
+        // Build the Gantt chart HTML
+        let html = `
+            <div style="overflow-x: auto; overflow-y: auto; max-height: 600px;">
+                <svg width="${chartWidth}" height="${chartHeight}" style="display: block;">
+                    <!-- Background -->
+                    <rect width="100%" height="100%" fill="#ffffff"/>
+
+                    <!-- Define markers for dependency arrows -->
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" fill="#666"/>
+                        </marker>
+                    </defs>
+        `;
+
+        // Draw date header and grid lines
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        for (let i = 0; i <= totalDays; i++) {
+            const currentDate = new Date(minDate);
+            currentDate.setDate(currentDate.getDate() + i);
+            const x = 200 + (i * dayWidth);
+
+            // Grid line
+            html += `<line x1="${x}" y1="${headerHeight}" x2="${x}" y2="${chartHeight}" stroke="#e0e0e0" stroke-width="1"/>`;
+
+            // Highlight today
+            const isToday = currentDate.toDateString() === today.toDateString();
+            if (isToday) {
+                html += `<rect x="${x}" y="${headerHeight}" width="${dayWidth}" height="${chartHeight - headerHeight}" fill="rgba(74, 144, 217, 0.1)"/>`;
+            }
+
+            // Date label (show label every 3 days or for today)
+            if (i % 3 === 0 || isToday) {
+                const dateStr = currentDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                html += `
+                    <text x="${x + dayWidth/2}" y="${headerHeight - 10}" text-anchor="middle" font-size="11" fill="#666">
+                        ${dateStr}
+                    </text>
+                `;
+            }
+        }
+
+        // Draw tasks and dependencies
+        const taskPositions = {}; // Store task positions for drawing dependency lines
+
+        projectTasks.forEach((task, index) => {
+            const y = headerHeight + (index * taskRowHeight) + 15;
+            const taskName = this.escapeHtml(task.title).substring(0, 40) + (task.title.length > 40 ? '...' : '');
+
+            // Task label with completion indicator
+            const completionIcon = task.completed ? '✓ ' : '';
+            html += `
+                <text x="10" y="${y + 15}" font-size="12" font-weight="500" fill="#2c3e50">
+                    ${completionIcon}${taskName}
+                </text>
+            `;
+
+            // Calculate task bar position and width
+            let startDate = null;
+            let endDate = null;
+
+            if (task.deferDate) {
+                startDate = new Date(task.deferDate);
+            }
+
+            if (task.dueDate) {
+                endDate = new Date(task.dueDate);
+            }
+
+            // If only defer date, set end date to defer date + 3 days
+            if (startDate && !endDate) {
+                endDate = new Date(startDate);
+                endDate.setDate(endDate.getDate() + 3);
+            }
+
+            // If only due date, set start date to due date - 3 days
+            if (endDate && !startDate) {
+                startDate = new Date(endDate);
+                startDate.setDate(startDate.getDate() - 3);
+            }
+
+            // If neither date, position in middle with default width
+            let barWidth, barX;
+            if (!startDate && !endDate) {
+                // Center in the visible timeline
+                const midDays = totalDays / 2;
+                barX = 200 + (midDays * dayWidth) - (dayWidth * 2);
+                barWidth = dayWidth * 4;
+            } else {
+                // Calculate position
+                const startOffset = Math.max(0, (startDate - minDate) / (1000 * 60 * 60 * 24));
+                const endOffset = Math.max(0, (endDate - minDate) / (1000 * 60 * 60 * 24));
+                barX = 200 + (startOffset * dayWidth);
+                barWidth = Math.max(dayWidth, (endOffset - startOffset) * dayWidth);
+            }
+
+            // Store position for dependency lines
+            taskPositions[task.id] = {
+                x: barX,
+                y: y + 10,
+                width: barWidth
+            };
+
+            // Task bar color based on status
+            let barColor = '#5cb85c'; // completed
+            if (!task.completed) {
+                if (task.status === 'inbox') barColor = '#95a5a6';
+                else if (task.status === 'next') barColor = '#4a90d9';
+                else if (task.status === 'waiting') barColor = '#f39c12';
+                else if (task.status === 'someday') barColor = '#9b59b6';
+            }
+
+            // Overdue indication
+            const isOverdue = task.isOverdue && task.isOverdue();
+            if (isOverdue && !task.completed) {
+                barColor = '#e74c3c';
+            }
+
+            // Dim tasks without dates
+            if (!task.dueDate && !task.deferDate) {
+                html += `
+                    <rect x="${barX}" y="${y}" width="${barWidth}" height="30" rx="4" fill="${barColor}" opacity="0.4" stroke-dasharray="4"/>
+                `;
+            } else {
+                // Draw task bar
+                html += `
+                    <rect x="${barX}" y="${y}" width="${barWidth}" height="30" rx="4" fill="${barColor}" opacity="0.8"/>
+                `;
+            }
+
+            // Task title on bar
+            html += `
+                <text x="${barX + barWidth/2}" y="${y + 19}" text-anchor="middle" font-size="11" fill="white" font-weight="500">
+                    ${task.title.length > 20 ? this.escapeHtml(task.title).substring(0, 20) + '...' : this.escapeHtml(task.title)}
+                </text>
+            `;
+
+            // Add due date label if exists
+            if (task.dueDate) {
+                const dueLabel = new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                html += `
+                    <text x="${barX + barWidth + 5}" y="${y + 19}" font-size="10" fill="#e74c3c">
+                        Due: ${dueLabel}
+                    </text>
+                `;
+            }
+
+            // Add defer date label if exists
+            if (task.deferDate) {
+                const deferLabel = new Date(task.deferDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                html += `
+                    <text x="${barX - 5}" y="${y + 19}" font-size="10" fill="#856404" text-anchor="end">
+                        From: ${deferLabel}
+                    </text>
+                `;
+            }
+        });
+
+        // Draw dependency lines
+        projectTasks.forEach((task, index) => {
+            if (task.waitingForTaskIds && task.waitingForTaskIds.length > 0) {
+                const toTask = taskPositions[task.id];
+                if (!toTask) return;
+
+                task.waitingForTaskIds.forEach(depTaskId => {
+                    const fromTask = taskPositions[depTaskId];
+                    if (!fromTask) return;
+
+                    // Draw line from end of parent task to start of dependent task
+                    const fromX = fromTask.x + fromTask.width;
+                    const fromY = fromTask.y;
+                    const toX = toTask.x;
+                    const toY = toTask.y;
+
+                    // Create a curved path
+                    const midX = (fromX + toX) / 2;
+                    html += `
+                        <path d="M ${fromX} ${fromY} C ${midX} ${fromY}, ${midX} ${toY}, ${toX} ${toY}"
+                              fill="none" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)" opacity="0.6"/>
+                    `;
+                });
+            }
+        });
+
+        // Legend
+        const legendY = chartHeight - 50;
+        html += `
+            <text x="10" y="${legendY}" font-size="11" font-weight="600" fill="#666">Legend:</text>
+            <rect x="70" y="${legendY - 10}" width="15" height="15" rx="3" fill="#95a5a6" opacity="0.8"/>
+            <text x="90" y="${legendY + 2}" font-size="11" fill="#666">Inbox</text>
+            <rect x="140" y="${legendY - 10}" width="15" height="15" rx="3" fill="#4a90d9" opacity="0.8"/>
+            <text x="160" y="${legendY + 2}" font-size="11" fill="#666">Next</text>
+            <rect x="210" y="${legendY - 10}" width="15" height="15" rx="3" fill="#f39c12" opacity="0.8"/>
+            <text x="230" y="${legendY + 2}" font-size="11" fill="#666">Waiting</text>
+            <rect x="290" y="${legendY - 10}" width="15" height="15" rx="3" fill="#5cb85c" opacity="0.8"/>
+            <text x="310" y="${legendY + 2}" font-size="11" fill="#666">Completed</text>
+            <rect x="385" y="${legendY - 10}" width="15" height="15" rx="3" fill="#e74c3c" opacity="0.8"/>
+            <text x="405" y="${legendY + 2}" font-size="11" fill="#666">Overdue</text>
+            <rect x="465" y="${legendY - 10}" width="15" height="15" rx="3" fill="#4a90d9" opacity="0.4" stroke-dasharray="2"/>
+            <text x="485" y="${legendY + 2}" font-size="11" fill="#666">No Dates</text>
+            <line x1="550" y1="${legendY - 2}" x2="580" y2="${legendY - 2}" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)" opacity="0.6"/>
+            <text x="590" y="${legendY + 2}" font-size="11" fill="#666">Dependency</text>
+        `;
+
+        html += `
+                </svg>
+            </div>
+        `;
+
+        container.innerHTML = html;
     }
 
     async saveProjectFromForm() {
