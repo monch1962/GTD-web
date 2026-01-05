@@ -566,7 +566,7 @@ class GTDApp {
 
         // Apply additional filters
         if (this.filters.context) {
-            filteredTasks = filteredTasks.filter(task => task.contexts.includes(this.filters.context));
+            filteredTasks = filteredTasks.filter(task => task.contexts && task.contexts.includes(this.filters.context));
         }
 
         if (this.filters.energy) {
@@ -693,7 +693,7 @@ class GTDApp {
                 <div class="task-title">${this.escapeHtml(task.title)}</div>
                 ${task.description ? `<div class="task-description">${this.escapeHtml(task.description)}</div>` : ''}
                 <div class="task-meta">
-                    ${task.contexts.length > 0 ? task.contexts.map(context => `<span class="task-context">${this.escapeHtml(context)}</span>`).join('') : ''}
+                    ${task.contexts && task.contexts.length > 0 ? task.contexts.map(context => `<span class="task-context">${this.escapeHtml(context)}</span>`).join('') : ''}
                     ${task.energy ? `<span class="task-energy"><i class="fas fa-bolt"></i> ${task.energy}</span>` : ''}
                     ${task.time ? `<span class="task-time"><i class="fas fa-clock"></i> ${task.time}m</span>` : ''}
                     ${dueDateDisplay}
@@ -782,7 +782,7 @@ class GTDApp {
         let filteredProjects = this.projects;
 
         if (this.filters.context) {
-            filteredProjects = filteredProjects.filter(project => project.contexts.includes(this.filters.context));
+            filteredProjects = filteredProjects.filter(project => project.contexts && project.contexts.includes(this.filters.context));
         }
 
         container.innerHTML = '';
@@ -841,7 +841,7 @@ class GTDApp {
             ` : ''}
             <div class="project-meta">
                 <div class="project-tags">
-                    ${project.contexts.map(context => `<span class="task-context">${this.escapeHtml(context)}</span>`).join('')}
+                    ${project.contexts ? project.contexts.map(context => `<span class="task-context">${this.escapeHtml(context)}</span>`).join('') : ''}
                 </div>
                 <div class="project-actions">
                     <button class="btn-view-tasks" title="View tasks">
@@ -1085,7 +1085,7 @@ class GTDApp {
             document.getElementById('task-due-date').value = task.dueDate || '';
             document.getElementById('task-defer-date').value = task.deferDate || '';
             document.getElementById('task-waiting-for-description').value = task.waitingForDescription || '';
-            document.getElementById('task-tags').value = task.contexts.join(', ');
+            document.getElementById('task-tags').value = task.contexts ? task.contexts.join(', ') : '';
         } else {
             title.textContent = 'Add Task';
             document.getElementById('task-id').value = '';
@@ -1260,7 +1260,7 @@ class GTDApp {
             document.getElementById('project-title').value = project.title;
             document.getElementById('project-description').value = project.description || '';
             document.getElementById('project-status').value = project.status || 'active';
-            document.getElementById('project-tags').value = project.contexts.join(', ');
+            document.getElementById('project-tags').value = project.contexts ? project.contexts.join(', ') : '';
         } else {
             title.textContent = 'Add Project';
             document.getElementById('project-id').value = '';
@@ -1759,10 +1759,14 @@ class GTDApp {
     updateContextFilter() {
         const allContexts = new Set();
         this.tasks.forEach(task => {
-            task.contexts.forEach(context => allContexts.add(context));
+            if (task.contexts) {
+                task.contexts.forEach(context => allContexts.add(context));
+            }
         });
         this.projects.forEach(project => {
-            project.contexts.forEach(context => allContexts.add(context));
+            if (project.contexts) {
+                project.contexts.forEach(context => allContexts.add(context));
+            }
         });
 
         const contextFilter = document.getElementById('context-filter');
@@ -1960,14 +1964,14 @@ class GTDApp {
         if (!confirmed) return;
 
         // Count affected items
-        const affectedTasks = this.tasks.filter(task => task.contexts.includes(tagName));
-        const affectedProjects = this.projects.filter(project => project.contexts.includes(tagName));
+        const affectedTasks = this.tasks.filter(task => task.contexts && task.contexts.includes(tagName));
+        const affectedProjects = this.projects.filter(project => project.contexts && project.contexts.includes(tagName));
 
         console.log(`Deleting context "${tagName}" from ${affectedTasks.length} tasks and ${affectedProjects.length} projects`);
 
         // Remove context from all tasks
         this.tasks.forEach(task => {
-            if (task.contexts.includes(tagName)) {
+            if (task.contexts && task.contexts.includes(tagName)) {
                 task.contexts = task.contexts.filter(t => t !== tagName);
                 task.updatedAt = new Date().toISOString();
             }
@@ -1975,7 +1979,7 @@ class GTDApp {
 
         // Remove context from all projects
         this.projects.forEach(project => {
-            if (project.contexts.includes(tagName)) {
+            if (project.contexts && project.contexts.includes(tagName)) {
                 project.contexts = project.contexts.filter(t => t !== tagName);
                 project.updatedAt = new Date().toISOString();
             }
