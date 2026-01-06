@@ -13,6 +13,8 @@
     <link rel="manifest" href="manifest.json">
 </head>
 <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <div id="announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
     <div class="app-container">
         <!-- Sidebar -->
         <aside class="sidebar">
@@ -103,57 +105,61 @@
         </aside>
 
         <!-- Main Content -->
-        <main class="main-content">
+        <main class="main-content" id="main-content">
             <header class="content-header">
                 <div style="flex: 1; max-width: 400px; margin-right: var(--spacing-md);">
                     <div style="position: relative;">
-                        <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-secondary);"></i>
-                        <input type="text" id="global-search" placeholder="Search tasks..." style="width: 100%; padding: 8px 10px 8px 32px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 0.9rem;">
-                        <button id="clear-search" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-secondary); cursor: pointer; display: none;">
-                            <i class="fas fa-times"></i>
+                        <label for="global-search" class="sr-only">Search tasks</label>
+                        <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); aria-hidden="true"></i>
+                        <input type="text" id="global-search" placeholder="Search tasks..." aria-label="Search tasks" aria-describedby="search-instructions" style="width: 100%; padding: 8px 10px 8px 32px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 0.9rem;">
+                        <span id="search-instructions" class="sr-only">Type to search tasks, use arrow keys to navigate results</span>
+                        <button id="clear-search" aria-label="Clear search" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-secondary); cursor: pointer; display: none;">
+                            <i class="fas fa-times" aria-hidden="true"></i>
                         </button>
                     </div>
                 </div>
                 <h2 id="view-title" style="margin: 0;">Inbox</h2>
-                <div style="display: flex; gap: var(--spacing-sm);">
-                    <button id="btn-dark-mode" class="btn btn-secondary" title="Toggle Dark Mode">
-                        <i class="fas fa-moon"></i>
+                <div style="display: flex; gap: var(--spacing-sm);" role="toolbar" aria-label="Task management actions">
+                    <button id="btn-dark-mode" class="btn btn-secondary" title="Toggle Dark Mode" aria-label="Toggle dark mode">
+                        <i class="fas fa-moon" aria-hidden="true"></i>
                     </button>
-                    <button id="btn-calendar-view" class="btn btn-secondary" title="Calendar View">
-                        <i class="fas fa-calendar-alt"></i>
+                    <button id="btn-calendar-view" class="btn btn-secondary" title="Calendar View" aria-label="Open calendar view">
+                        <i class="fas fa-calendar-alt" aria-hidden="true"></i>
                     </button>
-                    <button id="btn-focus-mode" class="btn btn-secondary" title="Focus Mode">
-                        <i class="fas fa-bullseye"></i>
+                    <button id="btn-focus-mode" class="btn btn-secondary" title="Focus Mode" aria-label="Enter focus mode">
+                        <i class="fas fa-bullseye" aria-hidden="true"></i>
                     </button>
-                    <button id="btn-new-project" class="btn btn-secondary" title="New Project">
-                        <i class="fas fa-folder-plus"></i>
+                    <button id="btn-new-project" class="btn btn-secondary" title="New Project" aria-label="Create new project">
+                        <i class="fas fa-folder-plus" aria-hidden="true"></i>
                     </button>
-                    <button id="btn-daily-review" class="btn btn-secondary" title="Daily Review">
-                        <i class="fas fa-sun"></i>
+                    <button id="btn-daily-review" class="btn btn-secondary" title="Daily Review" aria-label="Start daily review">
+                        <i class="fas fa-sun" aria-hidden="true"></i>
                     </button>
-                    <button id="btn-undo" class="btn btn-secondary" title="Undo (Ctrl+Z)" disabled>
-                        <i class="fas fa-undo"></i>
+                    <button id="btn-undo" class="btn btn-secondary" title="Undo (Ctrl+Z)" disabled aria-label="Undo last action" aria-describedby="undo-status">
+                        <i class="fas fa-undo" aria-hidden="true"></i>
                     </button>
-                    <button id="btn-redo" class="btn btn-secondary" title="Redo (Ctrl+Y)" disabled>
-                        <i class="fas fa-redo"></i>
+                    <span id="undo-status" class="sr-only">Undo is unavailable</span>
+                    <button id="btn-redo" class="btn btn-secondary" title="Redo (Ctrl+Y)" disabled aria-label="Redo action" aria-describedby="redo-status">
+                        <i class="fas fa-redo" aria-hidden="true"></i>
                     </button>
-                    <button id="btn-weekly-review" class="btn btn-secondary" title="Weekly Review">
-                        <i class="fas fa-calendar-week"></i>
+                    <span id="redo-status" class="sr-only">Redo is unavailable</span>
+                    <button id="btn-weekly-review" class="btn btn-secondary" title="Weekly Review" aria-label="Start weekly review">
+                        <i class="fas fa-calendar-week" aria-hidden="true"></i>
                     </button>
-                    <button id="btn-dashboard" class="btn btn-secondary" title="Dashboard">
-                        <i class="fas fa-chart-bar"></i>
+                    <button id="btn-dashboard" class="btn btn-secondary" title="Dashboard" aria-label="Open dashboard">
+                        <i class="fas fa-chart-bar" aria-hidden="true"></i>
                     </button>
-                    <button id="btn-dependencies" class="btn btn-secondary" title="Task Dependencies">
-                        <i class="fas fa-project-diagram"></i>
+                    <button id="btn-dependencies" class="btn btn-secondary" title="Task Dependencies" aria-label="View task dependencies">
+                        <i class="fas fa-project-diagram" aria-hidden="true"></i>
                     </button>
-                    <button id="btn-heatmap" class="btn btn-secondary" title="Productivity Heatmap">
-                        <i class="fas fa-calendar-alt"></i>
+                    <button id="btn-heatmap" class="btn btn-secondary" title="Productivity Heatmap" aria-label="View productivity heatmap">
+                        <i class="fas fa-calendar-alt" aria-hidden="true"></i>
                     </button>
-                    <button id="btn-bulk-select" class="btn btn-secondary" style="display: none;">
-                        <i class="fas fa-check-square"></i> Select Multiple
+                    <button id="btn-bulk-select" class="btn btn-secondary" style="display: none;" aria-label="Enable bulk selection mode">
+                        <i class="fas fa-check-square" aria-hidden="true"></i> Select Multiple
                     </button>
-                    <button id="btn-suggestions" class="btn btn-primary">
-                        <i class="fas fa-lightbulb"></i> What should I work on?
+                    <button id="btn-suggestions" class="btn btn-primary" aria-label="Get smart task suggestions">
+                        <i class="fas fa-lightbulb" aria-hidden="true"></i> What should I work on?
                     </button>
                 </div>
             </header>
@@ -297,7 +303,7 @@
                 </div>
             </div>
 
-            <div id="tasks-container" class="tasks-container">
+            <div id="tasks-container" class="tasks-container" role="list" aria-label="Tasks" aria-live="polite">
                 <!-- Tasks will be rendered here -->
             </div>
 
@@ -311,20 +317,20 @@
         </main>
 
         <!-- Task/Edit Modal -->
-        <div id="task-modal" class="modal">
+        <div id="task-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
             <div class="modal-content">
                 <div class="modal-header">
                     <h3 id="modal-title">Add Task</h3>
-                    <button class="close-button" id="close-modal">
-                        <i class="fas fa-times"></i>
+                    <button class="close-button" id="close-modal" aria-label="Close modal">
+                        <i class="fas fa-times" aria-hidden="true"></i>
                     </button>
                 </div>
                 <form id="task-form" class="task-form">
                     <input type="hidden" id="task-id">
 
                     <div class="form-group">
-                        <label for="task-title">Title *</label>
-                        <input type="text" id="task-title" required>
+                        <label for="task-title">Title <span class="required" aria-label="required">*</span></label>
+                        <input type="text" id="task-title" required aria-required="true">
                     </div>
 
                     <div class="form-group">
@@ -438,21 +444,21 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Subtasks / Checklist</label>
-                        <div id="subtasks-container" style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: var(--spacing-sm); margin-bottom: var(--spacing-sm);">
+                        <label for="new-subtask-input">Subtasks / Checklist</label>
+                        <div id="subtasks-container" role="list" aria-label="Subtasks" style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: var(--spacing-sm); margin-bottom: var(--spacing-sm);">
                             <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: var(--spacing-sm);">No subtasks yet. Add subtasks to break down this task into smaller steps.</p>
                         </div>
                         <div style="display: flex; gap: var(--spacing-sm);">
-                            <input type="text" id="new-subtask-input" placeholder="Add a subtask..." style="flex: 1; padding: 6px; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
-                            <button type="button" class="btn btn-secondary" id="btn-add-subtask">
-                                <i class="fas fa-plus"></i> Add
+                            <input type="text" id="new-subtask-input" placeholder="Add a subtask..." aria-label="New subtask" style="flex: 1; padding: 6px; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                            <button type="button" class="btn btn-secondary" id="btn-add-subtask" aria-label="Add subtask">
+                                <i class="fas fa-plus" aria-hidden="true"></i> Add
                             </button>
                         </div>
                     </div>
 
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> Save
+                            <i class="fas fa-save" aria-hidden="true"></i> Save
                         </button>
                         <button type="button" class="btn btn-secondary" id="cancel-modal">
                             Cancel
@@ -463,20 +469,20 @@
         </div>
 
         <!-- Project Modal -->
-        <div id="project-modal" class="modal">
+        <div id="project-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="project-modal-title">
             <div class="modal-content">
                 <div class="modal-header">
                     <h3 id="project-modal-title">Add Project</h3>
-                    <button class="close-button" id="close-project-modal">
-                        <i class="fas fa-times"></i>
+                    <button class="close-button" id="close-project-modal" aria-label="Close project modal">
+                        <i class="fas fa-times" aria-hidden="true"></i>
                     </button>
                 </div>
                 <form id="project-form" class="task-form">
                     <input type="hidden" id="project-id">
 
                     <div class="form-group">
-                        <label for="project-title">Title *</label>
-                        <input type="text" id="project-title" required>
+                        <label for="project-title">Title <span class="required" aria-label="required">*</span></label>
+                        <input type="text" id="project-title" required aria-required="true">
                     </div>
 
                     <div class="form-group">
@@ -501,7 +507,7 @@
 
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> Save
+                            <i class="fas fa-save" aria-hidden="true"></i> Save
                         </button>
                         <button type="button" class="btn btn-secondary" id="cancel-project-modal">
                             Cancel
@@ -513,26 +519,26 @@
     </div>
 
     <!-- Context Creation Modal -->
-    <div id="context-modal" class="modal">
+    <div id="context-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="context-modal-title">
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="context-modal-title">Create New Context</h3>
-                <button class="close-button" id="close-context-modal">&times;</button>
+                <button class="close-button" id="close-context-modal" aria-label="Close context modal">&times;</button>
             </div>
             <form id="context-form" class="task-form">
                 <div class="form-group">
-                    <label for="context-name">Context Name *</label>
-                    <input type="text" id="context-name" required placeholder="@urgent, @review, @priority">
+                    <label for="context-name">Context Name <span class="required" aria-label="required">*</span></label>
+                    <input type="text" id="context-name" required aria-required="true" placeholder="@urgent, @review, @priority">
                     <small style="color: var(--text-secondary); margin-top: 4px; display: block;">
                         Contexts must start with @ symbol (e.g., @errands, @work, @urgent). The @ will be added automatically if missing.
                     </small>
                 </div>
 
-                <div id="context-error" style="color: var(--danger-color); display: none; margin-bottom: 1rem;"></div>
+                <div id="context-error" role="alert" aria-live="assertive" style="color: var(--danger-color); display: none; margin-bottom: 1rem;"></div>
 
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Create Context
+                        <i class="fas fa-plus" aria-hidden="true"></i> Create Context
                     </button>
                     <button type="button" class="btn btn-secondary" id="cancel-context-modal">
                         Cancel
@@ -543,11 +549,11 @@
     </div>
 
     <!-- Help Modal -->
-    <div id="help-modal" class="modal">
+    <div id="help-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="help-modal-title">
         <div class="modal-content" style="max-width: 900px; max-height: 85vh; overflow-y: auto;">
             <div class="modal-header">
-                <h3>GTD Web - Help & Instructions</h3>
-                <button class="close-button" id="close-help-modal">&times;</button>
+                <h3 id="help-modal-title">GTD Web - Help & Instructions</h3>
+                <button class="close-button" id="close-help-modal" aria-label="Close help modal">&times;</button>
             </div>
             <div class="help-content" style="padding: var(--spacing-lg);">
                 <h4>Getting Started with GTD</h4>
@@ -863,11 +869,11 @@
     </div>
 
     <!-- Gantt Chart Modal -->
-    <div id="gantt-modal" class="modal">
+    <div id="gantt-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="gantt-modal-title">
         <div class="modal-content" style="max-width: 90%; width: 1400px;">
             <div class="modal-header">
                 <h3 id="gantt-modal-title">Project Gantt Chart</h3>
-                <button class="close-button" id="close-gantt-modal">&times;</button>
+                <button class="close-button" id="close-gantt-modal" aria-label="Close Gantt chart modal">&times;</button>
             </div>
             <div class="gantt-container" id="gantt-chart">
                 <!-- Gantt chart will be rendered here -->
@@ -876,11 +882,11 @@
     </div>
 
     <!-- Dashboard Modal -->
-    <div id="dashboard-modal" class="modal">
+    <div id="dashboard-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="dashboard-modal-title">
         <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
             <div class="modal-header">
-                <h2>Productivity Dashboard</h2>
-                <button class="close-button" id="close-dashboard-modal">&times;</button>
+                <h2 id="dashboard-modal-title">Productivity Dashboard</h2>
+                <button class="close-button" id="close-dashboard-modal" aria-label="Close dashboard modal">&times;</button>
             </div>
             <div class="modal-body" style="padding: var(--spacing-lg);">
                 <div id="dashboard-content">
@@ -891,11 +897,11 @@
     </div>
 
     <!-- Daily Review Modal -->
-    <div id="daily-review-modal" class="modal">
+    <div id="daily-review-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="daily-review-modal-title">
         <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
             <div class="modal-header">
-                <h2><i class="fas fa-sun"></i> Daily Review</h2>
-                <button class="close-button" id="close-daily-review-modal">&times;</button>
+                <h2 id="daily-review-modal-title"><i class="fas fa-sun" aria-hidden="true"></i> Daily Review</h2>
+                <button class="close-button" id="close-daily-review-modal" aria-label="Close daily review modal">&times;</button>
             </div>
             <div class="modal-body" style="padding: var(--spacing-lg);">
                 <div id="daily-review-content">
@@ -906,11 +912,11 @@
     </div>
 
     <!-- Weekly Review Modal -->
-    <div id="weekly-review-modal" class="modal">
+    <div id="weekly-review-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="weekly-review-modal-title">
         <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
             <div class="modal-header">
-                <h2>Weekly Review</h2>
-                <button class="close-button" id="close-weekly-review-modal">&times;</button>
+                <h2 id="weekly-review-modal-title">Weekly Review</h2>
+                <button class="close-button" id="close-weekly-review-modal" aria-label="Close weekly review modal">&times;</button>
             </div>
             <div class="modal-body" style="padding: var(--spacing-lg);">
                 <div id="weekly-review-content">
@@ -921,11 +927,11 @@
     </div>
 
     <!-- Calendar View Modal -->
-    <div id="calendar-modal" class="modal">
+    <div id="calendar-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="calendar-modal-title">
         <div class="modal-content" style="max-width: 1000px; max-height: 90vh; overflow-y: auto;">
             <div class="modal-header">
-                <h2>Calendar View</h2>
-                <button class="close-button" id="close-calendar-modal">&times;</button>
+                <h2 id="calendar-modal-title">Calendar View</h2>
+                <button class="close-button" id="close-calendar-modal" aria-label="Close calendar modal">&times;</button>
             </div>
             <div class="modal-body" style="padding: var(--spacing-lg);">
                 <div id="calendar-content">
@@ -936,16 +942,16 @@
     </div>
 
     <!-- Templates Modal -->
-    <div id="templates-modal" class="modal">
+    <div id="templates-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="templates-modal-title">
         <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
             <div class="modal-header">
-                <h2>Task Templates</h2>
-                <button class="close-button" id="close-templates-modal">&times;</button>
+                <h2 id="templates-modal-title">Task Templates</h2>
+                <button class="close-button" id="close-templates-modal" aria-label="Close templates modal">&times;</button>
             </div>
             <div class="modal-body" style="padding: var(--spacing-lg);">
                 <div style="margin-bottom: var(--spacing-lg);">
                     <button id="btn-create-template" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Create Template
+                        <i class="fas fa-plus" aria-hidden="true"></i> Create Template
                     </button>
                 </div>
                 <div id="templates-list">
@@ -956,19 +962,19 @@
     </div>
 
     <!-- Template Edit Modal -->
-    <div id="template-edit-modal" class="modal">
+    <div id="template-edit-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="template-modal-title">
         <div class="modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
             <div class="modal-header">
                 <h2 id="template-modal-title">Create Template</h2>
-                <button class="close-button" id="close-template-edit-modal">&times;</button>
+                <button class="close-button" id="close-template-edit-modal" aria-label="Close template modal">&times;</button>
             </div>
             <div class="modal-body" style="padding: var(--spacing-lg);">
                 <form id="template-form">
                     <input type="hidden" id="template-id">
 
                     <div class="form-group">
-                        <label for="template-title">Title *</label>
-                        <input type="text" id="template-title" class="form-control" required>
+                        <label for="template-title">Title <span class="required" aria-label="required">*</span></label>
+                        <input type="text" id="template-title" class="form-control" required aria-required="true">
                     </div>
 
                     <div class="form-group">
@@ -1006,7 +1012,7 @@
 
                     <div class="form-group">
                         <label>Contexts</label>
-                        <div id="template-contexts-container" class="contexts-container">
+                        <div id="template-contexts-container" class="contexts-container" role="group" aria-label="Template contexts">
                             <!-- Context buttons will be rendered here -->
                         </div>
                     </div>
@@ -1018,20 +1024,20 @@
 
                     <div class="form-group">
                         <label>Subtasks / Checklist</label>
-                        <div id="template-subtasks-container">
+                        <div id="template-subtasks-container" role="list" aria-label="Template subtasks">
                             <!-- Subtasks will be rendered here -->
                         </div>
-                        <button type="button" class="btn btn-secondary" id="btn-add-template-subtask" style="margin-top: var(--spacing-sm);">
-                            <i class="fas fa-plus"></i> Add Subtask
+                        <button type="button" class="btn btn-secondary" id="btn-add-template-subtask" style="margin-top: var(--spacing-sm);" aria-label="Add subtask to template">
+                            <i class="fas fa-plus" aria-hidden="true"></i> Add Subtask
                         </button>
                     </div>
 
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> Save Template
+                            <i class="fas fa-save" aria-hidden="true"></i> Save Template
                         </button>
                         <button type="button" class="btn btn-secondary" id="cancel-template-modal">
-                            <i class="fas fa-times"></i> Cancel
+                            <i class="fas fa-times" aria-hidden="true"></i> Cancel
                         </button>
                     </div>
                 </form>
@@ -1040,16 +1046,16 @@
     </div>
 
     <!-- Archive Modal -->
-    <div id="archive-modal" class="modal">
+    <div id="archive-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="archive-modal-title">
         <div class="modal-content" style="max-width: 1000px; max-height: 90vh; overflow-y: auto;">
             <div class="modal-header">
-                <h2><i class="fas fa-archive"></i> Task Archive</h2>
-                <button class="close-button" id="close-archive-modal">&times;</button>
+                <h2 id="archive-modal-title"><i class="fas fa-archive" aria-hidden="true"></i> Task Archive</h2>
+                <button class="close-button" id="close-archive-modal" aria-label="Close archive modal">&times;</button>
             </div>
             <div class="modal-body" style="padding: var(--spacing-lg);">
                 <div style="margin-bottom: var(--spacing-lg);">
                     <button id="btn-auto-archive" class="btn btn-primary">
-                        <i class="fas fa-magic"></i> Auto-Archive Old Tasks
+                        <i class="fas fa-magic" aria-hidden="true"></i> Auto-Archive Old Tasks
                     </button>
                     <span style="margin-left: var(--spacing-md); color: var(--text-secondary); font-size: 0.9rem;">
                         Archive tasks completed more than 30 days ago
@@ -1077,32 +1083,33 @@
     </div>
 
     <!-- Task Dependencies Modal -->
-    <div id="dependencies-modal" class="modal">
+    <div id="dependencies-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="dependencies-modal-title">
         <div class="modal-content" style="max-width: 1200px; max-height: 90vh; overflow-y: auto;">
             <div class="modal-header">
-                <h2><i class="fas fa-project-diagram"></i> Task Dependencies</h2>
-                <button class="close-button" id="close-dependencies-modal">&times;</button>
+                <h2 id="dependencies-modal-title"><i class="fas fa-project-diagram" aria-hidden="true"></i> Task Dependencies</h2>
+                <button class="close-button" id="close-dependencies-modal" aria-label="Close dependencies modal">&times;</button>
             </div>
             <div class="modal-body" style="padding: var(--spacing-lg);">
                 <!-- View Toggle -->
-                <div style="margin-bottom: var(--spacing-md); display: flex; gap: var(--spacing-sm); align-items: center; flex-wrap: wrap;">
-                    <button id="deps-view-graph" class="btn btn-primary" style="font-size: 0.9rem;">
-                        <i class="fas fa-sitemap"></i> Graph View
+                <div role="toolbar" aria-label="Dependency view options" style="margin-bottom: var(--spacing-md); display: flex; gap: var(--spacing-sm); align-items: center; flex-wrap: wrap;">
+                    <button id="deps-view-graph" class="btn btn-primary" style="font-size: 0.9rem;" aria-label="Show graph view">
+                        <i class="fas fa-sitemap" aria-hidden="true"></i> Graph View
                     </button>
-                    <button id="deps-view-chains" class="btn btn-secondary" style="font-size: 0.9rem;">
-                        <i class="fas fa-stream"></i> Dependency Chains
+                    <button id="deps-view-chains" class="btn btn-secondary" style="font-size: 0.9rem;" aria-label="Show dependency chains">
+                        <i class="fas fa-stream" aria-hidden="true"></i> Dependency Chains
                     </button>
-                    <button id="deps-view-critical" class="btn btn-secondary" style="font-size: 0.9rem;">
-                        <i class="fas fa-exclamation-triangle"></i> Critical Path
+                    <button id="deps-view-critical" class="btn btn-secondary" style="font-size: 0.9rem;" aria-label="Show critical path">
+                        <i class="fas fa-exclamation-triangle" aria-hidden="true"></i> Critical Path
                     </button>
                     <div style="flex: 1;"></div>
+                    <label for="deps-filter-project" class="sr-only">Filter by project</label>
                     <select id="deps-filter-project" style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
                         <option value="">All Projects</option>
                     </select>
                 </div>
 
                 <!-- Statistics -->
-                <div id="deps-stats" style="margin-bottom: var(--spacing-lg); padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--radius-md); display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--spacing-md);">
+                <div id="deps-stats" role="region" aria-label="Dependency statistics" style="margin-bottom: var(--spacing-lg); padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--radius-md); display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--spacing-md);">
                     <div style="text-align: center;">
                         <div style="font-size: 1.8rem; font-weight: bold; color: var(--primary-color);" id="deps-total-tasks">0</div>
                         <div style="font-size: 0.85rem; color: var(--text-secondary);">Total Tasks</div>
@@ -1122,7 +1129,7 @@
                 </div>
 
                 <!-- Content Area -->
-                <div id="deps-content">
+                <div id="deps-content" role="region" aria-live="polite">
                     <!-- Dependencies visualization will be rendered here -->
                 </div>
             </div>
@@ -1130,15 +1137,15 @@
     </div>
 
     <!-- Productivity Heatmap Modal -->
-    <div id="heatmap-modal" class="modal">
+    <div id="heatmap-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="heatmap-modal-title">
         <div class="modal-content" style="max-width: 1000px; max-height: 90vh; overflow-y: auto;">
             <div class="modal-header">
-                <h2><i class="fas fa-calendar-alt"></i> Productivity Heatmap</h2>
-                <button class="close-button" id="close-heatmap-modal">&times;</button>
+                <h2 id="heatmap-modal-title"><i class="fas fa-calendar-alt" aria-hidden="true"></i> Productivity Heatmap</h2>
+                <button class="close-button" id="close-heatmap-modal" aria-label="Close heatmap modal">&times;</button>
             </div>
             <div class="modal-body" style="padding: var(--spacing-lg);">
                 <!-- Statistics -->
-                <div style="margin-bottom: var(--spacing-lg); padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--radius-md); display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--spacing-md);">
+                <div role="region" aria-label="Productivity statistics" style="margin-bottom: var(--spacing-lg); padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--radius-md); display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--spacing-md);">
                     <div style="text-align: center;">
                         <div style="font-size: 1.8rem; font-weight: bold; color: var(--primary-color);" id="heatmap-total-completed">0</div>
                         <div style="font-size: 0.85rem; color: var(--text-secondary);">Total Completed</div>
