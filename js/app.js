@@ -71,7 +71,13 @@ class GTDApp {
             this.setupEventListeners();
             this.displayUserId();
             this.initializeCustomContexts();
+
+            // Migrate blocked tasks to Waiting For (one-time migration for existing data)
+            await this.migrateBlockedTasksToWaiting();
+
+            // Check if any waiting tasks now have their dependencies met
             await this.checkWaitingTasksDependencies();
+
             this.renderView();
             this.updateCounts();
             this.renderProjectsDropdown();
@@ -5893,8 +5899,10 @@ class GTDApp {
                 filteredTasks = filteredTasks.filter(task => !task.projectId);
             }
 
-            // Note: For Next view, we now show ALL tasks with status='next', including those with unmet dependencies
-            // These will be visually marked as "blocked" in the UI
+            // For Next view, exclude tasks with unmet dependencies
+            if (this.currentView === 'next') {
+                filteredTasks = filteredTasks.filter(task => task.areDependenciesMet(this.tasks));
+            }
         }
 
         // Apply additional filters
@@ -6634,6 +6642,32 @@ class GTDApp {
             this.renderView();
             this.updateCounts();
         }
+    }
+
+    async migrateBlockedTasksToWaiting() {
+        let movedCount = 0;
+
+        // Check all tasks in Next or Someday that have unmet dependencies
+        this.tasks.forEach(task => {
+            if ((task.status === 'next' || task.status === 'someday') && !task.completed) {
+                // Check if task has unmet dependencies
+                if (task.waitingForTaskIds && task.waitingForTaskIds.length > 0) {
+                    if (!task.areDependenciesMet(this.tasks)) {
+                        // Move to Waiting For
+                        task.status = 'waiting';
+                        task.updatedAt = new Date().toISOString();
+                        movedCount++;
+                    }
+                }
+            }
+        });
+
+        if (movedCount > 0) {
+            await this.saveTasks();
+            console.log(`Migrated ${movedCount} blocked task(s) to Waiting For`);
+        }
+
+        return movedCount;
     }
 
     async checkWaitingTasksDependencies() {
@@ -7535,7 +7569,7 @@ class GTDApp {
     updateCounts() {
         const counts = {
             inbox: this.tasks.filter(t => t.status === 'inbox' && !t.completed && !t.projectId).length,
-            next: this.tasks.filter(t => t.status === 'next' && !t.completed).length,
+            next: this.tasks.filter(t => t.status === 'next' && !t.completed && t.areDependenciesMet(this.tasks)).length,
             waiting: this.tasks.filter(t => t.status === 'waiting' && !t.completed).length,
             someday: this.tasks.filter(t => t.status === 'someday' && !t.completed).length,
             projects: this.projects.filter(p => p.status === 'active').length
