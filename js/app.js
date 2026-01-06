@@ -7075,6 +7075,9 @@ class GTDApp {
 
                 // No type change or unsupported conversion - just update
                 if (existingTask) {
+                    // Track if project assignment changed
+                    const oldProjectId = existingTask.projectId;
+
                     const taskData = {
                         title: document.getElementById('task-title').value,
                         description: document.getElementById('task-description').value,
@@ -7096,6 +7099,11 @@ class GTDApp {
                     Object.assign(existingTask, taskData);
                     existingTask.updatedAt = new Date().toISOString();
                     await this.saveTasks();
+
+                    // Update project dropdown if task was assigned to a different project
+                    if (oldProjectId !== projectId) {
+                        this.renderProjectsDropdown();
+                    }
                 } else if (existingProject) {
                     const projectData = {
                         title: document.getElementById('task-title').value,
@@ -7159,7 +7167,11 @@ class GTDApp {
         this.renderView();
         this.updateCounts();
         this.updateContextFilter();
-        if (newType === 'project') {
+
+        // Update project dropdown if:
+        // 1. Creating/editing a project, OR
+        // 2. Creating a new task with a project assignment
+        if (newType === 'project' || (newType === 'task' && projectId && !taskId)) {
             this.renderProjectsDropdown();
         }
     }
