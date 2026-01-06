@@ -150,30 +150,71 @@ export function escapeHtml(text) {
  * Modal Utilities
  */
 
+// Store for focus management
+const focusStack = [];
+
 /**
- * Opens a modal by adding the 'active' class
+ * Gets all focusable elements within a container
+ * @param {HTMLElement} container - Container element
+ * @returns {HTMLElement[]} Array of focusable elements
+ */
+function getFocusableElements(container) {
+    const focusableSelectors = [
+        'button:not([disabled])',
+        '[href]',
+        'input:not([disabled])',
+        'select:not([disabled])',
+        'textarea:not([disabled])',
+        '[tabindex]:not([tabindex="-1"])'
+    ];
+
+    return Array.from(container.querySelectorAll(focusableSelectors.join(', ')));
+}
+
+/**
+ * Opens a modal by adding the 'active' class with focus management
  * @param {string} modalId - Modal element ID
  * @param {string} title - Optional title to set
  */
 export function openModal(modalId, title = null) {
     const modal = getElement(modalId);
     if (modal) {
+        // Store the currently focused element
+        focusStack.push(document.activeElement);
+
         modal.classList.add('active');
+
         if (title) {
             const titleElement = getElement(`${modalId}-title`);
             if (titleElement) titleElement.textContent = title;
         }
+
+        // Focus the first focusable element in the modal
+        const focusableElements = getFocusableElements(modal);
+        if (focusableElements.length > 0) {
+            focusableElements[0].focus();
+        }
+
+        // Set up focus trap
+        modal.setAttribute('data-focus-trap', 'true');
     }
 }
 
 /**
- * Closes a modal by removing the 'active' class
+ * Closes a modal by removing the 'active' class with focus restoration
  * @param {string} modalId - Modal element ID
  */
 export function closeModal(modalId) {
     const modal = getElement(modalId);
     if (modal) {
         modal.classList.remove('active');
+        modal.removeAttribute('data-focus-trap');
+
+        // Restore focus to the previously focused element
+        const previousFocus = focusStack.pop();
+        if (previousFocus && typeof previousFocus.focus === 'function') {
+            previousFocus.focus();
+        }
     }
 }
 
@@ -190,7 +231,7 @@ export function toggleModal(modalId, show) {
 }
 
 /**
- * Sets up standard modal event listeners (close button, outside click)
+ * Sets up standard modal event listeners (close button, outside click, focus trap)
  * @param {string} modalId - Modal element ID
  * @param {string[]} closeButtons - Array of close button element IDs
  * @param {Function} onClose - Optional callback when modal closes
@@ -218,13 +259,63 @@ export function setupModalListeners(modalId, closeButtons = [], onClose = null) 
         }
     });
 
-    // Close on Escape key
+    // Close on Escape key and focus trap
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && modal.classList.contains('active')) {
+        if (!modal.classList.contains('active')) return;
+
+        // Close on Escape
+        if (e.key === 'Escape') {
             closeModal(modalId);
             if (onClose) onClose();
+            return;
+        }
+
+        // Focus trap for Tab key
+        if (e.key === 'Tab') {
+            const focusableElements = getFocusableElements(modal);
+            if (focusableElements.length === 0) return;
+
+            const firstFocusable = focusableElements[0];
+            const lastFocusable = focusableElements[focusableElements.length - 1];
+
+            // Shift + Tab
+            if (e.shiftKey) {
+                if (document.activeElement === firstFocusable) {
+                    e.preventDefault();
+                    lastFocusable.focus();
+                }
+            }
+            // Tab
+            else {
+                if (document.activeElement === lastFocusable) {
+                    e.preventDefault();
+                    firstFocusable.focus();
+                }
+            }
         }
     });
+}
+
+/**
+ * Accessibility Utilities
+ */
+
+/**
+ * Announces a message to screen readers using a live region
+ * @param {string} message - Message to announce
+ * @param {string} priority - 'polite' or 'assertive'
+ */
+export function announce(message, priority = 'polite') {
+    const announcer = document.getElementById('announcer');
+    if (announcer) {
+        announcer.setAttribute('aria-live', priority);
+        announcer.textContent = message;
+
+        // Clear after announcement to allow re-announcing same message
+        setTimeout(() => {
+            announcer.textContent = '';
+        }, 1000);
+    }
 }
 
 /**
