@@ -8131,6 +8131,109 @@ function getDragAfterElement(container, y) {
     }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
 
+/**
+ * Global Error Handler
+ */
+class ErrorHandler {
+    constructor() {
+        this.errorLog = [];
+        this.maxLogSize = 50;
+        this.setupGlobalHandlers();
+    }
+
+    setupGlobalHandlers() {
+        // Catch unhandled errors
+        window.addEventListener('error', (event) => {
+            this.handleError(event.error || new Error(event.message), {
+                source: event.filename,
+                line: event.lineno,
+                column: event.colno
+            });
+        });
+
+        // Catch unhandled promise rejections
+        window.addEventListener('unhandledrejection', (event) => {
+            this.handleError(event.reason, {
+                type: 'unhandledrejection'
+            });
+        });
+    }
+
+    handleError(error, context = {}) {
+        // Log error
+        const errorInfo = {
+            message: error.message || String(error),
+            stack: error.stack,
+            timestamp: new Date().toISOString(),
+            context,
+            userAgent: navigator.userAgent,
+            url: window.location.href
+        };
+
+        this.errorLog.push(errorInfo);
+
+        // Limit log size
+        if (this.errorLog.length > this.maxLogSize) {
+            this.errorLog.shift();
+        }
+
+        // Console error with details
+        console.error('Error caught by global handler:', errorInfo);
+
+        // Show user-friendly notification
+        this.showErrorNotification(error);
+    }
+
+    showErrorNotification(error) {
+        // Create user-friendly error message
+        let message = 'An error occurred. Please refresh the page.';
+
+        // Specific error messages
+        if (error.message) {
+            if (error.message.includes('QuotaExceeded')) {
+                message = 'Storage full! Please archive old tasks.';
+            } else if (error.message.includes('NetworkError')) {
+                message = 'Network error. Please check your connection.';
+            } else if (error.message.includes('TypeError')) {
+                message = 'Something went wrong. Please try again.';
+            }
+        }
+
+        // Try to show notification
+        if (typeof window !== 'undefined' && window.app && window.app.showNotification) {
+            window.app.showNotification(message);
+        }
+
+        // Log to storage for debugging
+        try {
+            const errorLog = JSON.parse(localStorage.getItem('gtd_error_log') || '[]');
+            errorLog.push({
+                message: error.message || String(error),
+                timestamp: new Date().toISOString()
+            });
+            // Keep only last 20 errors
+            if (errorLog.length > 20) {
+                errorLog.splice(0, errorLog.length - 20);
+            }
+            localStorage.setItem('gtd_error_log', JSON.stringify(errorLog));
+        } catch (e) {
+            // Ignore errors in error logging
+        }
+    }
+
+    getErrorLog() {
+        return this.errorLog;
+    }
+
+    clearErrorLog() {
+        this.errorLog = [];
+        localStorage.removeItem('gtd_error_log');
+    }
+}
+
+// Initialize error handler
+const errorHandler = new ErrorHandler();
+
 // Initialize app
 const app = new GTDApp();
 document.addEventListener('DOMContentLoaded', () => app.init());
