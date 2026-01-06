@@ -12,7 +12,7 @@ describe('Task Model', () => {
       expect(task.type).toBe('task');
       expect(task.status).toBe('inbox');
       expect(task.completed).toBe(false);
-      expect(task.tags).toEqual([]);
+      expect(task.contexts).toEqual([]);
       expect(task.id).toMatch(/^task_\d+_[a-z0-9]+$/);
       expect(task.createdAt).toBeDefined();
       expect(task.updatedAt).toBeDefined();
@@ -26,7 +26,7 @@ describe('Task Model', () => {
         status: 'next',
         energy: 'high',
         time: 30,
-        tags: ['@home', 'important'],
+        contexts: ['@home', 'important'],
         completed: false
       };
       const task = new Task(data);
@@ -35,7 +35,7 @@ describe('Task Model', () => {
       expect(task.status).toBe('next');
       expect(task.energy).toBe('high');
       expect(task.time).toBe(30);
-      expect(task.tags).toEqual(['@home', 'important']);
+      expect(task.contexts).toEqual(['@home', 'important']);
     });
 
     test('should accept existing ID', () => {
@@ -48,13 +48,13 @@ describe('Task Model', () => {
     test('should serialize task to JSON', () => {
       const task = new Task({
         title: 'Test Task',
-        tags: ['@work']
+        contexts: ['@work']
       });
       const json = task.toJSON();
 
       expect(json).toHaveProperty('id');
       expect(json).toHaveProperty('title', 'Test Task');
-      expect(json).toHaveProperty('tags');
+      expect(json).toHaveProperty('contexts');
       expect(json).toHaveProperty('createdAt');
       expect(json).toHaveProperty('updatedAt');
     });
@@ -66,7 +66,7 @@ describe('Task Model', () => {
         id: 'test_id',
         title: 'Test Task',
         status: 'next',
-        tags: ['@work'],
+        contexts: ['@work'],
         createdAt: '2024-01-01T00:00:00.000Z',
         updatedAt: '2024-01-01T00:00:00.000Z'
       };
@@ -76,7 +76,7 @@ describe('Task Model', () => {
       expect(task.id).toBe('test_id');
       expect(task.title).toBe('Test Task');
       expect(task.status).toBe('next');
-      expect(task.tags).toEqual(['@work']);
+      expect(task.contexts).toEqual(['@work']);
     });
   });
 
@@ -130,9 +130,9 @@ describe('Task Model', () => {
   });
 
   describe('Edge Cases', () => {
-    test('should handle empty tags array', () => {
-      const task = new Task({ tags: [] });
-      expect(task.tags).toEqual([]);
+    test('should handle empty contexts array', () => {
+      const task = new Task({ contexts: [] });
+      expect(task.contexts).toEqual([]);
     });
 
     test('should handle null projectId', () => {
@@ -158,7 +158,7 @@ describe('Project Model', () => {
       const project = new Project();
       expect(project.title).toBe('');
       expect(project.status).toBe('active');
-      expect(project.tags).toEqual([]);
+      expect(project.contexts).toEqual([]);
       expect(project.id).toMatch(/^project_\d+_[a-z0-9]+$/);
       expect(project.createdAt).toBeDefined();
       expect(project.updatedAt).toBeDefined();
@@ -169,14 +169,14 @@ describe('Project Model', () => {
         title: 'Test Project',
         description: 'Project Description',
         status: 'someday',
-        tags: ['work', 'important']
+        contexts: ['work', 'important']
       };
       const project = new Project(data);
 
       expect(project.title).toBe('Test Project');
       expect(project.description).toBe('Project Description');
       expect(project.status).toBe('someday');
-      expect(project.tags).toEqual(['work', 'important']);
+      expect(project.contexts).toEqual(['work', 'important']);
     });
 
     test('should accept existing ID', () => {
@@ -189,13 +189,13 @@ describe('Project Model', () => {
     test('should serialize project to JSON', () => {
       const project = new Project({
         title: 'Test Project',
-        tags: ['personal']
+        contexts: ['personal']
       });
       const json = project.toJSON();
 
       expect(json).toHaveProperty('id');
       expect(json).toHaveProperty('title', 'Test Project');
-      expect(json).toHaveProperty('tags');
+      expect(json).toHaveProperty('contexts');
       expect(json).toHaveProperty('createdAt');
       expect(json).toHaveProperty('updatedAt');
     });
@@ -207,7 +207,7 @@ describe('Project Model', () => {
         id: 'project_id',
         title: 'Test Project',
         status: 'active',
-        tags: ['work'],
+        contexts: ['work'],
         createdAt: '2024-01-01T00:00:00.000Z',
         updatedAt: '2024-01-01T00:00:00.000Z'
       };
@@ -217,7 +217,7 @@ describe('Project Model', () => {
       expect(project.id).toBe('project_id');
       expect(project.title).toBe('Test Project');
       expect(project.status).toBe('active');
-      expect(project.tags).toEqual(['work']);
+      expect(project.contexts).toEqual(['work']);
     });
   });
 
@@ -245,7 +245,7 @@ describe('Reference Model', () => {
       const reference = new Reference();
       expect(reference.title).toBe('');
       expect(reference.url).toBe('');
-      expect(reference.tags).toEqual([]);
+      expect(reference.contexts).toEqual([]);
       expect(reference.id).toMatch(/^ref_\d+_[a-z0-9]+$/);
       expect(reference.createdAt).toBeDefined();
       expect(reference.updatedAt).toBeDefined();
@@ -256,14 +256,14 @@ describe('Reference Model', () => {
         title: 'Reference Item',
         description: 'Reference Description',
         url: 'https://example.com',
-        tags: ['documentation']
+        contexts: ['documentation']
       };
       const reference = new Reference(data);
 
       expect(reference.title).toBe('Reference Item');
       expect(reference.description).toBe('Reference Description');
       expect(reference.url).toBe('https://example.com');
-      expect(reference.tags).toEqual(['documentation']);
+      expect(reference.contexts).toEqual(['documentation']);
     });
   });
 
@@ -289,7 +289,7 @@ describe('Reference Model', () => {
         id: 'ref_id',
         title: 'Reference',
         url: 'https://example.com',
-        tags: ['docs'],
+        contexts: ['docs'],
         createdAt: '2024-01-01T00:00:00.000Z',
         updatedAt: '2024-01-01T00:00:00.000Z'
       };
@@ -299,7 +299,7 @@ describe('Reference Model', () => {
       expect(reference.id).toBe('ref_id');
       expect(reference.title).toBe('Reference');
       expect(reference.url).toBe('https://example.com');
-      expect(reference.tags).toEqual(['docs']);
+      expect(reference.contexts).toEqual(['docs']);
     });
   });
 
@@ -321,7 +321,7 @@ describe('Model Integration', () => {
   test('should maintain data integrity through serialization cycle', () => {
     const originalTask = new Task({
       title: 'Integration Test',
-      tags: ['test'],
+      contexts: ['test'],
       energy: 'high',
       time: 15
     });
@@ -330,7 +330,7 @@ describe('Model Integration', () => {
     const restoredTask = Task.fromJSON(json);
 
     expect(restoredTask.title).toBe(originalTask.title);
-    expect(restoredTask.tags).toEqual(originalTask.tags);
+    expect(restoredTask.contexts).toEqual(originalTask.contexts);
     expect(restoredTask.energy).toBe(originalTask.energy);
     expect(restoredTask.time).toBe(originalTask.time);
   });
