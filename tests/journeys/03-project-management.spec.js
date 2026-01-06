@@ -1,4 +1,4 @@
-import { test, expect } from '../../fixtures/gtd-app.js';
+import { test, expect } from '../fixtures/gtd-app.js';
 
 /**
  * Journey 3: Project Management
