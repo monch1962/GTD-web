@@ -11,6 +11,7 @@ export class Task {
         this.status = data.status || 'inbox'; // inbox, next, waiting, someday, completed
         this.energy = data.energy || ''; // high, medium, low
         this.time = data.time || 0; // minutes
+        this.timeSpent = data.timeSpent || 0; // minutes actually spent
         this.projectId = data.projectId || null;
         this.contexts = data.contexts || data.tags || []; // Support migration from old 'tags'
         this.completed = data.completed || false;
@@ -23,6 +24,9 @@ export class Task {
         this.recurrenceEndDate = data.recurrenceEndDate || null; // Optional end date for recurrence
         this.recurrenceParentId = data.recurrenceParentId || null; // ID of parent recurring task
         this.position = data.position || 0; // Position for custom ordering
+        this.starred = data.starred || false; // User-pinned important tasks
+        this.notes = data.notes || ''; // Detailed notes
+        this.subtasks = data.subtasks || []; // Array of {title, completed} objects
         this.createdAt = data.createdAt || new Date().toISOString();
         this.updatedAt = data.updatedAt || new Date().toISOString();
     }
@@ -40,6 +44,7 @@ export class Task {
             status: this.status,
             energy: this.energy,
             time: this.time,
+            timeSpent: this.timeSpent,
             projectId: this.projectId,
             contexts: this.contexts,
             completed: this.completed,
@@ -52,6 +57,9 @@ export class Task {
             recurrenceEndDate: this.recurrenceEndDate,
             recurrenceParentId: this.recurrenceParentId,
             position: this.position,
+            starred: this.starred,
+            notes: this.notes,
+            subtasks: this.subtasks,
             createdAt: this.createdAt,
             updatedAt: this.updatedAt
         };
@@ -75,6 +83,12 @@ export class Task {
             this.status = 'inbox';
         }
         this.updatedAt = new Date().toISOString();
+    }
+
+    toggleStar() {
+        this.starred = !this.starred;
+        this.updatedAt = new Date().toISOString();
+        return this.starred;
     }
 
     /**
@@ -295,5 +309,64 @@ export class Reference {
 
     static fromJSON(json) {
         return new Reference(json);
+    }
+}
+
+export class Template {
+    constructor(data = {}) {
+        this.id = data.id || this.generateId();
+        this.title = data.title || '';
+        this.description = data.description || '';
+        this.energy = data.energy || '';
+        this.time = data.time || 0;
+        this.contexts = data.contexts || [];
+        this.notes = data.notes || '';
+        this.subtasks = data.subtasks || [];
+        this.category = data.category || 'general'; // general, work, personal, meeting, checklist
+        this.createdAt = data.createdAt || new Date().toISOString();
+        this.updatedAt = data.updatedAt || new Date().toISOString();
+    }
+
+    generateId() {
+        return `template_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    }
+
+    toJSON() {
+        return {
+            id: this.id,
+            title: this.title,
+            description: this.description,
+            energy: this.energy,
+            time: this.time,
+            contexts: this.contexts,
+            notes: this.notes,
+            subtasks: this.subtasks,
+            category: this.category,
+            createdAt: this.createdAt,
+            updatedAt: this.updatedAt
+        };
+    }
+
+    static fromJSON(json) {
+        return new Template(json);
+    }
+
+    /**
+     * Create a new Task instance from this template
+     * @returns {Task} A new task with the template's properties
+     */
+    createTask() {
+        const taskData = {
+            title: this.title,
+            description: this.description,
+            energy: this.energy,
+            time: this.time,
+            contexts: [...this.contexts],
+            notes: this.notes,
+            subtasks: this.subtasks.map(sub => ({...sub})), // Deep copy subtasks
+            status: 'inbox'
+        };
+
+        return new Task(taskData);
     }
 }

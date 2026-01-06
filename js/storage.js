@@ -249,4 +249,49 @@ export class Storage {
     async saveSettings(settings) {
         await this.setItem('gtd_settings', settings);
     }
+
+    /**
+     * Get all templates
+     */
+    getTemplates() {
+        return this.getItem('gtd_templates') || [];
+    }
+
+    /**
+     * Save all templates
+     */
+    async saveTemplates(templates) {
+        await this.setItem('gtd_templates', templates);
+    }
+
+    /**
+     * Get archived tasks
+     */
+    getArchivedTasks() {
+        return this.getItem('gtd_archive') || [];
+    }
+
+    /**
+     * Save archived tasks
+     */
+    async saveArchivedTasks(archivedTasks) {
+        await this.setItem('gtd_archive', archivedTasks);
+    }
+
+    /**
+     * Add tasks to archive
+     */
+    async addToArchive(tasksToArchive) {
+        const archive = this.getArchivedTasks();
+        const archivedAt = new Date().toISOString();
+
+        const archiveEntries = tasksToArchive.map(task => ({
+            task: task.toJSON ? task.toJSON() : task,
+            archivedAt,
+            originalStatus: task.status,
+            originalProjectId: task.projectId
+        }));
+
+        await this.saveArchivedTasks([...archive, ...archiveEntries]);
+    }
 }

@@ -59,6 +59,14 @@
                         <span>Reference</span>
                         <span class="count" id="reference-count">0</span>
                     </a>
+                    <a href="#" class="nav-item" id="templates-button">
+                        <i class="fas fa-copy"></i>
+                        <span>Templates</span>
+                    </a>
+                    <a href="#" class="nav-item" id="archive-button">
+                        <i class="fas fa-archive"></i>
+                        <span>Archive</span>
+                    </a>
                 </div>
 
                 <div class="nav-section">
@@ -120,11 +128,26 @@
                     <button id="btn-new-project" class="btn btn-secondary" title="New Project">
                         <i class="fas fa-folder-plus"></i>
                     </button>
+                    <button id="btn-daily-review" class="btn btn-secondary" title="Daily Review">
+                        <i class="fas fa-sun"></i>
+                    </button>
+                    <button id="btn-undo" class="btn btn-secondary" title="Undo (Ctrl+Z)" disabled>
+                        <i class="fas fa-undo"></i>
+                    </button>
+                    <button id="btn-redo" class="btn btn-secondary" title="Redo (Ctrl+Y)" disabled>
+                        <i class="fas fa-redo"></i>
+                    </button>
                     <button id="btn-weekly-review" class="btn btn-secondary" title="Weekly Review">
                         <i class="fas fa-calendar-week"></i>
                     </button>
                     <button id="btn-dashboard" class="btn btn-secondary" title="Dashboard">
                         <i class="fas fa-chart-bar"></i>
+                    </button>
+                    <button id="btn-dependencies" class="btn btn-secondary" title="Task Dependencies">
+                        <i class="fas fa-project-diagram"></i>
+                    </button>
+                    <button id="btn-heatmap" class="btn btn-secondary" title="Productivity Heatmap">
+                        <i class="fas fa-calendar-alt"></i>
                     </button>
                     <button id="btn-bulk-select" class="btn btn-secondary" style="display: none;">
                         <i class="fas fa-check-square"></i> Select Multiple
@@ -174,6 +197,16 @@
                             <option value="nodate">No Due Date</option>
                         </select>
                     </div>
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; margin-bottom: 4px;">Sort By</label>
+                        <select id="search-sort" style="width: 100%; padding: 6px; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                            <option value="updated">Recently Updated</option>
+                            <option value="due">Due Date</option>
+                            <option value="created">Date Created</option>
+                            <option value="time">Time Estimate</option>
+                            <option value="title">Title (A-Z)</option>
+                        </select>
+                    </div>
                 </div>
                 <div style="display: flex; gap: var(--spacing-sm); justify-content: space-between; align-items: center;">
                     <div>
@@ -193,14 +226,37 @@
                 </div>
             </div>
 
-            <div id="bulk-actions-bar" style="display: none; margin-bottom: var(--spacing-md); padding: var(--spacing-sm); background: var(--bg-secondary); border-radius: var(--radius-md); align-items: center; justify-content: space-between;">
-                <span style="font-size: 0.9rem;"><strong><span id="bulk-selected-count">0</span></strong> tasks selected</span>
-                <div style="display: flex; gap: var(--spacing-sm);">
-                    <button id="btn-bulk-complete" class="btn btn-success">
+            <div id="bulk-actions-bar" style="display: none; margin-bottom: var(--spacing-md); padding: var(--spacing-sm); background: var(--bg-secondary); border-radius: var(--radius-md);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-sm);">
+                    <span style="font-size: 0.9rem;"><strong><span id="bulk-selected-count">0</span></strong> tasks selected</span>
+                    <button id="btn-bulk-select-all" class="btn btn-secondary" style="font-size: 0.85rem;" title="Select all visible tasks">
+                        <i class="fas fa-check-double"></i> Select All
+                    </button>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: var(--spacing-xs); margin-top: var(--spacing-sm);">
+                    <button id="btn-bulk-complete" class="btn btn-success" style="font-size: 0.85rem;">
                         <i class="fas fa-check"></i> Complete
                     </button>
-                    <button id="btn-bulk-cancel" class="btn btn-secondary">
-                        Cancel
+                    <button id="btn-bulk-status" class="btn btn-secondary" style="font-size: 0.85rem;" title="Set Status">
+                        <i class="fas fa-flag"></i> Status
+                    </button>
+                    <button id="btn-bulk-energy" class="btn btn-secondary" style="font-size: 0.85rem;" title="Set Energy">
+                        <i class="fas fa-bolt"></i> Energy
+                    </button>
+                    <button id="btn-bulk-project" class="btn btn-secondary" style="font-size: 0.85rem;" title="Move to Project">
+                        <i class="fas fa-folder"></i> Project
+                    </button>
+                    <button id="btn-bulk-context" class="btn btn-secondary" style="font-size: 0.85rem;" title="Add Context">
+                        <i class="fas fa-tag"></i> Context
+                    </button>
+                    <button id="btn-bulk-due-date" class="btn btn-secondary" style="font-size: 0.85rem;" title="Set Due Date">
+                        <i class="fas fa-calendar"></i> Due Date
+                    </button>
+                    <button id="btn-bulk-delete" class="btn btn-danger" style="font-size: 0.85rem;" title="Delete Tasks">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                    <button id="btn-bulk-cancel" class="btn btn-secondary" style="font-size: 0.85rem;">
+                        <i class="fas fa-times"></i> Cancel
                     </button>
                 </div>
             </div>
@@ -488,7 +544,7 @@
 
     <!-- Help Modal -->
     <div id="help-modal" class="modal">
-        <div class="modal-content" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
+        <div class="modal-content" style="max-width: 900px; max-height: 85vh; overflow-y: auto;">
             <div class="modal-header">
                 <h3>GTD Web - Help & Instructions</h3>
                 <button class="close-button" id="close-help-modal">&times;</button>
@@ -503,77 +559,305 @@
                     <li><strong>Next Actions</strong> - Actionable tasks you can do right now.</li>
                     <li><strong>Waiting For</strong> - Tasks you're waiting on someone/something else for.</li>
                     <li><strong>Someday/Maybe</strong> - Tasks you might do later, but not now.</li>
-                    <li><strong>Projects</strong> - Multi-step outcomes that require multiple tasks.</li>
+                    <li><strong>Projects</strong> - Multi-step outcomes that require multiple tasks with progress tracking.</li>
                     <li><strong>Reference</strong> - Non-actionable information you want to keep.</li>
+                </ul>
+
+                <h5>New Features</h5>
+                <ul>
+                    <li><strong>📊 Task Dependencies Visualization</strong> - View task dependencies with graph view, chains, and critical path</li>
+                    <li><strong>📅 Productivity Heatmap</strong> - GitHub-style calendar showing task completion activity</li>
+                    <li><strong>⌨️ Global Quick Capture</strong> - Press Alt+N anywhere to instantly capture tasks</li>
+                    <li><strong>⏱️ Focus Timer Auto-Integration</strong> - Timer auto-starts in Focus Mode, auto-stops on completion</li>
+                    <li><strong>🎯 Priority Scoring</strong> - Automatic 0-100 priority scores on all tasks</li>
+                    <li><strong>📦 Archive System</strong> - Archive completed tasks to reduce clutter</li>
+                    <li><strong>🖱️ Quick Actions Menu</strong> - Right-click tasks for quick actions</li>
+                    <li><strong>📝 Smart Date Suggestions</strong> - Natural language date parsing (in 3 days, tomorrow)</li>
+                    <li><strong>⏳ Task Countdown Badges</strong> - See days remaining on due tasks</li>
+                    <li><strong>📈 Enhanced Analytics</strong> - Productivity trends, task lifecycle, completion velocity</li>
+                    <li><strong>✅ Bulk Operations</strong> - Set status, energy, context, due dates on multiple tasks</li>
+                    <li><strong>⭐ Task Starring</strong> - Star important tasks to keep them at the top of your lists</li>
+                    <li><strong>📋 Task Templates</strong> - Create reusable templates for repetitive workflows</li>
+                    <li><strong>☀️ Daily Review</strong> - Quick daily workflow to plan your day (sun icon)</li>
+                    <li><strong>✏️ Quick Edit Inline</strong> - Double-click any task title to edit instantly</li>
+                    <li><strong>📱 Enhanced Mobile</strong> - Touch-optimized interface with full-screen modals</li>
+                    <li><strong>🌙 Dark Mode</strong> - Toggle in header (moon icon) or uses system preference</li>
+                    <li><strong>🎯 Focus Mode</strong> - Distraction-free work with Pomodoro timer (bullseye icon)</li>
+                    <li><strong>⚡ Quick Capture</strong> - Floating + button for instant task capture</li>
+                    <li><strong>↩️ Undo/Redo</strong> - Full history with Ctrl+Z / Ctrl+Y shortcuts</li>
+                </ul>
+
+                <h5>Task Dependencies Visualization</h5>
+                <ul>
+                    <li>Click the graph icon in the header to open Dependencies modal</li>
+                    <li><strong>Graph View</strong> - Visual tree showing task dependencies with connection lines</li>
+                    <li><strong>Dependency Chains</strong> - Sequential lists showing A→B→C task chains</li>
+                    <li><strong>Critical Path</strong> - Timeline showing the longest chain of dependent tasks</li>
+                    <li>Statistics: total tasks, blocked tasks, ready-to-start tasks</li>
+                    <li>Filter by project to see specific dependency relationships</li>
+                    <li>Click any task node to edit it directly</li>
+                </ul>
+
+                <h5>Productivity Heatmap</h5>
+                <ul>
+                    <li>Click the calendar icon in the header to view your productivity heatmap</li>
+                    <li>Shows task completion activity for the last 365 days</li>
+                    <li>Color-coded intensity (5 levels from gray to dark green)</li>
+                    <li>Statistics: total completed, best day, average per day, current streak</li>
+                    <li>Hover over any day to see exact completion count and date</li>
+                    <li>Track your productivity patterns and stay motivated</li>
+                </ul>
+
+                <h5>Global Quick Capture (Alt+N)</h5>
+                <ul>
+                    <li>Press <strong>Alt+N</strong> anywhere in the app to instantly capture tasks</li>
+                    <li>Beautiful overlay modal with auto-focus</li>
+                    <li>Enhanced parsing: <code>@context</code>, <code>!high</code>, <code>#project</code>, <code>today/tomorrow</code></li>
+                    <li>Press <strong>T</strong> to browse and select templates</li>
+                    <li>Press <strong>Enter</strong> to save, <strong>Escape</strong> to cancel</li>
+                    <li>Perfect for capturing ideas without leaving your current context</li>
+                </ul>
+
+                <h5>Focus Timer Auto-Integration</h5>
+                <ul>
+                    <li><strong>Auto-start</strong>: Pomodoro timer starts automatically when entering Focus Mode</li>
+                    <li><strong>Auto-track</strong>: Time spent on focused task is tracked automatically</li>
+                    <li><strong>Auto-stop</strong>: Timer stops automatically when completing a task</li>
+                    <li>Toast notifications show time tracked when exiting focus mode</li>
+                    <li>Seamless workflow - no manual timer management needed</li>
+                </ul>
+
+                <h5>Task Priority Scoring</h5>
+                <ul>
+                    <li>Automatic 0-100 score on all incomplete tasks</li>
+                    <li>Color-coded badges: Red (80+, Urgent), Orange (60-79, High), Yellow (40-59, Medium), Blue (20-39, Low), Gray (0-19, Very Low)</li>
+                    <li>Factors considered: due date, starred status, task status, dependencies, energy, time estimate, project priority, age</li>
+                    <li>Hover over score to see priority label</li>
+                    <li>Tasks automatically sorted by priority (starred first, then by score)</li>
+                    <li>Helps you focus on what matters most</li>
+                </ul>
+
+                <h5>Archive System</h5>
+                <ul>
+                    <li>Click the Archive icon in the sidebar to access archived tasks</li>
+                    <li><strong>Auto-Archive</strong>: Archive tasks completed more than 30 days ago</li>
+                    <li>Search and filter archived tasks by project</li>
+                    <li>Restore archived tasks with one click</li>
+                    <li>Delete archived tasks permanently</li>
+                    <li>Keeps your active workspace clean and focused</li>
+                </ul>
+
+                <h5>Quick Actions Context Menu</h5>
+                <ul>
+                    <li>Right-click on any task to open the context menu</li>
+                    <li>Mobile: Long-press (500ms) to open context menu</li>
+                    <li>Quick actions: edit, duplicate, toggle star, set status, set energy, move to project, add/remove context</li>
+                    <li>Complete or delete tasks directly from the menu</li>
+                    <li>Much faster than opening the full edit modal</li>
+                </ul>
+
+                <h5>Smart Date Suggestions</h5>
+                <ul>
+                    <li>Type natural language in date fields and see smart suggestions</li>
+                    <li>Supports: "in 3 days", "tomorrow", "next week", "end of month"</li>
+                    <li>Click any suggestion to auto-fill the date</li>
+                    <li>Works for both due dates and defer dates</li>
+                    <li>Makes date entry faster and more intuitive</li>
+                </ul>
+
+                <h5>Task Countdown Badges</h5>
+                <ul>
+                    <li>Shows "Due in X days" badge on tasks with due dates</li>
+                    <li>Color-coded: Red (≤2 days), Orange (3-5 days), Yellow (6-7 days)</li>
+                    <li>Only shows for tasks due within 14 days</li>
+                    <li>Helps you prioritize time-sensitive tasks at a glance</li>
+                </ul>
+
+                <h5>Bulk Operations</h5>
+                <ul>
+                    <li>Click "Select Multiple" button to enter bulk selection mode</li>
+                    <li>Check tasks to select them, or use "Select All" for all visible tasks</li>
+                    <li>Bulk actions: complete, set status, set energy, move to project, add context, set due date, delete</li>
+                    <li>All bulk operations support undo/redo</li>
+                    <li>Dramatically speeds up managing multiple tasks</li>
+                </ul>
+
+                <h5>Task Starring</h5>
+                <ul>
+                    <li>Click the star icon on any task to mark it as important</li>
+                    <li>Starred tasks always appear at the top of your lists</li>
+                    <li>Perfect for today's must-do items or high-priority tasks</li>
+                    <li>Click again to unstar</li>
+                </ul>
+
+                <h5>Task Templates</h5>
+                <ul>
+                    <li>Click "Templates" in the sidebar to access templates</li>
+                    <li>Create templates for repetitive tasks (weekly reports, meeting prep, checklists)</li>
+                    <li>Templates include: title, description, contexts, energy, time, notes, and subtasks</li>
+                    <li>Organized by category: General, Work, Personal, Meeting, Checklist</li>
+                    <li>Click "Create Task" on any template to create a new task instantly</li>
+                    <li>Save time on recurring workflows!</li>
+                </ul>
+
+                <h5>Daily Review Mode</h5>
+                <ul>
+                    <li>Click the sun icon (Daily Review) in the header</li>
+                    <li>See time-based greeting and overview of your day</li>
+                    <li>Review: tasks due today, overdue tasks, starred tasks, inbox items</li>
+                    <li>Quick actions: capture new tasks, process inbox, review next actions</li>
+                    <li>Complete tasks directly from the review with one click</li>
+                    <li>Use morning, midday, or evening for different perspectives</li>
+                </ul>
+
+                <h5>Quick Edit Inline</h5>
+                <ul>
+                    <li>Double-click any task title to edit it instantly</li>
+                    <li>Press Enter to save, Escape to cancel</li>
+                    <li>Much faster than opening the full edit modal</li>
+                    <li>Perfect for quick corrections and updates</li>
+                    <li>Great for mobile users - double tap to edit</li>
                 </ul>
 
                 <h5>Creating Tasks</h5>
                 <ol>
-                    <li><strong>Quick Add</strong> - Type in the input box and press Enter for fast capture</li>
-                    <li><strong>Detailed Add</strong> - Click "Add Task" button for full details</li>
-                    <li>Set status, energy level, time estimates, due dates, and defer dates</li>
-                    <li>Assign to projects and add tags</li>
+                    <li><strong>Quick Add</strong> - Type in the input box and press Enter</li>
+                    <li><strong>Quick Capture</strong> - Click floating + button (bottom-right)</li>
+                    <li><strong>Natural Language</strong> - Type "Call mom @phone high 30min tomorrow"</li>
+                    <li><strong>Detailed Add</strong> - Click "Add Task" button for full details including notes and subtasks</li>
                 </ol>
 
                 <h5>Managing Projects</h5>
                 <ol>
-                    <li>Go to "Projects" view</li>
-                    <li>Click "Add Project" button</li>
-                    <li>Enter title, description, and tags</li>
-                    <li>Assign tasks to projects when creating/editing them</li>
-                    <li><strong>Note:</strong> When you assign an Inbox task to a project, it automatically moves to Next Actions</li>
+                    <li><strong>Create</strong> - Click "New Project" button (folder icon) in header</li>
+                    <li><strong>Convert Task</strong> - Edit any task and change Type to "Project"</li>
+                    <li><strong>View Progress</strong> - Progress bars show completion percentage</li>
+                    <li><strong>Health Status</strong> - 🟢 Good | 🟡 Warning | 🔴 Critical</li>
                 </ol>
+
+                <h5>Focus Mode & Pomodoro</h5>
+                <ul>
+                    <li>Click the bullseye icon to enter Focus Mode</li>
+                    <li>Select a task from smart suggestions</li>
+                    <li>Use Pomodoro timer: 25 min work, 5 min break</li>
+                    <li>Work distraction-free in full-screen view</li>
+                    <li>Timer notifies you when sessions complete</li>
+                </ul>
+
+                <h5>Using Notes & Subtasks</h5>
+                <ul>
+                    <li><strong>Notes</strong> - Click sticky note icon on any task to add/view notes</li>
+                    <li><strong>Subtasks</strong> - Edit task to add checklist items</li>
+                    <li>Progress shows on task card (e.g., "2/5 subtasks")</li>
+                    <li>Great for multi-step processes and checklists</li>
+                </ul>
+
+                <h5>Calendar View</h5>
+                <ul>
+                    <li>Click calendar icon to see tasks by due date</li>
+                    <li>Navigate months with prev/next buttons</li>
+                    <li>Click tasks on calendar to see details</li>
+                </ul>
+
+                <h5>Advanced Sorting & Filtering</h5>
+                <ul>
+                    <li>Click in search box to open advanced filters</li>
+                    <li><strong>Sort by:</strong> Recently Updated, Due Date, Created, Time, Title</li>
+                    <li><strong>Filter by:</strong> Context, Energy, Status, Due date range</li>
+                    <li>Save frequently-used searches for quick access</li>
+                </ul>
 
                 <h5>Using Contexts</h5>
                 <ul>
-                    <li><strong>Default Contexts:</strong> @home, @work, @personal, @computer, @phone</li>
-                    <li><strong>Custom Contexts:</strong> Click the green "Create Context" button to make your own</li>
-                    <li><strong>Delete Contexts:</strong> Click the × button on custom tags to delete them (removes from all tasks/projects)</li>
+                    <li><strong>Default Contexts:</strong> @home, @work, @personal, @computer, @phone, @errand</li>
+                    <li><strong>Custom Contexts:</strong> Click "Create Context" button to make your own</li>
+                    <li><strong>Delete Contexts:</strong> Click the × button on custom contexts</li>
                     <li>Click context buttons to quickly add them to tasks</li>
-                    <li>Use the context filter in the header to filter tasks by context</li>
+                    <li>Use context filter in header to filter tasks</li>
                 </ul>
 
                 <h5>Task Dependencies (Waiting For)</h5>
                 <ol>
                     <li>Create or edit a task</li>
                     <li>Set status to "Waiting For"</li>
-                    <li><strong>Description:</strong> What/who are you waiting for? (e.g., "Response from John")</li>
+                    <li><strong>Description:</strong> What/who are you waiting for?</li>
                     <li><strong>Dependencies:</strong> Select tasks that must complete first</li>
                     <li>When dependencies are met, tasks automatically move to Next Actions!</li>
                 </ol>
+
+                <h5>Time Tracking</h5>
+                <ul>
+                    <li>Click timer icon on any task to start/stop tracking</li>
+                    <li>View analytics in Dashboard (chart icon)</li>
+                    <li>See time spent by context and project</li>
+                    <li>Track average time per task</li>
+                </ul>
+
+                <h5>Undo/Redo</h5>
+                <ul>
+                    <li><strong>Ctrl+Z</strong> - Undo last action</li>
+                    <li><strong>Ctrl+Y</strong> or <strong>Ctrl+Shift+Z</strong> - Redo action</li>
+                    <li>Click undo/redo buttons in header</li>
+                    <li>Tracks up to 50 actions</li>
+                    <li>Toast notifications show what was undone/redone</li>
+                </ul>
 
                 <h5>Dates & Deadlines</h5>
                 <ul>
                     <li><strong>Due Date</strong> - When a task must be done. Overdue tasks show in red.</li>
                     <li><strong>Defer Date</strong> - Hide a task until this date (great for future tasks)</li>
                     <li>Tasks with defer dates won't show in Next Actions until the date arrives</li>
+                    <li>Calendar view shows all tasks by due date</li>
                 </ul>
 
-                <h5>Filtering Tasks</h5>
+                <h5>Export/Import</h5>
                 <ul>
-                    <li><strong>Context Filter</strong> - Filter by any context</li>
-                    <li><strong>Energy Filter</strong> - Find tasks matching your energy level</li>
-                    <li><strong>Time Filter</strong> - Find tasks that fit your available time</li>
-                    <li>Filters work together for powerful task discovery</li>
+                    <li><strong>Export</strong> - Click Export button in sidebar to download JSON backup</li>
+                    <li><strong>Import</strong> - Click Import button to restore from backup</li>
+                    <li>Files are timestamped (e.g., gtd-backup-2025-01-06-14-30-45.json)</li>
+                    <li>Regular backups recommended!</li>
                 </ul>
 
                 <h5>Workflow Tips</h5>
                 <ol>
-                    <li><strong>Capture Everything</strong> - Don't trust your memory, use the Inbox</li>
+                    <li><strong>Capture Everything</strong> - Use Quick Capture (+ button) for instant capture</li>
                     <li><strong>Process Inbox Daily</strong> - Decide what each item means and where it goes</li>
-                    <li><strong>Review Weekly</strong> - Check all projects, waiting items, and someday/maybe tasks</li>
-                    <li><strong>Do by Context</strong> - Use tags to filter by @home, @work, @computer, etc.</li>
-                    <li><strong>Match Energy</strong> - Use the energy filter when tired or energized</li>
+                    <li><strong>Daily Review</strong> - Start your day with Daily Review (sun icon) to plan ahead</li>
+                    <li><strong>Review Weekly</strong> - Use Weekly Review for comprehensive cleanup</li>
+                    <li><strong>Focus Mode</strong> - Use Pomodoro technique for deep work sessions</li>
+                    <li><strong>Match Energy</strong> - Filter tasks by energy level based on how you feel</li>
+                    <li><strong>Check Calendar</strong> - Review upcoming tasks and deadlines</li>
+                    <li><strong>Use Templates</strong> - Create templates for repetitive tasks to save time</li>
+                    <li><strong>Star Important Tasks</strong> - Keep high-priority items at the top of your list</li>
                 </ol>
+
+                <h5>Mobile Tips</h5>
+                <ul>
+                    <li><strong>Touch-Friendly</strong> - All buttons are 44px or larger for easy tapping</li>
+                    <li><strong>Full-Screen Forms</strong> - Edit forms take full screen on mobile for better usability</li>
+                    <li><strong>Quick Capture</strong> - Use floating + button for fast task entry on the go</li>
+                    <li><strong>Double Tap</strong> - Double-tap task titles to edit them inline</li>
+                    <li><strong>Daily Review</strong> - Perfect for planning your day while mobile</li>
+                    <li><strong>Templates</strong> - Save time on mobile by using templates for common tasks</li>
+                    <li><strong>Portrait Mode</strong> - Works best for viewing task lists</li>
+                    <li><strong>No Accidental Zoom</strong> - Form inputs won't cause the screen to zoom</li>
+                </ul>
 
                 <h5>Keyboard Shortcuts</h5>
                 <ul>
-                    <li><strong>Enter</strong> - Quick add task (in quick input field)</li>
-                    <li><strong>Escape</strong> - Close modals</li>
+                    <li><strong>Alt+N</strong> - Open global quick capture overlay (works from anywhere)</li>
+                    <li><strong>Enter</strong> - Submit task (in input fields)</li>
+                    <li><strong>Escape</strong> - Close modals, cancel quick capture</li>
+                    <li><strong>Ctrl+Z</strong> - Undo last action</li>
+                    <li><strong>Ctrl+Y</strong> - Redo action</li>
+                    <li><strong>T</strong> - Browse templates (in quick capture overlay)</li>
                 </ul>
 
                 <h5>Data Storage</h5>
-                <p>All data is stored locally in your browser's localStorage. Your tasks stay private on your device. Clearing browser data will delete your tasks, so consider backing up regularly.</p>
+                <p>All data is stored locally in your browser's localStorage. Your tasks stay private on your device. Clearing browser data will delete your tasks, so use the Export feature regularly to back up your data.</p>
+
+                <h5>Need More Help?</h5>
+                <p>Check the README.md file in the project repository for detailed documentation and troubleshooting tips.</p>
             </div>
         </div>
     </div>
@@ -601,6 +885,21 @@
             <div class="modal-body" style="padding: var(--spacing-lg);">
                 <div id="dashboard-content">
                     <!-- Dashboard will be rendered here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Review Modal -->
+    <div id="daily-review-modal" class="modal">
+        <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h2><i class="fas fa-sun"></i> Daily Review</h2>
+                <button class="close-button" id="close-daily-review-modal">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: var(--spacing-lg);">
+                <div id="daily-review-content">
+                    <!-- Daily review will be rendered here -->
                 </div>
             </div>
         </div>
@@ -636,6 +935,324 @@
         </div>
     </div>
 
+    <!-- Templates Modal -->
+    <div id="templates-modal" class="modal">
+        <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h2>Task Templates</h2>
+                <button class="close-button" id="close-templates-modal">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: var(--spacing-lg);">
+                <div style="margin-bottom: var(--spacing-lg);">
+                    <button id="btn-create-template" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Create Template
+                    </button>
+                </div>
+                <div id="templates-list">
+                    <!-- Templates will be rendered here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Template Edit Modal -->
+    <div id="template-edit-modal" class="modal">
+        <div class="modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h2 id="template-modal-title">Create Template</h2>
+                <button class="close-button" id="close-template-edit-modal">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: var(--spacing-lg);">
+                <form id="template-form">
+                    <input type="hidden" id="template-id">
+
+                    <div class="form-group">
+                        <label for="template-title">Title *</label>
+                        <input type="text" id="template-title" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="template-description">Description</label>
+                        <textarea id="template-description" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+                        <div class="form-group">
+                            <label for="template-energy">Energy Level</label>
+                            <select id="template-energy" class="form-control">
+                                <option value="">None</option>
+                                <option value="high">High</option>
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="template-time">Time Estimate (minutes)</label>
+                            <input type="number" id="template-time" class="form-control" min="0" value="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="template-category">Category</label>
+                        <select id="template-category" class="form-control">
+                            <option value="general">General</option>
+                            <option value="work">Work</option>
+                            <option value="personal">Personal</option>
+                            <option value="meeting">Meeting</option>
+                            <option value="checklist">Checklist</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Contexts</label>
+                        <div id="template-contexts-container" class="contexts-container">
+                            <!-- Context buttons will be rendered here -->
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="template-notes">Notes</label>
+                        <textarea id="template-notes" class="form-control" rows="4" placeholder="Add detailed notes or instructions..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Subtasks / Checklist</label>
+                        <div id="template-subtasks-container">
+                            <!-- Subtasks will be rendered here -->
+                        </div>
+                        <button type="button" class="btn btn-secondary" id="btn-add-template-subtask" style="margin-top: var(--spacing-sm);">
+                            <i class="fas fa-plus"></i> Add Subtask
+                        </button>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Template
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="cancel-template-modal">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Archive Modal -->
+    <div id="archive-modal" class="modal">
+        <div class="modal-content" style="max-width: 1000px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h2><i class="fas fa-archive"></i> Task Archive</h2>
+                <button class="close-button" id="close-archive-modal">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: var(--spacing-lg);">
+                <div style="margin-bottom: var(--spacing-lg);">
+                    <button id="btn-auto-archive" class="btn btn-primary">
+                        <i class="fas fa-magic"></i> Auto-Archive Old Tasks
+                    </button>
+                    <span style="margin-left: var(--spacing-md); color: var(--text-secondary); font-size: 0.9rem;">
+                        Archive tasks completed more than 30 days ago
+                    </span>
+                </div>
+
+                <div style="margin-bottom: var(--spacing-lg);">
+                    <div style="display: flex; gap: var(--spacing-sm); align-items: center;">
+                        <input type="text" id="archive-search" placeholder="Search archived tasks..." style="flex: 1; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm);" />
+                        <select id="archive-filter-project" style="padding: 8px; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                            <option value="">All Projects</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="archive-stats" style="margin-bottom: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--radius-md);">
+                    <strong>Archive Stats:</strong> <span id="archive-count">0</span> tasks archived
+                </div>
+
+                <div id="archive-list">
+                    <!-- Archived tasks will be rendered here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Dependencies Modal -->
+    <div id="dependencies-modal" class="modal">
+        <div class="modal-content" style="max-width: 1200px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h2><i class="fas fa-project-diagram"></i> Task Dependencies</h2>
+                <button class="close-button" id="close-dependencies-modal">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: var(--spacing-lg);">
+                <!-- View Toggle -->
+                <div style="margin-bottom: var(--spacing-md); display: flex; gap: var(--spacing-sm); align-items: center; flex-wrap: wrap;">
+                    <button id="deps-view-graph" class="btn btn-primary" style="font-size: 0.9rem;">
+                        <i class="fas fa-sitemap"></i> Graph View
+                    </button>
+                    <button id="deps-view-chains" class="btn btn-secondary" style="font-size: 0.9rem;">
+                        <i class="fas fa-stream"></i> Dependency Chains
+                    </button>
+                    <button id="deps-view-critical" class="btn btn-secondary" style="font-size: 0.9rem;">
+                        <i class="fas fa-exclamation-triangle"></i> Critical Path
+                    </button>
+                    <div style="flex: 1;"></div>
+                    <select id="deps-filter-project" style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                        <option value="">All Projects</option>
+                    </select>
+                </div>
+
+                <!-- Statistics -->
+                <div id="deps-stats" style="margin-bottom: var(--spacing-lg); padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--radius-md); display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--spacing-md);">
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.8rem; font-weight: bold; color: var(--primary-color);" id="deps-total-tasks">0</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Total Tasks</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.8rem; font-weight: bold; color: var(--warning-color);" id="deps-with-deps">0</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">With Dependencies</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.8rem; font-weight: bold; color: var(--danger-color);" id="deps-blocked">0</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Blocked Tasks</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.8rem; font-weight: bold; color: var(--success-color);" id="deps-ready">0</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Ready to Start</div>
+                    </div>
+                </div>
+
+                <!-- Content Area -->
+                <div id="deps-content">
+                    <!-- Dependencies visualization will be rendered here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Productivity Heatmap Modal -->
+    <div id="heatmap-modal" class="modal">
+        <div class="modal-content" style="max-width: 1000px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h2><i class="fas fa-calendar-alt"></i> Productivity Heatmap</h2>
+                <button class="close-button" id="close-heatmap-modal">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: var(--spacing-lg);">
+                <!-- Statistics -->
+                <div style="margin-bottom: var(--spacing-lg); padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--radius-md); display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--spacing-md);">
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.8rem; font-weight: bold; color: var(--primary-color);" id="heatmap-total-completed">0</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Total Completed</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.8rem; font-weight: bold; color: var(--success-color);" id="heatmap-best-day">0</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Best Day</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.8rem; font-weight: bold; color: var(--warning-color);" id="heatmap-avg-day">0</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Avg/Day</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.8rem; font-weight: bold; color: var(--info-color);" id="heatmap-streak">0</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Current Streak</div>
+                    </div>
+                </div>
+
+                <!-- Heatmap Container -->
+                <div id="heatmap-container" style="margin-bottom: var(--spacing-lg);">
+                    <!-- GitHub-style heatmap will be rendered here -->
+                </div>
+
+                <!-- Legend -->
+                <div style="display: flex; justify-content: center; align-items: center; gap: var(--spacing-sm); font-size: 0.85rem; color: var(--text-secondary);">
+                    <span>Less</span>
+                    <div style="display: flex; gap: 2px;">
+                        <div class="heatmap-cell" style="background: #ebedf0;"></div>
+                        <div class="heatmap-cell" style="background: #9be9a8;"></div>
+                        <div class="heatmap-cell" style="background: #40c463;"></div>
+                        <div class="heatmap-cell" style="background: #30a14e;"></div>
+                        <div class="heatmap-cell" style="background: #216e39;"></div>
+                    </div>
+                    <span>More</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions Context Menu -->
+    <div id="context-menu" class="context-menu" style="display: none; position: fixed; z-index: 10000; min-width: 200px;">
+        <div class="context-menu-item" data-action="edit">
+            <i class="fas fa-edit"></i> Edit
+        </div>
+        <div class="context-menu-item" data-action="duplicate">
+            <i class="fas fa-copy"></i> Duplicate
+        </div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item" data-action="toggle-star">
+            <i class="fas fa-star"></i> Toggle Star
+        </div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-submenu">
+            <div class="context-menu-item">
+                <i class="fas fa-flag"></i> Set Status <i class="fas fa-chevron-right" style="float: right;"></i>
+            </div>
+            <div class="context-menu-submenu-content">
+                <div class="context-menu-item" data-action="set-status" data-status="inbox">
+                    <i class="fas fa-inbox"></i> Inbox
+                </div>
+                <div class="context-menu-item" data-action="set-status" data-status="next">
+                    <i class="fas fa-bolt"></i> Next Actions
+                </div>
+                <div class="context-menu-item" data-action="set-status" data-status="waiting">
+                    <i class="fas fa-clock"></i> Waiting For
+                </div>
+                <div class="context-menu-item" data-action="set-status" data-status="someday">
+                    <i class="fas fa-cloud"></i> Someday/Maybe
+                </div>
+            </div>
+        </div>
+        <div class="context-menu-submenu">
+            <div class="context-menu-item">
+                <i class="fas fa-bolt"></i> Set Energy <i class="fas fa-chevron-right" style="float: right;"></i>
+            </div>
+            <div class="context-menu-submenu-content">
+                <div class="context-menu-item" data-action="set-energy" data-energy="">
+                    <i class="fas fa-times-circle"></i> None
+                </div>
+                <div class="context-menu-item" data-action="set-energy" data-energy="high">
+                    <i class="fas fa-bolt" style="color: var(--energy-high);"></i> High
+                </div>
+                <div class="context-menu-item" data-action="set-energy" data-energy="medium">
+                    <i class="fas fa-bolt" style="color: var(--energy-medium);"></i> Medium
+                </div>
+                <div class="context-menu-item" data-action="set-energy" data-energy="low">
+                    <i class="fas fa-bolt" style="color: var(--energy-low);"></i> Low
+                </div>
+            </div>
+        </div>
+        <div class="context-menu-submenu">
+            <div class="context-menu-item">
+                <i class="fas fa-folder"></i> Move to Project <i class="fas fa-chevron-right" style="float: right;"></i>
+            </div>
+            <div class="context-menu-submenu-content" id="context-menu-projects">
+                <!-- Projects will be dynamically added here -->
+            </div>
+        </div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item" data-action="add-context">
+            <i class="fas fa-tag"></i> Add Context
+        </div>
+        <div class="context-menu-item" data-action="remove-context">
+            <i class="fas fa-eraser"></i> Remove Context
+        </div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item context-menu-danger" data-action="complete">
+            <i class="fas fa-check-circle"></i> Complete
+        </div>
+        <div class="context-menu-item context-menu-danger" data-action="delete">
+            <i class="fas fa-trash"></i> Delete
+        </div>
+    </div>
+
     <!-- Focus Mode Overlay -->
     <div id="focus-mode-overlay" class="focus-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-primary); z-index: 10000; padding: var(--spacing-lg); display: flex; flex-direction: column;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg);">
@@ -657,6 +1274,48 @@
         </div>
         <div id="focus-task-container" style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; max-width: 800px; margin: 0 auto;">
             <!-- Focus task will be rendered here -->
+        </div>
+    </div>
+
+    <!-- Quick Capture Widget -->
+    <div id="quick-capture-widget" class="quick-capture-widget">
+        <button id="quick-capture-toggle" class="quick-capture-toggle" title="Quick Capture (Alt+N)">
+            <i class="fas fa-plus"></i>
+        </button>
+        <div id="quick-capture-panel" class="quick-capture-panel" style="display: none;">
+            <input type="text" id="quick-capture-input" placeholder="Quick add a task... (Alt+N)" />
+            <div class="quick-capture-contexts" id="quick-capture-contexts">
+                <!-- Context buttons will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Quick Capture Overlay -->
+    <div id="global-quick-capture-overlay" class="global-quick-capture-overlay" style="display: none;">
+        <div class="global-quick-capture-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-md);">
+                <h2 style="margin: 0;"><i class="fas fa-bolt"></i> Quick Capture</h2>
+                <button id="close-global-quick-capture" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary);">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <input type="text" id="global-quick-capture-input" placeholder="Type task and press Enter..." autofocus />
+            <div style="margin-top: var(--spacing-sm); font-size: 0.85rem; color: var(--text-secondary);">
+                <p><strong>Quick shortcuts:</strong></p>
+                <ul style="margin: var(--spacing-xs) 0; padding-left: 20px;">
+                    <li><code>@context</code> - Add context</li>
+                    <li><code>!high</code> <code>!medium</code> <code>!low</code> - Set energy</li>
+                    <li><code>#project</code> - Add to project</li>
+                    <li><code>today</code> <code>tomorrow</code> - Set due date</li>
+                </ul>
+                <p style="margin-top: var(--spacing-sm);"><strong>Templates:</strong> Press <code>T</code> to browse templates</p>
+            </div>
+            <div id="global-quick-capture-templates" style="margin-top: var(--spacing-md); display: none;">
+                <h3 style="font-size: 1rem; margin-bottom: var(--spacing-sm);">Select a Template:</h3>
+                <div id="global-quick-capture-templates-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--spacing-sm);">
+                    <!-- Templates will be rendered here -->
+                </div>
+            </div>
         </div>
     </div>
 
