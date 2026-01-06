@@ -20,20 +20,32 @@ global.localStorage = mockLocalStorage;
 
 // Mock DOM elements
 global.document = {
-  getElementById: jest.fn(() => ({
-    value: '',
-    textContent: '',
-    addEventListener: jest.fn(),
-    classList: { add: jest.fn(), remove: jest.fn(), contains: jest.fn() },
-    style: {},
-    innerHTML: ''
-  })),
+  getElementById: jest.fn((id) => {
+    const elements = {
+      'tasks-container': { innerHTML: '', style: {} },
+      'inbox-count': { textContent: '' },
+      'next-count': { textContent: '' },
+      'waiting-count': { textContent: '' },
+      'someday-count': { textContent: '' },
+      'projects-count': { textContent: '' },
+      'projects-dropdown': { innerHTML: '', classList: { add: jest.fn(), remove: jest.fn() } }
+    };
+    return elements[id] || {
+      value: '',
+      textContent: '',
+      addEventListener: jest.fn(),
+      classList: { add: jest.fn(), remove: jest.fn(), contains: jest.fn() },
+      style: {},
+      innerHTML: ''
+    };
+  }),
   createElement: jest.fn((tag) => ({
     tagName: tag,
     style: {},
     addEventListener: jest.fn(),
     appendChild: jest.fn()
-  }))
+  })),
+  querySelectorAll: jest.fn(() => [])
 };
 
 global.window = {
@@ -61,6 +73,12 @@ describe('GTDApp Task and Project Saving', () => {
     app.storage = storage;
     app.tasks = [];
     app.projects = [];
+    app.selectedTaskIds = new Set();
+
+    // Add showToast method (if not exists)
+    if (!app.showToast) {
+      app.showToast = jest.fn();
+    }
   });
 
   describe('Task Updates', () => {
@@ -273,6 +291,84 @@ describe('GTDApp Task and Project Saving', () => {
       expect(saveTasksSpy).toHaveBeenCalledTimes(2);
       expect(task1.projectId).toBe('project_1');
       expect(task2.status).toBe('waiting');
+    });
+
+    test('should update project task counts when tasks are completed', async () => {
+      // This test catches the bug where project counts don't update after task completion
+      // Arrange: Create a project with tasks
+      const project = new Project({
+        title: 'Test Project',
+        status: 'active'
+      });
+      app.projects.push(project);
+
+      const task1 = new Task({
+        title: 'Task 1',
+        status: 'next',
+        projectId: project.id,
+        completed: false
+      });
+      const task2 = new Task({
+        title: 'Task 2',
+        status: 'next',
+        projectId: project.id,
+        completed: false
+      });
+      app.tasks.push(task1, task2);
+
+      // Set up bulk selection
+      app.selectedTaskIds = new Set([task1.id, task2.id]);
+
+      // Mock the methods
+      const saveTasksSpy = jest.spyOn(app, 'saveTasks').mockResolvedValue();
+      const renderDropdownSpy = jest.spyOn(app, 'renderProjectsDropdown').mockReturnValue();
+      const exitBulkSpy = jest.spyOn(app, 'exitBulkSelectionMode').mockReturnValue();
+      const renderViewSpy = jest.spyOn(app, 'renderView').mockReturnValue();
+      const updateCountsSpy = jest.spyOn(app, 'updateCounts').mockReturnValue();
+
+      // Act: Call bulkCompleteTasks
+      await app.bulkCompleteTasks();
+
+      // Assert: Tasks should be marked as completed
+      expect(task1.completed).toBe(true);
+      expect(task2.completed).toBe(true);
+
+      // Assert: renderProjectsDropdown should have been called
+      // to update the project task counts
+      expect(renderDropdownSpy).toHaveBeenCalled();
+    });
+
+    test('should update project counts when task assigned to project', async () => {
+      // Arrange: Create a project and an unassigned task
+      const project = new Project({
+        title: 'Test Project',
+        status: 'active'
+      });
+      app.projects.push(project);
+
+      const task = new Task({
+        title: 'Unassigned Task',
+        status: 'inbox',
+        projectId: null,
+        completed: false
+      });
+      app.tasks.push(task);
+
+      // Mock the methods
+      const saveTasksSpy = jest.spyOn(app, 'saveTasks').mockResolvedValue();
+      const renderDropdownSpy = jest.spyOn(app, 'renderProjectsDropdown').mockReturnValue();
+      const renderViewSpy = jest.spyOn(app, 'renderView').mockReturnValue();
+      const updateCountsSpy = jest.spyOn(app, 'updateCounts').mockReturnValue();
+
+      // Act: Assign task to project
+      await app.assignTaskToProject(task.id, project.id);
+
+      // Assert: Task should be assigned to project
+      expect(task.projectId).toBe(project.id);
+
+      // Assert: renderProjectsDropdown should have been called
+      // to update the project task counts
+      expect(renderDropdownSpy).toHaveBeenCalled();
     });
   });
 });

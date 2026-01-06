@@ -886,6 +886,7 @@ class GTDApp {
         this.exitBulkSelectionMode();
         this.renderView();
         this.updateCounts();
+        this.renderProjectsDropdown(); // Update project task counts
         this.showToast(`${this.selectedTaskIds.size} task(s) completed`);
     }
 
