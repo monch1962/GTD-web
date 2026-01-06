@@ -6,7 +6,7 @@
 import { Task, Project, Reference, Template } from './models.js';
 import { Storage } from './storage.js';
 import { ElementIds, StorageKeys, TaskStatus, Views, RecurrenceLabels } from './constants.js';
-import { getElement, setTextContent, escapeHtml } from './dom-utils.js';
+import { getElement, setTextContent, escapeHtml, announce } from './dom-utils.js';
 import { TaskParser } from './nlp-parser.js';
 
 class GTDApp {
@@ -5036,6 +5036,9 @@ class GTDApp {
             animation: slideUp 0.3s ease;
         `;
         document.body.appendChild(toast);
+
+        // Announce to screen readers
+        announce(message, 'polite');
 
         setTimeout(() => {
             toast.style.opacity = '0';
