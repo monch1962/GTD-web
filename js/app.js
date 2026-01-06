@@ -6667,6 +6667,9 @@ class GTDApp {
             console.log(`Migrated ${movedCount} blocked task(s) to Waiting For`);
         }
 
+        // Update project dropdown counts since tasks changed status
+        this.renderProjectsDropdown();
+
         return movedCount;
     }
 
@@ -7091,6 +7094,7 @@ class GTDApp {
                     };
                     Object.assign(existingTask, taskData);
                     existingTask.updatedAt = new Date().toISOString();
+                    await this.saveTasks();
                 } else if (existingProject) {
                     const projectData = {
                         title: document.getElementById('task-title').value,
@@ -7100,6 +7104,7 @@ class GTDApp {
                     };
                     Object.assign(existingProject, projectData);
                     existingProject.updatedAt = new Date().toISOString();
+                    await this.saveProjects();
                 }
             }
         } else {
@@ -8282,6 +8287,9 @@ class ErrorHandler {
         localStorage.removeItem('gtd_error_log');
     }
 }
+
+// Export for testing
+export { GTDApp, ErrorHandler };
 
 // Initialize error handler
 const errorHandler = new ErrorHandler();
