@@ -2195,7 +2195,7 @@ class GTDApp {
                         ${task.time ? `<span class="badge" style="background: var(--info-color); font-size: 0.75rem;"><i class="fas fa-clock"></i> ${task.time}m</span>` : ''}
                         ${type === 'overdue' || type === 'due' ? `<span class="badge" style="background: ${typeColors[type]}; font-size: 0.75rem;">${typeLabels[type]}</span>` : ''}
                     </div>
-                    ${task.projectId ? `<span style="font-size: 0.85rem; color: var(--text-secondary);"><i class="fas fa-folder"></i> ${this.getProjectTitle(task.projectId)}</span>` : ''}
+                    ${task.projectId ? `<span style="font-size: 0.85rem; color: var(--text-secondary);"><i class="fas fa-folder"></i> ${escapeHtml(this.getProjectTitle(task.projectId))}</span>` : ''}
                 </div>
                 <i class="fas fa-chevron-right" style="color: var(--text-secondary);"></i>
             </div>
@@ -3292,7 +3292,7 @@ class GTDApp {
                             </h4>
                             ${task.description ? `<p style="color: var(--text-secondary); margin: var(--spacing-xs) 0; font-size: 0.9rem;">${escapeHtml(task.description)}</p>` : ''}
                             <div style="display: flex; flex-wrap: wrap; gap: var(--spacing-xs); margin-top: var(--spacing-xs); font-size: 0.85rem; color: var(--text-secondary);">
-                                ${entry.originalProjectId ? `<span><i class="fas fa-folder"></i> ${this.getProjectTitle(entry.originalProjectId)}</span>` : ''}
+                                ${entry.originalProjectId ? `<span><i class="fas fa-folder"></i> ${escapeHtml(this.getProjectTitle(entry.originalProjectId))}</span>` : ''}
                                 ${task.contexts && task.contexts.map(ctx => `<span class="badge" style="background: var(--context-color);">${escapeHtml(ctx)}</span>`).join('')}
                                 <span><i class="fas fa-calendar-check"></i> Completed: ${completedDate ? completedDate.toLocaleDateString() : 'Unknown'}</span>
                                 <span><i class="fas fa-archive"></i> Archived: ${archivedDate.toLocaleDateString()}</span>
@@ -6119,7 +6119,7 @@ class GTDApp {
                     ${dueDateDisplay}
                     ${deferDateDisplay}
                     ${waitingForDisplay}
-                    ${task.projectId ? `<span class="task-project">${this.getProjectTitle(task.projectId)}</span>` : ''}
+                    ${task.projectId ? `<span class="task-project">${escapeHtml(this.getProjectTitle(task.projectId))}</span>` : ''}
                     ${!task.completed ? `<span class="priority-score" style="background: ${this.getPriorityScoreColor(this.calculatePriorityScore(task))};" title="Priority: ${this.getPriorityLabel(this.calculatePriorityScore(task))}">${this.calculatePriorityScore(task)}</span>` : ''}
                 </div>
                 ${task.subtasks && task.subtasks.length > 0 ? `
