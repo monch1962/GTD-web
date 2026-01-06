@@ -5893,10 +5893,8 @@ class GTDApp {
                 filteredTasks = filteredTasks.filter(task => !task.projectId);
             }
 
-            // For Next view, exclude tasks with unmet dependencies
-            if (this.currentView === 'next') {
-                filteredTasks = filteredTasks.filter(task => task.areDependenciesMet(this.tasks));
-            }
+            // Note: For Next view, we now show ALL tasks with status='next', including those with unmet dependencies
+            // These will be visually marked as "blocked" in the UI
         }
 
         // Apply additional filters
@@ -6840,21 +6838,13 @@ class GTDApp {
         const currentProjectId = currentTask ? currentTask.projectId : null;
 
         // Get all incomplete tasks except the current one
+        // Show all tasks regardless of project to allow cross-project dependencies
         let availableTasks = this.tasks.filter(t =>
             !t.completed && t.id !== currentTaskId && t.status !== 'completed'
         );
 
-        // If current task belongs to a project, only show tasks from the same project
-        if (currentProjectId) {
-            availableTasks = availableTasks.filter(t => t.projectId === currentProjectId);
-        }
-
         if (availableTasks.length === 0) {
-            if (currentProjectId) {
-                container.innerHTML = '<p style="color: var(--text-secondary); font-size: 0.875rem;">No other tasks available in this project</p>';
-            } else {
-                container.innerHTML = '<p style="color: var(--text-secondary); font-size: 0.875rem;">No other tasks available</p>';
-            }
+            container.innerHTML = '<p style="color: var(--text-secondary); font-size: 0.875rem;">No other tasks available</p>';
             return;
         }
 
@@ -6888,15 +6878,37 @@ class GTDApp {
             label.style.fontSize = '0.875rem';
             label.style.cursor = 'pointer';
 
-            const status = document.createElement('span');
-            status.textContent = `[${task.status}]`;
-            status.style.fontSize = '0.75rem';
-            status.style.color = 'var(--text-secondary)';
-            status.style.marginLeft = '8px';
-
             wrapper.appendChild(checkbox);
             wrapper.appendChild(label);
+
+            // Add status badge
+            const status = document.createElement('span');
+            status.textContent = task.status;
+            status.style.fontSize = '0.75rem';
+            status.style.padding = '2px 6px';
+            status.style.borderRadius = '4px';
+            status.style.marginLeft = '8px';
+            status.style.backgroundColor = 'var(--bg-secondary)';
+            status.style.color = 'var(--text-secondary)';
             wrapper.appendChild(status);
+
+            // Add project badge if task belongs to a project
+            if (task.projectId) {
+                const project = this.projects.find(p => p.id === task.projectId);
+                if (project) {
+                    const projectBadge = document.createElement('span');
+                    projectBadge.textContent = project.title;
+                    projectBadge.style.fontSize = '0.75rem';
+                    projectBadge.style.padding = '2px 6px';
+                    projectBadge.style.borderRadius = '4px';
+                    projectBadge.style.marginLeft = '6px';
+                    projectBadge.style.backgroundColor = 'var(--accent-color)';
+                    projectBadge.style.color = 'white';
+                    projectBadge.style.fontWeight = '500';
+                    wrapper.appendChild(projectBadge);
+                }
+            }
+
             container.appendChild(wrapper);
         });
     }
@@ -6930,6 +6942,12 @@ class GTDApp {
         // Get waiting for data
         const waitingForDescription = document.getElementById('task-waiting-for-description').value || '';
         let waitingForTaskIds = this.getSelectedWaitingForTasks();
+
+        // GTD Rule: If task has dependencies and is in Next or Someday, automatically move to Waiting For
+        // This ensures blocked tasks are visible in the Waiting For view
+        if (waitingForTaskIds.length > 0 && (status === 'next' || status === 'someday')) {
+            status = 'waiting';
+        }
 
         const newType = document.getElementById('task-type').value;
 
@@ -7517,7 +7535,7 @@ class GTDApp {
     updateCounts() {
         const counts = {
             inbox: this.tasks.filter(t => t.status === 'inbox' && !t.completed && !t.projectId).length,
-            next: this.tasks.filter(t => t.status === 'next' && !t.completed && t.areDependenciesMet(this.tasks)).length,
+            next: this.tasks.filter(t => t.status === 'next' && !t.completed).length,
             waiting: this.tasks.filter(t => t.status === 'waiting' && !t.completed).length,
             someday: this.tasks.filter(t => t.status === 'someday' && !t.completed).length,
             projects: this.projects.filter(p => p.status === 'active').length
