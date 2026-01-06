@@ -371,4 +371,71 @@ describe('GTDApp Task and Project Saving', () => {
       expect(renderDropdownSpy).toHaveBeenCalled();
     });
   });
+
+  describe('Task Context Parsing', () => {
+    test('should not have trailing @ when context is extracted', () => {
+      // This test catches the bug where "Buy groceries @errand" becomes "Buy groceries @"
+      // Arrange: Create parser
+      const { TaskParser } = require('../js/nlp-parser.js');
+      const parser = new TaskParser();
+
+      // Act: Parse task with context at the end
+      const result = parser.parse('Buy groceries @errand');
+
+      // Assert: Context should be extracted
+      expect(result.contexts).toEqual(['@errand']);
+
+      // Assert: Title should not have trailing @
+      expect(result.title).toBe('Buy groceries');
+      expect(result.title).not.toMatch(/@$/);
+    });
+
+    test('should handle context in middle of text', () => {
+      // Arrange: Create parser
+      const { TaskParser } = require('../js/nlp-parser.js');
+      const parser = new TaskParser();
+
+      // Act: Parse task with context in middle
+      const result = parser.parse('Discuss project @work with team');
+
+      // Assert: Context should be extracted
+      expect(result.contexts).toEqual(['@work']);
+
+      // Assert: Title should be clean
+      expect(result.title).toBe('Discuss project with team');
+      expect(result.title).not.toContain('@');
+    });
+
+    test('should handle multiple contexts', () => {
+      // Arrange: Create parser
+      const { TaskParser } = require('../js/nlp-parser.js');
+      const parser = new TaskParser();
+
+      // Act: Parse task with multiple contexts
+      const result = parser.parse('Call mom @phone @personal');
+
+      // Assert: Both contexts should be extracted
+      expect(result.contexts).toContain('@phone');
+      expect(result.contexts).toContain('@personal');
+
+      // Assert: Title should not have @ symbols
+      expect(result.title).not.toContain('@');
+    });
+
+    test('should handle context without @ prefix', () => {
+      // Arrange: Create parser
+      const { TaskParser } = require('../js/nlp-parser.js');
+      const parser = new TaskParser();
+
+      // Act: Parse task with common context word (no @)
+      const result = parser.parse('Buy groceries at store errands');
+
+      // Assert: Context should be extracted with @ prefix
+      expect(result.contexts).toContain('@errands');
+
+      // Assert: Title should be clean
+      expect(result.title).not.toContain('errands');
+      expect(result.title).not.toMatch(/@$/);
+    });
+  });
 });

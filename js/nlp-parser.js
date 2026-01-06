@@ -287,7 +287,9 @@ export class TaskParser {
     cleanTitle(title) {
         return title
             .replace(/\s+/g, ' ')  // Collapse multiple spaces
-            .replace(/\s*[,-:]+\s*$/g, '')  // Remove trailing punctuation
+            .replace(/@+/g, '@')  // Collapse multiple @ symbols
+            .replace(/\s*@\s*/g, ' ')  // Remove isolated @ symbols
+            .replace(/\s*[,-:@]+\s*$/g, '')  // Remove trailing punctuation and @
             .trim();  // Remove leading/trailing spaces
     }
 
