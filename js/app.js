@@ -5,7 +5,7 @@
 
 import { Task, Project, Reference, Template } from './models.js';
 import { Storage } from './storage.js';
-import { ElementIds, StorageKeys, TaskStatus, Views, RecurrenceLabels } from './constants.js';
+import { ElementIds, StorageKeys, TaskStatus, Views, RecurrenceLabels, ViewLabels } from './constants.js';
 import { getElement, setTextContent, escapeHtml, announce } from './dom-utils.js';
 import { TaskParser } from './nlp-parser.js';
 
@@ -5792,16 +5792,7 @@ class GTDApp {
         this.currentView = view;
 
         // Update view title
-        const titles = {
-            'inbox': 'Inbox',
-            'next': 'Next Actions',
-            'waiting': 'Waiting',
-            'someday': 'Someday',
-            'projects': 'Projects',
-            'reference': 'Reference',
-            'all': 'All Items'
-        };
-        document.getElementById('view-title').textContent = titles[view] || view;
+        document.getElementById('view-title').textContent = ViewLabels[view] || view;
 
         // Show/hide containers
         const tasksContainer = document.getElementById('tasks-container');
@@ -7669,10 +7660,6 @@ class GTDApp {
                     return;
                 }
                 this.viewProjectTasks(project.id);
-                // Close dropdown after selection
-                const toggle = document.querySelector('.projects-dropdown-toggle');
-                toggle.classList.remove('expanded');
-                dropdown.classList.remove('expanded');
             });
 
             // Drag and drop handlers for assigning tasks to projects

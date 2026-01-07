@@ -80,6 +80,17 @@ export const StatusLabels = {
     completed: 'Completed'
 };
 
+// View display labels (for navigation and titles)
+export const ViewLabels = {
+    inbox: 'Inbox',
+    next: 'Next Actions',
+    waiting: 'Waiting',
+    someday: 'Someday',
+    projects: 'Projects',
+    reference: 'Reference',
+    all: 'All Items'
+};
+
 // Element IDs
 export const ElementIds = {
     quickAddInput: 'quick-add-input',
