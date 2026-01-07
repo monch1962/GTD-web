@@ -20,7 +20,11 @@ export class Task {
         this.deferDate = data.deferDate || null; // YYYY-MM-DD format
         this.waitingForTaskIds = data.waitingForTaskIds || []; // Array of task IDs this task depends on
         this.waitingForDescription = data.waitingForDescription || ''; // Description of what/who being waited on
-        this.recurrence = data.recurrence || ''; // '', 'daily', 'weekly', 'monthly', 'yearly'
+
+        // Recurrence: Support both old string format and new object format
+        // Old: 'daily', 'weekly', 'monthly', 'yearly'
+        // New: { type: 'weekly', daysOfWeek: [1,3,5] } or { type: 'monthly', dayOfMonth: 15 } or { type: 'monthly', nthWeekday: { n: 3, weekday: 4 } }
+        this.recurrence = data.recurrence || '';
         this.recurrenceEndDate = data.recurrenceEndDate || null; // Optional end date for recurrence
         this.recurrenceParentId = data.recurrenceParentId || null; // ID of parent recurring task
         this.position = data.position || 0; // Position for custom ordering
@@ -172,7 +176,38 @@ export class Task {
      * Check if task is recurring
      */
     isRecurring() {
-        return this.recurrence && this.recurrence !== '';
+        if (!this.recurrence || this.recurrence === '') return false;
+
+        // Handle old string format
+        if (typeof this.recurrence === 'string') {
+            return true;
+        }
+
+        // Handle new object format
+        if (typeof this.recurrence === 'object' && this.recurrence.type) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Get recurrence type (handles both old and new formats)
+     */
+    getRecurrenceType() {
+        if (!this.recurrence) return null;
+
+        // Old string format
+        if (typeof this.recurrence === 'string') {
+            return this.recurrence;
+        }
+
+        // New object format
+        if (typeof this.recurrence === 'object' && this.recurrence.type) {
+            return this.recurrence.type;
+        }
+
+        return null;
     }
 
     /**
@@ -189,31 +224,133 @@ export class Task {
     /**
      * Calculate the next occurrence date based on recurrence interval
      * Uses the due date if available, otherwise uses today's date
+     * Supports both old string format and new object format
      */
     getNextOccurrenceDate() {
         const baseDate = this.dueDate ? new Date(this.dueDate) : new Date();
         baseDate.setHours(0, 0, 0, 0);
 
+        const recurrenceType = this.getRecurrenceType();
+        if (!recurrenceType) return null;
+
+        // Handle old string format (backward compatibility)
+        if (typeof this.recurrence === 'string') {
+            const nextDate = new Date(baseDate);
+            switch (this.recurrence) {
+                case 'daily':
+                    nextDate.setDate(nextDate.getDate() + 1);
+                    break;
+                case 'weekly':
+                    nextDate.setDate(nextDate.getDate() + 7);
+                    break;
+                case 'monthly':
+                    nextDate.setMonth(nextDate.getMonth() + 1);
+                    break;
+                case 'yearly':
+                    nextDate.setFullYear(nextDate.getFullYear() + 1);
+                    break;
+                default:
+                    return null;
+            }
+            return nextDate.toISOString().split('T')[0];
+        }
+
+        // Handle new object format
+        if (typeof this.recurrence === 'object') {
+            return this.getNextOccurrenceDateAdvanced(baseDate);
+        }
+
+        return null;
+    }
+
+    /**
+     * Calculate next occurrence for advanced recurrence patterns
+     */
+    getNextOccurrenceDateAdvanced(baseDate) {
+        const { type, daysOfWeek, dayOfMonth, nthWeekday, dayOfYear } = this.recurrence;
         const nextDate = new Date(baseDate);
 
-        switch (this.recurrence) {
+        switch (type) {
             case 'daily':
                 nextDate.setDate(nextDate.getDate() + 1);
                 break;
+
             case 'weekly':
-                nextDate.setDate(nextDate.getDate() + 7);
+                if (daysOfWeek && Array.isArray(daysOfWeek) && daysOfWeek.length > 0) {
+                    // Find the next occurrence of any of the specified days
+                    const currentDayOfWeek = nextDate.getDay() || 7; // Convert to 1-7 (Monday-Sunday)
+                    let daysUntilNext = null;
+
+                    // Check each upcoming day to find the first matching day
+                    for (let i = 1; i <= 7; i++) {
+                        const checkDate = new Date(nextDate);
+                        checkDate.setDate(checkDate.getDate() + i);
+                        const checkDayOfWeek = checkDate.getDay() || 7;
+                        if (daysOfWeek.includes(checkDayOfWeek)) {
+                            daysUntilNext = i;
+                            break;
+                        }
+                    }
+
+                    if (daysUntilNext !== null) {
+                        nextDate.setDate(nextDate.getDate() + daysUntilNext);
+                    }
+                } else {
+                    // Default to next week if no days specified
+                    nextDate.setDate(nextDate.getDate() + 7);
+                }
                 break;
+
             case 'monthly':
-                nextDate.setMonth(nextDate.getMonth() + 1);
+                if (dayOfMonth) {
+                    // Specific day of month (e.g., 15th of each month)
+                    nextDate.setMonth(nextDate.getMonth() + 1);
+                    nextDate.setDate(Math.min(dayOfMonth, this.getDaysInMonth(nextDate.getFullYear(), nextDate.getMonth() + 1)));
+                } else if (nthWeekday) {
+                    // Nth weekday of month (e.g., 3rd Thursday)
+                    const { n, weekday } = nthWeekday;
+                    nextDate.setMonth(nextDate.getMonth() + 1);
+                    const firstDayOfMonth = new Date(nextDate.getFullYear(), nextDate.getMonth(), 1);
+                    const firstWeekdayOfMonth = firstDayOfMonth.getDay() || 7;
+
+                    // Calculate the date of the nth weekday
+                    const dayOffset = (weekday - firstWeekdayOfMonth + 7) % 7;
+                    const targetDate = 1 + dayOffset + (n - 1) * 7;
+
+                    // Ensure we don't go past the month (e.g., 5th Tuesday might not exist)
+                    const daysInMonth = this.getDaysInMonth(nextDate.getFullYear(), nextDate.getMonth() + 1);
+                    nextDate.setDate(Math.min(targetDate, daysInMonth));
+                } else {
+                    // Default to same day next month
+                    nextDate.setMonth(nextDate.getMonth() + 1);
+                }
                 break;
+
             case 'yearly':
-                nextDate.setFullYear(nextDate.getFullYear() + 1);
+                if (dayOfYear) {
+                    // Specific day of year (e.g., January 15th)
+                    const [month, day] = dayOfYear.split('-').map(Number);
+                    nextDate.setFullYear(nextDate.getFullYear() + 1);
+                    nextDate.setMonth(month - 1);
+                    nextDate.setDate(Math.min(day, this.getDaysInMonth(nextDate.getFullYear(), month)));
+                } else {
+                    // Default to same date next year
+                    nextDate.setFullYear(nextDate.getFullYear() + 1);
+                }
                 break;
+
             default:
                 return null;
         }
 
-        return nextDate.toISOString().split('T')[0]; // Return as YYYY-MM-DD
+        return nextDate.toISOString().split('T')[0];
+    }
+
+    /**
+     * Get the number of days in a month
+     */
+    getDaysInMonth(year, month) {
+        return new Date(year, month, 0).getDate();
     }
 
     /**

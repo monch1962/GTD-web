@@ -6987,7 +6987,7 @@ class GTDApp {
             document.getElementById('task-defer-date').value = task.deferDate || '';
             document.getElementById('task-waiting-for-description').value = task.waitingForDescription || '';
             document.getElementById('task-contexts').value = task.contexts ? task.contexts.join(', ') : '';
-            document.getElementById('task-recurrence').value = task.recurrence || '';
+            this.populateRecurrenceInForm(task.recurrence);
             document.getElementById('task-recurrence-end-date').value = task.recurrenceEndDate || '';
             document.getElementById('task-notes').value = task.notes || '';
             this.renderSubtasksInModal(task.subtasks || []);
@@ -6996,7 +6996,7 @@ class GTDApp {
             document.getElementById('task-id').value = '';
             document.getElementById('task-status').value = this.currentView === 'all' ? 'inbox' : this.currentView;
             document.getElementById('task-waiting-for-description').value = '';
-            document.getElementById('task-recurrence').value = '';
+            this.populateRecurrenceInForm('');
             document.getElementById('task-recurrence-end-date').value = '';
             document.getElementById('task-notes').value = '';
             this.renderSubtasksInModal([]);
@@ -7053,22 +7053,160 @@ class GTDApp {
         statusSelect.addEventListener('change', updateWaitingForFields);
         updateWaitingForFields(); // Initial call
 
-        // Setup recurrence change listener to show/hide end date field
-        const recurrenceSelect = document.getElementById('task-recurrence');
+        // Setup recurrence change listener to show/hide appropriate options
+        const recurrenceTypeSelect = document.getElementById('task-recurrence-type');
         const recurrenceEndDateGroup = document.getElementById('recurrence-end-date-group');
+        const weeklyOptions = document.getElementById('recurrence-weekly-options');
+        const monthlyOptions = document.getElementById('recurrence-monthly-options');
+        const yearlyOptions = document.getElementById('recurrence-yearly-options');
 
         const updateRecurrenceFields = () => {
-            if (recurrenceSelect.value && recurrenceSelect.value !== '') {
+            // Hide all options first
+            weeklyOptions.style.display = 'none';
+            monthlyOptions.style.display = 'none';
+            yearlyOptions.style.display = 'none';
+            recurrenceEndDateGroup.style.display = 'none';
+
+            const recurrenceType = recurrenceTypeSelect.value;
+
+            if (recurrenceType && recurrenceType !== '') {
                 recurrenceEndDateGroup.style.display = 'block';
-            } else {
-                recurrenceEndDateGroup.style.display = 'none';
+
+                // Show type-specific options
+                if (recurrenceType === 'weekly') {
+                    weeklyOptions.style.display = 'block';
+                } else if (recurrenceType === 'monthly') {
+                    monthlyOptions.style.display = 'block';
+                } else if (recurrenceType === 'yearly') {
+                    yearlyOptions.style.display = 'block';
+                }
             }
         };
 
-        recurrenceSelect.addEventListener('change', updateRecurrenceFields);
+        recurrenceTypeSelect.addEventListener('change', updateRecurrenceFields);
         updateRecurrenceFields(); // Initial call
 
         modal.classList.add('active');
+    }
+
+    /**
+     * Build recurrence object from form fields
+     */
+    buildRecurrenceFromForm() {
+        const recurrenceType = document.getElementById('task-recurrence-type').value;
+
+        if (!recurrenceType || recurrenceType === '') {
+            return '';
+        }
+
+        // For simple cases (daily), just return the string for backward compatibility
+        if (recurrenceType === 'daily') {
+            return 'daily';
+        }
+
+        const recurrence = { type: recurrenceType };
+
+        // Weekly: specific days
+        if (recurrenceType === 'weekly') {
+            const checkboxes = document.querySelectorAll('.recurrence-day-checkbox:checked');
+            const selectedDays = Array.from(checkboxes).map(cb => parseInt(cb.value));
+
+            if (selectedDays.length > 0) {
+                recurrence.daysOfWeek = selectedDays.sort();
+            } else {
+                // If no days selected, default to simple weekly
+                return 'weekly';
+            }
+        }
+
+        // Monthly: day of month OR nth weekday
+        if (recurrenceType === 'monthly') {
+            const monthlyType = document.querySelector('input[name="monthly-recurrence-type"]:checked').value;
+
+            if (monthlyType === 'day-of-month') {
+                const dayOfMonth = parseInt(document.getElementById('recurrence-day-of-month').value);
+                if (dayOfMonth && dayOfMonth >= 1 && dayOfMonth <= 31) {
+                    recurrence.dayOfMonth = dayOfMonth;
+                } else {
+                    return 'monthly'; // Default to simple monthly
+                }
+            } else if (monthlyType === 'nth-weekday') {
+                const n = parseInt(document.getElementById('recurrence-nth').value);
+                const weekday = parseInt(document.getElementById('recurrence-weekday').value);
+                recurrence.nthWeekday = { n, weekday };
+            }
+        }
+
+        // Yearly: specific day of year
+        if (recurrenceType === 'yearly') {
+            const month = parseInt(document.getElementById('recurrence-year-month').value);
+            const day = parseInt(document.getElementById('recurrence-year-day').value);
+
+            if (month && day) {
+                recurrence.dayOfYear = `${month}-${day}`;
+            } else {
+                return 'yearly'; // Default to simple yearly
+            }
+        }
+
+        return recurrence;
+    }
+
+    /**
+     * Parse recurrence object and populate form fields
+     */
+    populateRecurrenceInForm(recurrence) {
+        // Reset all fields
+        document.getElementById('task-recurrence-type').value = '';
+        document.querySelectorAll('.recurrence-day-checkbox').forEach(cb => cb.checked = false);
+        document.getElementById('recurrence-day-of-month').value = 1;
+        document.getElementById('recurrence-nth').value = 1;
+        document.getElementById('recurrence-weekday').value = 1;
+        document.getElementById('recurrence-year-month').value = 1;
+        document.getElementById('recurrence-year-day').value = 1;
+        document.querySelector('input[name="monthly-recurrence-type"][value="day-of-month"]').checked = true;
+
+        if (!recurrence || recurrence === '') {
+            return;
+        }
+
+        // Handle old string format (backward compatibility)
+        if (typeof recurrence === 'string') {
+            document.getElementById('task-recurrence-type').value = recurrence;
+            return;
+        }
+
+        // Handle new object format
+        if (typeof recurrence === 'object' && recurrence.type) {
+            document.getElementById('task-recurrence-type').value = recurrence.type;
+
+            // Weekly: specific days
+            if (recurrence.type === 'weekly' && recurrence.daysOfWeek) {
+                recurrence.daysOfWeek.forEach(day => {
+                    const checkbox = document.querySelector(`.recurrence-day-checkbox[value="${day}"]`);
+                    if (checkbox) checkbox.checked = true;
+                });
+            }
+
+            // Monthly: day of month OR nth weekday
+            if (recurrence.type === 'monthly') {
+                if (recurrence.dayOfMonth) {
+                    document.querySelector('input[name="monthly-recurrence-type"][value="day-of-month"]').checked = true;
+                    document.getElementById('recurrence-day-of-month').value = recurrence.dayOfMonth;
+                } else if (recurrence.nthWeekday) {
+                    document.querySelector('input[name="monthly-recurrence-type"][value="nth-weekday"]').checked = true;
+                    document.getElementById('recurrence-nth').value = recurrence.nthWeekday.n;
+                    document.getElementById('recurrence-weekday').value = recurrence.nthWeekday.weekday;
+                }
+            }
+
+            // Yearly: specific day of year
+            if (recurrence.type === 'yearly' && recurrence.dayOfYear) {
+                const [month, day] = recurrence.dayOfYear.split('-').map(Number);
+                document.getElementById('recurrence-year-month').value = month;
+                document.getElementById('recurrence-year-day').value = day;
+            }
+        }
     }
 
     closeTaskModal() {
@@ -7254,7 +7392,7 @@ class GTDApp {
                             deferDate: document.getElementById('task-defer-date').value || null,
                             waitingForDescription: waitingForDescription,
                             waitingForTaskIds: waitingForTaskIds,
-                            recurrence: document.getElementById('task-recurrence').value || '',
+                            recurrence: this.buildRecurrenceFromForm(),
                             recurrenceEndDate: document.getElementById('task-recurrence-end-date').value || null,
                             notes: document.getElementById('task-notes').value || '',
                             subtasks: this.getSubtasksFromModal()
@@ -7296,7 +7434,7 @@ class GTDApp {
                         deferDate: document.getElementById('task-defer-date').value || null,
                         waitingForDescription: waitingForDescription,
                         waitingForTaskIds: waitingForTaskIds,
-                        recurrence: document.getElementById('task-recurrence').value || '',
+                        recurrence: this.buildRecurrenceFromForm(),
                         recurrenceEndDate: document.getElementById('task-recurrence-end-date').value || null,
                         notes: document.getElementById('task-notes').value || '',
                         subtasks: this.getSubtasksFromModal()

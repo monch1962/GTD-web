@@ -397,8 +397,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="task-recurrence">Recurrence</label>
-                        <select id="task-recurrence">
+                        <label for="task-recurrence-type">Recurrence</label>
+                        <select id="task-recurrence-type">
                             <option value="">No Recurrence</option>
                             <option value="daily">Daily</option>
                             <option value="weekly">Weekly</option>
@@ -406,6 +406,92 @@
                             <option value="yearly">Yearly</option>
                         </select>
                         <small style="color: var(--text-secondary);">Automatically create a new task when this task is completed</small>
+                    </div>
+
+                    <!-- Weekly Options -->
+                    <div class="form-group" id="recurrence-weekly-options" style="display: none; padding: 12px; background: var(--bg-secondary); border-radius: var(--border-radius);">
+                        <label style="font-weight: 600; margin-bottom: 8px; display: block;">Repeat on these days:</label>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <label style="flex: 0 0 auto; display: flex; align-items: center; gap: 4px;">
+                                <input type="checkbox" class="recurrence-day-checkbox" value="1" data-day="Monday"> Mon
+                            </label>
+                            <label style="flex: 0 0 auto; display: flex; align-items: center; gap: 4px;">
+                                <input type="checkbox" class="recurrence-day-checkbox" value="2" data-day="Tuesday"> Tue
+                            </label>
+                            <label style="flex: 0 0 auto; display: flex; align-items: center; gap: 4px;">
+                                <input type="checkbox" class="recurrence-day-checkbox" value="3" data-day="Wednesday"> Wed
+                            </label>
+                            <label style="flex: 0 0 auto; display: flex; align-items: center; gap: 4px;">
+                                <input type="checkbox" class="recurrence-day-checkbox" value="4" data-day="Thursday"> Thu
+                            </label>
+                            <label style="flex: 0 0 auto; display: flex; align-items: center; gap: 4px;">
+                                <input type="checkbox" class="recurrence-day-checkbox" value="5" data-day="Friday"> Fri
+                            </label>
+                            <label style="flex: 0 0 auto; display: flex; align-items: center; gap: 4px;">
+                                <input type="checkbox" class="recurrence-day-checkbox" value="6" data-day="Saturday"> Sat
+                            </label>
+                            <label style="flex: 0 0 auto; display: flex; align-items: center; gap: 4px;">
+                                <input type="checkbox" class="recurrence-day-checkbox" value="7" data-day="Sunday"> Sun
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Monthly Options -->
+                    <div class="form-group" id="recurrence-monthly-options" style="display: none; padding: 12px; background: var(--bg-secondary); border-radius: var(--border-radius);">
+                        <div style="margin-bottom: 12px;">
+                            <label style="display: flex; align-items: center; gap: 8px;">
+                                <input type="radio" name="monthly-recurrence-type" value="day-of-month" checked>
+                                <span>Day of month:</span>
+                                <input type="number" id="recurrence-day-of-month" min="1" max="31" value="1" style="width: 70px; padding: 4px 8px;">
+                                <span style="font-size: 0.9rem; color: var(--text-secondary);">(1-31)</span>
+                            </label>
+                        </div>
+                        <div style="border-top: 1px solid var(--border-color); padding-top: 12px;">
+                            <label style="display: flex; align-items: center; gap: 8px;">
+                                <input type="radio" name="monthly-recurrence-type" value="nth-weekday">
+                                <span>The</span>
+                                <select id="recurrence-nth" style="padding: 4px 8px;">
+                                    <option value="1">1st</option>
+                                    <option value="2">2nd</option>
+                                    <option value="3">3rd</option>
+                                    <option value="4">4th</option>
+                                    <option value="5">5th</option>
+                                </select>
+                                <select id="recurrence-weekday" style="padding: 4px 8px;">
+                                    <option value="1">Monday</option>
+                                    <option value="2">Tuesday</option>
+                                    <option value="3">Wednesday</option>
+                                    <option value="4">Thursday</option>
+                                    <option value="5">Friday</option>
+                                    <option value="6">Saturday</option>
+                                    <option value="7">Sunday</option>
+                                </select>
+                                <span>of each month</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Yearly Options -->
+                    <div class="form-group" id="recurrence-yearly-options" style="display: none; padding: 12px; background: var(--bg-secondary); border-radius: var(--border-radius);">
+                        <label>Repeat on this day each year:</label>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <select id="recurrence-year-month" style="padding: 4px 8px;">
+                                <option value="1">January</option>
+                                <option value="2">February</option>
+                                <option value="3">March</option>
+                                <option value="4">April</option>
+                                <option value="5">May</option>
+                                <option value="6">June</option>
+                                <option value="7">July</option>
+                                <option value="8">August</option>
+                                <option value="9">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                            <input type="number" id="recurrence-year-day" min="1" max="31" value="1" style="width: 70px; padding: 4px 8px;">
+                            <span style="font-size: 0.9rem; color: var(--text-secondary);">(day)</span>
+                        </div>
                     </div>
 
                     <div class="form-group" id="recurrence-end-date-group" style="display: none;">
