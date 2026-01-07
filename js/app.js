@@ -6557,11 +6557,11 @@ class GTDApp {
                 </div>
             ` : ''}
 
-            ${totalTasks === 0 && project.status !== 'archived' ? `
+            ${taskCount === 0 && project.status !== 'archived' ? `
                 <div class="project-empty-actions" style="padding: var(--spacing-sm); background: rgba(240, 173, 78, 0.1); border-radius: var(--border-radius); margin-top: var(--spacing-sm);">
                     <div style="display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm);">
                         <i class="fas fa-info-circle" style="color: #f0ad4e;"></i>
-                        <span style="font-size: 0.9rem; color: var(--text-secondary);">This project has no tasks</span>
+                        <span style="font-size: 0.9rem; color: var(--text-secondary);">${totalTasks > 0 ? 'All tasks completed!' : 'This project has no tasks'}</span>
                     </div>
                     <div style="display: flex; gap: var(--spacing-xs);">
                         <button class="btn-archive-project" style="flex: 1; padding: 6px 12px; font-size: 0.85rem; background: var(--info-color); color: white; border: none; border-radius: var(--border-radius); cursor: pointer;">
