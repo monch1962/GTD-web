@@ -218,3 +218,12 @@ export class ContextFilterManager {
     normalizeContextName(context) {
         return context.startsWith('@') ? context : `@${context}`;
     }
+
+    /**
+     * Setup context filter event listeners
+     */
+    setup() {
+        // Context filter is initialized during updateContextFilter
+        // No additional setup needed
+    }
+}

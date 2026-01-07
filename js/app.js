@@ -34,8 +34,8 @@ import { DependenciesManager } from './modules/features/dependencies.js';
 
 // UI modules
 import { VirtualScrollManager } from './modules/ui/virtual-scroll.js';
-import { BulkSelectionManager } from './modules/ui/bulk-selection.js';
-import { KeyboardNavigationManager } from './modules/ui/keyboard-nav.js';
+import { BulkSelection } from './modules/ui/bulk-selection.js';
+import { KeyboardNavigation } from './modules/ui/keyboard-nav.js';
 import { ContextMenuManager } from './modules/ui/context-menu.js';
 import { DarkModeManager } from './modules/ui/dark-mode.js';
 import { NotificationManager } from './modules/ui/notifications.js';
@@ -70,8 +70,8 @@ class GTDApp {
         this.dependenciesManager = new DependenciesManager(this.state, this);
 
         // UI managers
-        this.bulkSelection = new BulkSelectionManager(this.state, this);
-        this.keyboardNav = new KeyboardNavigationManager(this.state, this);
+        this.bulkSelection = new BulkSelection(this.state, this);
+        this.keyboardNav = new KeyboardNavigation(this.state, this);
         this.contextMenu = new ContextMenuManager(this.state, this);
         this.darkMode = new DarkModeManager();
         this.notifications = new NotificationManager();
@@ -620,6 +620,134 @@ class GTDApp {
 
     getRecurrenceLabel(recurrence) {
         return this.taskModal.getRecurrenceLabel(recurrence);
+    }
+
+    // ==================== PRIORITY SCORING ====================
+
+    /**
+     * Calculate automatic priority score (0-100) for a task
+     * Higher score = higher priority
+     */
+    calculatePriorityScore(task) {
+        if (!task || task.completed) return 0;
+
+        let score = 50; // Base score
+
+        // Factor 1: Due date urgency (0-25 points)
+        if (task.dueDate) {
+            const daysUntilDue = this.getDaysUntilDue(task);
+            if (daysUntilDue < 0) {
+                score += 25; // Overdue
+            } else if (daysUntilDue === 0) {
+                score += 20; // Due today
+            } else if (daysUntilDue === 1) {
+                score += 15; // Due tomorrow
+            } else if (daysUntilDue <= 3) {
+                score += 10; // Due soon
+            } else if (daysUntilDue <= 7) {
+                score += 5;
+            }
+        }
+
+        // Factor 2: Starred tasks (0-15 points)
+        if (task.starred) {
+            score += 15;
+        }
+
+        // Factor 3: Task status priority (0-10 points)
+        if (task.status === 'next') {
+            score += 10;
+        } else if (task.status === 'inbox') {
+            score += 5;
+        }
+
+        // Factor 4: Dependencies (0-10 points)
+        if (task.waitingForTaskIds && task.waitingForTaskIds.length > 0) {
+            if (task.areDependenciesMet(this.state.tasks)) {
+                score += 10; // Ready to start
+            } else {
+                score -= 10; // Blocked
+            }
+        }
+
+        // Factor 5: Energy vs available time (0-8 points)
+        if (task.energy && task.time) {
+            if (task.energy === 'high' && task.time <= 15) {
+                score += 8; // Quick high-energy tasks
+            } else if (task.energy === 'low' && task.time > 60) {
+                score -= 5; // Long low-energy tasks
+            }
+        }
+
+        // Factor 6: Time estimate (0-5 points)
+        if (task.time) {
+            if (task.time <= 5) {
+                score += 5; // Quick task
+            } else if (task.time <= 15) {
+                score += 3;
+            }
+        }
+
+        // Factor 7: Project priority (0-5 points)
+        if (task.projectId) {
+            const project = this.state.projects.find(p => p.id === task.projectId);
+            if (project && project.status === 'active') {
+                score += 5;
+            }
+        }
+
+        // Factor 8: Defer date (0-20 points penalty)
+        if (task.deferDate && !task.isAvailable()) {
+            score -= 20;
+        }
+
+        // Factor 9: Age of task (0-7 points)
+        const daysSinceCreated = Math.floor((new Date() - new Date(task.createdAt)) / (1000 * 60 * 60 * 24));
+        if (daysSinceCreated > 30) {
+            score += 7;
+        } else if (daysSinceCreated > 14) {
+            score += 5;
+        } else if (daysSinceCreated > 7) {
+            score += 3;
+        }
+
+        // Ensure score is within 0-100 range
+        return Math.max(0, Math.min(100, score));
+    }
+
+    /**
+     * Get priority score color class
+     */
+    getPriorityScoreColor(score) {
+        if (score >= 80) return 'var(--danger-color)'; // High priority - red
+        if (score >= 60) return '#f39c12'; // Medium-high - orange
+        if (score >= 40) return 'var(--warning-color)'; // Medium - yellow
+        if (score >= 20) return 'var(--info-color)'; // Low - blue
+        return 'var(--text-secondary)'; // Very low - gray
+    }
+
+    /**
+     * Get priority label
+     */
+    getPriorityLabel(score) {
+        if (score >= 80) return 'Urgent';
+        if (score >= 60) return 'High';
+        if (score >= 40) return 'Medium';
+        if (score >= 20) return 'Low';
+        return 'Very Low';
+    }
+
+    /**
+     * Get days until due date
+     */
+    getDaysUntilDue(task) {
+        if (!task.dueDate) return null;
+        const dueDate = new Date(task.dueDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const diffTime = dueDate - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays;
     }
 
     // ==================== WAITING FOR TASKS ====================
