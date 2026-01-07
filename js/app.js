@@ -8902,11 +8902,14 @@ class ErrorHandler {
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => this.setupMobileNavigationInternal());
         } else {
-            this.setupMobileNavigationInternal();
+            // Use setTimeout to ensure DOM is fully parsed
+            setTimeout(() => this.setupMobileNavigationInternal(), 0);
         }
     }
 
     setupMobileNavigationInternal() {
+        console.log('[Mobile Nav] Setting up mobile navigation...');
+
         // Hamburger Menu
         const hamburger = document.getElementById('hamburger-menu');
         const sidebar = document.querySelector('.sidebar');
@@ -8931,11 +8934,14 @@ class ErrorHandler {
 
         // Bottom Navigation
         const bottomNavItems = document.querySelectorAll('.bottom-nav-item[data-view]');
+        console.log('[Mobile Nav] Found bottom nav items:', bottomNavItems.length);
+
         bottomNavItems.forEach(item => {
             item.addEventListener('click', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 const view = item.dataset.view;
-                console.log('[Bottom Nav] Switching to view:', view);
+                console.log('[Bottom Nav] Clicked view:', view);
                 this.switchView(view);
 
                 // Update active state
