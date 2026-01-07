@@ -658,6 +658,9 @@
 
                 <h5>New Features</h5>
                 <ul>
+                    <li><strong>🔄 Advanced Recurrence</strong> - Set specific days for weekly (Mon/Wed/Fri), nth weekday for monthly (3rd Thursday), specific dates for yearly (Jan 15th)</li>
+                    <li><strong>🔗 Drag-and-Drop Dependencies</strong> - In project view, drag one task onto another to create dependencies</li>
+                    <li><strong>📦 Project Archive/Delete</strong> - Empty or completed projects show Archive/Delete buttons for easy cleanup</li>
                     <li><strong>📊 Task Dependencies Visualization</strong> - View task dependencies with graph view, chains, and critical path</li>
                     <li><strong>📅 Productivity Heatmap</strong> - GitHub-style calendar showing task completion activity</li>
                     <li><strong>⌨️ Global Quick Capture</strong> - Press Alt+N anywhere to instantly capture tasks</li>
@@ -718,6 +721,45 @@
                     <li><strong>Auto-stop</strong>: Timer stops automatically when completing a task</li>
                     <li>Toast notifications show time tracked when exiting focus mode</li>
                     <li>Seamless workflow - no manual timer management needed</li>
+                </ul>
+
+                <h5>Advanced Recurrence</h5>
+                <ul>
+                    <li><strong>Weekly with specific days</strong>: Select "Weekly" recurrence, then check specific days (e.g., Mondays, Wednesdays, Fridays)</li>
+                    <li><strong>Monthly with day number</strong>: Select "Monthly" and choose a specific day (1-31)</li>
+                    <li><strong>Monthly with nth weekday</strong>: Select "Monthly" and choose "The [3rd] [Thursday]" pattern</li>
+                    <li><strong>Yearly with specific date</strong>: Select "Yearly" and choose month and day (e.g., January 15th, July 4th)</li>
+                    <li>Tasks automatically create the next occurrence when completed</li>
+                    <li>Set optional end date to stop recurrence</li>
+                    <li>Backward compatible with simple daily/weekly/monthly/yearly recurrence</li>
+                </ul>
+
+                <h5>Drag-and-Drop Task Dependencies</h5>
+                <ul>
+                    <li>Only works when viewing a project (click into a project first)</li>
+                    <li><strong>To create dependency</strong>: Drag one task by its handle (≡) and drop it onto another task</li>
+                    <li>The dropped task becomes a <strong>prerequisite</strong> (must be done first)</li>
+                    <li>The target task becomes <strong>dependent</strong> (waits for the prerequisite)</li>
+                    <li>Visual feedback: dashed border and "🔗 Drop to create dependency" tooltip appears</li>
+                    <li>Dependencies can only be created between tasks in the same project</li>
+                    <li><strong>Circular dependencies</strong> are automatically prevented (e.g., A depends on B, B depends on A)</li>
+                    <li>Tasks with dependencies automatically move to "Waiting" status</li>
+                    <li>When prerequisite completes, dependent task moves to "Next Actions"</li>
+                </ul>
+
+                <h5>Project Archive & Delete</h5>
+                <ul>
+                    <li><strong>When to use</strong>: Projects with no incomplete tasks show Archive/Delete buttons</li>
+                    <li>Buttons appear for:
+                        <ul>
+                            <li>Projects that truly have no tasks</li>
+                            <li>Projects where all tasks are completed (message: "All tasks completed!")</li>
+                        </ul>
+                    </li>
+                    <li><strong>Archive</strong>: Hides the project but keeps all data (can be restored later)</li>
+                    <li><strong>Delete</strong>: Permanently removes the project (tasks are not deleted, just unassigned)</li>
+                    <li><strong>To restore archived projects</strong>: Click "Show Archived" button in Projects view, then click "Restore"</li>
+                    <li>Keeps your active project list clean and focused</li>
                 </ul>
 
                 <h5>Task Priority Scoring</h5>
@@ -826,6 +868,10 @@
                     <li><strong>Convert Task</strong> - Edit any task and change Type to "Project"</li>
                     <li><strong>View Progress</strong> - Progress bars show completion percentage</li>
                     <li><strong>Health Status</strong> - 🟢 Good | 🟡 Warning | 🔴 Critical</li>
+                    <li><strong>Auto-assign Tasks</strong> - When viewing a project, new tasks automatically assign to that project</li>
+                    <li><strong>Drag-and-Drop Dependencies</strong> - In project view, drag tasks onto each other to create dependencies</li>
+                    <li><strong>Archive/Delete</strong> - Projects with no incomplete tasks show Archive/Delete buttons</li>
+                    <li><strong>Show Archived</strong> - Toggle to view and restore archived projects</li>
                 </ol>
 
                 <h5>Focus Mode & Pomodoro</h5>
@@ -871,11 +917,24 @@
 
                 <h5>Task Dependencies (Waiting)</h5>
                 <ol>
-                    <li>Create or edit a task</li>
-                    <li>Set status to "Waiting"</li>
-                    <li><strong>Description:</strong> What/who are you waiting for?</li>
-                    <li><strong>Dependencies:</strong> Select tasks that must complete first</li>
+                    <li><strong>Method 1 - Drag & Drop (in project view)</strong>:
+                        <ul>
+                            <li>Navigate into a project</li>
+                            <li>Drag one task onto another to create dependency</li>
+                            <li>Dropped task = prerequisite (must be done first)</li>
+                            <li>Target task = dependent (waits for prerequisite)</li>
+                        </ul>
+                    </li>
+                    <li><strong>Method 2 - Manual (any view)</strong>:
+                        <ul>
+                            <li>Create or edit a task</li>
+                            <li>Set status to "Waiting"</li>
+                            <li><strong>Description:</strong> What/who are you waiting for?</li>
+                            <li><strong>Dependencies:</strong> Select tasks that must complete first</li>
+                        </ul>
+                    </li>
                     <li>When dependencies are met, tasks automatically move to Next Actions!</li>
+                    <li>Circular dependencies are automatically prevented</li>
                 </ol>
 
                 <h5>Time Tracking</h5>

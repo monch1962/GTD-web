@@ -2,7 +2,7 @@
 
 A full-featured Getting Things Done (GTD) productivity application that runs entirely in your browser. Implement David Allen's GTD methodology to stay organized and productive.
 
-![GTD Web](https://img.shields.io/badge/version-2.2.0-blue)
+![GTD Web](https://img.shields.io/badge/version-2.3.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ## Features
@@ -10,12 +10,17 @@ A full-featured Getting Things Done (GTD) productivity application that runs ent
 ### Core GTD Workflow
 - **Inbox** - Quick capture for all new tasks and ideas
 - **Next Actions** - Actionable tasks you can do right now
-- **Waiting For** - Tasks blocked on dependencies or external factors
-- **Someday/Maybe** - Tasks for future consideration
+- **Waiting** - Tasks blocked on dependencies or external factors
+- **Someday** - Tasks for future consideration
 - **Projects** - Multi-step outcomes with task tracking and health indicators
 - **Reference** - Non-actionable information storage
 
 ### Advanced Features
+- **🔄 Advanced Recurrence** - Set specific days for weekly (Mon/Wed/Fri), nth weekday for monthly (3rd Thursday), specific dates for yearly (Jan 15th)
+- **🔗 Drag-and-Drop Dependencies** - In project view, drag tasks onto each other to create dependencies with visual feedback
+- **📦 Project Archive/Delete** - One-click archive or delete for empty/completed projects with restore functionality
+- **Auto-Assign to Project** - Tasks created in project view automatically assign to that project
+- **Circular Dependency Prevention** - Automatic detection and blocking of circular dependencies using BFS algorithm
 - **Task Dependencies Visualization** - Visual graphs, dependency chains, and critical path analysis
 - **Productivity Heatmap** - GitHub-style contribution calendar showing 365 days of activity
 - **Global Quick Capture** - Press Alt+N anywhere to instantly capture tasks with natural language parsing
@@ -39,9 +44,9 @@ A full-featured Getting Things Done (GTD) productivity application that runs ent
 - **Project Health Indicators** - Visual progress bars and health status for all projects
 - **Natural Language Parsing** - Quick task entry with smart context/energy/time extraction
 - **Smart Suggestions** - AI-powered task recommendations based on your patterns
-- **Recurring Tasks** - Set tasks to repeat daily, weekly, monthly, or yearly
-- **Task Dependencies** - Set tasks that must complete before others become actionable
-- **Smart Context System** - Default contexts (@home, @work, @personal, @computer, @phone, @errand) plus custom contexts
+- **Recurring Tasks** - Advanced recurrence with specific day selection (backward compatible with simple daily/weekly/monthly/yearly)
+- **Task Dependencies** - Set tasks that must complete before others become actionable (drag-and-drop or manual)
+- **Smart Context System** - Default contexts (@home, @work, @personal, @computer, @phone) plus custom contexts
   - All contexts automatically start with @ for easy identification
 - **Gantt Charts** - Visual dependency diagrams for projects
 - **Due Dates & Defer Dates** - Schedule deadlines and hide tasks until they're relevant
