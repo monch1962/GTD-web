@@ -2217,10 +2217,10 @@ textarea:focus-visible {
     border-radius: 50%;
     width: 56px;
     height: 56px;
-    margin-top: -20px;
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
     min-width: 56px;
     min-height: 56px;
+    flex-shrink: 0;
 }
 
 .bottom-nav-item#fab-quick-add i {

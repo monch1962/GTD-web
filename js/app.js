@@ -5910,7 +5910,16 @@ class GTDApp {
         this.currentView = view;
 
         // Update view title
-        document.getElementById('view-title').textContent = ViewLabels[view] || view;
+        const baseTitle = ViewLabels[view] || view;
+        let title = baseTitle;
+
+        // Add context filter indicator
+        if (this.selectedContextFilters && this.selectedContextFilters.size > 0) {
+            const contexts = Array.from(this.selectedContextFilters).join(', ');
+            title = `${baseTitle} (${contexts})`;
+        }
+
+        document.getElementById('view-title').textContent = title;
 
         // Show/hide containers
         const tasksContainer = document.getElementById('tasks-container');
@@ -6018,6 +6027,15 @@ class GTDApp {
         // Apply additional filters
         if (this.filters.context) {
             filteredTasks = filteredTasks.filter(task => task.contexts && task.contexts.includes(this.filters.context));
+        }
+
+        // Apply sidebar context filters (if any contexts are selected)
+        if (this.selectedContextFilters && this.selectedContextFilters.size > 0) {
+            filteredTasks = filteredTasks.filter(task => {
+                if (!task.contexts || task.contexts.length === 0) return false;
+                // Check if task has ANY of the selected contexts
+                return task.contexts.some(context => this.selectedContextFilters.has(context));
+            });
         }
 
         if (this.filters.energy) {
@@ -8124,6 +8142,98 @@ class GTDApp {
         });
 
         contextFilter.value = currentValue;
+
+        // Also update sidebar context filters
+        this.updateSidebarContextFilters();
+    }
+
+    updateSidebarContextFilters() {
+        const container = document.getElementById('context-filters');
+        if (!container) return;
+
+        // Get all unique contexts
+        const allContexts = new Set();
+        this.tasks.forEach(task => {
+            if (task.contexts) {
+                task.contexts.forEach(context => allContexts.add(context));
+            }
+        });
+
+        // Initialize selected contexts filter if not exists
+        if (!this.selectedContextFilters) {
+            this.selectedContextFilters = new Set();
+        }
+
+        // Clear existing filters
+        container.innerHTML = '';
+
+        if (allContexts.size === 0) {
+            container.innerHTML = '<div style="padding: var(--spacing-sm); font-size: 0.8rem; color: var(--text-light); opacity: 0.7;">No contexts yet</div>';
+            return;
+        }
+
+        // Create checkbox for each context
+        Array.from(allContexts).sort().forEach(context => {
+            const wrapper = document.createElement('div');
+            wrapper.style.cssText = 'display: flex; align-items: center; padding: 6px 12px; cursor: pointer; border-radius: 4px; transition: background 0.2s;';
+            wrapper.style.marginBottom = '2px';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = `context-filter-${context.replace('@', '').replace(/\s/g, '-')}`;
+            checkbox.value = context;
+            checkbox.checked = this.selectedContextFilters.has(context);
+            checkbox.style.cssText = 'margin-right: 8px; cursor: pointer;';
+
+            const label = document.createElement('label');
+            label.htmlFor = checkbox.id;
+            label.textContent = context;
+            label.style.cssText = 'flex: 1; cursor: pointer; font-size: 0.85rem; color: var(--text-light);';
+
+            // Add click handler
+            wrapper.addEventListener('click', (e) => {
+                if (e.target !== checkbox) {
+                    checkbox.checked = !checkbox.checked;
+                }
+                this.toggleContextFilter(context, checkbox.checked);
+            });
+
+            wrapper.appendChild(checkbox);
+            wrapper.appendChild(label);
+            container.appendChild(wrapper);
+        });
+
+        // Add click handler for clear button
+        const clearBtn = document.getElementById('clear-context-filters');
+        if (clearBtn) {
+            clearBtn.removeEventListener('click', this.clearContextFiltersHandler);
+            this.clearContextFiltersHandler = () => this.clearContextFilters();
+            clearBtn.addEventListener('click', this.clearContextFiltersHandler);
+        }
+    }
+
+    toggleContextFilter(context, isChecked) {
+        if (isChecked) {
+            this.selectedContextFilters.add(context);
+        } else {
+            this.selectedContextFilters.delete(context);
+        }
+
+        // Re-render view with updated filters
+        this.renderView();
+
+        // Show notification with count
+        const count = this.selectedContextFilters.size;
+        if (count > 0) {
+            this.showNotification(`Filtering by ${count} context${count > 1 ? 's' : ''}`);
+        }
+    }
+
+    clearContextFilters() {
+        this.selectedContextFilters = new Set();
+        this.renderView();
+        this.updateSidebarContextFilters();
+        this.showNotification('Context filters cleared');
     }
 
     renderProjectsDropdown() {
@@ -8788,6 +8898,15 @@ class ErrorHandler {
     }
 
     setupMobileNavigation() {
+        // Wait for DOM to be ready before setting up mobile navigation
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => this.setupMobileNavigationInternal());
+        } else {
+            this.setupMobileNavigationInternal();
+        }
+    }
+
+    setupMobileNavigationInternal() {
         // Hamburger Menu
         const hamburger = document.getElementById('hamburger-menu');
         const sidebar = document.querySelector('.sidebar');
@@ -8816,11 +8935,19 @@ class ErrorHandler {
             item.addEventListener('click', (e) => {
                 e.preventDefault();
                 const view = item.dataset.view;
+                console.log('[Bottom Nav] Switching to view:', view);
                 this.switchView(view);
 
                 // Update active state
                 bottomNavItems.forEach(nav => nav.classList.remove('active'));
                 item.classList.add('active');
+
+                // Close sidebar if open
+                if (sidebar) {
+                    sidebar.classList.remove('active');
+                    overlay?.classList.remove('active');
+                    hamburger?.classList.remove('active');
+                }
             });
         });
 
