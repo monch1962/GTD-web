@@ -22,7 +22,8 @@ export const TaskType = {
 export const ProjectStatus = {
     ACTIVE: 'active',
     SOMEDAY: 'someday',
-    COMPLETED: 'completed'
+    COMPLETED: 'completed',
+    ARCHIVED: 'archived'
 };
 
 // Energy levels

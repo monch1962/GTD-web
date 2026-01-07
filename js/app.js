@@ -49,6 +49,7 @@ class GTDApp {
         this.history = []; // Undo/Redo history
         this.historyIndex = -1; // Current position in history
         this.maxHistorySize = 50; // Maximum history entries
+        this.showingArchivedProjects = false; // Track if viewing archived projects
     }
 
     async init() {
@@ -5781,6 +5782,11 @@ class GTDApp {
         // Clear project filter when switching views
         this.currentProjectId = null;
 
+        // Reset archived projects view when switching away from projects
+        if (view !== 'projects') {
+            this.showingArchivedProjects = false;
+        }
+
         // Update active nav item
         document.querySelectorAll('.nav-item').forEach(item => {
             item.classList.remove('active');
@@ -6405,14 +6411,54 @@ class GTDApp {
         const container = document.getElementById('projects-container');
         let filteredProjects = this.projects;
 
+        // Check if we're showing archived projects
+        const showingArchived = this.showingArchivedProjects || false;
+
+        // Filter out archived projects from normal view (unless explicitly showing them)
+        if (!showingArchived) {
+            filteredProjects = filteredProjects.filter(project => project.status !== 'archived');
+        } else {
+            // When showing archived, only show archived
+            filteredProjects = filteredProjects.filter(project => project.status === 'archived');
+        }
+
         if (this.filters.context) {
             filteredProjects = filteredProjects.filter(project => project.contexts && project.contexts.includes(this.filters.context));
         }
 
-        container.innerHTML = '';
+        // Add header with toggle button
+        const archivedCount = this.projects.filter(p => p.status === 'archived').length;
+
+        if (archivedCount > 0 || showingArchived) {
+            const headerDiv = document.createElement('div');
+            headerDiv.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-md); padding: var(--spacing-sm); background: var(--bg-secondary); border-radius: var(--border-radius);';
+
+            const toggleButton = document.createElement('button');
+            toggleButton.className = 'btn btn-secondary';
+            toggleButton.style.cssText = 'font-size: 0.85rem;';
+            toggleButton.innerHTML = showingArchived
+                ? `<i class="fas fa-arrow-left"></i> Back to Active Projects`
+                : `<i class="fas fa-archive"></i> Show Archived (${archivedCount})`;
+
+            toggleButton.addEventListener('click', () => {
+                this.showingArchivedProjects = !showingArchived;
+                this.renderProjects();
+            });
+
+            headerDiv.appendChild(toggleButton);
+            container.appendChild(headerDiv);
+        }
+
+        // Clear and re-render projects
+        const existingProjects = container.querySelectorAll('.project-card');
+        existingProjects.forEach(p => p.remove());
 
         if (filteredProjects.length === 0) {
-            container.innerHTML = this.renderEmptyState('No projects found');
+            const emptyDiv = document.createElement('div');
+            emptyDiv.innerHTML = showingArchived
+                ? this.renderEmptyState('No archived projects')
+                : this.renderEmptyState('No projects found');
+            container.appendChild(emptyDiv);
             return;
         }
 
@@ -6510,10 +6556,43 @@ class GTDApp {
                     ${taskCount > 3 ? `<div class="project-tasks-more">+${taskCount - 3} more tasks</div>` : ''}
                 </div>
             ` : ''}
+
+            ${totalTasks === 0 && project.status !== 'archived' ? `
+                <div class="project-empty-actions" style="padding: var(--spacing-sm); background: rgba(240, 173, 78, 0.1); border-radius: var(--border-radius); margin-top: var(--spacing-sm);">
+                    <div style="display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm);">
+                        <i class="fas fa-info-circle" style="color: #f0ad4e;"></i>
+                        <span style="font-size: 0.9rem; color: var(--text-secondary);">This project has no tasks</span>
+                    </div>
+                    <div style="display: flex; gap: var(--spacing-xs);">
+                        <button class="btn-archive-project" style="flex: 1; padding: 6px 12px; font-size: 0.85rem; background: var(--info-color); color: white; border: none; border-radius: var(--border-radius); cursor: pointer;">
+                            <i class="fas fa-archive"></i> Archive
+                        </button>
+                        <button class="btn-delete-project-confirm" style="flex: 1; padding: 6px 12px; font-size: 0.85rem; background: var(--danger-color); color: white; border: none; border-radius: var(--border-radius); cursor: pointer;">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            ` : ''}
+
+            ${project.status === 'archived' ? `
+                <div class="project-archived-badge" style="padding: var(--spacing-sm); background: rgba(127, 130, 140, 0.1); border-radius: var(--border-radius); margin-top: var(--spacing-sm);">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
+                            <i class="fas fa-archive" style="color: #7f828c;"></i>
+                            <span style="font-size: 0.9rem; color: var(--text-secondary);">Archived</span>
+                        </div>
+                        <button class="btn-restore-project" style="padding: 6px 12px; font-size: 0.85rem; background: var(--success-color); color: white; border: none; border-radius: var(--border-radius); cursor: pointer;">
+                            <i class="fas fa-undo"></i> Restore
+                        </button>
+                    </div>
+                </div>
+            ` : ''}
+
             <div class="project-meta">
                 <div class="project-tags">
                     ${project.contexts ? project.contexts.map(context => `<span class="task-context">${escapeHtml(context)}</span>`).join('') : ''}
                 </div>
+                ${totalTasks > 0 ? `
                 <div class="project-actions">
                     <button class="btn-view-tasks" title="View tasks">
                         <i class="fas fa-list"></i>
@@ -6526,6 +6605,13 @@ class GTDApp {
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
+                ` : `
+                <div class="project-actions">
+                    <button class="task-action-btn edit-project" title="Edit">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                </div>
+                `}
             </div>
         `;
 
@@ -6566,10 +6652,36 @@ class GTDApp {
         });
 
         const deleteBtn = div.querySelector('.delete-project');
-        deleteBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.deleteProject(project.id);
-        });
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.deleteProject(project.id);
+            });
+        }
+
+        const deleteConfirmBtn = div.querySelector('.btn-delete-project-confirm');
+        if (deleteConfirmBtn) {
+            deleteConfirmBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.deleteProject(project.id);
+            });
+        }
+
+        const archiveBtn = div.querySelector('.btn-archive-project');
+        if (archiveBtn) {
+            archiveBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.archiveProject(project.id);
+            });
+        }
+
+        const restoreBtn = div.querySelector('.btn-restore-project');
+        if (restoreBtn) {
+            restoreBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.restoreProject(project.id);
+            });
+        }
 
         const viewTasksBtn = div.querySelector('.btn-view-tasks');
         if (viewTasksBtn) {
@@ -7660,6 +7772,46 @@ class GTDApp {
         this.renderView();
         this.updateCounts();
         this.renderProjectsDropdown();
+    }
+
+    async archiveProject(projectId) {
+        const project = this.projects.find(p => p.id === projectId);
+        if (!project) return;
+
+        if (!confirm(`Archive "${project.title}"? The project will be hidden but can be restored later.`)) return;
+
+        // Save state for undo
+        this.saveState('Archive project');
+
+        // Mark project as archived
+        project.status = 'archived';
+        project.updatedAt = new Date().toISOString();
+
+        await this.saveProjects();
+        this.renderView();
+        this.updateCounts();
+        this.renderProjectsDropdown();
+
+        this.showNotification(`Project "${project.title}" archived`);
+    }
+
+    async restoreProject(projectId) {
+        const project = this.projects.find(p => p.id === projectId);
+        if (!project) return;
+
+        // Save state for undo
+        this.saveState('Restore project');
+
+        // Restore project to active status
+        project.status = 'active';
+        project.updatedAt = new Date().toISOString();
+
+        await this.saveProjects();
+        this.renderView();
+        this.updateCounts();
+        this.renderProjectsDropdown();
+
+        this.showNotification(`Project "${project.title}" restored`);
     }
 
     async saveTasks() {
