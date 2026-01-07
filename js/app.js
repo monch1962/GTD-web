@@ -554,7 +554,7 @@ class GTDApp {
         ];
 
         const toggleTemplatesBtn = document.getElementById('toggle-templates');
-        const templatesList = document.getElementById('templates-list');
+        const templatesList = document.getElementById('quick-capture-templates-list');
 
         if (toggleTemplatesBtn && templatesList) {
             // Populate templates list
@@ -2821,9 +2821,12 @@ class GTDApp {
     }
 
     openTemplatesModal() {
+        // First, make sure the edit modal is closed
+        this.closeTemplateEditModal();
+
         const modal = document.getElementById('templates-modal');
         if (modal) {
-            modal.style.display = 'block';
+            modal.classList.add('active');
             this.renderTemplatesList();
         }
     }
@@ -2831,16 +2834,19 @@ class GTDApp {
     closeTemplatesModal() {
         const modal = document.getElementById('templates-modal');
         if (modal) {
-            modal.style.display = 'none';
+            modal.classList.remove('active');
         }
     }
 
     openTemplateEditModal(templateId = null) {
+        // First, make sure the templates list modal is closed
+        this.closeTemplatesModal();
+
         const modal = document.getElementById('template-edit-modal');
         const title = document.getElementById('template-modal-title');
 
         if (modal) {
-            modal.style.display = 'block';
+            modal.classList.add('active');
 
             if (templateId) {
                 // Edit existing template
@@ -2873,7 +2879,7 @@ class GTDApp {
     closeTemplateEditModal() {
         const modal = document.getElementById('template-edit-modal');
         if (modal) {
-            modal.style.display = 'none';
+            modal.classList.remove('active');
         }
     }
 
@@ -2909,7 +2915,11 @@ class GTDApp {
 
         await this.saveTemplates();
         this.closeTemplateEditModal();
-        this.renderTemplatesList();
+
+        // Open the templates modal to show the list with the new template
+        this.openTemplatesModal();
+
+        this.updateCounts();
         this.showToast(templateId ? 'Template updated' : 'Template created');
     }
 
@@ -2920,7 +2930,60 @@ class GTDApp {
         this.templates = this.templates.filter(t => t.id !== templateId);
         await this.saveTemplates();
         this.renderTemplatesList();
+        this.updateCounts();
         this.showToast('Template deleted');
+    }
+
+    async saveTaskAsTemplate(taskId) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        // Prepare the template data
+        const templateData = {
+            title: task.title || '',
+            description: task.description || '',
+            energy: task.energy || '',
+            time: task.timeEstimated || 0,
+            category: task.category || 'general',
+            notes: task.notes || '',
+            contexts: task.contexts || [],
+            subtasks: task.subtasks || []
+        };
+
+        // Open template edit modal with task data pre-filled (skipReset = true)
+        this.openTemplateEditModalWithData(templateData);
+
+        this.showToast('Template pre-filled from task - modify and save');
+    }
+
+    openTemplateEditModalWithData(templateData) {
+        // First, make sure the templates list modal is closed
+        this.closeTemplatesModal();
+
+        const modal = document.getElementById('template-edit-modal');
+        const title = document.getElementById('template-modal-title');
+
+        if (modal) {
+            modal.classList.add('active');
+
+            // Set title for new template
+            title.textContent = 'Create Template';
+
+            // Clear the template-id field (this is a new template)
+            document.getElementById('template-id').value = '';
+
+            // Populate form with provided data
+            document.getElementById('template-title').value = templateData.title || '';
+            document.getElementById('template-description').value = templateData.description || '';
+            document.getElementById('template-energy').value = templateData.energy || '';
+            document.getElementById('template-time').value = templateData.time || 0;
+            document.getElementById('template-category').value = templateData.category || 'general';
+            document.getElementById('template-notes').value = templateData.notes || '';
+
+            // Render contexts and subtasks
+            this.renderTemplateContexts(templateData.contexts || []);
+            this.renderTemplateSubtasks(templateData.subtasks || []);
+        }
     }
 
     async createTaskFromTemplate(templateId) {
@@ -3153,7 +3216,7 @@ class GTDApp {
     openArchiveModal() {
         const modal = document.getElementById('archive-modal');
         if (modal) {
-            modal.style.display = 'block';
+            modal.classList.add('active');
             this.renderArchive();
             this.populateArchiveProjectFilter();
         }
@@ -3161,7 +3224,7 @@ class GTDApp {
 
     closeArchiveModal() {
         const modal = document.getElementById('archive-modal');
-        if (modal) modal.style.display = 'none';
+        if (modal) modal.classList.remove('active');
     }
 
     async autoArchiveOldTasks(daysOld = 30) {
@@ -3199,6 +3262,33 @@ class GTDApp {
 
     async archiveTasks(tasksToArchive) {
         await this.storage.addToArchive(tasksToArchive);
+    }
+
+    async archiveTask(taskId) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        if (!confirm(`Archive "${task.title}"? The task will be moved to the archive and can be restored later.`)) return;
+
+        this.saveState('Archive task');
+
+        // Create archive entry
+        const archiveEntry = {
+            task: task.toJSON(),
+            archivedAt: new Date().toISOString(),
+            completedAt: task.completedAt || new Date().toISOString()
+        };
+
+        // Add to archive
+        await this.storage.addToArchive([archiveEntry]);
+
+        // Remove from active tasks
+        this.tasks = this.tasks.filter(t => t.id !== taskId);
+        await this.saveTasks();
+
+        this.renderView();
+        this.updateCounts();
+        this.showToast(`Task "${task.title}" archived`);
     }
 
     async restoreFromArchive(archiveId) {
@@ -3501,6 +3591,10 @@ class GTDApp {
                 this.duplicateTask(taskId);
                 break;
 
+            case 'save-as-template':
+                this.saveTaskAsTemplate(taskId);
+                break;
+
             case 'toggle-star':
                 this.saveState('Toggle task star');
                 task.toggleStar();
@@ -3548,6 +3642,10 @@ class GTDApp {
 
             case 'complete':
                 this.toggleTaskComplete(taskId);
+                break;
+
+            case 'archive':
+                this.archiveTask(taskId);
                 break;
 
             case 'delete':
@@ -5052,6 +5150,11 @@ class GTDApp {
             toast.style.opacity = '0';
             setTimeout(() => toast.remove(), 300);
         }, 2000);
+    }
+
+    // Alias for showNotification for consistency
+    showToast(message) {
+        this.showNotification(message);
     }
 
     // ==================== QUICK CAPTURE WIDGET ====================
@@ -7982,6 +8085,7 @@ class GTDApp {
         document.getElementById('someday-count').textContent = counts.someday || '';
         document.getElementById('projects-count').textContent = counts.projects || '';
         document.getElementById('reference-count').textContent = this.tasks.filter(t => t.type === 'reference').length || '';
+        document.getElementById('templates-count').textContent = this.templates.length || '';
     }
 
     updateContextFilter() {
@@ -8688,6 +8792,7 @@ const errorHandler = new ErrorHandler();
 
 // Initialize app
 const app = new GTDApp();
+window.app = app; // Expose to global scope for inline onclick handlers
 document.addEventListener('DOMContentLoaded', () => app.init());
 
 // Add button to open project modal in projects view

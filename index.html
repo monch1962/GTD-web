@@ -64,6 +64,7 @@
                     <a href="#" class="nav-item" id="templates-button">
                         <i class="fas fa-copy"></i>
                         <span>Templates</span>
+                        <span class="count" id="templates-count">0</span>
                     </a>
                     <a href="#" class="nav-item" id="archive-button">
                         <i class="fas fa-archive"></i>
@@ -289,7 +290,7 @@
                     </div>
                     <div id="templates-dropdown" style="display: none; margin-top: var(--spacing-sm); padding: var(--spacing-sm); background: var(--bg-secondary); border-radius: var(--radius-sm); font-size: 0.8rem;">
                         <strong>Quick Templates:</strong>
-                        <div id="templates-list" style="margin-top: var(--spacing-xs); display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-xs);">
+                        <div id="quick-capture-templates-list" style="margin-top: var(--spacing-xs); display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-xs);">
                             <!-- Templates will be populated by JavaScript -->
                         </div>
                     </div>
@@ -1339,6 +1340,9 @@
         <div class="context-menu-item" data-action="duplicate">
             <i class="fas fa-copy"></i> Duplicate
         </div>
+        <div class="context-menu-item" data-action="save-as-template">
+            <i class="fas fa-file-alt"></i> Save as Template
+        </div>
         <div class="context-menu-divider"></div>
         <div class="context-menu-item" data-action="toggle-star">
             <i class="fas fa-star"></i> Toggle Star
@@ -1400,6 +1404,9 @@
         <div class="context-menu-divider"></div>
         <div class="context-menu-item context-menu-danger" data-action="complete">
             <i class="fas fa-check-circle"></i> Complete
+        </div>
+        <div class="context-menu-item context-menu-danger" data-action="archive">
+            <i class="fas fa-archive"></i> Archive
         </div>
         <div class="context-menu-item context-menu-danger" data-action="delete">
             <i class="fas fa-trash"></i> Delete
