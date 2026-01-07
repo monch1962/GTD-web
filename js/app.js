@@ -6560,15 +6560,19 @@ class GTDApp {
         // Use natural language parser to extract task properties
         const parsed = this.parser.parse(title);
 
+        // Determine status: if viewing a project, default to 'next', otherwise use current view
+        const status = this.currentProjectId ? 'next' : (this.currentView === 'all' ? 'inbox' : this.currentView);
+
         const task = new Task({
             title: parsed.title || title,
-            status: this.currentView === 'all' ? 'inbox' : this.currentView,
+            status: status,
             type: 'task',
             contexts: parsed.contexts,
             energy: parsed.energy,
             time: parsed.time,
             dueDate: parsed.dueDate,
-            recurrence: parsed.recurrence
+            recurrence: parsed.recurrence,
+            projectId: this.currentProjectId || null
         });
 
         this.tasks.push(task);
