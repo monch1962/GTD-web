@@ -8960,6 +8960,15 @@ class GTDApp {
         modal.className = 'modal active';
         modal.id = 'suggestions-modal';
 
+        // Get all contexts (default + custom) using standard function
+        const allContexts = getAllContexts(this.tasks);
+        const sortedContexts = Array.from(allContexts).sort();
+
+        // Generate context options dynamically
+        const contextOptions = sortedContexts.map(context =>
+            `<option value="${escapeHtml(context)}">${escapeHtml(context)}</option>`
+        ).join('\n                                ');
+
         modal.innerHTML = `
             <div class="modal-content" style="max-width: 700px;">
                 <div class="modal-header">
@@ -8976,11 +8985,7 @@ class GTDApp {
                                 <label style="font-size: 0.875rem; font-weight: 500; display: block; margin-bottom: var(--spacing-xs);">Where are you?</label>
                                 <select id="suggestion-context" class="filter-select" style="width: 100%;">
                                     <option value="">Anywhere</option>
-                                    <option value="@home">@home</option>
-                                    <option value="@work">@work</option>
-                                    <option value="@computer">@computer</option>
-                                    <option value="@phone">@phone</option>
-                                    <option value="@personal">@personal</option>
+                                ${contextOptions}
                                 </select>
                             </div>
                             <div>
@@ -9015,11 +9020,19 @@ class GTDApp {
 
         document.body.appendChild(modal);
 
-        // Setup event listeners
+        // Setup event listeners for automatic filter updates
+        const contextSelect = document.getElementById('suggestion-context');
+        const timeSelect = document.getElementById('suggestion-time');
+        const energySelect = document.getElementById('suggestion-energy');
         const refreshBtn = document.getElementById('refresh-suggestions');
-        if (refreshBtn) {
-            refreshBtn.addEventListener('click', () => this.renderSuggestions());
-        }
+
+        // Auto-update when any filter changes
+        const updateSuggestions = () => this.renderSuggestions();
+
+        if (contextSelect) contextSelect.addEventListener('change', updateSuggestions);
+        if (timeSelect) timeSelect.addEventListener('change', updateSuggestions);
+        if (energySelect) energySelect.addEventListener('change', updateSuggestions);
+        if (refreshBtn) refreshBtn.addEventListener('click', updateSuggestions);
 
         // Initial render
         this.renderSuggestions();
