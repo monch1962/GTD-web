@@ -2098,6 +2098,410 @@ textarea:focus-visible {
     }
 }
 
+/* ==================== MOBILE OPTIMIZATIONS ==================== */
+
+/* Hamburger Menu Button */
+.hamburger-menu {
+    display: none;
+    position: fixed;
+    top: var(--spacing-md);
+    left: var(--spacing-md);
+    z-index: 1001;
+    background: var(--primary-color);
+    border: none;
+    border-radius: 4px;
+    padding: 8px;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+}
+
+.hamburger-menu span {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: white;
+    margin: 5px 0;
+    transition: all 0.3s ease;
+    border-radius: 2px;
+}
+
+.hamburger-menu.active span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+}
+
+.hamburger-menu.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger-menu.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -6px);
+}
+
+/* Sidebar Overlay for Mobile */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--bg-primary);
+    border-top: 1px solid var(--border-color);
+    padding: var(--spacing-sm) 0;
+    z-index: 998;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    justify-content: space-around;
+    align-items: center;
+}
+
+.bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-sm);
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    cursor: pointer;
+    min-width: 60px;
+    min-height: 60px;
+    transition: color 0.2s ease;
+}
+
+.bottom-nav-item i {
+    font-size: 1.25rem;
+    margin-bottom: 4px;
+}
+
+.bottom-nav-item span {
+    font-size: 0.7rem;
+}
+
+.bottom-nav-item.active {
+    color: var(--primary-color);
+}
+
+.bottom-nav-item#fab-quick-add {
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    width: 56px;
+    height: 56px;
+    margin-top: -20px;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+    min-width: 56px;
+    min-height: 56px;
+}
+
+.bottom-nav-item#fab-quick-add i {
+    font-size: 1.5rem;
+    margin-bottom: 0;
+}
+
+/* Pull to Refresh Indicator */
+.pull-to-refresh {
+    display: none;
+    position: absolute;
+    top: -60px;
+    left: 0;
+    right: 0;
+    height: 60px;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    z-index: 10;
+    transition: top 0.3s ease;
+}
+
+.pull-to-refresh.refreshing {
+    top: 0;
+}
+
+.pull-to-refresh i {
+    margin-right: var(--spacing-sm);
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Touch-Optimized Context Menu */
+.context-menu {
+    min-width: 200px;
+}
+
+.context-menu-item {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-sm) var(--spacing-md);
+}
+
+/* Swipe Action Indicators */
+.swipe-indicator {
+    display: none;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 80px;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+    z-index: 5;
+    transition: transform 0.2s ease;
+}
+
+.swipe-indicator.left {
+    left: 0;
+    background: linear-gradient(to right, var(--success-color), transparent);
+}
+
+.swipe-indicator.right {
+    right: 0;
+    background: linear-gradient(to left, var(--danger-color), transparent);
+}
+
+/* ==================== MOBILE MEDIA QUERIES ==================== */
+
+@media (max-width: 768px) {
+    /* Hamburger Menu */
+    .hamburger-menu {
+        display: block;
+    }
+
+    /* Sidebar */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 280px;
+        height: 100vh;
+        z-index: 1000;
+        transition: left 0.3s ease;
+        overflow-y: auto;
+    }
+
+    .sidebar.active {
+        left: 0;
+    }
+
+    .sidebar-overlay {
+        display: block;
+    }
+
+    .sidebar-overlay.active {
+        display: block;
+    }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+        display: flex;
+    }
+
+    /* Main Content - Add padding for bottom nav */
+    .main-content {
+        padding-bottom: 70px;
+    }
+
+    /* Content Header */
+    .content-header {
+        padding: var(--spacing-md);
+        padding-left: 50px; /* Space for hamburger */
+    }
+
+    .content-header h2 {
+        font-size: 1.125rem;
+    }
+
+    /* Hide some header buttons on mobile */
+    #btn-calendar-view,
+    #btn-focus-mode,
+    #btn-daily-review {
+        display: none;
+    }
+
+    /* Task Cards - Full width */
+    .task-item {
+        margin: var(--spacing-sm) 0;
+        padding: var(--spacing-md);
+    }
+
+    /* Task Actions - Larger touch targets */
+    .task-actions {
+        gap: var(--spacing-xs);
+    }
+
+    .task-actions button {
+        min-width: 44px;
+        min-height: 44px;
+        padding: var(--spacing-sm);
+    }
+
+    /* Modals - Full screen on mobile */
+    .modal-content {
+        max-width: 100%;
+        max-height: 100vh;
+        margin: 0;
+        border-radius: 0;
+        height: 100vh;
+    }
+
+    .modal-body {
+        padding: var(--spacing-md);
+    }
+
+    /* Forms - Stack vertically */
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-sm);
+    }
+
+    /* Buttons - Full width on mobile */
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .form-actions .btn {
+        width: 100%;
+        margin: var(--spacing-xs) 0;
+    }
+
+    /* Context Menu - Full width on mobile */
+    .context-menu {
+        min-width: 100%;
+        max-width: 100%;
+        left: 0 !important;
+        right: 0 !important;
+        top: auto !important;
+        bottom: 70px !important; /* Above bottom nav */
+        border-radius: var(--radius-md) var(--radius-md) 0 0;
+    }
+
+    /* Subtasks - Larger touch targets */
+    .subtask-item input {
+        font-size: 16px; /* Prevent iOS zoom */
+        min-height: 44px;
+    }
+
+    /* Pull to Refresh */
+    .pull-to-refresh {
+        display: flex;
+    }
+
+    /* Swipe Indicators */
+    .swipe-indicator {
+        display: flex;
+    }
+
+    /* Quick Capture - Position for mobile */
+    .quick-capture-widget {
+        bottom: 80px; /* Above bottom nav */
+    }
+
+    /* Templates Grid - Single column */
+    .template-card {
+        width: 100%;
+    }
+
+    #templates-list {
+        grid-template-columns: 1fr;
+    }
+
+    /* Project Dropdown - Full width */
+    .projects-dropdown {
+        padding-left: var(--spacing-md);
+    }
+
+    /* Search - Full width */
+    #global-search {
+        font-size: 16px; /* Prevent iOS zoom */
+    }
+}
+
+@media (max-width: 480px) {
+    /* Even smaller adjustments for very small screens */
+    .sidebar {
+        width: 85%;
+    }
+
+    .content-header {
+        padding-left: 45px;
+    }
+
+    .nav-item {
+        padding: var(--spacing-md) var(--spacing-lg);
+        font-size: 0.9rem;
+    }
+
+    .count {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+    }
+
+    /* Task title - Prevent text truncation on small screens */
+    .task-title {
+        font-size: 1rem;
+        line-height: 1.4;
+    }
+
+    /* Modal headers - Smaller on very small screens */
+    .modal-header h2 {
+        font-size: 1.25rem;
+    }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+    /* Increase touch targets for all buttons */
+    button,
+    .btn,
+    .context-menu-item,
+    .nav-item,
+    .bottom-nav-item {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    /* Remove hover effects on touch devices */
+    .task-item:hover {
+        transform: none;
+    }
+
+    /* Add tap feedback */
+    .task-item:active {
+        background-color: var(--bg-hover);
+        transform: scale(0.98);
+    }
+
+    .bottom-nav-item:active {
+        opacity: 0.7;
+    }
+}
+
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
     *,

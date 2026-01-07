@@ -107,6 +107,16 @@
 
         <!-- Main Content -->
         <main class="main-content" id="main-content">
+            <!-- Mobile Sidebar Overlay -->
+            <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+            <!-- Hamburger Menu Button (Mobile Only) -->
+            <button class="hamburger-menu" id="hamburger-menu" aria-label="Toggle menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
             <header class="content-header">
                 <div style="flex: 1; max-width: 400px; margin-right: var(--spacing-md);">
                     <div style="position: relative;">
@@ -1436,6 +1446,29 @@
             <!-- Focus task will be rendered here -->
         </div>
     </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="bottom-nav" id="bottom-nav">
+        <button class="bottom-nav-item" data-view="inbox" aria-label="Inbox">
+            <i class="fas fa-inbox"></i>
+            <span>Inbox</span>
+        </button>
+        <button class="bottom-nav-item" data-view="next" aria-label="Next Actions">
+            <i class="fas fa-bolt"></i>
+            <span>Next</span>
+        </button>
+        <button class="bottom-nav-item" id="fab-quick-add" aria-label="Quick Add Task">
+            <i class="fas fa-plus"></i>
+        </button>
+        <button class="bottom-nav-item" id="btn-templates-mobile" aria-label="Templates">
+            <i class="fas fa-copy"></i>
+            <span>Templates</span>
+        </button>
+        <button class="bottom-nav-item" id="btn-search-mobile" aria-label="Search">
+            <i class="fas fa-search"></i>
+            <span>Search</span>
+        </button>
+    </nav>
 
     <!-- Quick Capture Widget -->
     <div id="quick-capture-widget" class="quick-capture-widget">
