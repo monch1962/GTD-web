@@ -47,8 +47,8 @@ class GTDApp {
         this.state = new AppState();
 
         // Core services
-        this.storage = new Storage();
-        this.storageOps = new StorageOperations(this.storage, this.state);
+        this._storage = new Storage();
+        this.storageOps = new StorageOperations(this._storage, this.state);
         this.parser = new TaskParser();
 
         // View managers
@@ -77,27 +77,75 @@ class GTDApp {
         this.notifications = new NotificationManager();
         this.undoRedo = new UndoRedoManager(this.state, this);
 
-        // Legacy properties for backward compatibility
-        this.tasks = this.state.tasks;
-        this.projects = this.state.projects;
-        this.templates = this.state.templates;
-        this.currentView = this.state.currentView;
-        this.currentProjectId = this.state.currentProjectId;
-        this.filters = this.state.filters;
-        this.searchQuery = this.state.searchQuery;
-        this.advancedSearchFilters = this.state.advancedSearchFilters;
-        this.savedSearches = this.state.savedSearches;
-        this.selectedContextFilters = this.state.selectedContextFilters;
-        this.selectedTaskId = this.keyboardNav.selectedTaskId;
-        this.bulkSelectionMode = this.bulkSelection.bulkSelectionMode;
-        this.selectedTaskIds = this.bulkSelection.selectedTaskIds;
-        this.usageStats = this.state.usageStats;
-        this.defaultContexts = this.state.defaultContexts;
-        this.focusTaskId = this.focusPomodoro.focusTaskId;
-        this.calendarDate = this.calendarManager.calendarDate;
-        this.history = this.undoRedo.history;
-        this.historyIndex = this.undoRedo.historyIndex;
+        // Legacy properties are defined as getters/setters below for synchronization
     }
+
+    // Legacy property getters/setters for backward compatibility and test support
+    get storage() { return this._storage; }
+    set storage(value) {
+        this._storage = value;
+        // Update storageOps to use the new storage instance
+        if (this.storageOps) {
+            this.storageOps.storage = value;
+        }
+    }
+
+    get tasks() { return this.state.tasks; }
+    set tasks(value) { this.state.tasks = value; }
+
+    get projects() { return this.state.projects; }
+    set projects(value) { this.state.projects = value; }
+
+    get templates() { return this.state.templates; }
+    set templates(value) { this.state.templates = value; }
+
+    get currentView() { return this.state.currentView; }
+    set currentView(value) { this.state.currentView = value; }
+
+    get currentProjectId() { return this.state.currentProjectId; }
+    set currentProjectId(value) { this.state.currentProjectId = value; }
+
+    get filters() { return this.state.filters; }
+    set filters(value) { this.state.filters = value; }
+
+    get searchQuery() { return this.state.searchQuery; }
+    set searchQuery(value) { this.state.searchQuery = value; }
+
+    get advancedSearchFilters() { return this.state.advancedSearchFilters; }
+    set advancedSearchFilters(value) { this.state.advancedSearchFilters = value; }
+
+    get savedSearches() { return this.state.savedSearches; }
+    set savedSearches(value) { this.state.savedSearches = value; }
+
+    get selectedContextFilters() { return this.state.selectedContextFilters; }
+    set selectedContextFilters(value) { this.state.selectedContextFilters = value; }
+
+    get selectedTaskId() { return this.keyboardNav?.selectedTaskId; }
+    set selectedTaskId(value) { if (this.keyboardNav) this.keyboardNav.selectedTaskId = value; }
+
+    get bulkSelectionMode() { return this.bulkSelection?.bulkSelectionMode; }
+    set bulkSelectionMode(value) { if (this.bulkSelection) this.bulkSelection.bulkSelectionMode = value; }
+
+    get selectedTaskIds() { return this.bulkSelection?.selectedTaskIds; }
+    set selectedTaskIds(value) { if (this.bulkSelection) this.bulkSelection.selectedTaskIds = value; }
+
+    get usageStats() { return this.state.usageStats; }
+    set usageStats(value) { this.state.usageStats = value; }
+
+    get defaultContexts() { return this.state.defaultContexts; }
+    set defaultContexts(value) { this.state.defaultContexts = value; }
+
+    get focusTaskId() { return this.focusPomodoro?.focusTaskId; }
+    set focusTaskId(value) { if (this.focusPomodoro) this.focusPomodoro.focusTaskId = value; }
+
+    get calendarDate() { return this.calendarManager?.calendarDate; }
+    set calendarDate(value) { if (this.calendarManager) this.calendarManager.calendarDate = value; }
+
+    get history() { return this.undoRedo?.history; }
+    set history(value) { if (this.undoRedo) this.undoRedo.history = value; }
+
+    get historyIndex() { return this.undoRedo?.historyIndex; }
+    set historyIndex(value) { if (this.undoRedo) this.undoRedo.historyIndex = value; }
 
     async init() {
         try {
@@ -291,6 +339,29 @@ class GTDApp {
     }
 
     // ==================== PROJECT OPERATIONS ====================
+
+    async assignTaskToProject(taskId, projectId) {
+        const task = this.state.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        // Update task
+        task.projectId = projectId;
+
+        // If task was in Inbox, move it to Next Actions
+        if (task.status === 'inbox') {
+            task.status = 'next';
+        }
+
+        task.updatedAt = new Date().toISOString();
+
+        // Save changes
+        await this.saveTasks();
+
+        // Refresh UI
+        this.renderView();
+        this.updateCounts();
+        this.renderProjectsDropdown();
+    }
 
     async deleteProject(projectId) {
         return this.projectOperations.deleteProject(projectId);

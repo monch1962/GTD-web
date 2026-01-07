@@ -7,9 +7,12 @@ import { Task, Project, Template } from '../../models.js';
 
 export class StorageOperations {
     constructor(storage, state) {
-        this.storage = storage;
+        this._storage = storage;
         this.state = state;
     }
+
+    get storage() { return this._storage; }
+    set storage(value) { this._storage = value; }
 
     /**
      * Load all data from storage
