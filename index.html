@@ -36,12 +36,12 @@
                     </a>
                     <a href="#" class="nav-item" data-view="waiting">
                         <i class="fas fa-clock"></i>
-                        <span>Waiting For</span>
+                        <span>Waiting</span>
                         <span class="count" id="waiting-count">0</span>
                     </a>
                     <a href="#" class="nav-item" data-view="someday">
                         <i class="fas fa-cloud"></i>
-                        <span>Someday/Maybe</span>
+                        <span>Someday</span>
                         <span class="count" id="someday-count">0</span>
                     </a>
                 </div>
@@ -188,8 +188,8 @@
                             <option value="">Any Status</option>
                             <option value="inbox">Inbox</option>
                             <option value="next">Next Actions</option>
-                            <option value="waiting">Waiting For</option>
-                            <option value="someday">Someday/Maybe</option>
+                            <option value="waiting">Waiting</option>
+                            <option value="someday">Someday</option>
                         </select>
                     </div>
                     <div>
@@ -353,8 +353,8 @@
                             <select id="task-status">
                                 <option value="inbox">Inbox</option>
                                 <option value="next">Next Action</option>
-                                <option value="waiting">Waiting For</option>
-                                <option value="someday">Someday/Maybe</option>
+                                <option value="waiting">Waiting</option>
+                                <option value="someday">Someday</option>
                                 <option value="completed">Completed</option>
                             </select>
                         </div>
@@ -415,13 +415,13 @@
                     </div>
 
                     <div class="form-group" id="waiting-for-section" style="display: none;">
-                        <label for="task-waiting-for-description">Waiting For Description</label>
+                        <label for="task-waiting-for-description">Waiting Description</label>
                         <input type="text" id="task-waiting-for-description" placeholder="e.g., Response from John, Design team approval">
                         <small style="color: var(--text-secondary);">What/who are you waiting for?</small>
                     </div>
 
                     <div class="form-group" id="waiting-for-deps-section" style="display: none;">
-                        <label for="task-waiting-for-tasks">Waiting For (Task Dependencies)</label>
+                        <label for="task-waiting-for-tasks">Waiting (Task Dependencies)</label>
                         <div id="waiting-for-tasks-list" style="max-height: 150px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: var(--spacing-sm); margin-bottom: var(--spacing-sm);">
                             <p style="color: var(--text-secondary); font-size: 0.875rem;">No task dependencies selected</p>
                         </div>
@@ -494,7 +494,7 @@
                         <label for="project-status">Status</label>
                         <select id="project-status">
                             <option value="active">Active</option>
-                            <option value="someday">Someday/Maybe</option>
+                            <option value="someday">Someday</option>
                             <option value="completed">Completed</option>
                         </select>
                     </div>
@@ -563,8 +563,8 @@
                 <ul>
                     <li><strong>Inbox</strong> - Quick capture for all new tasks and ideas. Process these regularly.</li>
                     <li><strong>Next Actions</strong> - Actionable tasks you can do right now.</li>
-                    <li><strong>Waiting For</strong> - Tasks you're waiting on someone/something else for.</li>
-                    <li><strong>Someday/Maybe</strong> - Tasks you might do later, but not now.</li>
+                    <li><strong>Waiting</strong> - Tasks you're waiting on someone/something else for.</li>
+                    <li><strong>Someday</strong> - Tasks you might do later, but not now.</li>
                     <li><strong>Projects</strong> - Multi-step outcomes that require multiple tasks with progress tracking.</li>
                     <li><strong>Reference</strong> - Non-actionable information you want to keep.</li>
                 </ul>
@@ -782,10 +782,10 @@
                     <li>Use context filter in header to filter tasks</li>
                 </ul>
 
-                <h5>Task Dependencies (Waiting For)</h5>
+                <h5>Task Dependencies (Waiting)</h5>
                 <ol>
                     <li>Create or edit a task</li>
-                    <li>Set status to "Waiting For"</li>
+                    <li>Set status to "Waiting"</li>
                     <li><strong>Description:</strong> What/who are you waiting for?</li>
                     <li><strong>Dependencies:</strong> Select tasks that must complete first</li>
                     <li>When dependencies are met, tasks automatically move to Next Actions!</li>
@@ -1210,10 +1210,10 @@
                     <i class="fas fa-bolt"></i> Next Actions
                 </div>
                 <div class="context-menu-item" data-action="set-status" data-status="waiting">
-                    <i class="fas fa-clock"></i> Waiting For
+                    <i class="fas fa-clock"></i> Waiting
                 </div>
                 <div class="context-menu-item" data-action="set-status" data-status="someday">
-                    <i class="fas fa-cloud"></i> Someday/Maybe
+                    <i class="fas fa-cloud"></i> Someday
                 </div>
             </div>
         </div>

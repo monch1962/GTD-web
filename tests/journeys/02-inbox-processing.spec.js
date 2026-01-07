@@ -56,7 +56,7 @@ test.describe('GTD Inbox Processing Journey', () => {
     expect(await gtdApp.getCount('#inbox')).toBe(2);
     expect(await gtdApp.getCount('#someday')).toBe(1);
 
-    // Task 4: "Waiting for John" - move to Waiting For
+    // Task 4: "Waiting for John" - move to Waiting
     await gtdApp.openTask('Waiting for John to send report');
     await page.selectOption('#task-status', 'waiting');
     await page.fill('#task-waiting-for', 'John to send report');

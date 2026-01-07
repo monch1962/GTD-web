@@ -1,18 +1,18 @@
 import { test, expect } from '../fixtures/gtd-app.js';
 
 /**
- * Journey 6: Waiting For and Dependencies
+ * Journey 6: Waiting and Dependencies
  * Description: Managing delegated tasks and task dependencies
  *
  * Tests:
  * - Task dependency creation
  * - Dependency visualization
  * - Blocked task indicators
- * - Waiting For workflow
+ * - Waiting workflow
  * - Dependency completion cascading
  * - Circular dependency prevention
  */
-test.describe('Waiting For and Dependencies Journey', () => {
+test.describe('Waiting and Dependencies Journey', () => {
   test.beforeEach(async ({ gtdApp }) => {
     await gtdApp.clearLocalStorage();
     await gtdApp.goto();

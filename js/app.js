@@ -72,7 +72,7 @@ class GTDApp {
             this.displayUserId();
             this.initializeCustomContexts();
 
-            // Migrate blocked tasks to Waiting For (one-time migration for existing data)
+            // Migrate blocked tasks to Waiting (one-time migration for existing data)
             await this.migrateBlockedTasksToWaiting();
 
             // Check if any waiting tasks now have their dependencies met
@@ -2340,11 +2340,11 @@ class GTDApp {
                         </label>
                         <label style="display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer;">
                             <input type="checkbox" class="weekly-review-checkbox">
-                            <span>Review <strong>${waitingTasks.length} Waiting For</strong> items</span>
+                            <span>Review <strong>${waitingTasks.length} Waiting</strong> items</span>
                         </label>
                         <label style="display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer;">
                             <input type="checkbox" class="weekly-review-checkbox">
-                            <span>Review <strong>${somedayTasks.length} Someday/Maybe</strong> items - activate any that are now relevant</span>
+                            <span>Review <strong>${somedayTasks.length} Someday</strong> items - activate any that are now relevant</span>
                         </label>
                         <label style="display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer;">
                             <input type="checkbox" class="weekly-review-checkbox">
@@ -2495,13 +2495,13 @@ class GTDApp {
             return;
         }
 
-        if (!confirm(`Move ${staleProjects.length} stale projects to Someday/Maybe?`)) return;
+        if (!confirm(`Move ${staleProjects.length} stale projects to Someday?`)) return;
 
         staleProjects.forEach(p => p.status = 'someday');
         await this.saveProjects();
         this.renderWeeklyReview();
         this.renderProjectsDropdown();
-        alert(`Moved ${staleProjects.length} projects to Someday/Maybe.`);
+        alert(`Moved ${staleProjects.length} projects to Someday.`);
     }
 
     // ==================== TIME TRACKING FUNCTIONALITY ====================
@@ -5795,8 +5795,8 @@ class GTDApp {
         const titles = {
             'inbox': 'Inbox',
             'next': 'Next Actions',
-            'waiting': 'Waiting For',
-            'someday': 'Someday/Maybe',
+            'waiting': 'Waiting',
+            'someday': 'Someday',
             'projects': 'Projects',
             'reference': 'Reference',
             'all': 'All Items'
@@ -6065,7 +6065,7 @@ class GTDApp {
             </span>`;
         }
 
-        // Waiting For display
+        // Waiting display
         let waitingForDisplay = '';
         const parts = [];
 
@@ -6654,7 +6654,7 @@ class GTDApp {
                 // Check if task has unmet dependencies
                 if (task.waitingForTaskIds && task.waitingForTaskIds.length > 0) {
                     if (!task.areDependenciesMet(this.tasks)) {
-                        // Move to Waiting For
+                        // Move to Waiting
                         task.status = 'waiting';
                         task.updatedAt = new Date().toISOString();
                         movedCount++;
@@ -6665,7 +6665,7 @@ class GTDApp {
 
         if (movedCount > 0) {
             await this.saveTasks();
-            console.log(`Migrated ${movedCount} blocked task(s) to Waiting For`);
+            console.log(`Migrated ${movedCount} blocked task(s) to Waiting`);
         }
 
         // Update project dropdown counts since tasks changed status
@@ -6981,8 +6981,8 @@ class GTDApp {
         const waitingForDescription = document.getElementById('task-waiting-for-description').value || '';
         let waitingForTaskIds = this.getSelectedWaitingForTasks();
 
-        // GTD Rule: If task has dependencies and is in Next or Someday, automatically move to Waiting For
-        // This ensures blocked tasks are visible in the Waiting For view
+        // GTD Rule: If task has dependencies and is in Next or Someday, automatically move to Waiting
+        // This ensures blocked tasks are visible in the Waiting view
         if (waitingForTaskIds.length > 0 && (status === 'next' || status === 'someday')) {
             status = 'waiting';
         }
