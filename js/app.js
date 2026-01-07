@@ -5,9 +5,10 @@
 
 import { Task, Project, Reference, Template } from './models.js';
 import { Storage } from './storage.js';
-import { ElementIds, StorageKeys, TaskStatus, Views, RecurrenceLabels, ViewLabels } from './constants.js';
+import { ElementIds, StorageKeys, TaskStatus, Views, RecurrenceLabels, ViewLabels, Weekday, WeekdayNames, NthWeekdayLabels } from './constants.js';
 import { getElement, setTextContent, escapeHtml, announce } from './dom-utils.js';
 import { TaskParser } from './nlp-parser.js';
+import { getDefaultContextIds, getAllContexts, getContextTaskCounts } from './config/defaultContexts.js';
 
 class GTDApp {
     constructor() {
@@ -28,7 +29,7 @@ class GTDApp {
         this.bulkSelectionMode = false; // Track if bulk selection mode is active
         this.selectedTaskIds = new Set(); // Track selected task IDs for bulk operations
         this.usageStats = this.loadUsageStats(); // Track usage patterns for smart defaults
-        this.defaultContexts = ['@home', '@work', '@personal', '@computer', '@phone', '@errand']; // Single source of truth
+        this.defaultContexts = getDefaultContextIds(); // Import from single source of truth
         this.searchQuery = ''; // Current search query
         this.advancedSearchFilters = {
             context: '',
@@ -5125,6 +5126,267 @@ class GTDApp {
         }
     }
 
+    // ==================== MOBILE NAVIGATION ====================
+
+    setupMobileNavigation() {
+        // Wait for DOM to be ready before setting up mobile navigation
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => this.setupMobileNavigationInternal());
+        } else {
+            // Use setTimeout to ensure DOM is fully parsed
+            setTimeout(() => this.setupMobileNavigationInternal(), 0);
+        }
+    }
+
+    setupMobileNavigationInternal() {
+        console.log('[Mobile Nav] Setting up mobile navigation...');
+
+        // Hamburger Menu
+        const hamburger = document.getElementById('hamburger-menu');
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+
+        if (hamburger && sidebar && overlay) {
+            hamburger.addEventListener('click', () => {
+                const isOpen = sidebar.classList.contains('active');
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+                hamburger.classList.toggle('active');
+                hamburger.setAttribute('aria-expanded', !isOpen);
+            });
+
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+                hamburger.classList.remove('active');
+                hamburger.setAttribute('aria-expanded', 'false');
+            });
+        }
+
+        // Bottom Navigation
+        const bottomNavItems = document.querySelectorAll('.bottom-nav-item[data-view]');
+        console.log('[Mobile Nav] Found bottom nav items:', bottomNavItems.length);
+
+        bottomNavItems.forEach((item, index) => {
+            console.log('[Mobile Nav] Setting up item:', item.dataset.view);
+
+            // Use click event with proper binding
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const view = item.dataset.view;
+                console.log('[Bottom Nav] Clicked view:', view);
+
+                // Call switchView with proper context
+                if (this.switchView && typeof this.switchView === 'function') {
+                    this.switchView(view);
+                } else {
+                    console.error('[Bottom Nav] switchView not available');
+                }
+
+                // Update active state
+                bottomNavItems.forEach(nav => nav.classList.remove('active'));
+                item.classList.add('active');
+
+                // Close sidebar if open
+                if (sidebar) {
+                    sidebar.classList.remove('active');
+                    if (overlay) overlay.classList.remove('active');
+                    if (hamburger) hamburger.classList.remove('active');
+                }
+            });
+
+            // Also add touchend for better mobile responsiveness
+            item.addEventListener('touchend', (e) => {
+                e.preventDefault(); // Prevent mouse click event
+                const view = item.dataset.view;
+                console.log('[Bottom Nav] Touch ended on view:', view);
+
+                if (this.switchView && typeof this.switchView === 'function') {
+                    this.switchView(view);
+                }
+
+                // Update active state
+                bottomNavItems.forEach(nav => nav.classList.remove('active'));
+                item.classList.add('active');
+
+                // Close sidebar if open
+                if (sidebar) {
+                    sidebar.classList.remove('active');
+                    if (overlay) overlay.classList.remove('active');
+                    if (hamburger) hamburger.classList.remove('active');
+                }
+            });
+        });
+
+        // FAB Quick Add
+        const fabQuickAdd = document.getElementById('fab-quick-add');
+        if (fabQuickAdd) {
+            fabQuickAdd.addEventListener('click', () => {
+                this.openGlobalQuickCapture();
+            });
+        }
+
+        // Templates Mobile Button
+        const btnTemplatesMobile = document.getElementById('btn-templates-mobile');
+        if (btnTemplatesMobile) {
+            btnTemplatesMobile.addEventListener('click', () => {
+                this.openTemplatesModal();
+            });
+        }
+
+        // Search Mobile Button
+        const btnSearchMobile = document.getElementById('btn-search-mobile');
+        if (btnSearchMobile) {
+            btnSearchMobile.addEventListener('click', () => {
+                const searchInput = document.getElementById('global-search');
+                if (searchInput) {
+                    searchInput.focus();
+                }
+            });
+        }
+
+        // Pull to Refresh
+        this.setupPullToRefresh();
+
+        // Swipe Gestures for Tasks
+        this.setupSwipeGestures();
+    }
+
+    setupPullToRefresh() {
+        let startY = 0;
+        let currentY = 0;
+        let isPulling = false;
+        const pullThreshold = 80;
+        const contentArea = document.querySelector('.content-area');
+
+        if (!contentArea) return;
+
+        // Add pull-to-refresh indicator
+        const indicator = document.createElement('div');
+        indicator.className = 'pull-to-refresh';
+        indicator.innerHTML = '<i class="fas fa-sync-alt"></i> <span>Pull to refresh</span>';
+        contentArea.style.position = 'relative';
+        contentArea.insertBefore(indicator, contentArea.firstChild);
+
+        contentArea.addEventListener('touchstart', (e) => {
+            if (contentArea.scrollTop === 0) {
+                startY = e.touches[0].clientY;
+                isPulling = true;
+            }
+        }, { passive: true });
+
+        contentArea.addEventListener('touchmove', (e) => {
+            if (!isPulling) return;
+
+            currentY = e.touches[0].clientY;
+            const diff = currentY - startY;
+
+            if (diff > 0 && contentArea.scrollTop === 0) {
+                const pullDistance = Math.min(diff * 0.5, pullThreshold);
+                indicator.style.transform = `translateY(${pullDistance}px)`;
+
+                if (pullDistance >= pullThreshold) {
+                    indicator.classList.add('refreshing');
+                } else {
+                    indicator.classList.remove('refreshing');
+                }
+            }
+        }, { passive: true });
+
+        contentArea.addEventListener('touchend', async () => {
+            if (!isPulling) return;
+
+            const diff = currentY - startY;
+            indicator.style.transform = 'translateY(0)';
+
+            if (diff >= pullThreshold * 2) {
+                // Trigger refresh
+                indicator.classList.add('refreshing');
+                await this.refreshTasks();
+                setTimeout(() => {
+                    indicator.classList.remove('refreshing');
+                }, 1000);
+            }
+
+            isPulling = false;
+            startY = 0;
+            currentY = 0;
+        });
+    }
+
+    async refreshTasks() {
+        // Reload tasks from storage
+        const tasksData = this.storage.getTasks();
+        this.tasks = tasksData.map(data => Task.fromJSON(data));
+        this.renderView();
+        this.updateCounts();
+    }
+
+    setupSwipeGestures() {
+        // Only enable swipe gestures on touch devices
+        if (!('ontouchstart' in window)) return;
+
+        const tasksContainer = document.querySelector('.content-area');
+        if (!tasksContainer) return;
+
+        let startX = 0;
+        let currentX = 0;
+        let currentTaskElement = null;
+        let isSwipping = false;
+
+        tasksContainer.addEventListener('touchstart', (e) => {
+            const taskItem = e.target.closest('.task-item');
+            if (!taskItem) return;
+
+            startX = e.touches[0].clientX;
+            currentTaskElement = taskItem;
+            isSwipping = true;
+        }, { passive: true });
+
+        tasksContainer.addEventListener('touchmove', (e) => {
+            if (!isSwipping || !currentTaskElement) return;
+
+            currentX = e.touches[0].clientX;
+            const diff = currentX - startX;
+            const threshold = 50;
+
+            // Prevent scrolling while swiping
+            if (Math.abs(diff) > 10) {
+                e.preventDefault();
+            }
+
+            if (Math.abs(diff) > threshold) {
+                currentTaskElement.style.transform = `translateX(${diff}px)`;
+            }
+        }, { passive: false });
+
+        tasksContainer.addEventListener('touchend', (e) => {
+            if (!isSwipping || !currentTaskElement) return;
+
+            const diff = currentX - startX;
+            const threshold = 80;
+            const taskId = currentTaskElement.dataset.taskId;
+
+            if (Math.abs(diff) > threshold) {
+                // Swipe completed - trigger action
+                if (diff > 0) {
+                    // Swipe right - complete task
+                    this.toggleTaskComplete(taskId);
+                } else {
+                    // Swipe left - delete/archive task
+                    this.archiveTask(taskId);
+                }
+            }
+
+            // Reset
+            currentTaskElement.style.transform = '';
+            currentTaskElement = null;
+            isSwipping = false;
+            startX = 0;
+            currentX = 0;
+        });
+    }
+
     showNotification(message) {
         // Create toast notification
         const toast = document.createElement('div');
@@ -6225,7 +6487,7 @@ class GTDApp {
         // Recurrence display
         let recurrenceDisplay = '';
         if (task.isRecurring()) {
-            const label = RecurrenceLabels[task.recurrence] || task.recurrence;
+            const label = this.getRecurrenceLabel(task.recurrence);
             recurrenceDisplay = `<span class="task-context" style="background-color: #e8f4f8; border-color: #4a90d9; color: #2c5f8d;">
                 <i class="fas fa-redo"></i> ${label}
             </span>`;
@@ -7220,6 +7482,53 @@ class GTDApp {
     }
 
     /**
+     * Get display label for recurrence
+     * Handles both string format (e.g., 'daily') and object format (e.g., { type: 'weekly', daysOfWeek: [1,3,5] })
+     *
+     * @param {string|object} recurrence - Recurrence value
+     * @returns {string} Human-readable recurrence label
+     */
+    getRecurrenceLabel(recurrence) {
+        if (!recurrence) {
+            return '';
+        }
+
+        // Handle old string format (backward compatibility)
+        if (typeof recurrence === 'string') {
+            return RecurrenceLabels[recurrence] || recurrence;
+        }
+
+        // Handle new object format
+        if (typeof recurrence === 'object' && recurrence.type) {
+            const baseLabel = RecurrenceLabels[recurrence.type] || recurrence.type;
+
+            // Add details for complex recurrences
+            const details = [];
+            if (recurrence.type === 'weekly' && recurrence.daysOfWeek) {
+                const dayNames = recurrence.daysOfWeek.map(day => {
+                    const weekday = Object.values(Weekday).find(w => Weekday[w] === day);
+                    return WeekdayNames[day] || day;
+                });
+                details.push(`(${dayNames.join(', ')})`);
+            } else if (recurrence.type === 'monthly' && recurrence.dayOfMonth) {
+                details.push(`(day ${recurrence.dayOfMonth})`);
+            } else if (recurrence.type === 'monthly' && recurrence.nthWeekday) {
+                const nthLabel = NthWeekdayLabels[recurrence.nthWeekday.n];
+                const weekdayLabel = WeekdayNames[recurrence.nthWeekday.weekday];
+                details.push(`(${nthLabel} ${weekdayLabel})`);
+            } else if (recurrence.type === 'yearly' && recurrence.dayOfYear) {
+                const [month, day] = recurrence.dayOfYear.split('-');
+                details.push(`(${month}/${day})`);
+            }
+
+            return details.length > 0 ? `${baseLabel} ${details.join(' ')}` : baseLabel;
+        }
+
+        // Fallback
+        return String(recurrence);
+    }
+
+    /**
      * Build recurrence object from form fields
      */
     buildRecurrenceFromForm() {
@@ -8117,8 +8426,8 @@ class GTDApp {
 
     updateContextFilter() {
         const contextFilter = document.getElementById('context-filter');
-        if (!contextFilter) return; // Skip if filter element doesn't exist
 
+        // Build set of all contexts from tasks and projects
         const allContexts = new Set();
         this.tasks.forEach(task => {
             if (task.contexts) {
@@ -8131,19 +8440,22 @@ class GTDApp {
             }
         });
 
-        const currentValue = contextFilter.value;
-        contextFilter.innerHTML = '<option value="">All Contexts</option>';
+        // Update dropdown filter if it exists
+        if (contextFilter) {
+            const currentValue = contextFilter.value;
+            contextFilter.innerHTML = '<option value="">All Contexts</option>';
 
-        Array.from(allContexts).sort().forEach(context => {
-            const option = document.createElement('option');
-            option.value = context;
-            option.textContent = context;
-            contextFilter.appendChild(option);
-        });
+            Array.from(allContexts).sort().forEach(context => {
+                const option = document.createElement('option');
+                option.value = context;
+                option.textContent = context;
+                contextFilter.appendChild(option);
+            });
 
-        contextFilter.value = currentValue;
+            contextFilter.value = currentValue;
+        }
 
-        // Also update sidebar context filters
+        // Always update sidebar context filters (even if dropdown doesn't exist)
         this.updateSidebarContextFilters();
     }
 
@@ -8151,13 +8463,8 @@ class GTDApp {
         const container = document.getElementById('context-filters');
         if (!container) return;
 
-        // Get all unique contexts
-        const allContexts = new Set();
-        this.tasks.forEach(task => {
-            if (task.contexts) {
-                task.contexts.forEach(context => allContexts.add(context));
-            }
-        });
+        // Get all contexts (default + custom) using standard function
+        const allContexts = getAllContexts(this.tasks);
 
         // Initialize selected contexts filter if not exists
         if (!this.selectedContextFilters) {
@@ -8172,7 +8479,10 @@ class GTDApp {
             return;
         }
 
-        // Create checkbox for each context
+        // Get task counts per context using standard function
+        const contextTaskCounts = getContextTaskCounts(this.tasks);
+
+        // Create checkbox for each context (sorted)
         Array.from(allContexts).sort().forEach(context => {
             const wrapper = document.createElement('div');
             wrapper.style.cssText = 'display: flex; align-items: center; padding: 6px 12px; cursor: pointer; border-radius: 4px; transition: background 0.2s;';
@@ -8187,8 +8497,18 @@ class GTDApp {
 
             const label = document.createElement('label');
             label.htmlFor = checkbox.id;
-            label.textContent = context;
-            label.style.cssText = 'flex: 1; cursor: pointer; font-size: 0.85rem; color: var(--text-light);';
+
+            // Show context name and task count
+            const taskCount = contextTaskCounts[context] || 0;
+            const isDefaultContext = this.defaultContexts.includes(context);
+
+            label.innerHTML = `
+                <span style="flex: 1; cursor: pointer; font-size: 0.85rem; color: var(--text-light);">
+                    ${context}
+                    ${taskCount > 0 ? `<span style="font-size: 0.75rem; opacity: 0.6; margin-left: 4px;">(${taskCount})</span>` : ''}
+                    ${!isDefaultContext ? '<span style="font-size: 0.7rem; opacity: 0.5; margin-left: 4px;">custom</span>' : ''}
+                </span>
+            `;
 
             // Add click handler
             wrapper.addEventListener('click', (e) => {
@@ -8895,235 +9215,6 @@ class ErrorHandler {
 
     getErrorLog() {
         return this.errorLog;
-    }
-
-    setupMobileNavigation() {
-        // Wait for DOM to be ready before setting up mobile navigation
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => this.setupMobileNavigationInternal());
-        } else {
-            // Use setTimeout to ensure DOM is fully parsed
-            setTimeout(() => this.setupMobileNavigationInternal(), 0);
-        }
-    }
-
-    setupMobileNavigationInternal() {
-        console.log('[Mobile Nav] Setting up mobile navigation...');
-
-        // Hamburger Menu
-        const hamburger = document.getElementById('hamburger-menu');
-        const sidebar = document.querySelector('.sidebar');
-        const overlay = document.getElementById('sidebar-overlay');
-
-        if (hamburger && sidebar && overlay) {
-            hamburger.addEventListener('click', () => {
-                const isOpen = sidebar.classList.contains('active');
-                sidebar.classList.toggle('active');
-                overlay.classList.toggle('active');
-                hamburger.classList.toggle('active');
-                hamburger.setAttribute('aria-expanded', !isOpen);
-            });
-
-            overlay.addEventListener('click', () => {
-                sidebar.classList.remove('active');
-                overlay.classList.remove('active');
-                hamburger.classList.remove('active');
-                hamburger.setAttribute('aria-expanded', 'false');
-            });
-        }
-
-        // Bottom Navigation
-        const bottomNavItems = document.querySelectorAll('.bottom-nav-item[data-view]');
-        console.log('[Mobile Nav] Found bottom nav items:', bottomNavItems.length);
-
-        bottomNavItems.forEach(item => {
-            item.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const view = item.dataset.view;
-                console.log('[Bottom Nav] Clicked view:', view);
-                this.switchView(view);
-
-                // Update active state
-                bottomNavItems.forEach(nav => nav.classList.remove('active'));
-                item.classList.add('active');
-
-                // Close sidebar if open
-                if (sidebar) {
-                    sidebar.classList.remove('active');
-                    overlay?.classList.remove('active');
-                    hamburger?.classList.remove('active');
-                }
-            });
-        });
-
-        // FAB Quick Add
-        const fabQuickAdd = document.getElementById('fab-quick-add');
-        if (fabQuickAdd) {
-            fabQuickAdd.addEventListener('click', () => {
-                this.openGlobalQuickCapture();
-            });
-        }
-
-        // Templates Mobile Button
-        const btnTemplatesMobile = document.getElementById('btn-templates-mobile');
-        if (btnTemplatesMobile) {
-            btnTemplatesMobile.addEventListener('click', () => {
-                this.openTemplatesModal();
-            });
-        }
-
-        // Search Mobile Button
-        const btnSearchMobile = document.getElementById('btn-search-mobile');
-        if (btnSearchMobile) {
-            btnSearchMobile.addEventListener('click', () => {
-                const searchInput = document.getElementById('global-search');
-                if (searchInput) {
-                    searchInput.focus();
-                }
-            });
-        }
-
-        // Pull to Refresh
-        this.setupPullToRefresh();
-
-        // Swipe Gestures for Tasks
-        this.setupSwipeGestures();
-    }
-
-    setupPullToRefresh() {
-        let startY = 0;
-        let currentY = 0;
-        let isPulling = false;
-        const pullThreshold = 80;
-        const contentArea = document.querySelector('.content-area');
-
-        if (!contentArea) return;
-
-        // Add pull-to-refresh indicator
-        const indicator = document.createElement('div');
-        indicator.className = 'pull-to-refresh';
-        indicator.innerHTML = '<i class="fas fa-sync-alt"></i> <span>Pull to refresh</span>';
-        contentArea.style.position = 'relative';
-        contentArea.insertBefore(indicator, contentArea.firstChild);
-
-        contentArea.addEventListener('touchstart', (e) => {
-            if (contentArea.scrollTop === 0) {
-                startY = e.touches[0].clientY;
-                isPulling = true;
-            }
-        }, { passive: true });
-
-        contentArea.addEventListener('touchmove', (e) => {
-            if (!isPulling) return;
-
-            currentY = e.touches[0].clientY;
-            const diff = currentY - startY;
-
-            if (diff > 0 && contentArea.scrollTop === 0) {
-                const pullDistance = Math.min(diff * 0.5, pullThreshold);
-                indicator.style.transform = `translateY(${pullDistance}px)`;
-
-                if (pullDistance >= pullThreshold) {
-                    indicator.classList.add('refreshing');
-                } else {
-                    indicator.classList.remove('refreshing');
-                }
-            }
-        }, { passive: true });
-
-        contentArea.addEventListener('touchend', async () => {
-            if (!isPulling) return;
-
-            const diff = currentY - startY;
-            indicator.style.transform = 'translateY(0)';
-
-            if (diff >= pullThreshold * 2) {
-                // Trigger refresh
-                indicator.classList.add('refreshing');
-                await this.refreshTasks();
-                setTimeout(() => {
-                    indicator.classList.remove('refreshing');
-                }, 1000);
-            }
-
-            isPulling = false;
-            startY = 0;
-            currentY = 0;
-        });
-    }
-
-    async refreshTasks() {
-        // Reload tasks from storage
-        const tasksData = this.storage.getTasks();
-        this.tasks = tasksData.map(data => Task.fromJSON(data));
-        this.renderView();
-        this.updateCounts();
-    }
-
-    setupSwipeGestures() {
-        // Only enable swipe gestures on touch devices
-        if (!('ontouchstart' in window)) return;
-
-        const tasksContainer = document.querySelector('.content-area');
-        if (!tasksContainer) return;
-
-        let startX = 0;
-        let currentX = 0;
-        let currentTaskElement = null;
-        let isSwipping = false;
-
-        tasksContainer.addEventListener('touchstart', (e) => {
-            const taskItem = e.target.closest('.task-item');
-            if (!taskItem) return;
-
-            startX = e.touches[0].clientX;
-            currentTaskElement = taskItem;
-            isSwipping = true;
-        }, { passive: true });
-
-        tasksContainer.addEventListener('touchmove', (e) => {
-            if (!isSwipping || !currentTaskElement) return;
-
-            currentX = e.touches[0].clientX;
-            const diff = currentX - startX;
-            const threshold = 50;
-
-            // Prevent scrolling while swiping
-            if (Math.abs(diff) > 10) {
-                e.preventDefault();
-            }
-
-            if (Math.abs(diff) > threshold) {
-                currentTaskElement.style.transform = `translateX(${diff}px)`;
-            }
-        }, { passive: false });
-
-        tasksContainer.addEventListener('touchend', (e) => {
-            if (!isSwipping || !currentTaskElement) return;
-
-            const diff = currentX - startX;
-            const threshold = 80;
-            const taskId = currentTaskElement.dataset.taskId;
-
-            if (Math.abs(diff) > threshold) {
-                // Swipe completed - trigger action
-                if (diff > 0) {
-                    // Swipe right - complete task
-                    this.toggleTaskComplete(taskId);
-                } else {
-                    // Swipe left - delete/archive task
-                    this.archiveTask(taskId);
-                }
-            }
-
-            // Reset
-            currentTaskElement.style.transform = '';
-            currentTaskElement = null;
-            isSwipping = false;
-            startX = 0;
-            currentX = 0;
-        });
     }
 
     clearErrorLog() {

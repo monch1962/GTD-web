@@ -2321,10 +2321,6 @@ textarea:focus-visible {
         left: 0;
     }
 
-    .sidebar-overlay {
-        display: block;
-    }
-
     .sidebar-overlay.active {
         display: block;
     }
@@ -2349,24 +2345,55 @@ textarea:focus-visible {
 
     /* Content Header */
     .content-header {
-        padding: var(--spacing-md);
+        padding: var(--spacing-sm);
         padding-left: 50px; /* Space for hamburger */
         position: sticky;
         top: 0;
         z-index: 100;
         background: var(--bg-primary);
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        flex-wrap: wrap;
+        gap: var(--spacing-xs);
+    }
+
+    .content-header > div:first-child {
+        /* Hide search box on mobile - accessible via bottom nav button */
+        display: none;
     }
 
     .content-header h2 {
-        font-size: 1.125rem;
+        font-size: 1rem;
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
-    /* Hide some header buttons on mobile */
+    /* Hide non-essential header buttons on mobile to save space */
     #btn-calendar-view,
     #btn-focus-mode,
-    #btn-daily-review {
+    #btn-daily-review,
+    #btn-new-project,
+    #btn-weekly-review,
+    #btn-dashboard,
+    #btn-dependencies,
+    #btn-heatmap,
+    #btn-suggestions {
         display: none;
+    }
+
+    /* Keep essential buttons visible and smaller on mobile */
+    .content-header > div:last-child {
+        display: flex;
+        gap: var(--spacing-xs);
+        flex-wrap: wrap;
+    }
+
+    .content-header button {
+        padding: var(--spacing-xs);
+        min-width: 36px;
+        min-height: 36px;
     }
 
     /* Task Cards - Full width */

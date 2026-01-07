@@ -3,6 +3,9 @@
  * Centralized configuration and constants
  */
 
+// Import default contexts from config
+import { getDefaultContextIds } from './config/defaultContexts.js';
+
 // Task statuses
 export const TaskStatus = {
     INBOX: 'inbox',
@@ -43,14 +46,8 @@ export const TimeEstimate = {
     NINETY: 90
 };
 
-// Default contexts
-export const DEFAULT_CONTEXTS = [
-    '@home',
-    '@work',
-    '@personal',
-    '@computer',
-    '@phone'
-];
+// Default contexts (imported from config for single source of truth)
+export const DEFAULT_CONTEXTS = getDefaultContextIds();
 
 // View names
 export const Views = {
