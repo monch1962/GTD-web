@@ -6197,20 +6197,81 @@ class GTDApp {
             e.preventDefault();
             const draggingItem = document.querySelector('.dragging');
             if (draggingItem && draggingItem !== div) {
-                const container = div.parentNode;
-                const afterElement = getDragAfterElement(container, e.clientY);
-                if (afterElement == null) {
-                    container.appendChild(draggingItem);
+                // If in project view, show dependency creation feedback
+                if (this.currentProjectId) {
+                    e.dataTransfer.dropEffect = 'link';
+                    div.classList.add('dependency-target');
                 } else {
-                    container.insertBefore(draggingItem, afterElement);
+                    // Normal reordering behavior
+                    const container = div.parentNode;
+                    const afterElement = getDragAfterElement(container, e.clientY);
+                    if (afterElement == null) {
+                        container.appendChild(draggingItem);
+                    } else {
+                        container.insertBefore(draggingItem, afterElement);
+                    }
                 }
             }
         });
 
+        div.addEventListener('dragleave', () => {
+            div.classList.remove('dependency-target');
+        });
+
         div.addEventListener('drop', async (e) => {
             e.preventDefault();
-            const taskId = e.dataTransfer.getData('text/plain');
-            await this.updateTaskPositions();
+            div.classList.remove('dependency-target');
+
+            const draggedTaskId = e.dataTransfer.getData('text/plain');
+            if (!draggedTaskId) return;
+
+            // If in project view, create dependency
+            if (this.currentProjectId) {
+                const targetTask = this.tasks.find(t => t.id === task.id);
+                const draggedTask = this.tasks.find(t => t.id === draggedTaskId);
+
+                if (targetTask && draggedTask && targetTask.id !== draggedTask.id) {
+                    // Check if both tasks are in the same project
+                    if (targetTask.projectId !== draggedTask.projectId) {
+                        this.showNotification('Dependencies can only be created within the same project', 'error');
+                        return;
+                    }
+
+                    // Check if this would create a circular dependency
+                    if (this.wouldCreateCircularDependency(draggedTask.id, targetTask.id)) {
+                        this.showNotification('Cannot create circular dependency!', 'error');
+                        return;
+                    }
+
+                    // Check if dependency already exists
+                    if (!targetTask.waitingForTaskIds) {
+                        targetTask.waitingForTaskIds = [];
+                    }
+
+                    if (targetTask.waitingForTaskIds.includes(draggedTask.id)) {
+                        this.showNotification('Dependency already exists', 'info');
+                        return;
+                    }
+
+                    // Add dependency
+                    this.saveState('Create task dependency');
+                    targetTask.waitingForTaskIds.push(draggedTask.id);
+                    await this.saveTasks();
+
+                    // Check if target task should be moved to waiting status
+                    const pendingDeps = targetTask.getPendingDependencies(this.tasks);
+                    if (pendingDeps.length > 0 && targetTask.status !== 'waiting') {
+                        targetTask.status = 'waiting';
+                        await this.saveTasks();
+                    }
+
+                    this.showNotification(`Created dependency: "${targetTask.title}" now depends on "${draggedTask.title}"`);
+                    this.renderView();
+                }
+            } else {
+                // Normal reordering behavior
+                await this.updateTaskPositions();
+            }
         });
 
         // Event listeners
@@ -6712,6 +6773,43 @@ class GTDApp {
         if (movedCount > 0) {
             await this.saveTasks();
         }
+    }
+
+    /**
+     * Check if creating a dependency from prerequisiteTaskId to dependentTaskId
+     * would create a circular dependency
+     */
+    wouldCreateCircularDependency(prerequisiteTaskId, dependentTaskId) {
+        const visited = new Set();
+        const queue = [prerequisiteTaskId];
+
+        while (queue.length > 0) {
+            const currentId = queue.shift();
+
+            // If we've reached the dependent task, we have a circular dependency
+            if (currentId === dependentTaskId) {
+                return true;
+            }
+
+            if (visited.has(currentId)) {
+                continue;
+            }
+            visited.add(currentId);
+
+            // Find all tasks that depend on the current task
+            const dependentTasks = this.tasks.filter(t =>
+                t.waitingForTaskIds && t.waitingForTaskIds.includes(currentId)
+            );
+
+            // Add them to the queue to check
+            dependentTasks.forEach(t => {
+                if (!visited.has(t.id)) {
+                    queue.push(t.id);
+                }
+            });
+        }
+
+        return false;
     }
 
     openTaskModal(task = null, defaultProjectId = null, defaultData = {}) {

@@ -514,6 +514,31 @@ body {
     border-color: var(--primary-color);
 }
 
+.task-item.dependency-target {
+    background-color: rgba(74, 144, 217, 0.15);
+    border-color: var(--primary-color);
+    border-style: dashed;
+    border-width: 2px;
+    box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.2);
+}
+
+.task-item.dependency-target::after {
+    content: '🔗 Drop to create dependency';
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--primary-color);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    z-index: 1000;
+    pointer-events: none;
+}
+
 .task-item.selected {
     border-color: var(--accent-color);
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
