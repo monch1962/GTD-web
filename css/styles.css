@@ -301,6 +301,17 @@ body {
     overflow: hidden;
 }
 
+/* Content Containers */
+#tasks-container,
+#projects-container,
+#reference-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-md) var(--spacing-xl);
+    /* Smooth scrolling */
+    scroll-behavior: smooth;
+}
+
 .content-header {
     background-color: var(--bg-primary);
     padding: var(--spacing-lg) var(--spacing-xl);
@@ -2327,10 +2338,23 @@ textarea:focus-visible {
         padding-bottom: 70px;
     }
 
+    /* Content containers - Enhanced scroll on mobile */
+    #tasks-container,
+    #projects-container,
+    #reference-container {
+        -webkit-overflow-scrolling: touch; /* Smooth scroll on iOS */
+        padding: var(--spacing-sm); /* Less padding on mobile */
+    }
+
     /* Content Header */
     .content-header {
         padding: var(--spacing-md);
         padding-left: 50px; /* Space for hamburger */
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: var(--bg-primary);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
 
     .content-header h2 {
