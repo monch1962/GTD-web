@@ -6286,7 +6286,7 @@ class GTDApp {
 
     getProjectTitle(projectId) {
         const project = this.projects.find(p => p.id === projectId);
-        return project ? project.title : '';
+        return project ? project.title : 'Unknown Project';
     }
 
     /**
