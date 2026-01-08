@@ -302,6 +302,14 @@ class GTDApp {
                 }
             });
         }
+
+        // Setup suggestions button
+        const suggestionsBtn = document.getElementById('btn-suggestions');
+        if (suggestionsBtn) {
+            suggestionsBtn.addEventListener('click', () => {
+                this.showSuggestions();
+            });
+        }
     }
 
     setupModalCloseButtons(modalId, buttonIds, closeHandler) {
@@ -699,6 +707,149 @@ class GTDApp {
 
     getSmartSuggestions(options) {
         return this.state.getSmartSuggestions(this.state.tasks, options);
+    }
+
+    showSuggestions() {
+        // Get current filter values
+        const contextFilter = document.getElementById('suggestion-context')?.value || '';
+        const timeFilter = document.getElementById('suggestion-time')?.value || '';
+        const energyFilter = document.getElementById('suggestion-energy')?.value || '';
+
+        // Get suggestions based on filters
+        const suggestions = this.state.getSmartSuggestions(this.state.tasks, {
+            maxSuggestions: 10,
+            context: contextFilter || null,
+            time: timeFilter || null,
+            energy: energyFilter || null
+        });
+
+        // Build suggestions HTML
+        const suggestionsHTML = suggestions.length > 0
+            ? suggestions.map((s, i) => `
+                <div class="suggestion-item" style="padding: var(--spacing-md); border-bottom: 1px solid var(--border-color); cursor: pointer;"
+                     onclick="app.selectSuggestion('${s.task.id}')">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--spacing-sm);">
+                        <strong>${escapeHtml(s.task.title)}</strong>
+                        <span style="background: var(--primary-color); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem;">
+                            ${s.score}
+                        </span>
+                    </div>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                        ${s.reasons.join(' • ')}
+                    </div>
+                </div>
+            `).join('')
+            : '<p style="text-align: center; padding: var(--spacing-lg); color: var(--text-secondary);">No matching tasks found</p>';
+
+        // Create modal
+        const modalHTML = `
+            <div id="suggestions-modal" class="modal" style="display: flex;">
+                <div class="modal-content" style="max-width: 600px;">
+                    <div class="modal-header">
+                        <h2>What should I work on?</h2>
+                        <button class="close-modal" onclick="app.closeSuggestionsModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); flex-wrap: wrap;">
+                            <select id="suggestion-context" style="flex: 1; min-width: 150px;">
+                                <option value="">All Contexts</option>
+                                ${this.getAllContexts().map(c => `<option value="${c}" ${contextFilter === c ? 'selected' : ''}>${escapeHtml(c)}</option>`).join('')}
+                            </select>
+                            <select id="suggestion-time" style="flex: 1; min-width: 120px;">
+                                <option value="">Any Time</option>
+                                <option value="5" ${timeFilter === '5' ? 'selected' : ''}>5 minutes</option>
+                                <option value="15" ${timeFilter === '15' ? 'selected' : ''}>15 minutes</option>
+                                <option value="30" ${timeFilter === '30' ? 'selected' : ''}>30 minutes</option>
+                                <option value="60" ${timeFilter === '60' ? 'selected' : ''}>1 hour</option>
+                                <option value="90" ${timeFilter === '90' ? 'selected' : ''}>90+ minutes</option>
+                            </select>
+                            <select id="suggestion-energy" style="flex: 1; min-width: 120px;">
+                                <option value="">Any Energy</option>
+                                <option value="high" ${energyFilter === 'high' ? 'selected' : ''}>High Energy</option>
+                                <option value="medium" ${energyFilter === 'medium' ? 'selected' : ''}>Medium Energy</option>
+                                <option value="low" ${energyFilter === 'low' ? 'selected' : ''}>Low Energy</option>
+                            </select>
+                        </div>
+                        <div id="suggestions-list" style="max-height: 400px; overflow-y: auto;">
+                            ${suggestionsHTML}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Add modal to DOM
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+        // Setup filter change listeners
+        const contextSelect = document.getElementById('suggestion-context');
+        const timeSelect = document.getElementById('suggestion-time');
+        const energySelect = document.getElementById('suggestion-energy');
+
+        const updateSuggestions = () => {
+            contextFilter = contextSelect?.value || '';
+            timeFilter = timeSelect?.value || '';
+            energyFilter = energySelect?.value || '';
+
+            const newSuggestions = this.state.getSmartSuggestions(this.state.tasks, {
+                maxSuggestions: 10,
+                context: contextFilter || null,
+                time: timeFilter || null,
+                energy: energyFilter || null
+            });
+
+            const newHTML = newSuggestions.length > 0
+                ? newSuggestions.map((s) => `
+                    <div class="suggestion-item" style="padding: var(--spacing-md); border-bottom: 1px solid var(--border-color); cursor: pointer;"
+                         onclick="app.selectSuggestion('${s.task.id}')">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--spacing-sm);">
+                            <strong>${escapeHtml(s.task.title)}</strong>
+                            <span style="background: var(--primary-color); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem;">
+                                ${s.score}
+                            </span>
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                            ${s.reasons.join(' • ')}
+                        </div>
+                    </div>
+                `).join('')
+                : '<p style="text-align: center; padding: var(--spacing-lg); color: var(--text-secondary);">No matching tasks found</p>';
+
+            const listContainer = document.getElementById('suggestions-list');
+            if (listContainer) {
+                listContainer.innerHTML = newHTML;
+            }
+        };
+
+        contextSelect?.addEventListener('change', updateSuggestions);
+        timeSelect?.addEventListener('change', updateSuggestions);
+        energySelect?.addEventListener('change', updateSuggestions);
+    }
+
+    closeSuggestionsModal() {
+        const modal = document.getElementById('suggestions-modal');
+        if (modal) {
+            modal.remove();
+        }
+    }
+
+    selectSuggestion(taskId) {
+        this.closeSuggestionsModal();
+        const task = this.state.tasks.find(t => t.id === taskId);
+        if (task) {
+            // Open task modal with the selected task
+            this.openTaskModal(task);
+        }
+    }
+
+    getAllContexts() {
+        const allContexts = new Set();
+        this.state.tasks.forEach(task => {
+            if (task.contexts) {
+                task.contexts.forEach(context => allContexts.add(context));
+            }
+        });
+        return Array.from(allContexts).sort();
     }
 
     // ==================== NAVIGATION ====================
