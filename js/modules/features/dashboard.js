@@ -320,7 +320,7 @@ export class DashboardManager {
      */
     getAverageTimePerTask() {
         const tasksWithTime = this.state.tasks.filter(t => t.timeSpent && t.timeSpent > 0);
-        if (tasksWithTime.length === 0) return '0';
+        if (tasksWithTime.length === 0) return 0;
 
         const totalMinutes = tasksWithTime.reduce((sum, task) => sum + task.timeSpent, 0);
         return Math.round(totalMinutes / tasksWithTime.length);
@@ -488,7 +488,7 @@ export class DashboardManager {
     getAverageTaskLifecycle() {
         const completedTasks = this.state.tasks.filter(t => t.completed && t.createdAt && t.completedAt);
 
-        if (completedTasks.length === 0) return '0';
+        if (completedTasks.length === 0) return 0;
 
         const totalDays = completedTasks.reduce((sum, task) => {
             const created = new Date(task.createdAt);

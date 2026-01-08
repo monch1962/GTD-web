@@ -1451,995 +1451,23 @@ class GTDApp {
         });
     }
 
-    // ==================== DASHBOARD FUNCTIONALITY ====================
+
+    // ==================== DASHBOARD FUNCTIONALITY (Delegated to DashboardManager module) ====================
 
     setupDashboard() {
-        const dashboardBtn = document.getElementById('btn-dashboard');
-        const closeDashboardBtn = document.getElementById('close-dashboard-modal');
-
-        if (dashboardBtn) {
-            dashboardBtn.addEventListener('click', () => {
-                this.showDashboard();
-            });
-        }
-
-        if (closeDashboardBtn) {
-            closeDashboardBtn.addEventListener('click', () => {
-                this.closeDashboard();
-            });
-        }
+        this.dashboard.setupDashboard();
     }
 
     showDashboard() {
-        const modal = document.getElementById('dashboard-modal');
-        if (!modal) return;
-
-        modal.style.display = 'block';
-        this.renderDashboard();
+        this.dashboard.showDashboard();
     }
 
     closeDashboard() {
-        const modal = document.getElementById('dashboard-modal');
-        if (modal) modal.style.display = 'none';
+        this.dashboard.closeDashboard();
     }
 
     renderDashboard() {
-        const dashboardContent = document.getElementById('dashboard-content');
-        if (!dashboardContent) return;
-
-        const now = new Date();
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const weekAgo = new Date(today);
-        weekAgo.setDate(weekAgo.getDate() - 7);
-        const monthAgo = new Date(today);
-        monthAgo.setMonth(monthAgo.getMonth() - 1);
-
-        // Calculate metrics
-        const totalTasks = this.tasks.length;
-        const completedTasks = this.tasks.filter(t => t.completed);
-        const activeTasks = this.tasks.filter(t => !t.completed);
-
-        const completedThisWeek = completedTasks.filter(t =>
-            t.completedAt && new Date(t.completedAt) >= weekAgo
-        ).length;
-
-        const completedThisMonth = completedTasks.filter(t =>
-            t.completedAt && new Date(t.completedAt) >= monthAgo
-        ).length;
-
-        // Context analytics
-        const contextUsage = {};
-        const contextCompletion = {};
-        this.tasks.forEach(task => {
-            if (task.contexts) {
-                task.contexts.forEach(context => {
-                    if (!contextUsage[context]) contextUsage[context] = 0;
-                    contextUsage[context]++;
-
-                    if (!contextCompletion[context]) {
-                        contextCompletion[context] = { total: 0, completed: 0 };
-                    }
-                    contextCompletion[context].total++;
-                    if (task.completed) {
-                        contextCompletion[context].completed++;
-                    }
-                });
-            }
-        });
-
-        // Energy analytics
-        const energyStats = { high: { total: 0, completed: 0 }, medium: { total: 0, completed: 0 }, low: { total: 0, completed: 0 } };
-        this.tasks.forEach(task => {
-            if (task.energy && energyStats[task.energy]) {
-                energyStats[task.energy].total++;
-                if (task.completed) energyStats[task.energy].completed++;
-            }
-        });
-
-        // Time estimation accuracy
-        const tasksWithTime = this.tasks.filter(t => t.completed && t.time && t.timeSpent);
-        let avgAccuracy = 0;
-        if (tasksWithTime.length > 0) {
-            const accuracies = tasksWithTime.map(t => {
-                const estimated = t.time;
-                const actual = t.timeSpent || 1;
-                return Math.min(estimated / actual, actual / estimated);
-            });
-            avgAccuracy = (accuracies.reduce((a, b) => a + b, 0) / accuracies.length * 100).toFixed(0);
-        }
-
-        // Project completion
-        const activeProjects = this.projects.filter(p => p.status === 'active');
-        const completedProjects = this.projects.filter(p => p.status === 'completed');
-
-        // Stalled projects (no recent activity)
-        const thirtyDaysAgo = new Date(today);
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        const stalledProjects = activeProjects.filter(p => {
-            const projectTasks = this.tasks.filter(t => t.projectId === p.id && !t.completed);
-            const recentUpdates = projectTasks.filter(t => {
-                const updatedAt = new Date(t.updatedAt);
-                return updatedAt >= thirtyDaysAgo;
-            });
-            return projectTasks.length > 0 && recentUpdates.length === 0;
-        });
-
-        // Render dashboard
-        dashboardContent.innerHTML = `
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--spacing-md); margin-bottom: var(--spacing-lg);">
-                <!-- Overview Cards -->
-                <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                    <h3 style="margin: 0 0 var(--spacing-sm) 0; font-size: 1rem; color: var(--text-secondary);">Total Tasks</h3>
-                    <div style="font-size: 2.5rem; font-weight: bold; color: var(--primary-color);">${totalTasks}</div>
-                    <div style="font-size: 0.85rem; color: var(--text-secondary);">${activeTasks.length} active, ${completedTasks.length} completed</div>
-                </div>
-
-                <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                    <h3 style="margin: 0 0 var(--spacing-sm) 0; font-size: 1rem; color: var(--text-secondary);">Completed This Week</h3>
-                    <div style="font-size: 2.5rem; font-weight: bold; color: var(--success-color);">${completedThisWeek}</div>
-                    <div style="font-size: 0.85rem; color: var(--text-secondary);">${completedThisMonth} this month</div>
-                </div>
-
-                <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                    <h3 style="margin: 0 0 var(--spacing-sm) 0; font-size: 1rem; color: var(--text-secondary);">Projects</h3>
-                    <div style="font-size: 2.5rem; font-weight: bold; color: var(--accent-color);">${activeProjects.length}</div>
-                    <div style="font-size: 0.85rem; color: var(--text-secondary);">${completedProjects.length} completed, ${stalledProjects.length} stalled</div>
-                </div>
-
-                ${tasksWithTime.length > 0 ? `
-                <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                    <h3 style="margin: 0 0 var(--spacing-sm) 0; font-size: 1rem; color: var(--text-secondary);">Estimation Accuracy</h3>
-                    <div style="font-size: 2.5rem; font-weight: bold; color: var(--info-color);">${avgAccuracy}%</div>
-                    <div style="font-size: 0.85rem; color: var(--text-secondary);">Based on ${tasksWithTime.length} completed tasks</div>
-                </div>
-                ` : ''}
-            </div>
-
-            <!-- Productivity Trends -->
-            <div style="margin-bottom: var(--spacing-lg);">
-                <h3 style="margin-bottom: var(--spacing-md);">📈 Productivity Trends</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--spacing-md);">
-                    <!-- Last 7 Days Completion -->
-                    <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                        <h4 style="margin: 0 0 var(--spacing-sm) 0; font-size: 0.9rem; color: var(--text-secondary);">Tasks Completed (Last 7 Days)</h4>
-                        <div style="display: flex; align-items: flex-end; gap: 4px; height: 120px; margin-top: var(--spacing-md);">
-                            ${this.renderLast7DaysChart()}
-                        </div>
-                        <div style="margin-top: var(--spacing-sm); font-size: 0.85rem; color: var(--text-secondary); text-align: center;">
-                            ${this.getLast7DaysAverage()} avg tasks/day
-                        </div>
-                    </div>
-
-                    <!-- Average Task Lifecycle -->
-                    <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                        <h4 style="margin: 0 0 var(--spacing-sm) 0; font-size: 0.9rem; color: var(--text-secondary);">Average Task Lifecycle</h4>
-                        <div style="text-align: center; padding: var(--spacing-md) 0;">
-                            <div style="font-size: 2.5rem; font-weight: bold; color: var(--primary-color);">${this.getAverageTaskLifecycle()}</div>
-                            <div style="font-size: 0.9rem; color: var(--text-secondary);">Days from creation to completion</div>
-                        </div>
-                        ${this.getLifecycleInsight()}
-                    </div>
-
-                    <!-- Completion Velocity -->
-                    <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                        <h4 style="margin: 0 0 var(--spacing-sm) 0; font-size: 0.9rem; color: var(--text-secondary);">Completion Velocity</h4>
-                        <div style="text-align: center; padding: var(--spacing-md) 0;">
-                            <div style="font-size: 2.5rem; font-weight: bold; color: ${this.getVelocityTrend().color};">${this.getVelocityTrend().icon} ${this.getVelocityTrend().value}</div>
-                            <div style="font-size: 0.9rem; color: var(--text-secondary);">${this.getVelocityTrend().label}</div>
-                        </div>
-                        <div style="margin-top: var(--spacing-sm); padding: var(--spacing-sm); background: var(--bg-secondary); border-radius: var(--radius-sm); font-size: 0.85rem; color: var(--text-secondary);">
-                            ${this.getVelocityInsight()}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Context Analytics -->
-            <div style="margin-bottom: var(--spacing-lg);">
-                <h3 style="margin-bottom: var(--spacing-md);">Context Usage</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--spacing-sm);">
-                    ${Object.entries(contextUsage)
-                        .sort((a, b) => b[1] - a[1])
-                        .map(([context, count]) => {
-                            const completion = contextCompletion[context];
-                            const completionRate = completion.total > 0
-                                ? Math.round((completion.completed / completion.total) * 100)
-                                : 0;
-                            return `
-                                <div style="background: var(--bg-primary); padding: var(--spacing-sm); border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                                        <strong>${escapeHtml(context)}</strong>
-                                        <span style="color: var(--text-secondary);">${count} tasks</span>
-                                    </div>
-                                    <div style="height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden;">
-                                        <div style="height: 100%; background: var(--success-color); width: ${completionRate}%;"></div>
-                                    </div>
-                                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px;">${completionRate}% complete</div>
-                                </div>
-                            `;
-                        }).join('')}
-                </div>
-            </div>
-
-            <!-- Energy Analytics -->
-            <div style="margin-bottom: var(--spacing-lg);">
-                <h3 style="margin-bottom: var(--spacing-md);">Energy Level Performance</h3>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-md);">
-                    ${['high', 'medium', 'low'].map(energy => {
-                        const stats = energyStats[energy];
-                        const rate = stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
-                        return `
-                            <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: var(--radius-md); border: 1px solid var(--border-color); text-align: center;">
-                                <div style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color); margin-bottom: var(--spacing-xs);">${energy.charAt(0).toUpperCase() + energy.slice(1)}</div>
-                                <div style="font-size: 0.9rem; margin-bottom: var(--spacing-xs);">${stats.completed}/${stats.total} completed</div>
-                                <div style="font-size: 2rem; font-weight: bold; color: ${rate >= 70 ? 'var(--success-color)' : rate >= 40 ? 'var(--warning-color)' : 'var(--danger-color)'};">${rate}%</div>
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-            </div>
-
-            <!-- Time Tracking Analytics -->
-            <div style="margin-bottom: var(--spacing-lg);">
-                <h3 style="margin-bottom: var(--spacing-md);">Time Tracking</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--spacing-md); margin-bottom: var(--spacing-md);">
-                    <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                        <h4 style="margin: 0 0 var(--spacing-sm) 0; font-size: 0.9rem; color: var(--text-secondary);">Total Time Tracked</h4>
-                        <div style="font-size: 2rem; font-weight: bold; color: var(--primary-color);">${this.formatTotalTime()}</div>
-                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Across all tasks</div>
-                    </div>
-
-                    <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                        <h4 style="margin: 0 0 var(--spacing-sm) 0; font-size: 0.9rem; color: var(--text-secondary);">Tasks with Time</h4>
-                        <div style="font-size: 2rem; font-weight: bold; color: var(--info-color);">${this.tasks.filter(t => t.timeSpent && t.timeSpent > 0).length}</div>
-                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Tasks tracked</div>
-                    </div>
-
-                    <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                        <h4 style="margin: 0 0 var(--spacing-sm) 0; font-size: 0.9rem; color: var(--text-secondary);">Avg Time/Task</h4>
-                        <div style="font-size: 2rem; font-weight: bold; color: var(--success-color);">${this.getAverageTimePerTask()}</div>
-                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Minutes per task</div>
-                    </div>
-                </div>
-
-                ${this.renderTimeByContext()}
-                ${this.renderTimeByProject()}
-            </div>
-
-            ${stalledProjects.length > 0 ? `
-            <!-- Stalled Projects -->
-            <div>
-                <h3 style="margin-bottom: var(--spacing-md); color: var(--warning-color);">
-                    <i class="fas fa-exclamation-triangle"></i> Stalled Projects (30+ days inactive)
-                </h3>
-                <div style="display: grid; gap: var(--spacing-sm);">
-                    ${stalledProjects.map(project => {
-                        const projectTasks = this.tasks.filter(t => t.projectId === project.id && !t.completed);
-                        return `
-                            <div style="background: var(--bg-primary); padding: var(--spacing-sm); border-radius: var(--radius-sm); border-left: 3px solid var(--warning-color);">
-                                <strong>${escapeHtml(project.title)}</strong>
-                                <div style="font-size: 0.85rem; color: var(--text-secondary);">${projectTasks.length} pending tasks</div>
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-            </div>
-            ` : ''}
-        `;
-    }
-
-    formatTotalTime() {
-        const totalMinutes = this.tasks.reduce((sum, task) => sum + (task.timeSpent || 0), 0);
-
-        if (totalMinutes === 0) return '0m';
-
-        const hours = Math.floor(totalMinutes / 60);
-        const minutes = totalMinutes % 60;
-
-        if (hours > 0) {
-            return `${hours}h ${minutes}m`;
-        }
-        return `${minutes}m`;
-    }
-
-    getAverageTimePerTask() {
-        const tasksWithTime = this.tasks.filter(t => t.timeSpent && t.timeSpent > 0);
-        if (tasksWithTime.length === 0) return '0';
-
-        const totalMinutes = tasksWithTime.reduce((sum, task) => sum + task.timeSpent, 0);
-        return Math.round(totalMinutes / tasksWithTime.length);
-    }
-
-    renderTimeByContext() {
-        const timeByContext = {};
-
-        this.tasks.forEach(task => {
-            if (task.timeSpent && task.timeSpent > 0 && task.contexts) {
-                task.contexts.forEach(context => {
-                    if (!timeByContext[context]) timeByContext[context] = 0;
-                    timeByContext[context] += task.timeSpent;
-                });
-            }
-        });
-
-        const entries = Object.entries(timeByContext).sort((a, b) => b[1] - a[1]);
-
-        if (entries.length === 0) return '';
-
-        const maxTime = Math.max(...entries.map(e => e[1]));
-
-        return `
-            <div style="margin-top: var(--spacing-md);">
-                <h4 style="margin-bottom: var(--spacing-sm); font-size: 1rem;">Time by Context</h4>
-                <div style="display: flex; flex-direction: column; gap: var(--spacing-xs);">
-                    ${entries.map(([context, minutes]) => {
-                        const percentage = (minutes / maxTime) * 100;
-                        return `
-                            <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
-                                <div style="width: 100px; font-size: 0.85rem;">${escapeHtml(context)}</div>
-                                <div style="flex: 1; height: 20px; background: var(--bg-secondary); border-radius: 4px; overflow: hidden; position: relative;">
-                                    <div style="height: 100%; background: var(--primary-color); width: ${percentage}%; transition: width 0.3s;"></div>
-                                    <div style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: var(--text-primary);">${Math.round(minutes)} min</div>
-                                </div>
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-            </div>
-        `;
-    }
-
-    renderTimeByProject() {
-        const timeByProject = {};
-
-        this.tasks.forEach(task => {
-            if (task.timeSpent && task.timeSpent > 0 && task.projectId) {
-                const project = this.projects.find(p => p.id === task.projectId);
-                const projectName = project ? project.title : 'Unknown Project';
-                if (!timeByProject[projectName]) timeByProject[projectName] = 0;
-                timeByProject[projectName] += task.timeSpent;
-            }
-        });
-
-        const entries = Object.entries(timeByProject).sort((a, b) => b[1] - a[1]);
-
-        if (entries.length === 0) return '';
-
-        const maxTime = Math.max(...entries.map(e => e[1]));
-
-        return `
-            <div style="margin-top: var(--spacing-md);">
-                <h4 style="margin-bottom: var(--spacing-sm); font-size: 1rem;">Time by Project</h4>
-                <div style="display: flex; flex-direction: column; gap: var(--spacing-xs);">
-                    ${entries.map(([project, minutes]) => {
-                        const percentage = (minutes / maxTime) * 100;
-                        return `
-                            <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
-                                <div style="width: 150px; font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(project)}</div>
-                                <div style="flex: 1; height: 20px; background: var(--bg-secondary); border-radius: 4px; overflow: hidden; position: relative;">
-                                    <div style="height: 100%; background: var(--success-color); width: ${percentage}%; transition: width 0.3s;"></div>
-                                    <div style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: var(--text-primary);">${Math.round(minutes)} min</div>
-                                </div>
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-            </div>
-        `;
-    }
-
-    // Productivity Trends Helper Methods
-    renderLast7DaysChart() {
-        const days = [];
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        for (let i = 6; i >= 0; i--) {
-            const date = new Date(today);
-            date.setDate(date.getDate() - i);
-            days.push(date);
-        }
-
-        // Get completed tasks per day
-        const completedByDay = days.map(date => {
-            const dayStart = new Date(date);
-            const dayEnd = new Date(date);
-            dayEnd.setDate(dayEnd.getDate() + 1);
-
-            return this.tasks.filter(t => {
-                if (!t.completedAt) return false;
-                const completedDate = new Date(t.completedAt);
-                return completedDate >= dayStart && completedDate < dayEnd;
-            }).length;
-        });
-
-        const maxCount = Math.max(...completedByDay, 1);
-
-        return completedByDay.map((count, index) => {
-            const height = (count / maxCount) * 100;
-            const date = days[index];
-            const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
-            const isToday = index === 6;
-
-            return `
-                <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
-                    <div style="font-size: 0.75rem; color: var(--text-secondary);">${count}</div>
-                    <div style="width: 100%; height: 80px; background: var(--bg-secondary); border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
-                        <div style="position: absolute; bottom: 0; width: 100%; height: ${height}%; background: ${isToday ? 'var(--primary-color)' : 'var(--success-color)'}; transition: height 0.3s;"></div>
-                    </div>
-                    <div style="font-size: 0.7rem; color: ${isToday ? 'var(--primary-color)' : 'var(--text-secondary)'}; font-weight: ${isToday ? 'bold' : 'normal'};">${dayName}</div>
-                </div>
-            `;
-        }).join('');
-    }
-
-    getLast7DaysAverage() {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        let totalCompleted = 0;
-        for (let i = 0; i < 7; i++) {
-            const date = new Date(today);
-            date.setDate(date.getDate() - i);
-            const dayStart = new Date(date);
-            const dayEnd = new Date(date);
-            dayEnd.setDate(dayEnd.getDate() + 1);
-
-            totalCompleted += this.tasks.filter(t => {
-                if (!t.completedAt) return false;
-                const completedDate = new Date(t.completedAt);
-                return completedDate >= dayStart && completedDate < dayEnd;
-            }).length;
-        }
-
-        return (totalCompleted / 7).toFixed(1);
-    }
-
-    getAverageTaskLifecycle() {
-        const completedTasks = this.tasks.filter(t => t.completed && t.createdAt && t.completedAt);
-
-        if (completedTasks.length === 0) return '0';
-
-        const totalDays = completedTasks.reduce((sum, task) => {
-            const created = new Date(task.createdAt);
-            const completed = new Date(task.completedAt);
-            const days = (completed - created) / (1000 * 60 * 60 * 24);
-            return sum + days;
-        }, 0);
-
-        return Math.round(totalDays / completedTasks.length);
-    }
-
-    getLifecycleInsight() {
-        const avg = this.getAverageTaskLifecycle();
-
-        if (avg === 0) return '';
-
-        let insight = '';
-        let color = 'var(--text-secondary)';
-
-        if (avg <= 1) {
-            insight = '⚡ Super fast! You complete tasks quickly.';
-            color = 'var(--success-color)';
-        } else if (avg <= 3) {
-            insight = '👍 Great velocity! Tasks get done in ~3 days.';
-            color = 'var(--info-color)';
-        } else if (avg <= 7) {
-            insight = '📊 Good pace. Tasks are completed within a week.';
-            color = 'var(--primary-color)';
-        } else if (avg <= 14) {
-            insight = '🐢 Consider breaking down large tasks.';
-            color = 'var(--warning-color)';
-        } else {
-            insight = '⚠️ Tasks are taking a while. Try smaller subtasks.';
-            color = 'var(--danger-color)';
-        }
-
-        return `<div style="margin-top: var(--spacing-sm); font-size: 0.85rem; color: ${color};">${insight}</div>`;
-    }
-
-    getVelocityTrend() {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        // Last 7 days
-        const last7Days = [];
-        for (let i = 0; i < 7; i++) {
-            const date = new Date(today);
-            date.setDate(date.getDate() - i);
-            const dayStart = new Date(date);
-            const dayEnd = new Date(date);
-            dayEnd.setDate(dayEnd.getDate() + 1);
-
-            last7Days.push(this.tasks.filter(t => {
-                if (!t.completedAt) return false;
-                const completedDate = new Date(t.completedAt);
-                return completedDate >= dayStart && completedDate < dayEnd;
-            }).length);
-        }
-
-        // Previous 7 days
-        const prev7Days = [];
-        for (let i = 7; i < 14; i++) {
-            const date = new Date(today);
-            date.setDate(date.getDate() - i);
-            const dayStart = new Date(date);
-            const dayEnd = new Date(date);
-            dayEnd.setDate(dayEnd.getDate() + 1);
-
-            prev7Days.push(this.tasks.filter(t => {
-                if (!t.completedAt) return false;
-                const completedDate = new Date(t.completedAt);
-                return completedDate >= dayStart && completedDate < dayEnd;
-            }).length);
-        }
-
-        const last7Total = last7Days.reduce((a, b) => a + b, 0);
-        const prev7Total = prev7Days.reduce((a, b) => a + b, 0);
-
-        const last7Avg = last7Total / 7;
-        const prev7Avg = prev7Total / 7;
-
-        const percentChange = prev7Avg === 0 ? 100 : ((last7Avg - prev7Avg) / prev7Avg * 100);
-        const roundedChange = Math.round(percentChange);
-
-        if (roundedChange > 20) {
-            return {
-                value: `+${roundedChange}%`,
-                label: 'vs previous week',
-                icon: '📈',
-                color: 'var(--success-color)'
-            };
-        } else if (roundedChange > 0) {
-            return {
-                value: `+${roundedChange}%`,
-                label: 'vs previous week',
-                icon: '➕',
-                color: 'var(--info-color)'
-            };
-        } else if (roundedChange > -20) {
-            return {
-                value: `${roundedChange}%`,
-                label: 'vs previous week',
-                icon: '➡️',
-                color: 'var(--warning-color)'
-            };
-        } else {
-            return {
-                value: `${roundedChange}%`,
-                label: 'vs previous week',
-                icon: '📉',
-                color: 'var(--danger-color)'
-            };
-        }
-    }
-
-    getVelocityInsight() {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        // This week
-        let thisWeekCompleted = 0;
-        for (let i = 0; i < 7; i++) {
-            const date = new Date(today);
-            date.setDate(date.getDate() - i);
-            const dayStart = new Date(date);
-            const dayEnd = new Date(date);
-            dayEnd.setDate(dayEnd.getDate() + 1);
-
-            thisWeekCompleted += this.tasks.filter(t => {
-                if (!t.completedAt) return false;
-                const completedDate = new Date(t.completedAt);
-                return completedDate >= dayStart && completedDate < dayEnd;
-            }).length;
-        }
-
-        if (thisWeekCompleted >= 20) {
-            return '🔥 Outstanding productivity! You\'re on fire!';
-        } else if (thisWeekCompleted >= 10) {
-            return '💪 Strong week! Keep up the great work.';
-        } else if (thisWeekCompleted >= 5) {
-            return '👍 Good progress. Stay focused!';
-        } else if (thisWeekCompleted > 0) {
-            return '📝 Making progress. Every task counts!';
-        } else {
-            return '💭 Start small. Complete one task today!';
-        }
-    }
-
-    // =========================================================================
-    // WEEKLY REVIEW (Delegated to WeeklyReviewManager module)
-    // =========================================================================
-
-    setupWeeklyReview() {
-        this.weeklyReview.setupWeeklyReview();
-    }
-
-    showWeeklyReview() {
-        this.weeklyReview.showWeeklyReview();
-    }
-
-    closeWeeklyReview() {
-        this.weeklyReview.closeWeeklyReview();
-    }
-
-    renderWeeklyReview() {
-        this.weeklyReview.renderWeeklyReview();
-    }
-
-    async cleanupEmptyProjects() {
-        return this.weeklyReview.cleanupEmptyProjects();
-    }
-
-    async cleanupOldCompletedTasks() {
-        return this.weeklyReview.cleanupOldCompletedTasks();
-    }
-
-    async markStaleProjectsSomeday() {
-        return this.weeklyReview.markStaleProjectsSomeday();
-    }
-
-    // =========================================================================
-    // DAILY REVIEW (Still in app.js - to be modularized later)
-    // =========================================================================
-
-    setupDailyReview() {
-        const dailyReviewBtn = document.getElementById('btn-daily-review');
-        const closeDailyReviewBtn = document.getElementById('close-daily-review-modal');
-
-        if (dailyReviewBtn) {
-            dailyReviewBtn.addEventListener('click', () => {
-                this.showDailyReview();
-            });
-        }
-
-        if (closeDailyReviewBtn) {
-            closeDailyReviewBtn.addEventListener('click', () => {
-                this.closeDailyReview();
-            });
-        }
-    }
-
-    showDailyReview() {
-        const modal = document.getElementById('daily-review-modal');
-        if (!modal) return;
-
-        modal.style.display = 'block';
-        this.renderDailyReview();
-    }
-
-    closeDailyReview() {
-        const modal = document.getElementById('daily-review-modal');
-        if (modal) modal.style.display = 'none';
-    }
-
-    renderDailyReview() {
-        const dailyReviewContent = document.getElementById('daily-review-content');
-        if (!dailyReviewContent) return;
-
-        const now = new Date();
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-        // Gather daily review data
-        const tasksDueToday = this.tasks.filter(t => !t.completed && t.isDueToday());
-        const overdueTasks = this.tasks.filter(t => !t.completed && t.isOverdue());
-        const starredTasks = this.tasks.filter(t => !t.completed && t.starred);
-        const inboxTasks = this.tasks.filter(t => !t.completed && t.status === 'inbox' && !t.projectId);
-        const nextActions = this.tasks.filter(t =>
-            !t.completed &&
-            t.status === 'next' &&
-            t.areDependenciesMet(this.tasks) &&
-            t.isAvailable()
-        );
-
-        // Count total actionable today
-        const actionableToday = [...tasksDueToday, ...overdueTasks].filter((task, index, self) =>
-            index === self.findIndex(t => t.id === task.id)
-        );
-
-        // Render daily review
-        dailyReviewContent.innerHTML = `
-            <div style="max-width: 800px; margin: 0 auto;">
-                <!-- Welcome Section -->
-                <div style="background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; padding: var(--spacing-xl); border-radius: var(--radius-md); margin-bottom: var(--spacing-lg);">
-                    <h2 style="margin-top: 0; display: flex; align-items: center; gap: var(--spacing-sm);">
-                        <i class="fas fa-sun"></i> Good ${this.getGreeting()}!
-                    </h2>
-                    <p style="margin: var(--spacing-sm) 0; opacity: 0.95;">
-                        ${this.getGreetingMessage()}
-                    </p>
-                    <div style="display: flex; gap: var(--spacing-lg); margin-top: var(--spacing-md);">
-                        <div style="text-align: center;">
-                            <div style="font-size: 2rem; font-weight: bold;">${actionableToday.length}</div>
-                            <div style="font-size: 0.85rem; opacity: 0.9;">Tasks Due Today</div>
-                        </div>
-                        <div style="text-align: center;">
-                            <div style="font-size: 2rem; font-weight: bold;">${starredTasks.length}</div>
-                            <div style="font-size: 0.85rem; opacity: 0.9;">Starred Tasks</div>
-                        </div>
-                        <div style="text-align: center;">
-                            <div style="font-size: 2rem; font-weight: bold;">${inboxTasks.length}</div>
-                            <div style="font-size: 0.85rem; opacity: 0.9;">Inbox Items</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Quick Actions -->
-                <div style="background: var(--bg-secondary); padding: var(--spacing-lg); border-radius: var(--radius-md); margin-bottom: var(--spacing-lg);">
-                    <h3 style="margin-top: 0;"><i class="fas fa-bolt"></i> Quick Actions</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-md);">
-                        <button class="btn btn-primary" onclick="app.closeDailyReview(); document.getElementById('quick-add-input').focus();">
-                            <i class="fas fa-plus"></i> Quick Capture
-                        </button>
-                        <button class="btn btn-secondary" onclick="app.closeDailyReview(); app.navigateTo('inbox');">
-                            <i class="fas fa-inbox"></i> Process Inbox (${inboxTasks.length})
-                        </button>
-                        <button class="btn btn-secondary" onclick="app.closeDailyReview(); app.navigateTo('next');">
-                            <i class="fas fa-bolt"></i> Review Next Actions (${nextActions.length})
-                        </button>
-                        <button class="btn btn-secondary" onclick="app.openTemplatesModal();">
-                            <i class="fas fa-copy"></i> Use Template
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Tasks Due Today & Overdue -->
-                ${(overdueTasks.length > 0 || tasksDueToday.length > 0) ? `
-                <div style="background: var(--bg-secondary); padding: var(--spacing-lg); border-radius: var(--radius-md); margin-bottom: var(--spacing-lg); ${overdueTasks.length > 0 ? 'border: 2px solid var(--danger-color);' : ''}">
-                    <h3 style="margin-top: 0;">
-                        <i class="fas fa-calendar-day" style="color: ${overdueTasks.length > 0 ? 'var(--danger-color)' : 'var(--primary-color)'};"></i>
-                        ${overdueTasks.length > 0 ? '⚠️ Overdue & Due Today' : 'Tasks Due Today'}
-                        <span style="font-size: 0.9em; font-weight: normal; color: var(--text-secondary);">(${overdueTasks.length + tasksDueToday.length} tasks)</span>
-                    </h3>
-                    ${overdueTasks.length > 0 ? '<p style="color: var(--danger-color); margin-bottom: var(--spacing-md);"><strong>You have ' + overdueTasks.length + ' overdue task(s)!</strong></p>' : ''}
-                    <div style="display: flex; flex-direction: column; gap: var(--spacing-sm);">
-                        ${overdueTasks.map(task => this.renderDailyReviewTask(task, 'overdue')).join('')}
-                        ${tasksDueToday.map(task => this.renderDailyReviewTask(task, 'due')).join('')}
-                    </div>
-                </div>
-                ` : ''}
-
-                <!-- Starred Tasks -->
-                ${starredTasks.length > 0 ? `
-                <div style="background: var(--bg-secondary); padding: var(--spacing-lg); border-radius: var(--radius-md); margin-bottom: var(--spacing-lg);">
-                    <h3 style="margin-top: 0;">
-                        <i class="fas fa-star" style="color: gold;"></i> Starred Tasks
-                        <span style="font-size: 0.9em; font-weight: normal; color: var(--text-secondary);">(${starredTasks.length} tasks)</span>
-                    </h3>
-                    <div style="display: flex; flex-direction: column; gap: var(--spacing-sm);">
-                        ${starredTasks.slice(0, 5).map(task => this.renderDailyReviewTask(task, 'starred')).join('')}
-                        ${starredTasks.length > 5 ? `<p style="text-align: center; color: var(--text-secondary); margin: var(--spacing-sm) 0;">... and ${starredTasks.length - 5} more starred tasks</p>` : ''}
-                    </div>
-                </div>
-                ` : ''}
-
-                <!-- Inbox Items -->
-                ${inboxTasks.length > 0 ? `
-                <div style="background: var(--bg-secondary); padding: var(--spacing-lg); border-radius: var(--radius-md); margin-bottom: var(--spacing-lg);">
-                    <h3 style="margin-top: 0;">
-                        <i class="fas fa-inbox"></i> Inbox to Process
-                        <span style="font-size: 0.9em; font-weight: normal; color: var(--text-secondary);">(${inboxTasks.length} items)</span>
-                    </h3>
-                    <p style="color: var(--text-secondary); margin-bottom: var(--spacing-md);">
-                        Process these items: Is it actionable? Delete it? Delegate it? Defer it?
-                    </p>
-                    <div style="display: flex; flex-direction: column; gap: var(--spacing-sm);">
-                        ${inboxTasks.slice(0, 5).map(task => this.renderDailyReviewTask(task, 'inbox')).join('')}
-                        ${inboxTasks.length > 5 ? `<button class="btn btn-secondary" onclick="app.closeDailyReview(); app.navigateTo('inbox');" style="margin-top: var(--spacing-sm);">View all ${inboxTasks.length} inbox items</button>` : ''}
-                    </div>
-                </div>
-                ` : ''}
-
-                <!-- Empty State -->
-                ${overdueTasks.length === 0 && tasksDueToday.length === 0 && starredTasks.length === 0 && inboxTasks.length === 0 ? `
-                <div style="background: var(--bg-secondary); padding: var(--spacing-xl); border-radius: var(--radius-md); text-align: center;">
-                    <i class="fas fa-check-circle" style="font-size: 3rem; color: var(--success-color); margin-bottom: var(--spacing-md);"></i>
-                    <h3>All Clear!</h3>
-                    <p style="color: var(--text-secondary);">You're in great shape. No urgent tasks, starred items, or inbox items to review.</p>
-                    <button class="btn btn-primary" onclick="app.closeDailyReview(); document.getElementById('quick-add-input').focus();" style="margin-top: var(--spacing-md);">
-                        <i class="fas fa-plus"></i> Capture New Tasks
-                    </button>
-                </div>
-                ` : ''}
-
-                <!-- Completion Message -->
-                <div style="text-align: center; margin-top: var(--spacing-lg); padding: var(--spacing-lg);">
-                    <p style="color: var(--text-secondary); margin: 0;">
-                        <i class="fas fa-check-circle" style="color: var(--success-color);"></i>
-                        Daily review complete! Have a productive day.
-                    </p>
-                </div>
-            </div>
-        `;
-    }
-
-    renderDailyReviewTask(task, type) {
-        const priorityColors = {
-            high: 'var(--energy-high)',
-            medium: 'var(--energy-medium)',
-            low: 'var(--energy-low)'
-        };
-
-        const typeColors = {
-            overdue: 'var(--danger-color)',
-            due: 'var(--primary-color)',
-            starred: 'gold',
-            inbox: 'var(--text-secondary)'
-        };
-
-        const typeLabels = {
-            overdue: 'OVERDUE',
-            due: 'Due Today',
-            starred: 'Starred',
-            inbox: 'Inbox'
-        };
-
-        return `
-            <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-left: 4px solid ${typeColors[type]}; border-radius: var(--radius-sm); padding: var(--spacing-md); display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer;" onclick="app.closeDailyReview(); app.editTask('${task.id}');">
-                <button class="btn btn-sm btn-success" onclick="event.stopPropagation(); app.quickCompleteTask('${task.id}');" title="Complete">
-                    <i class="fas fa-check"></i>
-                </button>
-                <div style="flex: 1; min-width: 0;">
-                    <div style="display: flex; align-items: center; gap: var(--spacing-xs); flex-wrap: wrap;">
-                        <span style="font-weight: 500;">${escapeHtml(task.title)}</span>
-                        ${task.energy ? `<span class="badge" style="background: ${priorityColors[task.energy]}; font-size: 0.75rem;">${task.energy}</span>` : ''}
-                        ${task.time ? `<span class="badge" style="background: var(--info-color); font-size: 0.75rem;"><i class="fas fa-clock"></i> ${task.time}m</span>` : ''}
-                        ${type === 'overdue' || type === 'due' ? `<span class="badge" style="background: ${typeColors[type]}; font-size: 0.75rem;">${typeLabels[type]}</span>` : ''}
-                    </div>
-                    ${task.projectId ? `<span style="font-size: 0.85rem; color: var(--text-secondary);"><i class="fas fa-folder"></i> ${escapeHtml(this.getProjectTitle(task.projectId))}</span>` : ''}
-                </div>
-                <i class="fas fa-chevron-right" style="color: var(--text-secondary);"></i>
-            </div>
-        `;
-    }
-
-    async quickCompleteTask(taskId) {
-        const task = this.tasks.find(t => t.id === taskId);
-        if (!task) return;
-
-        this.saveState('Complete task');
-        task.markComplete();
-
-        // Handle recurring tasks
-        if (task.isRecurring() && !task.shouldRecurrenceEnd()) {
-            const nextTask = task.createNextInstance();
-            if (nextTask) {
-                this.tasks.push(nextTask);
-            }
-        }
-
-        await this.saveTasks();
-        this.renderDailyReview();
-        this.renderView();
-        this.updateCounts();
-        this.showToast('Task completed');
-    }
-
-    getGreeting() {
-        const hour = new Date().getHours();
-        if (hour < 12) return 'Morning';
-        if (hour < 17) return 'Afternoon';
-        return 'Evening';
-    }
-
-    getGreetingMessage() {
-        const hour = new Date().getHours();
-        if (hour < 12) {
-            return "Start your day right. Review what's due and plan your priorities.";
-        } else if (hour < 17) {
-            return "Midday check-in. How's your progress going? Stay focused!";
-        } else {
-            return "End of day review. Wrap up and prepare for tomorrow.";
-        }
-    }
-
-    navigateTo(view) {
-        this.currentView = view;
-        this.currentProjectId = null;
-        this.renderView();
-        this.updateNavigation();
-    }
-
-    getProjectTitle(projectId) {
-        const project = this.projects.find(p => p.id === projectId);
-        return project ? project.title : '';
-    }
-
-    // =========================================================================
-    // TIME TRACKING FUNCTIONALITY
-    // =========================================================================
-
-    setupTimeTracking() {
-        // Time tracking is handled per-task in the task element creation
-        // This method is for global time tracking setup
-    }
-
-    startTaskTimer(taskId) {
-        const task = this.tasks.find(t => t.id === taskId);
-        if (!task) return;
-
-        // Stop any existing timer
-        if (this.activeTimers.has(taskId)) {
-            this.stopTaskTimer(taskId);
-        }
-
-        // Start new timer
-        this.activeTimers.set(taskId, {
-            startTime: Date.now(),
-            taskId: taskId
-        });
-
-        // Update UI
-        this.renderView();
-    }
-
-    stopTaskTimer(taskId) {
-        const timer = this.activeTimers.get(taskId);
-        if (!timer) return;
-
-        const elapsed = Math.round((Date.now() - timer.startTime) / 1000 / 60); // Convert to minutes
-        this.activeTimers.delete(taskId);
-
-        // Add to task's time spent
-        const task = this.tasks.find(t => t.id === taskId);
-        if (task) {
-            task.timeSpent = (task.timeSpent || 0) + elapsed;
-            this.saveTasks();
-        }
-
-        this.renderView();
-    }
-
-    // =========================================================================
-    // DARK MODE (Delegated to DarkModeManager module)
-    // =========================================================================
-
-    initializeDarkMode() {
-        this.darkMode.initializeDarkMode();
-    }
-
-    setupDarkMode() {
-        this.darkMode.setupDarkMode();
-    }
-
-    toggleDarkMode() {
-        this.darkMode.toggleDarkMode();
-    }
-
-    updateDarkModeButton() {
-        this.darkMode.updateDarkModeButton();
-    }
-
-    // =========================================================================
-    // CALENDAR VIEW (Delegated to CalendarManager module)
-    // =========================================================================
-
-    setupCalendarView() {
-        this.calendar.setupCalendarView();
-    }
-
-    showCalendar() {
-        this.calendar.showCalendar();
-    }
-
-    closeCalendar() {
-        this.calendar.closeCalendar();
-    }
-
-    renderCalendar() {
-        this.calendar.renderCalendar();
-    }
-
-    navigateCalendar(direction) {
-        this.calendar.navigateCalendar(direction);
-    }
-
-    getTasksForMonth(year, month) {
-        return this.calendar.getTasksForMonth(year, month);
-    }
-
-    showTasksForDate(year, month, day) {
-        this.calendar.showTasksForDate(year, month, day);
+        this.dashboard.renderDashboard();
     }
 
     // ==================== NEW PROJECT BUTTON ====================
@@ -2530,6 +1558,395 @@ class GTDApp {
 
     getTemplateSubtasks() {
         return this.templatesManager.getTemplateSubtasks();
+    }
+
+    // ==================== DARK MODE (Delegated to DarkModeManager module) ====================
+
+    initializeDarkMode() {
+        this.darkMode.initializeDarkMode();
+    }
+
+    setupDarkMode() {
+        this.darkMode.setupDarkMode();
+    }
+
+    toggleDarkMode() {
+        this.darkMode.toggleDarkMode();
+    }
+
+    updateDarkModeButton() {
+        this.darkMode.updateDarkModeButton();
+    }
+
+    // ==================== WEEKLY REVIEW (Delegated to WeeklyReviewManager module) ====================
+
+    setupWeeklyReview() {
+        this.weeklyReview.setupWeeklyReview();
+    }
+
+    showWeeklyReview() {
+        this.weeklyReview.showWeeklyReview();
+    }
+
+    closeWeeklyReview() {
+        this.weeklyReview.closeWeeklyReview();
+    }
+
+    renderWeeklyReview() {
+        this.weeklyReview.renderWeeklyReview();
+    }
+
+    // ==================================================================
+
+    // ==================== DAILY REVIEW ====================
+
+    setupDailyReview() {
+        const dailyReviewBtn = document.getElementById('btn-daily-review');
+        const closeDailyReviewBtn = document.getElementById('close-daily-review-modal');
+
+        if (dailyReviewBtn) {
+            dailyReviewBtn.addEventListener('click', () => {
+                this.showDailyReview();
+            });
+        }
+
+        if (closeDailyReviewBtn) {
+            closeDailyReviewBtn.addEventListener('click', () => {
+                this.closeDailyReview();
+            });
+        }
+    }
+
+    showDailyReview() {
+        const modal = document.getElementById('daily-review-modal');
+        if (!modal) return;
+
+        modal.style.display = 'block';
+        this.renderDailyReview();
+    }
+
+    closeDailyReview() {
+        const modal = document.getElementById('daily-review-modal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    renderDailyReview() {
+        const dailyReviewContent = document.getElementById('daily-review-content');
+        if (!dailyReviewContent) return;
+
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        // Get tasks due today
+        const dueToday = this.tasks.filter(t => !t.completed && t.dueDate && new Date(t.dueDate) <= today);
+
+        // Get tasks due tomorrow
+        const dueTomorrow = this.tasks.filter(t => !t.completed && t.dueDate && new Date(t.dueDate) >= tomorrow && new Date(t.dueDate) < new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000));
+
+        // Get overdue tasks
+        const overdue = this.tasks.filter(t => !t.completed && t.dueDate && new Date(t.dueDate) < today);
+
+        // Get high priority tasks
+        const highPriority = this.tasks.filter(t => !t.completed && t.priority && t.priority >= 80);
+
+        // Get tasks due this week
+        const weekEnd = new Date(today);
+        weekEnd.setDate(weekEnd.getDate() + 7);
+        const dueThisWeek = this.tasks.filter(t => !t.completed && t.dueDate && new Date(t.dueDate) >= today && new Date(t.dueDate) < weekEnd);
+
+        // Render daily review
+        dailyReviewContent.innerHTML = `
+            <div style="max-width: 800px; margin: 0 auto;">
+                <div style="text-align: center; margin-bottom: var(--spacing-lg);">
+                    <h2 style="margin: 0; font-size: 1.8rem;">${this.getGreetingMessage()}</h2>
+                    <div style="color: var(--text-secondary); margin-top: var(--spacing-sm);">${now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--spacing-md); margin-bottom: var(--spacing-lg);">
+                    <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: var(--radius-md); border: 1px solid var(--border-color); text-align: center;">
+                        <div style="font-size: 2rem; font-weight: bold; color: var(--primary-color);">${dueToday.length}</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Due Today</div>
+                    </div>
+                    <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: var(--radius-md); border: 1px solid var(--border-color); text-align: center;">
+                        <div style="font-size: 2rem; font-weight: bold; color: var(--warning-color);">${overdue.length}</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Overdue</div>
+                    </div>
+                    <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: var(--radius-md); border: 1px solid var(--border-color); text-align: center;">
+                        <div style="font-size: 2rem; font-weight: bold; color: var(--info-color);">${dueThisWeek.length}</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">This Week</div>
+                    </div>
+                    <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: var(--radius-md); border: 1px solid var(--border-color); text-align: center;">
+                        <div style="font-size: 2rem; font-weight: bold; color: var(--accent-color);">${highPriority.length}</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">High Priority</div>
+                    </div>
+                </div>
+
+                <!-- Due Today -->
+                ${dueToday.length > 0 ? `
+                    <div style="margin-bottom: var(--spacing-lg);">
+                        <h3 style="margin-bottom: var(--spacing-md); color: var(--primary-color);">
+                            <i class="fas fa-calendar-day"></i> Due Today
+                        </h3>
+                        <div class="task-list">
+                            ${dueToday.map(task => this.renderDailyReviewTask(task, 'today')).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+
+                <!-- Overdue -->
+                ${overdue.length > 0 ? `
+                    <div style="margin-bottom: var(--spacing-lg);">
+                        <h3 style="margin-bottom: var(--spacing-md); color: var(--warning-color);">
+                            <i class="fas fa-exclamation-circle"></i> Overdue
+                        </h3>
+                        <div class="task-list">
+                            ${overdue.slice(0, 10).map(task => this.renderDailyReviewTask(task, 'overdue')).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+
+                <!-- Due This Week -->
+                ${dueThisWeek.length > 0 ? `
+                    <div style="margin-bottom: var(--spacing-lg);">
+                        <h3 style="margin-bottom: var(--spacing-md); color: var(--info-color);">
+                            <i class="fas fa-calendar-week"></i> Due This Week
+                        </h3>
+                        <div class="task-list">
+                            ${dueThisWeek.slice(0, 10).map(task => this.renderDailyReviewTask(task, 'week')).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+
+                <!-- High Priority -->
+                ${highPriority.length > 0 ? `
+                    <div style="margin-bottom: var(--spacing-lg);">
+                        <h3 style="margin-bottom: var(--spacing-md); color: var(--accent-color);">
+                            <i class="fas fa-star"></i> High Priority
+                        </h3>
+                        <div class="task-list">
+                            ${highPriority.slice(0, 10).map(task => this.renderDailyReviewTask(task, 'priority')).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+
+                ${dueToday.length === 0 && overdue.length === 0 && dueThisWeek.length === 0 && highPriority.length === 0 ? `
+                    <div style="text-align: center; padding: var(--spacing-xl); color: var(--text-secondary);">
+                        <i class="fas fa-check-circle" style="font-size: 3rem; margin-bottom: var(--spacing-md);"></i>
+                        <div>All caught up! No urgent tasks.</div>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    renderDailyReviewTask(task, type) {
+        const dueDate = task.dueDate ? new Date(task.dueDate) : null;
+        const isOverdue = dueDate && dueDate < new Date() && !task.completed;
+        const isDueToday = dueDate && dueDate.toDateString() === new Date().toDateString();
+        const isDueTomorrow = dueDate && dueDate.toDateString() === new Date(Date.now() + 24 * 60 * 60 * 1000).toDateString();
+
+        let dateClass = '';
+        let dateLabel = '';
+        let dateIcon = '';
+
+        if (isOverdue) {
+            dateClass = 'overdue';
+            dateLabel = 'Overdue';
+            dateIcon = 'fa-exclamation-circle';
+        } else if (isDueToday) {
+            dateClass = 'due-today';
+            dateLabel = 'Today';
+            dateIcon = 'fa-calendar-day';
+        } else if (isDueTomorrow) {
+            dateClass = 'due-tomorrow';
+            dateLabel = 'Tomorrow';
+            dateIcon = 'fa-calendar-day';
+        } else if (dueDate) {
+            dateLabel = dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            dateIcon = 'fa-calendar';
+        }
+
+        return `
+            <div class="task-item" data-task-id="${task.id}">
+                <div class="task-checkbox">
+                    <input type="checkbox" ${task.completed ? 'checked' : ''} data-action="complete">
+                </div>
+                <div class="task-content">
+                    <div class="task-title">${escapeHtml(task.title)}</div>
+                    <div class="task-meta">
+                        ${task.contexts && task.contexts.length > 0 ? `
+                            <span class="task-contexts">
+                                ${task.contexts.map(c => `<span class="context-tag">${escapeHtml(c)}</span>`).join('')}
+                            </span>
+                        ` : ''}
+                        ${task.projectId ? `
+                            <span class="task-project">
+                                <i class="fas fa-folder"></i>
+                                ${escapeHtml(this.getProjectTitle(task.projectId))}
+                            </span>
+                        ` : ''}
+                        ${dueDate ? `
+                            <span class="task-due-date ${dateClass}">
+                                <i class="fas ${dateIcon}"></i>
+                                ${dateLabel}
+                            </span>
+                        ` : ''}
+                        ${task.priority && task.priority >= 80 ? `
+                            <span class="task-priority high">
+                                <i class="fas fa-star"></i>
+                                ${task.priority}
+                            </span>
+                        ` : ''}
+                    </div>
+                </div>
+                <div class="task-actions">
+                    <button class="btn-icon" data-action="focus" title="Focus on this task">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    // ==================================================================
+
+    // ==================== NAVIGATION & VIEWS ====================
+
+    getGreeting() {
+        const hour = new Date().getHours();
+        if (hour < 12) return 'Morning';
+        if (hour < 17) return 'Afternoon';
+        return 'Evening';
+    }
+
+    getGreetingMessage() {
+        const greeting = this.getGreeting();
+        const totalTasks = this.tasks.filter(t => !t.completed).length;
+        const completedToday = this.tasks.filter(t => t.completed && t.completedAt && new Date(t.completedAt) >= new Date(new Date().setHours(0, 0, 0, 0))).length;
+
+        if (totalTasks === 0) {
+            return `Good ${greeting}! All caught up!`;
+        } else if (completedToday > 0) {
+            return `Good ${greeting}! ${completedToday} task${completedToday > 1 ? 's' : ''} completed today.`;
+        } else {
+            return `Good ${greeting}! You have ${totalTasks} task${totalTasks > 1 ? 's' : ''} to do.`;
+        }
+    }
+
+    navigateTo(view) {
+        this.currentView = view;
+        this.currentProjectId = null;
+        this.renderView();
+        this.updateNavigation();
+    }
+
+    getProjectTitle(projectId) {
+        const project = this.projects.find(p => p.id === projectId);
+        return project ? project.title : 'Unknown Project';
+    }
+
+    // ==================================================================
+
+    // ==================== TIME TRACKING ====================
+
+    setupTimeTracking() {
+        // Time tracking is handled per-task in the task element creation
+        // This method is for global time tracking setup
+        console.log('[Time Tracking] Time tracking initialized');
+    }
+
+    startTaskTimer(taskId) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        if (this.timerInterval) {
+            this.stopTaskTimer();
+        }
+
+        this.currentTimerTask = taskId;
+        this.timerStartTime = Date.now();
+
+        const timerBtn = document.querySelector(`[data-task-id="${taskId}"] .btn-timer`);
+        if (timerBtn) {
+            timerBtn.classList.add('active');
+            timerBtn.innerHTML = '<i class="fas fa-stop"></i>';
+        }
+
+        this.timerInterval = setInterval(() => {
+            const elapsed = Math.floor((Date.now() - this.timerStartTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+
+            const timerDisplay = document.querySelector(`[data-task-id="${taskId}"] .timer-display`);
+            if (timerDisplay) {
+                timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
+        }, 1000);
+
+        this.showToast('Timer started', 'info');
+    }
+
+    stopTaskTimer() {
+        if (!this.timerInterval || !this.currentTimerTask) return;
+
+        clearInterval(this.timerInterval);
+        this.timerInterval = null;
+
+        const elapsedMinutes = Math.floor((Date.now() - this.timerStartTime) / 1000 / 60);
+
+        const task = this.tasks.find(t => t.id === this.currentTimerTask);
+        if (task) {
+            task.timeSpent = (task.timeSpent || 0) + elapsedMinutes;
+            task.updatedAt = new Date().toISOString();
+            this.saveTasks();
+            this.renderView();
+        }
+
+        const timerBtn = document.querySelector(`[data-task-id="${this.currentTimerTask}"] .btn-timer`);
+        if (timerBtn) {
+            timerBtn.classList.remove('active');
+            timerBtn.innerHTML = '<i class="fas fa-play"></i>';
+        }
+
+        this.currentTimerTask = null;
+        this.timerStartTime = null;
+
+        this.showToast(`Timer stopped. Added ${elapsedMinutes} minutes.`, 'success');
+    }
+
+    // ==================================================================
+
+    // ==================== CALENDAR VIEW (Delegated to CalendarManager module) ====================
+
+    setupCalendarView() {
+        this.calendar.setupCalendarView();
+    }
+
+    showCalendar() {
+        this.calendar.showCalendar();
+    }
+
+    closeCalendar() {
+        this.calendar.closeCalendar();
+    }
+
+    renderCalendar() {
+        this.calendar.renderCalendar();
+    }
+
+    navigateCalendar(direction) {
+        this.calendar.navigateCalendar(direction);
+    }
+
+    getTasksForMonth(year, month) {
+        return this.calendar.getTasksForMonth(year, month);
+    }
+
+    showTasksForDate(year, month, day) {
+        this.calendar.showTasksForDate(year, month, day);
     }
 
     // ==================== ARCHIVE SYSTEM ====================

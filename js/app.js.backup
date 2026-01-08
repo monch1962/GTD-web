@@ -1,6 +1,44 @@
 /**
- * GTD Web Application
- * Main application logic
+ * ============================================================================
+ * GTD Web Application - Main Application Controller
+ * ============================================================================
+ *
+ * A comprehensive Getting Things Done (GTD) task management application.
+ *
+ * TABLE OF CONTENTS:
+ * ------------------
+ * 1. INITIALIZATION (constructor, init)
+ * 2. SETUP & EVENT LISTENERS (setupEventListeners, setupNavigation, etc.)
+ * 3. VIEW MANAGEMENT (switchView, renderView, etc.)
+ * 4. TASK OPERATIONS (quickAddTask, toggleTaskComplete, deleteTask, etc.)
+ * 5. PROJECT OPERATIONS (createProject, editProject, deleteProject, etc.)
+ * 6. TASK MODAL (openTaskModal, saveTaskFromForm, etc.)
+ * 7. BULK OPERATIONS (bulk selection, bulk actions)
+ * 8. KEYBOARD NAVIGATION (selectTask, deselectTask, keyboard shortcuts)
+ * 9. SEARCH FUNCTIONALITY (setupSearch, filterTasks, saved searches)
+ * 10. DASHBOARD FUNCTIONALITY (analytics, charts, insights)
+ * 11. DAILY REVIEW (quick planning workflow)
+ * 12. WEEKLY REVIEW (comprehensive cleanup)
+ * 13. TIME TRACKING (task timers, time spent)
+ * 14. DARK MODE (theme toggling)
+ * 15. CALENDAR VIEW (monthly task calendar)
+ * 16. TEMPLATES SYSTEM (reusable task templates)
+ * 17. ARCHIVE SYSTEM (archived tasks management)
+ * 18. CONTEXT MENU (quick actions right-click menu)
+ * 19. DEPENDENCIES (task dependency visualization)
+ * 20. PRODUCTIVITY HEATMAP (completion activity chart)
+ * 21. GLOBAL QUICK CAPTURE (Alt+N instant task capture)
+ * 22. PRIORITY SCORING (automatic task prioritization)
+ * 23. DATE SUGGESTIONS (smart date parsing)
+ * 24. UNDO/REDO SYSTEM (history management)
+ * 25. MOBILE NAVIGATION (touch-friendly controls)
+ * 26. FOCUS MODE (distraction-free work)
+ * 27. POMODORO TIMER (25/5 minute intervals)
+ * 28. SUBTASKS MANAGEMENT (task checklists)
+ * 29. MODAL HELPERS (utilities for modal management)
+ *
+ * Last updated: 2025-01-08
+ * ============================================================================
  */
 
 import { Task, Project, Reference, Template } from './models.js';
@@ -9,8 +47,20 @@ import { ElementIds, StorageKeys, TaskStatus, Views, RecurrenceLabels, ViewLabel
 import { getElement, setTextContent, escapeHtml, announce } from './dom-utils.js';
 import { TaskParser } from './nlp-parser.js';
 import { getDefaultContextIds, getAllContexts, getContextTaskCounts } from './config/defaultContexts.js';
+import { DarkModeManager } from './modules/ui/dark-mode.js';
+import { CalendarManager } from './modules/features/calendar.js';
+import { ArchiveManager } from './modules/features/archive.js';
+import { ContextMenuManager } from './modules/ui/context-menu.js';
+import { WeeklyReviewManager } from './modules/features/weekly-review.js';
+import { DependenciesManager } from './modules/features/dependencies.js';
+import { TemplatesManager } from './modules/features/templates.js';
+import { MobileNavigationManager } from './modules/ui/mobile-navigation.js';
+import { DashboardManager } from './modules/features/dashboard.js';
 
 class GTDApp {
+    // =========================================================================
+    // INITIALIZATION
+    // =========================================================================
     constructor() {
         this.storage = new Storage();
         this.tasks = [];
@@ -51,6 +101,17 @@ class GTDApp {
         this.historyIndex = -1; // Current position in history
         this.maxHistorySize = 50; // Maximum history entries
         this.showingArchivedProjects = false; // Track if viewing archived projects
+
+        // Initialize feature modules
+        this.darkMode = new DarkModeManager();
+        this.calendar = new CalendarManager(this, this);
+        this.archive = new ArchiveManager(this, this);
+        this.contextMenu = new ContextMenuManager(this, this);
+        this.weeklyReview = new WeeklyReviewManager(this, this);
+        this.dependencies = new DependenciesManager(this, this);
+        this.templatesManager = new TemplatesManager(this, this);
+        this.mobileNavigation = new MobileNavigationManager(this, this);
+        this.dashboard = new DashboardManager(this, this);
     }
 
     async init() {
@@ -133,6 +194,9 @@ class GTDApp {
         this.templates = templatesData.map(data => Template.fromJSON(data));
     }
 
+    // =========================================================================
+    // SETUP & EVENT LISTENERS
+    // =========================================================================
     setupEventListeners() {
         this.setupNavigationListeners();
         this.setupProjectsDropdown();
@@ -1983,24 +2047,41 @@ class GTDApp {
         }
     }
 
-    // ==================== WEEKLY REVIEW FUNCTIONALITY ====================
+    // =========================================================================
+    // WEEKLY REVIEW (Delegated to WeeklyReviewManager module)
+    // =========================================================================
 
     setupWeeklyReview() {
-        const weeklyReviewBtn = document.getElementById('btn-weekly-review');
-        const closeWeeklyReviewBtn = document.getElementById('close-weekly-review-modal');
-
-        if (weeklyReviewBtn) {
-            weeklyReviewBtn.addEventListener('click', () => {
-                this.showWeeklyReview();
-            });
-        }
-
-        if (closeWeeklyReviewBtn) {
-            closeWeeklyReviewBtn.addEventListener('click', () => {
-                this.closeWeeklyReview();
-            });
-        }
+        this.weeklyReview.setupWeeklyReview();
     }
+
+    showWeeklyReview() {
+        this.weeklyReview.showWeeklyReview();
+    }
+
+    closeWeeklyReview() {
+        this.weeklyReview.closeWeeklyReview();
+    }
+
+    renderWeeklyReview() {
+        this.weeklyReview.renderWeeklyReview();
+    }
+
+    async cleanupEmptyProjects() {
+        return this.weeklyReview.cleanupEmptyProjects();
+    }
+
+    async cleanupOldCompletedTasks() {
+        return this.weeklyReview.cleanupOldCompletedTasks();
+    }
+
+    async markStaleProjectsSomeday() {
+        return this.weeklyReview.markStaleProjectsSomeday();
+    }
+
+    // =========================================================================
+    // DAILY REVIEW (Still in app.js - to be modularized later)
+    // =========================================================================
 
     setupDailyReview() {
         const dailyReviewBtn = document.getElementById('btn-daily-review');
@@ -2264,250 +2345,9 @@ class GTDApp {
         return project ? project.title : '';
     }
 
-    showWeeklyReview() {
-        const modal = document.getElementById('weekly-review-modal');
-        if (!modal) return;
-
-        modal.style.display = 'block';
-        this.renderWeeklyReview();
-    }
-
-    closeWeeklyReview() {
-        const modal = document.getElementById('weekly-review-modal');
-        if (modal) modal.style.display = 'none';
-    }
-
-    renderWeeklyReview() {
-        const weeklyReviewContent = document.getElementById('weekly-review-content');
-        if (!weeklyReviewContent) return;
-
-        const now = new Date();
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const weekAgo = new Date(today);
-        weekAgo.setDate(weekAgo.getDate() - 7);
-
-        // Gather review data
-        const completedThisWeek = this.tasks.filter(t =>
-            t.completed && t.completedAt && new Date(t.completedAt) >= weekAgo
-        );
-
-        const incompleteTasks = this.tasks.filter(t => !t.completed && t.status !== 'someday' && t.status !== 'reference');
-
-        const overdueTasks = incompleteTasks.filter(t => t.isOverdue());
-
-        const dueThisWeek = incompleteTasks.filter(t => {
-            if (!t.dueDate) return false;
-            const dueDate = new Date(t.dueDate);
-            const nextWeek = new Date(today);
-            nextWeek.setDate(nextWeek.getDate() + 7);
-            return dueDate >= today && dueDate <= nextWeek;
-        });
-
-        const waitingTasks = this.tasks.filter(t => t.status === 'waiting' && !t.completed);
-
-        const somedayTasks = this.tasks.filter(t => t.status === 'someday' && !t.completed);
-
-        const staleProjects = this.projects.filter(p => {
-            if (p.status !== 'active') return false;
-            const projectTasks = this.tasks.filter(t => t.projectId === p.id && !t.completed);
-            const thirtyDaysAgo = new Date(today);
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            return projectTasks.length > 0 && projectTasks.every(t => new Date(t.updatedAt) < thirtyDaysAgo);
-        });
-
-        // Render weekly review
-        weeklyReviewContent.innerHTML = `
-            <div style="max-width: 800px; margin: 0 auto;">
-                <div style="background: var(--bg-secondary); padding: var(--spacing-lg); border-radius: var(--radius-md); margin-bottom: var(--spacing-lg);">
-                    <h3 style="margin-top: 0;">📅 Weekly Review Checklist</h3>
-                    <p style="color: var(--text-secondary); margin-bottom: var(--spacing-md);">
-                        Complete this review to get clear and current. Follow the GTD weekly review process.
-                    </p>
-
-                    <div style="display: grid; gap: var(--spacing-sm);">
-                        <label style="display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer;">
-                            <input type="checkbox" class="weekly-review-checkbox">
-                            <span>Get clear: Empty your head - put all uncaptured ideas, thoughts, and tasks in Inbox</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer;">
-                            <input type="checkbox" class="weekly-review-checkbox">
-                            <span>Review <strong>${completedThisWeek.length} completed tasks</strong> from last week</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer;">
-                            <input type="checkbox" class="weekly-review-checkbox">
-                            <span>Review your calendar for upcoming commitments</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer;">
-                            <input type="checkbox" class="weekly-review-checkbox">
-                            <span>Review your projects and project lists</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer;">
-                            <input type="checkbox" class="weekly-review-checkbox">
-                            <span>Review <strong>${waitingTasks.length} Waiting</strong> items</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer;">
-                            <input type="checkbox" class="weekly-review-checkbox">
-                            <span>Review <strong>${somedayTasks.length} Someday</strong> items - activate any that are now relevant</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer;">
-                            <input type="checkbox" class="weekly-review-checkbox">
-                            <span>Be creative and courageous: Any new, fun, exciting projects?</span>
-                        </label>
-                    </div>
-                </div>
-
-                ${overdueTasks.length > 0 ? `
-                <div style="background: #fef5e7; padding: var(--spacing-md); border-radius: var(--radius-md); border-left: 4px solid var(--warning-color); margin-bottom: var(--spacing-md);">
-                    <h4 style="margin: 0 0 var(--spacing-sm) 0; color: var(--warning-color);">
-                        <i class="fas fa-exclamation-triangle"></i> ${overdueTasks.length} Overdue Tasks
-                    </h4>
-                    <div style="max-height: 200px; overflow-y: auto;">
-                        ${overdueTasks.slice(0, 10).map(task => `
-                            <div style="padding: 4px 0; border-bottom: 1px solid rgba(0,0,0,0.1);">
-                                <strong>${escapeHtml(task.title)}</strong>
-                                ${task.dueDate ? `<span style="color: var(--danger-color); font-size: 0.85rem;"> Due: ${task.dueDate}</span>` : ''}
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-                ` : ''}
-
-                ${dueThisWeek.length > 0 ? `
-                <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: var(--spacing-md);">
-                    <h4 style="margin: 0 0 var(--spacing-sm) 0;">
-                        <i class="fas fa-calendar-day"></i> ${dueThisWeek.length} Tasks Due This Week
-                    </h4>
-                    <div style="max-height: 200px; overflow-y: auto;">
-                        ${dueThisWeek.map(task => `
-                            <div style="padding: 4px 0; border-bottom: 1px solid var(--border-color);">
-                                <strong>${escapeHtml(task.title)}</strong>
-                                ${task.dueDate ? `<span style="color: var(--text-secondary); font-size: 0.85rem;"> Due: ${task.dueDate}</span>` : ''}
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-                ` : ''}
-
-                ${staleProjects.length > 0 ? `
-                <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: var(--spacing-md);">
-                    <h4 style="margin: 0 0 var(--spacing-sm) 0; color: var(--text-secondary);">
-                        <i class="fas fa-pause-circle"></i> ${staleProjects.length} Stalled Projects (consider activating or completing)
-                    </h4>
-                    ${staleProjects.map(project => `
-                        <div style="padding: 8px; background: var(--bg-secondary); border-radius: var(--radius-sm); margin-top: var(--spacing-xs);">
-                            <strong>${escapeHtml(project.title)}</strong>
-                            <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 4px 0;">${this.tasks.filter(t => t.projectId === project.id && !t.completed).length} tasks remaining</p>
-                        </div>
-                    `).join('')}
-                </div>
-                ` : ''}
-
-                <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                    <h4 style="margin: 0 0 var(--spacing-sm) 0;">
-                        <i class="fas fa-broom"></i> Cleanup Actions
-                    </h4>
-                    <div style="display: flex; flex-direction: column; gap: var(--spacing-sm);">
-                        <button class="btn btn-secondary" onclick="app.cleanupEmptyProjects()">
-                            <i class="fas fa-trash"></i> Delete empty projects
-                        </button>
-                        <button class="btn btn-secondary" onclick="app.cleanupOldCompletedTasks()">
-                            <i class="fas fa-broom"></i> Archive tasks completed > 90 days ago
-                        </button>
-                        <button class="btn btn-secondary" onclick="app.markStaleProjectsSomeday()">
-                            <i class="fas fa-pause"></i> Move stale projects to Someday
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    async cleanupEmptyProjects() {
-        const emptyProjects = this.projects.filter(p => {
-            const projectTasks = this.tasks.filter(t => t.projectId === p.id);
-            return projectTasks.length === 0;
-        });
-
-        if (emptyProjects.length === 0) {
-            alert('No empty projects to clean up.');
-            return;
-        }
-
-        if (!confirm(`Delete ${emptyProjects.length} empty projects?`)) return;
-
-        this.projects = this.projects.filter(p => !emptyProjects.includes(p));
-        await this.saveProjects();
-        this.renderWeeklyReview();
-        this.renderProjectsDropdown();
-        alert(`Cleaned up ${emptyProjects.length} empty projects.`);
-    }
-
-    async cleanupOldCompletedTasks() {
-        const ninetyDaysAgo = new Date();
-        ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-
-        const oldCompletedTasks = this.tasks.filter(t =>
-            t.completed && t.completedAt && new Date(t.completedAt) < ninetyDaysAgo
-        );
-
-        if (oldCompletedTasks.length === 0) {
-            alert('No old completed tasks to archive.');
-            return;
-        }
-
-        if (!confirm(`Archive ${oldCompletedTasks.length} tasks completed more than 90 days ago?`)) return;
-
-        // Create an export of these tasks before deleting
-        const archiveData = {
-            archivedAt: new Date().toISOString(),
-            tasks: oldCompletedTasks.map(t => t.toJSON())
-        };
-
-        const dataStr = JSON.stringify(archiveData, null, 2);
-        const dataBlob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(dataBlob);
-
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `gtd-archive-${new Date().toISOString().split('T')[0]}.json`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-
-        // Remove from active tasks
-        this.tasks = this.tasks.filter(t => !oldCompletedTasks.includes(t));
-        await this.saveTasks();
-        this.renderWeeklyReview();
-        this.renderView();
-        this.updateCounts();
-        alert(`Archived ${oldCompletedTasks.length} old completed tasks.`);
-    }
-
-    async markStaleProjectsSomeday() {
-        const staleProjects = this.projects.filter(p => {
-            if (p.status !== 'active') return false;
-            const projectTasks = this.tasks.filter(t => t.projectId === p.id && !t.completed);
-            const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            return projectTasks.length > 0 && projectTasks.every(t => new Date(t.updatedAt) < thirtyDaysAgo);
-        });
-
-        if (staleProjects.length === 0) {
-            alert('No stale projects to move.');
-            return;
-        }
-
-        if (!confirm(`Move ${staleProjects.length} stale projects to Someday?`)) return;
-
-        staleProjects.forEach(p => p.status = 'someday');
-        await this.saveProjects();
-        this.renderWeeklyReview();
-        this.renderProjectsDropdown();
-        alert(`Moved ${staleProjects.length} projects to Someday.`);
-    }
-
-    // ==================== TIME TRACKING FUNCTIONALITY ====================
+    // =========================================================================
+    // TIME TRACKING FUNCTIONALITY
+    // =========================================================================
 
     setupTimeTracking() {
         // Time tracking is handled per-task in the task element creation
@@ -2550,211 +2390,56 @@ class GTDApp {
         this.renderView();
     }
 
-    // ==================== DARK MODE ====================
+    // =========================================================================
+    // DARK MODE (Delegated to DarkModeManager module)
+    // =========================================================================
 
     initializeDarkMode() {
-        // Check for saved preference or system preference
-        const savedMode = localStorage.getItem('gtd_dark_mode');
-        const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-        if (savedMode === 'true' || (!savedMode && systemPrefersDark)) {
-            document.body.classList.add('dark-mode');
-        }
-
-        // Update button icon
-        this.updateDarkModeButton();
+        this.darkMode.initializeDarkMode();
     }
 
     setupDarkMode() {
-        const darkModeBtn = document.getElementById('btn-dark-mode');
-        if (!darkModeBtn) return;
-
-        darkModeBtn.addEventListener('click', () => {
-            this.toggleDarkMode();
-        });
+        this.darkMode.setupDarkMode();
     }
 
     toggleDarkMode() {
-        document.body.classList.toggle('dark-mode');
-        const isDarkMode = document.body.classList.contains('dark-mode');
-        localStorage.setItem('gtd_dark_mode', isDarkMode);
-        this.updateDarkModeButton();
+        this.darkMode.toggleDarkMode();
     }
 
     updateDarkModeButton() {
-        const darkModeBtn = document.getElementById('btn-dark-mode');
-        if (!darkModeBtn) return;
-
-        const isDarkMode = document.body.classList.contains('dark-mode');
-        darkModeBtn.innerHTML = isDarkMode
-            ? '<i class="fas fa-sun"></i>'
-            : '<i class="fas fa-moon"></i>';
+        this.darkMode.updateDarkModeButton();
     }
 
-    // ==================== CALENDAR VIEW ====================
+    // =========================================================================
+    // CALENDAR VIEW (Delegated to CalendarManager module)
+    // =========================================================================
 
     setupCalendarView() {
-        const calendarBtn = document.getElementById('btn-calendar-view');
-        const closeCalendarBtn = document.getElementById('close-calendar-modal');
-
-        if (calendarBtn) {
-            calendarBtn.addEventListener('click', () => {
-                this.showCalendar();
-            });
-        }
-
-        if (closeCalendarBtn) {
-            closeCalendarBtn.addEventListener('click', () => {
-                this.closeCalendar();
-            });
-        }
+        this.calendar.setupCalendarView();
     }
 
     showCalendar() {
-        const modal = document.getElementById('calendar-modal');
-        if (!modal) return;
-
-        modal.style.display = 'block';
-        this.renderCalendar();
+        this.calendar.showCalendar();
     }
 
     closeCalendar() {
-        const modal = document.getElementById('calendar-modal');
-        if (modal) modal.style.display = 'none';
+        this.calendar.closeCalendar();
     }
 
     renderCalendar() {
-        const calendarContent = document.getElementById('calendar-content');
-        if (!calendarContent) return;
-
-        const year = this.calendarDate.getFullYear();
-        const month = this.calendarDate.getMonth();
-
-        // Get first day of month and total days
-        const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0);
-        const daysInMonth = lastDay.getDate();
-        const startingDayOfWeek = firstDay.getDay(); // 0 = Sunday
-
-        // Month navigation
-        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-                            'July', 'August', 'September', 'October', 'November', 'December'];
-
-        // Get tasks by due date for this month
-        const tasksByDate = {};
-        this.tasks.filter(t => !t.completed && t.dueDate).forEach(task => {
-            const dueDate = new Date(task.dueDate);
-            if (dueDate.getFullYear() === year && dueDate.getMonth() === month) {
-                const day = dueDate.getDate();
-                if (!tasksByDate[day]) tasksByDate[day] = [];
-                tasksByDate[day].push(task);
-            }
-        });
-
-        // Build calendar grid
-        let calendarHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg);">
-                <button class="btn btn-secondary" onclick="app.navigateCalendar(-1)">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <h3 style="margin: 0;">${monthNames[month]} ${year}</h3>
-                <button class="btn btn-secondary" onclick="app.navigateCalendar(1)">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
-            </div>
-
-            <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: var(--spacing-md);">
-                <div style="text-align: center; font-weight: bold; color: var(--danger-color);">Sun</div>
-                <div style="text-align: center; font-weight: bold;">Mon</div>
-                <div style="text-align: center; font-weight: bold;">Tue</div>
-                <div style="text-align: center; font-weight: bold;">Wed</div>
-                <div style="text-align: center; font-weight: bold;">Thu</div>
-                <div style="text-align: center; font-weight: bold;">Fri</div>
-                <div style="text-align: center; font-weight: bold; color: var(--primary-color);">Sat</div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;">
-        `;
-
-        // Empty cells before first day
-        for (let i = 0; i < startingDayOfWeek; i++) {
-            calendarHTML += '<div style="min-height: 80px; padding: 4px; background: var(--bg-secondary); border-radius: var(--radius-sm);"></div>';
-        }
-
-        // Days of the month
-        const today = new Date();
-        for (let day = 1; day <= daysInMonth; day++) {
-            const isToday = today.getDate() === day && today.getMonth() === month && today.getFullYear() === year;
-            const dateTasks = tasksByDate[day] || [];
-            const isWeekend = (day + startingDayOfWeek - 1) % 7 === 0 || (day + startingDayOfWeek - 1) % 7 === 6;
-
-            calendarHTML += `
-                <div style="min-height: 80px; padding: 4px; background: var(--bg-primary); border: 1px solid ${isToday ? 'var(--primary-color)' : 'var(--border-color)'}; border-radius: var(--radius-sm); cursor: pointer;" onclick="app.showTasksForDate(${year}, ${month}, ${day})">
-                    <div style="font-weight: ${isToday ? 'bold' : 'normal'}; color: ${isWeekend ? 'var(--text-secondary)' : 'var(--text-primary)'}; margin-bottom: 4px;">${day}</div>
-                    <div style="font-size: 0.75rem;">
-                        ${dateTasks.slice(0, 3).map(task => `
-                            <div style="background: var(--accent-color); color: white; padding: 2px 4px; margin-bottom: 2px; border-radius: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${escapeHtml(task.title)}">${escapeHtml(task.title)}</div>
-                        `).join('')}
-                        ${dateTasks.length > 3 ? `<div style="color: var(--text-secondary); font-size: 0.7rem;">+${dateTasks.length - 3} more</div>` : ''}
-                    </div>
-                </div>
-            `;
-        }
-
-        calendarHTML += `
-            </div>
-
-            <div style="margin-top: var(--spacing-lg); padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--radius-md);">
-                <h4>Tasks Due This Month</h4>
-                <div style="max-height: 300px; overflow-y: auto; margin-top: var(--spacing-sm);">
-                    ${this.getTasksForMonth(year, month)}
-                </div>
-            </div>
-        `;
-
-        calendarContent.innerHTML = calendarHTML;
+        this.calendar.renderCalendar();
     }
 
     navigateCalendar(direction) {
-        this.calendarDate.setMonth(this.calendarDate.getMonth() + direction);
-        this.renderCalendar();
+        this.calendar.navigateCalendar(direction);
     }
 
     getTasksForMonth(year, month) {
-        const tasksDue = this.tasks.filter(t => {
-            if (!t.dueDate || t.completed) return false;
-            const dueDate = new Date(t.dueDate);
-            return dueDate.getFullYear() === year && dueDate.getMonth() === month;
-        });
-
-        if (tasksDue.length === 0) {
-            return '<p style="color: var(--text-secondary);">No tasks due this month.</p>';
-        }
-
-        return tasksDue.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate)).map(task => `
-            <div style="padding: 8px; background: var(--bg-primary); border-radius: var(--radius-sm); margin-bottom: var(--spacing-xs); border-left: 3px solid var(--accent-color);">
-                <div style="display: flex; justify-content: space-between; align-items: start;">
-                    <div>
-                        <strong>${escapeHtml(task.title)}</strong>
-                        <div style="font-size: 0.85rem; color: var(--text-secondary);">${task.dueDate}</div>
-                    </div>
-                    <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 4px 8px;" onclick="event.stopPropagation(); app.openTaskModal(app.tasks.find(t => t.id === '${task.id}'))">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                </div>
-            </div>
-        `).join('');
+        return this.calendar.getTasksForMonth(year, month);
     }
 
     showTasksForDate(year, month, day) {
-        const tasks = this.tasks.filter(t => {
-            if (!t.dueDate) return false;
-            const dueDate = new Date(t.dueDate);
-            return dueDate.getFullYear() === year && dueDate.getMonth() === month && dueDate.getDate() === day;
-        });
-
-        const dateStr = `${month + 1}/${day}/${year}`;
-        alert(`Tasks due on ${dateStr}:\n\n${tasks.map(t => `- ${t.title}`).join('\n') || 'No tasks'}`);
+        this.calendar.showTasksForDate(year, month, day);
     }
 
     // ==================== NEW PROJECT BUTTON ====================
@@ -2769,1441 +2454,216 @@ class GTDApp {
         }
     }
 
-    // ==================== TEMPLATES SYSTEM ====================
+    // ==================== TEMPLATES SYSTEM (Delegated to TemplatesManager module) ====================
 
     getCustomContexts() {
-        const tags = localStorage.getItem('gtd_custom_contexts');
-        return tags ? JSON.parse(tags) : [];
+        return this.templatesManager.getCustomContexts();
     }
 
     setupTemplates() {
-        // Templates button in sidebar
-        const templatesBtn = document.getElementById('templates-button');
-        if (templatesBtn) {
-            templatesBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.openTemplatesModal();
-            });
-        }
-
-        // Close templates modal
-        const closeTemplatesBtn = document.getElementById('close-templates-modal');
-        if (closeTemplatesBtn) {
-            closeTemplatesBtn.addEventListener('click', () => this.closeTemplatesModal());
-        }
-
-        // Create template button
-        const createTemplateBtn = document.getElementById('btn-create-template');
-        if (createTemplateBtn) {
-            createTemplateBtn.addEventListener('click', () => this.openTemplateEditModal());
-        }
-
-        // Close template edit modal
-        const closeTemplateEditBtn = document.getElementById('close-template-edit-modal');
-        if (closeTemplateEditBtn) {
-            closeTemplateEditBtn.addEventListener('click', () => this.closeTemplateEditModal());
-        }
-
-        const cancelTemplateBtn = document.getElementById('cancel-template-modal');
-        if (cancelTemplateBtn) {
-            cancelTemplateBtn.addEventListener('click', () => this.closeTemplateEditModal());
-        }
-
-        // Template form submission
-        const templateForm = document.getElementById('template-form');
-        if (templateForm) {
-            templateForm.addEventListener('submit', (e) => this.handleTemplateFormSubmit(e));
-        }
-
-        // Add subtask button
-        const addSubtaskBtn = document.getElementById('btn-add-template-subtask');
-        if (addSubtaskBtn) {
-            addSubtaskBtn.addEventListener('click', () => this.addTemplateSubtask());
-        }
+        this.templatesManager.setupTemplates();
     }
 
     openTemplatesModal() {
-        // First, make sure the edit modal is closed
-        this.closeTemplateEditModal();
-
-        const modal = document.getElementById('templates-modal');
-        if (modal) {
-            modal.classList.add('active');
-            this.renderTemplatesList();
-        }
+        this.templatesManager.openTemplatesModal();
     }
 
     closeTemplatesModal() {
-        const modal = document.getElementById('templates-modal');
-        if (modal) {
-            modal.classList.remove('active');
-        }
+        this.templatesManager.closeTemplatesModal();
     }
 
-    openTemplateEditModal(templateId = null) {
-        // First, make sure the templates list modal is closed
-        this.closeTemplatesModal();
-
-        const modal = document.getElementById('template-edit-modal');
-        const title = document.getElementById('template-modal-title');
-
-        if (modal) {
-            modal.classList.add('active');
-
-            if (templateId) {
-                // Edit existing template
-                const template = this.templates.find(t => t.id === templateId);
-                if (template) {
-                    title.textContent = 'Edit Template';
-                    document.getElementById('template-id').value = template.id;
-                    document.getElementById('template-title').value = template.title;
-                    document.getElementById('template-description').value = template.description;
-                    document.getElementById('template-energy').value = template.energy;
-                    document.getElementById('template-time').value = template.time;
-                    document.getElementById('template-category').value = template.category;
-                    document.getElementById('template-notes').value = template.notes;
-
-                    // Render contexts and subtasks
-                    this.renderTemplateContexts(template.contexts);
-                    this.renderTemplateSubtasks(template.subtasks);
-                }
-            } else {
-                // Create new template
-                title.textContent = 'Create Template';
-                document.getElementById('template-form').reset();
-                document.getElementById('template-id').value = '';
-                this.renderTemplateContexts([]);
-                this.renderTemplateSubtasks([]);
-            }
-        }
+    openTemplateEditModal(templateId) {
+        this.templatesManager.openTemplateEditModal(templateId);
     }
 
     closeTemplateEditModal() {
-        const modal = document.getElementById('template-edit-modal');
-        if (modal) {
-            modal.classList.remove('active');
-        }
+        this.templatesManager.closeTemplateEditModal();
     }
 
     async handleTemplateFormSubmit(e) {
-        e.preventDefault();
-
-        const templateId = document.getElementById('template-id').value;
-        const templateData = {
-            title: document.getElementById('template-title').value,
-            description: document.getElementById('template-description').value,
-            energy: document.getElementById('template-energy').value,
-            time: parseInt(document.getElementById('template-time').value) || 0,
-            category: document.getElementById('template-category').value,
-            contexts: this.getSelectedTemplateContexts(),
-            notes: document.getElementById('template-notes').value,
-            subtasks: this.getTemplateSubtasks()
-        };
-
-        this.saveState(templateId ? 'Edit template' : 'Create template');
-
-        if (templateId) {
-            // Update existing template
-            const template = this.templates.find(t => t.id === templateId);
-            if (template) {
-                Object.assign(template, templateData);
-                template.updatedAt = new Date().toISOString();
-            }
-        } else {
-            // Create new template
-            const newTemplate = new Template(templateData);
-            this.templates.push(newTemplate);
-        }
-
-        await this.saveTemplates();
-        this.closeTemplateEditModal();
-
-        // Open the templates modal to show the list with the new template
-        this.openTemplatesModal();
-
-        this.updateCounts();
-        this.showToast(templateId ? 'Template updated' : 'Template created');
+        return this.templatesManager.handleTemplateFormSubmit(e);
     }
 
     async deleteTemplate(templateId) {
-        if (!confirm('Are you sure you want to delete this template?')) return;
-
-        this.saveState('Delete template');
-        this.templates = this.templates.filter(t => t.id !== templateId);
-        await this.saveTemplates();
-        this.renderTemplatesList();
-        this.updateCounts();
-        this.showToast('Template deleted');
+        return this.templatesManager.deleteTemplate(templateId);
     }
 
-    async saveTaskAsTemplate(taskId) {
-        const task = this.tasks.find(t => t.id === taskId);
-        if (!task) return;
-
-        // Prepare the template data
-        const templateData = {
-            title: task.title || '',
-            description: task.description || '',
-            energy: task.energy || '',
-            time: task.timeEstimated || 0,
-            category: task.category || 'general',
-            notes: task.notes || '',
-            contexts: task.contexts || [],
-            subtasks: task.subtasks || []
-        };
-
-        // Open template edit modal with task data pre-filled (skipReset = true)
-        this.openTemplateEditModalWithData(templateData);
-
-        this.showToast('Template pre-filled from task - modify and save');
+    saveTaskAsTemplate(taskId) {
+        this.templatesManager.saveTaskAsTemplate(taskId);
     }
 
     openTemplateEditModalWithData(templateData) {
-        // First, make sure the templates list modal is closed
-        this.closeTemplatesModal();
-
-        const modal = document.getElementById('template-edit-modal');
-        const title = document.getElementById('template-modal-title');
-
-        if (modal) {
-            modal.classList.add('active');
-
-            // Set title for new template
-            title.textContent = 'Create Template';
-
-            // Clear the template-id field (this is a new template)
-            document.getElementById('template-id').value = '';
-
-            // Populate form with provided data
-            document.getElementById('template-title').value = templateData.title || '';
-            document.getElementById('template-description').value = templateData.description || '';
-            document.getElementById('template-energy').value = templateData.energy || '';
-            document.getElementById('template-time').value = templateData.time || 0;
-            document.getElementById('template-category').value = templateData.category || 'general';
-            document.getElementById('template-notes').value = templateData.notes || '';
-
-            // Render contexts and subtasks
-            this.renderTemplateContexts(templateData.contexts || []);
-            this.renderTemplateSubtasks(templateData.subtasks || []);
-        }
+        this.templatesManager.openTemplateEditModalWithData(templateData);
     }
 
     async createTaskFromTemplate(templateId) {
-        const template = this.templates.find(t => t.id === templateId);
-        if (!template) return;
-
-        const task = template.createTask();
-        this.tasks.push(task);
-        await this.saveTasks();
-        this.closeTemplatesModal();
-        this.renderView();
-        this.updateCounts();
-        this.showToast('Task created from template');
+        return this.templatesManager.createTaskFromTemplate(templateId);
     }
 
     renderTemplatesList() {
-        const container = document.getElementById('templates-list');
-        if (!container) return;
-
-        if (this.templates.length === 0) {
-            container.innerHTML = `
-                <div style="text-align: center; padding: var(--spacing-xl); color: var(--text-secondary);">
-                    <i class="fas fa-copy" style="font-size: 3rem; margin-bottom: var(--spacing-md); opacity: 0.3;"></i>
-                    <p>No templates yet</p>
-                    <p style="font-size: 0.9rem;">Create templates for repetitive tasks</p>
-                </div>
-            `;
-            return;
-        }
-
-        // Group templates by category
-        const categories = {
-            general: { label: 'General', icon: 'fa-folder', templates: [] },
-            work: { label: 'Work', icon: 'fa-briefcase', templates: [] },
-            personal: { label: 'Personal', icon: 'fa-user', templates: [] },
-            meeting: { label: 'Meeting', icon: 'fa-users', templates: [] },
-            checklist: { label: 'Checklist', icon: 'fa-tasks', templates: [] }
-        };
-
-        this.templates.forEach(template => {
-            if (categories[template.category]) {
-                categories[template.category].templates.push(template);
-            }
-        });
-
-        let html = '';
-        for (const [key, category] of Object.entries(categories)) {
-            if (category.templates.length === 0) continue;
-
-            html += `
-                <div class="template-category" style="margin-bottom: var(--spacing-lg);">
-                    <h3 style="display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); color: var(--primary-color);">
-                        <i class="fas ${category.icon}"></i>
-                        ${category.label}
-                    </h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--spacing-md);">
-            `;
-
-            category.templates.forEach(template => {
-                html += `
-                    <div class="template-card" style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: var(--spacing-md);">
-                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--spacing-sm);">
-                            <h4 style="margin: 0; flex: 1;">${escapeHtml(template.title)}</h4>
-                            <div class="template-actions" style="display: flex; gap: var(--spacing-xs);">
-                                <button class="btn btn-sm btn-secondary" onclick="app.editTemplate('${template.id}')" title="Edit">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn btn-sm btn-secondary" onclick="app.deleteTemplate('${template.id}')" title="Delete">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                        ${template.description ? `<p style="color: var(--text-secondary); margin: var(--spacing-xs) 0; font-size: 0.9rem;">${escapeHtml(template.description)}</p>` : ''}
-                        <div style="display: flex; flex-wrap: wrap; gap: var(--spacing-xs); margin-bottom: var(--spacing-sm);">
-                            ${template.energy ? `<span class="badge" style="background: var(--energy-high);">${template.energy}</span>` : ''}
-                            ${template.time ? `<span class="badge" style="background: var(--info-color);"><i class="fas fa-clock"></i> ${template.time}m</span>` : ''}
-                            ${template.contexts.map(ctx => `<span class="badge" style="background: var(--context-color);">${escapeHtml(ctx)}</span>`).join('')}
-                        </div>
-                        ${template.subtasks.length > 0 ? `<div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: var(--spacing-sm);"><i class="fas fa-check-square"></i> ${template.subtasks.length} subtasks</div>` : ''}
-                        <button class="btn btn-primary" style="width: 100%;" onclick="app.createTaskFromTemplate('${template.id}')">
-                            <i class="fas fa-plus"></i> Create Task
-                        </button>
-                    </div>
-                `;
-            });
-
-            html += `
-                    </div>
-                </div>
-            `;
-        }
-
-        container.innerHTML = html;
+        this.templatesManager.renderTemplatesList();
     }
 
     editTemplate(templateId) {
-        this.openTemplateEditModal(templateId);
+        this.templatesManager.editTemplate(templateId);
     }
 
-    renderTemplateContexts(selectedContexts = []) {
-        const container = document.getElementById('template-contexts-container');
-        if (!container) return;
-
-        const allContexts = [...this.defaultContexts, ...this.getCustomContexts()];
-
-        container.innerHTML = allContexts.map(context => {
-            const isSelected = selectedContexts.includes(context);
-            return `
-                <button type="button" class="context-btn ${isSelected ? 'active' : ''}" data-context="${escapeHtml(context)}">
-                    ${escapeHtml(context)}
-                </button>
-            `;
-        }).join('');
-
-        // Add click handlers
-        container.querySelectorAll('.context-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                btn.classList.toggle('active');
-            });
-        });
+    renderTemplateContexts(selectedContexts) {
+        this.templatesManager.renderTemplateContexts(selectedContexts);
     }
 
     getSelectedTemplateContexts() {
-        const container = document.getElementById('template-contexts-container');
-        if (!container) return [];
-
-        const activeBtns = container.querySelectorAll('.context-btn.active');
-        return Array.from(activeBtns).map(btn => btn.dataset.context);
+        return this.templatesManager.getSelectedTemplateContexts();
     }
 
-    renderTemplateSubtasks(subtasks = []) {
-        const container = document.getElementById('template-subtasks-container');
-        if (!container) return;
-
-        container.innerHTML = subtasks.map((subtask, index) => `
-            <div class="subtask-item" style="display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-xs); align-items: center;">
-                <input type="text" class="form-control" value="${escapeHtml(subtask.title)}" data-index="${index}" placeholder="Subtask title">
-                <button type="button" class="btn btn-secondary btn-sm" onclick="app.removeTemplateSubtask(${index})">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        `).join('');
+    renderTemplateSubtasks(subtasks) {
+        this.templatesManager.renderTemplateSubtasks(subtasks);
     }
 
     addTemplateSubtask() {
-        const container = document.getElementById('template-subtasks-container');
-        if (!container) return;
-
-        const index = container.children.length;
-        const div = document.createElement('div');
-        div.className = 'subtask-item';
-        div.style.cssText = 'display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-xs); align-items: center;';
-        div.innerHTML = `
-            <input type="text" class="form-control" data-index="${index}" placeholder="Subtask title">
-            <button type="button" class="btn btn-secondary btn-sm" onclick="app.removeTemplateSubtask(${index})">
-                <i class="fas fa-times"></i>
-            </button>
-        `;
-        container.appendChild(div);
-        div.querySelector('input').focus();
+        this.templatesManager.addTemplateSubtask();
     }
 
     removeTemplateSubtask(index) {
-        const container = document.getElementById('template-subtasks-container');
-        if (!container) return;
-
-        const items = container.querySelectorAll('.subtask-item');
-        if (items[index]) {
-            items[index].remove();
-            // Reindex remaining items
-            container.querySelectorAll('.subtask-item input').forEach((input, i) => {
-                input.dataset.index = i;
-                input.nextElementSibling.setAttribute('onclick', `app.removeTemplateSubtask(${i})`);
-            });
-        }
+        this.templatesManager.removeTemplateSubtask(index);
     }
 
     getTemplateSubtasks() {
-        const container = document.getElementById('template-subtasks-container');
-        if (!container) return [];
-
-        const items = container.querySelectorAll('.subtask-item input');
-        return Array.from(items)
-            .map(input => input.value.trim())
-            .filter(title => title)
-            .map(title => ({ title, completed: false }));
+        return this.templatesManager.getTemplateSubtasks();
     }
 
     // ==================== ARCHIVE SYSTEM ====================
 
     setupArchive() {
-        // Archive button in sidebar
-        const archiveBtn = document.getElementById('archive-button');
-        if (archiveBtn) {
-            archiveBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.openArchiveModal();
-            });
-        }
-
-        // Close archive modal
-        const closeArchiveBtn = document.getElementById('close-archive-modal');
-        if (closeArchiveBtn) {
-            closeArchiveBtn.addEventListener('click', () => this.closeArchiveModal());
-        }
-
-        // Auto-archive button
-        const autoArchiveBtn = document.getElementById('btn-auto-archive');
-        if (autoArchiveBtn) {
-            autoArchiveBtn.addEventListener('click', () => this.autoArchiveOldTasks());
-        }
-
-        // Archive search
-        const archiveSearch = document.getElementById('archive-search');
-        if (archiveSearch) {
-            archiveSearch.addEventListener('input', (e) => {
-                this.renderArchive(e.target.value);
-            });
-        }
-
-        // Archive project filter
-        const archiveProjectFilter = document.getElementById('archive-filter-project');
-        if (archiveProjectFilter) {
-            archiveProjectFilter.addEventListener('change', () => {
-                this.renderArchive();
-            });
-        }
+        this.archive.setupArchive();
     }
 
     openArchiveModal() {
-        const modal = document.getElementById('archive-modal');
-        if (modal) {
-            modal.classList.add('active');
-            this.renderArchive();
-            this.populateArchiveProjectFilter();
-        }
+        this.archive.openArchiveModal();
     }
 
     closeArchiveModal() {
-        const modal = document.getElementById('archive-modal');
-        if (modal) modal.classList.remove('active');
+        this.archive.closeArchiveModal();
     }
 
     async autoArchiveOldTasks(daysOld = 30) {
-        const cutoffDate = new Date();
-        cutoffDate.setDate(cutoffDate.getDate() - daysOld);
-
-        // Find completed tasks older than cutoff
-        const tasksToArchive = this.tasks.filter(task => {
-            if (!task.completed || !task.completedAt) return false;
-            const completedDate = new Date(task.completedAt);
-            return completedDate < cutoffDate;
-        });
-
-        if (tasksToArchive.length === 0) {
-            this.showToast(`No tasks to archive (none older than ${daysOld} days)`);
-            return;
-        }
-
-        if (!confirm(`Archive ${tasksToArchive.length} completed task(s) older than ${daysOld} days?`)) {
-            return;
-        }
-
-        this.saveState('Auto-archive tasks');
-        await this.archiveTasks(tasksToArchive);
-
-        // Remove archived tasks from active list
-        this.tasks = this.tasks.filter(task => !tasksToArchive.includes(task));
-        await this.saveTasks();
-
-        this.renderArchive();
-        this.renderView();
-        this.updateCounts();
-        this.showToast(`Archived ${tasksToArchive.length} tasks`);
+        return this.archive.autoArchiveOldTasks(daysOld);
     }
 
     async archiveTasks(tasksToArchive) {
-        await this.storage.addToArchive(tasksToArchive);
+        return this.archive.archiveTasks(tasksToArchive);
     }
 
     async archiveTask(taskId) {
-        const task = this.tasks.find(t => t.id === taskId);
-        if (!task) return;
-
-        if (!confirm(`Archive "${task.title}"? The task will be moved to the archive and can be restored later.`)) return;
-
-        this.saveState('Archive task');
-
-        // Create archive entry
-        const archiveEntry = {
-            task: task.toJSON(),
-            archivedAt: new Date().toISOString(),
-            completedAt: task.completedAt || new Date().toISOString()
-        };
-
-        // Add to archive
-        await this.storage.addToArchive([archiveEntry]);
-
-        // Remove from active tasks
-        this.tasks = this.tasks.filter(t => t.id !== taskId);
-        await this.saveTasks();
-
-        this.renderView();
-        this.updateCounts();
-        this.showToast(`Task "${task.title}" archived`);
+        return this.archive.archiveTask(taskId);
     }
 
     async restoreFromArchive(archiveId) {
-        const archive = this.storage.getArchivedTasks();
-        const entry = archive.find(a => a.task.id === archiveId);
-
-        if (!entry) return;
-
-        this.saveState('Restore from archive');
-
-        // Create task from archive entry
-        const task = Task.fromJSON(entry.task);
-        this.tasks.push(task);
-        await this.saveTasks();
-
-        // Remove from archive
-        const updatedArchive = archive.filter(a => a.task.id !== archiveId);
-        await this.storage.saveArchivedTasks(updatedArchive);
-
-        this.renderArchive();
-        this.renderView();
-        this.updateCounts();
-        this.showToast('Task restored');
+        return this.archive.restoreFromArchive(archiveId);
     }
 
     async deleteFromArchive(archiveId) {
-        if (!confirm('Permanently delete this archived task?')) return;
-
-        const archive = this.storage.getArchivedTasks();
-        const updatedArchive = archive.filter(a => a.task.id !== archiveId);
-        await this.storage.saveArchivedTasks(updatedArchive);
-
-        this.renderArchive();
-        this.showToast('Archived task deleted');
+        return this.archive.deleteFromArchive(archiveId);
     }
 
     renderArchive(searchQuery = '') {
-        const container = document.getElementById('archive-list');
-        const countSpan = document.getElementById('archive-count');
-        const projectFilter = document.getElementById('archive-filter-project');
-
-        if (!container) return;
-
-        let archive = this.storage.getArchivedTasks();
-
-        // Update stats
-        countSpan.textContent = archive.length;
-
-        if (archive.length === 0) {
-            container.innerHTML = `
-                <div style="text-align: center; padding: var(--spacing-xl); color: var(--text-secondary);">
-                    <i class="fas fa-archive" style="font-size: 3rem; margin-bottom: var(--spacing-md); opacity: 0.3;"></i>
-                    <p>No archived tasks</p>
-                    <p style="font-size: 0.9rem;">Completed tasks can be archived here</p>
-                </div>
-            `;
-            return;
-        }
-
-        // Apply filters
-        const projectFilterValue = projectFilter ? projectFilter.value : '';
-
-        let filteredArchive = archive.filter(entry => {
-            const task = entry.task;
-
-            // Search filter
-            if (searchQuery) {
-                const query = searchQuery.toLowerCase();
-                const matchesTitle = task.title.toLowerCase().includes(query);
-                const matchesDesc = task.description && task.description.toLowerCase().includes(query);
-                const matchesContexts = task.contexts && task.contexts.some(c => c.toLowerCase().includes(query));
-                if (!matchesTitle && !matchesDesc && !matchesContexts) return false;
-            }
-
-            // Project filter
-            if (projectFilterValue && entry.originalProjectId !== projectFilterValue) {
-                return false;
-            }
-
-            return true;
-        });
-
-        // Sort by archived date (newest first)
-        filteredArchive.sort((a, b) => new Date(b.archivedAt) - new Date(a.archivedAt));
-
-        // Render archived tasks
-        container.innerHTML = filteredArchive.map(entry => {
-            const task = entry.task;
-            const archivedDate = new Date(entry.archivedAt);
-            const completedDate = task.completedAt ? new Date(task.completedAt) : null;
-
-            return `
-                <div class="archived-task-card" style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: var(--spacing-md); margin-bottom: var(--spacing-sm);">
-                    <div style="display: flex; justify-content: space-between; align-items: start;">
-                        <div style="flex: 1;">
-                            <h4 style="margin: 0 0 var(--spacing-xs) 0;">
-                                <i class="fas fa-check-circle" style="color: var(--success-color);"></i>
-                                ${escapeHtml(task.title)}
-                            </h4>
-                            ${task.description ? `<p style="color: var(--text-secondary); margin: var(--spacing-xs) 0; font-size: 0.9rem;">${escapeHtml(task.description)}</p>` : ''}
-                            <div style="display: flex; flex-wrap: wrap; gap: var(--spacing-xs); margin-top: var(--spacing-xs); font-size: 0.85rem; color: var(--text-secondary);">
-                                ${entry.originalProjectId ? `<span><i class="fas fa-folder"></i> ${escapeHtml(this.getProjectTitle(entry.originalProjectId))}</span>` : ''}
-                                ${task.contexts && task.contexts.map(ctx => `<span class="badge" style="background: var(--context-color);">${escapeHtml(ctx)}</span>`).join('')}
-                                <span><i class="fas fa-calendar-check"></i> Completed: ${completedDate ? completedDate.toLocaleDateString() : 'Unknown'}</span>
-                                <span><i class="fas fa-archive"></i> Archived: ${archivedDate.toLocaleDateString()}</span>
-                            </div>
-                        </div>
-                        <div style="display: flex; gap: var(--spacing-xs); margin-left: var(--spacing-md);">
-                            <button class="btn btn-sm btn-primary" onclick="app.restoreFromArchive('${task.id}')" title="Restore task">
-                                <i class="fas fa-undo"></i> Restore
-                            </button>
-                            <button class="btn btn-sm btn-secondary" onclick="app.deleteFromArchive('${task.id}')" title="Delete permanently">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }).join('');
-
-        if (filteredArchive.length === 0) {
-            container.innerHTML = `
-                <div style="text-align: center; padding: var(--spacing-xl); color: var(--text-secondary);">
-                    <p>No archived tasks match your filters</p>
-                </div>
-            `;
-        }
+        this.archive.renderArchive(searchQuery);
     }
 
     populateArchiveProjectFilter() {
-        const select = document.getElementById('archive-filter-project');
-        if (!select) return;
-
-        // Get unique projects from archive
-        const archive = this.storage.getArchivedTasks();
-        const projectIds = [...new Set(archive.map(entry => entry.originalProjectId).filter(Boolean))];
-
-        // Clear existing options (except first)
-        while (select.options.length > 1) {
-            select.remove(1);
-        }
-
-        // Add project options
-        projectIds.forEach(projectId => {
-            const project = this.projects.find(p => p.id === projectId);
-            if (project) {
-                const option = document.createElement('option');
-                option.value = projectId;
-                option.textContent = project.title;
-                select.appendChild(option);
-            }
-        });
+        this.archive.populateArchiveProjectFilter();
     }
 
     // ==================== QUICK ACTIONS CONTEXT MENU ====================
 
     setupContextMenu() {
-        const contextMenu = document.getElementById('context-menu');
-        if (!contextMenu) return;
-
-        this.contextMenuTaskId = null;
-
-        // Close context menu on click outside
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.context-menu')) {
-                this.hideContextMenu();
-            }
-        });
-
-        // Context menu item clicks
-        contextMenu.addEventListener('click', (e) => {
-            const menuItem = e.target.closest('.context-menu-item');
-            if (!menuItem) return;
-
-            const action = menuItem.dataset.action;
-            const taskId = this.contextMenuTaskId;
-
-            if (!taskId) return;
-
-            e.preventDefault();
-            e.stopPropagation();
-
-            this.handleContextMenuAction(action, menuItem.dataset, taskId);
-            this.hideContextMenu();
-        });
-
-        // Add right-click handler to task container
-        document.addEventListener('contextmenu', (e) => {
-            const taskItem = e.target.closest('.task-item');
-            if (taskItem) {
-                e.preventDefault();
-                const taskId = taskItem.dataset.taskId;
-                this.showContextMenu(e, taskId);
-            }
-        });
-
-        // Long-press for mobile
-        let longPressTimer;
-        document.addEventListener('touchstart', (e) => {
-            const taskItem = e.target.closest('.task-item');
-            if (taskItem) {
-                longPressTimer = setTimeout(() => {
-                    const taskId = taskItem.dataset.taskId;
-                    this.showContextMenu(e.touches[0], taskId);
-                }, 500);
-            }
-        });
-
-        document.addEventListener('touchend', () => {
-            clearTimeout(longPressTimer);
-        });
-
-        document.addEventListener('touchmove', () => {
-            clearTimeout(longPressTimer);
-        });
+        this.contextMenu.setupContextMenu();
     }
 
     showContextMenu(event, taskId) {
-        const contextMenu = document.getElementById('context-menu');
-        if (!contextMenu) return;
-
-        this.contextMenuTaskId = taskId;
-
-        // Populate projects submenu
-        this.populateContextMenuProjects();
-
-        // Position menu
-        const x = event.clientX || event.pageX;
-        const y = event.clientY || event.pageY;
-
-        contextMenu.style.display = 'block';
-
-        // Ensure menu stays within viewport
-        const rect = contextMenu.getBoundingClientRect();
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-
-        let posX = x;
-        let posY = y;
-
-        if (posX + rect.width > viewportWidth) {
-            posX = viewportWidth - rect.width - 10;
-        }
-
-        if (posY + rect.height > viewportHeight) {
-            posY = viewportHeight - rect.height - 10;
-        }
-
-        contextMenu.style.left = posX + 'px';
-        contextMenu.style.top = posY + 'px';
-
-        // Update star button text
-        const task = this.tasks.find(t => t.id === taskId);
-        if (task) {
-            const starItem = contextMenu.querySelector('[data-action="toggle-star"]');
-            if (starItem) {
-                starItem.innerHTML = task.starred
-                    ? '<i class="fas fa-star" style="color: gold;"></i> Unstar'
-                    : '<i class="far fa-star"></i> Star';
-            }
-        }
+        this.contextMenu.showContextMenu(event, taskId);
     }
 
     hideContextMenu() {
-        const contextMenu = document.getElementById('context-menu');
-        if (contextMenu) {
-            contextMenu.style.display = 'none';
-        }
-        this.contextMenuTaskId = null;
+        this.contextMenu.hideContextMenu();
     }
 
     populateContextMenuProjects() {
-        const submenu = document.getElementById('context-menu-projects');
-        if (!submenu) return;
-
-        // Clear existing items
-        submenu.innerHTML = '<div class="context-menu-item" data-action="set-project" data-project=""><i class="fas fa-times-circle"></i> No Project</div>';
-
-        // Add projects
-        this.projects.forEach(project => {
-            const item = document.createElement('div');
-            item.className = 'context-menu-item';
-            item.dataset.action = 'set-project';
-            item.dataset.project = project.id;
-            item.innerHTML = `<i class="fas fa-folder"></i> ${escapeHtml(project.title)}`;
-            submenu.appendChild(item);
-        });
+        this.contextMenu.populateContextMenuProjects();
     }
 
     async handleContextMenuAction(action, data, taskId) {
-        const task = this.tasks.find(t => t.id === taskId);
-        if (!task) return;
-
-        switch (action) {
-            case 'edit':
-                this.openTaskModal(task);
-                break;
-
-            case 'duplicate':
-                this.duplicateTask(taskId);
-                break;
-
-            case 'save-as-template':
-                this.saveTaskAsTemplate(taskId);
-                break;
-
-            case 'toggle-star':
-                this.saveState('Toggle task star');
-                task.toggleStar();
-                await this.saveTasks();
-                this.renderView();
-                this.showToast(task.starred ? 'Task starred' : 'Task unstarred');
-                break;
-
-            case 'set-status':
-                this.saveState('Change task status');
-                task.status = data.status;
-                task.updatedAt = new Date().toISOString();
-                await this.saveTasks();
-                this.renderView();
-                this.updateCounts();
-                this.showToast(`Status changed to ${data.status}`);
-                break;
-
-            case 'set-energy':
-                this.saveState('Change task energy');
-                task.energy = data.energy;
-                task.updatedAt = new Date().toISOString();
-                await this.saveTasks();
-                this.renderView();
-                this.showToast(`Energy changed to ${data.energy || 'none'}`);
-                break;
-
-            case 'set-project':
-                const projectId = data.project || null;
-                this.saveState('Change task project');
-                task.projectId = projectId;
-                task.updatedAt = new Date().toISOString();
-                await this.saveTasks();
-                this.renderView();
-                this.showToast(projectId ? 'Moved to project' : 'Removed from project');
-                break;
-
-            case 'add-context':
-                this.addContextFromMenu(task);
-                break;
-
-            case 'remove-context':
-                this.removeContextFromMenu(task);
-                break;
-
-            case 'complete':
-                this.toggleTaskComplete(taskId);
-                break;
-
-            case 'archive':
-                this.archiveTask(taskId);
-                break;
-
-            case 'delete':
-                this.deleteTask(taskId);
-                break;
-        }
+        return this.contextMenu.handleContextMenuAction(action, data, taskId);
     }
 
-    addContextFromMenu(task) {
-        const allContexts = [...this.defaultContexts, ...this.getCustomContexts()];
-        const usedContexts = task.contexts || [];
-        const availableContexts = allContexts.filter(c => !usedContexts.includes(c));
-
-        if (availableContexts.length === 0) {
-            this.showToast('No more contexts to add');
-            return;
-        }
-
-        // Simple prompt for now (could be improved with a custom modal)
-        const context = prompt(`Enter context name or choose from:\n${availableContexts.join(', ')}`);
-
-        if (!context) return;
-
-        this.saveState('Add context to task');
-        const formattedContext = context.startsWith('@') ? context : `@${context}`;
-        task.contexts = task.contexts || [];
-        task.contexts.push(formattedContext);
-        task.updatedAt = new Date().toISOString();
-
-        this.saveTasks();
-        this.renderView();
-        this.showToast(`Added ${formattedContext}`);
-    }
-
-    removeContextFromMenu(task) {
-        const contexts = task.contexts || [];
-        if (contexts.length === 0) {
-            this.showToast('No contexts to remove');
-            return;
-        }
-
-        // Simple prompt for now
-        const contextList = contexts.map((c, i) => `${i + 1}. ${c}`).join('\n');
-        const choice = prompt(`Enter number of context to remove:\n${contextList}`);
-
-        if (!choice) return;
-
-        const index = parseInt(choice) - 1;
-        if (index >= 0 && index < contexts.length) {
-            this.saveState('Remove context from task');
-            const removed = task.contexts.splice(index, 1)[0];
-            task.updatedAt = new Date().toISOString();
-            this.saveTasks();
-            this.renderView();
-            this.showToast(`Removed ${removed}`);
-        } else {
-            this.showToast('Invalid choice');
-        }
-    }
-
-    // ==================== DEPENDENCIES VISUALIZATION ====================
+    // ==================== DEPENDENCIES VISUALIZATION (Delegated to DependenciesManager module) ====================
 
     setupDependenciesVisualization() {
-        // Button to open dependencies modal
-        const depsBtn = document.getElementById('btn-dependencies');
-        if (depsBtn) {
-            depsBtn.addEventListener('click', () => this.openDependenciesModal());
-        }
-
-        // Close modal
-        const closeBtn = document.getElementById('close-dependencies-modal');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => this.closeDependenciesModal());
-        }
-
-        // View toggle buttons
-        const graphViewBtn = document.getElementById('deps-view-graph');
-        const chainsViewBtn = document.getElementById('deps-view-chains');
-        const criticalViewBtn = document.getElementById('deps-view-critical');
-
-        if (graphViewBtn) {
-            graphViewBtn.addEventListener('click', () => {
-                this.depsCurrentView = 'graph';
-                this.updateDepsViewButtons();
-                this.renderDependenciesView();
-            });
-        }
-
-        if (chainsViewBtn) {
-            chainsViewBtn.addEventListener('click', () => {
-                this.depsCurrentView = 'chains';
-                this.updateDepsViewButtons();
-                this.renderDependenciesView();
-            });
-        }
-
-        if (criticalViewBtn) {
-            criticalViewBtn.addEventListener('click', () => {
-                this.depsCurrentView = 'critical';
-                this.updateDepsViewButtons();
-                this.renderDependenciesView();
-            });
-        }
-
-        // Project filter
-        const projectFilter = document.getElementById('deps-filter-project');
-        if (projectFilter) {
-            projectFilter.addEventListener('change', () => this.renderDependenciesView());
-        }
-
-        // Initialize state
-        this.depsCurrentView = 'graph';
+        this.dependencies.setupDependenciesVisualization();
     }
 
     populateDepsProjectFilter() {
-        const projectFilter = document.getElementById('deps-filter-project');
-        if (!projectFilter) return;
-
-        // Keep "All Projects" option
-        projectFilter.innerHTML = '<option value="">All Projects</option>';
-
-        // Add active projects
-        this.projects
-            .filter(p => p.status === 'active')
-            .forEach(project => {
-                const option = document.createElement('option');
-                option.value = project.id;
-                option.textContent = project.title;
-                projectFilter.appendChild(option);
-            });
+        this.dependencies.populateDepsProjectFilter();
     }
 
     openDependenciesModal() {
-        const modal = document.getElementById('dependencies-modal');
-        if (modal) {
-            this.populateDepsProjectFilter();
-            modal.classList.add('active');
-            this.renderDependenciesView();
-        }
+        this.dependencies.openDependenciesModal();
     }
 
     closeDependenciesModal() {
-        const modal = document.getElementById('dependencies-modal');
-        if (modal) {
-            modal.classList.remove('active');
-        }
+        this.dependencies.closeDependenciesModal();
     }
 
     updateDepsViewButtons() {
-        const buttons = {
-            'graph': document.getElementById('deps-view-graph'),
-            'chains': document.getElementById('deps-view-chains'),
-            'critical': document.getElementById('deps-view-critical')
-        };
-
-        Object.keys(buttons).forEach(view => {
-            const btn = buttons[view];
-            if (btn) {
-                if (view === this.depsCurrentView) {
-                    btn.classList.remove('btn-secondary');
-                    btn.classList.add('btn-primary');
-                } else {
-                    btn.classList.remove('btn-primary');
-                    btn.classList.add('btn-secondary');
-                }
-            }
-        });
+        this.dependencies.updateDepsViewButtons();
     }
 
     renderDependenciesView() {
-        const projectId = document.getElementById('deps-filter-project').value;
-        const tasks = this.getDependenciesTasks(projectId);
-
-        // Update stats
-        this.updateDepsStats(tasks);
-
-        // Render based on current view
-        const container = document.getElementById('deps-content');
-        if (!container) return;
-
-        switch (this.depsCurrentView) {
-            case 'graph':
-                this.renderDependencyGraph(tasks, container);
-                break;
-            case 'chains':
-                this.renderDependencyChains(tasks, container);
-                break;
-            case 'critical':
-                this.renderCriticalPath(tasks, container);
-                break;
-        }
+        this.dependencies.renderDependenciesView();
     }
 
     getDependenciesTasks(projectId) {
-        let tasks = this.tasks.filter(t => !t.completed);
-
-        if (projectId) {
-            tasks = tasks.filter(t => t.projectId === projectId);
-        }
-
-        return tasks;
+        return this.dependencies.getDependenciesTasks(projectId);
     }
 
     updateDepsStats(tasks) {
-        const totalTasks = tasks.length;
-        const withDeps = tasks.filter(t => t.waitingForTaskIds && t.waitingForTaskIds.length > 0).length;
-        const blocked = tasks.filter(t => !t.areDependenciesMet(this.tasks)).length;
-        const ready = tasks.filter(t => t.areDependenciesMet(this.tasks) && t.status !== 'completed').length;
-
-        document.getElementById('deps-total-tasks').textContent = totalTasks;
-        document.getElementById('deps-with-deps').textContent = withDeps;
-        document.getElementById('deps-blocked').textContent = blocked;
-        document.getElementById('deps-ready').textContent = ready;
+        this.dependencies.updateDepsStats(tasks);
     }
 
     renderDependencyGraph(tasks, container) {
-        const tasksWithDeps = tasks.filter(t => t.waitingForTaskIds && t.waitingForTaskIds.length > 0);
-
-        if (tasksWithDeps.length === 0) {
-            container.innerHTML = `
-                <div class="deps-empty-state">
-                    <i class="fas fa-project-diagram"></i>
-                    <h3>No Dependencies Found</h3>
-                    <p>Tasks with dependencies will appear here. You can set task dependencies in the task edit modal.</p>
-                </div>
-            `;
-            return;
-        }
-
-        container.innerHTML = `
-            <div class="dependency-graph" id="dependency-graph">
-                <svg class="dependency-lines" id="dependency-lines"></svg>
-                <div id="dependency-nodes"></div>
-            </div>
-        `;
-
-        const nodesContainer = document.getElementById('dependency-nodes');
-        const linesContainer = document.getElementById('dependency-lines');
-
-        // Calculate node positions using a simple layered layout
-        const nodePositions = this.calculateNodePositions(tasksWithDeps);
-
-        // Render nodes
-        tasksWithDeps.forEach(task => {
-            const pos = nodePositions[task.id];
-            if (!pos) return;
-
-            const isBlocked = !task.areDependenciesMet(this.tasks);
-            const nodeClass = `dependency-node ${isBlocked ? 'blocked' : 'ready'}`;
-
-            const node = document.createElement('div');
-            node.className = nodeClass;
-            node.style.left = `${pos.x}px`;
-            node.style.top = `${pos.y}px`;
-            node.innerHTML = `
-                <div class="dependency-node-title">${escapeHtml(task.title)}</div>
-                <div class="dependency-node-meta">
-                    ${task.waitingForTaskIds.length} dependenc${task.waitingForTaskIds.length > 1 ? 'ies' : 'y'}
-                </div>
-            `;
-            node.addEventListener('click', () => this.openTaskModal(task));
-            nodesContainer.appendChild(node);
-        });
-
-        // Render connection lines
-        setTimeout(() => {
-            this.renderDependencyLines(tasksWithDeps, nodePositions, linesContainer);
-        }, 100);
+        this.dependencies.renderDependencyGraph(tasks, container);
     }
 
     calculateNodePositions(tasks) {
-        const positions = {};
-        const levels = {};
-        const levelGroups = {};
-
-        // Calculate levels for each task (topological sort)
-        tasks.forEach(task => {
-            levels[task.id] = this.calculateTaskLevel(task, tasks);
-        });
-
-        // Group by levels
-        tasks.forEach(task => {
-            const level = levels[task.id];
-            if (!levelGroups[level]) {
-                levelGroups[level] = [];
-            }
-            levelGroups[level].push(task);
-        });
-
-        // Calculate positions
-        const nodeWidth = 180;
-        const nodeHeight = 80;
-        const horizontalGap = 40;
-        const verticalGap = 120;
-        let maxWidth = 0;
-
-        Object.keys(levelGroups).sort((a, b) => a - b).forEach(level => {
-            const tasksInLevel = levelGroups[level];
-            const levelWidth = tasksInLevel.length * (nodeWidth + horizontalGap);
-            maxWidth = Math.max(maxWidth, levelWidth);
-
-            tasksInLevel.forEach((task, index) => {
-                const x = index * (nodeWidth + horizontalGap) + (maxWidth - levelWidth) / 2;
-                const y = level * (nodeHeight + verticalGap) + 50;
-                positions[task.id] = { x, y };
-            });
-        });
-
-        return positions;
+        return this.dependencies.calculateNodePositions(tasks);
     }
 
     calculateTaskLevel(task, allTasks) {
-        if (!task.waitingForTaskIds || task.waitingForTaskIds.length === 0) {
-            return 0;
-        }
-
-        const dependencies = task.waitingForTaskIds
-            .map(id => allTasks.find(t => t.id === id))
-            .filter(t => t && !t.completed);
-
-        if (dependencies.length === 0) {
-            return 0;
-        }
-
-        const depLevels = dependencies.map(dep => this.calculateTaskLevel(dep, allTasks));
-        return Math.max(...depLevels) + 1;
+        return this.dependencies.calculateTaskLevel(task, allTasks);
     }
 
     renderDependencyLines(tasks, positions, container) {
-        const graphContainer = document.getElementById('dependency-graph');
-        if (!graphContainer) return;
-
-        const rect = graphContainer.getBoundingClientRect();
-        container.setAttribute('width', rect.width);
-        container.setAttribute('height', Math.max(rect.height, 600));
-
-        let linesHTML = '';
-        tasks.forEach(task => {
-            const targetPos = positions[task.id];
-            if (!targetPos) return;
-
-            if (task.waitingForTaskIds) {
-                task.waitingForTaskIds.forEach(depId => {
-                    const depTask = this.tasks.find(t => t.id === depId);
-                    if (!depTask) return;
-
-                    const sourcePos = positions[depId];
-                    if (!sourcePos) return;
-
-                    // Calculate line coordinates (center of nodes)
-                    const x1 = sourcePos.x + 90; // Half of node width
-                    const y1 = sourcePos.y + 40; // Half of node height
-                    const x2 = targetPos.x + 90;
-                    const y2 = targetPos.y + 40;
-
-                    // Create curved path
-                    const midY = (y1 + y2) / 2;
-                    const pathData = `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`;
-
-                    const isBlocked = !depTask.completed;
-                    const lineClass = `dependency-line ${isBlocked ? 'blocked' : 'completed'}`;
-
-                    linesHTML += `<path class="${lineClass}" d="${pathData}"/>`;
-                });
-            }
-        });
-
-        container.innerHTML = linesHTML;
+        this.dependencies.renderDependencyLines(tasks, positions, container);
     }
 
     renderDependencyChains(tasks, container) {
-        const chains = this.buildDependencyChains(tasks);
-
-        if (chains.length === 0) {
-            container.innerHTML = `
-                <div class="deps-empty-state">
-                    <i class="fas fa-stream"></i>
-                    <h3>No Dependency Chains Found</h3>
-                    <p>Tasks with sequential dependencies will appear here.</p>
-                </div>
-            `;
-            return;
-        }
-
-        container.innerHTML = `
-            <div class="dependency-chains">
-                ${chains.map(chain => this.renderChain(chain)).join('')}
-            </div>
-        `;
+        this.dependencies.renderDependencyChains(tasks, container);
     }
 
     buildDependencyChains(tasks) {
-        const visited = new Set();
-        const chains = [];
-
-        const buildChain = (task, currentChain = []) => {
-            if (visited.has(task.id)) {
-                if (currentChain.length > 1) {
-                    chains.push([...currentChain]);
-                }
-                return;
-            }
-
-            visited.add(task.id);
-            currentChain.push(task);
-
-            // Find tasks that depend on this task
-            const dependents = tasks.filter(t =>
-                t.waitingForTaskIds && t.waitingForTaskIds.includes(task.id)
-            );
-
-            if (dependents.length === 0) {
-                if (currentChain.length > 1) {
-                    chains.push([...currentChain]);
-                }
-            } else {
-                dependents.forEach(dep => buildChain(dep, currentChain));
-            }
-
-            currentChain.pop();
-        };
-
-        // Start from tasks with no dependencies (root nodes)
-        tasks.filter(t => !t.waitingForTaskIds || t.waitingForTaskIds.length === 0).forEach(task => {
-            if (!visited.has(task.id)) {
-                buildChain(task);
-            }
-        });
-
-        return chains.sort((a, b) => b.length - a.length);
+        return this.dependencies.buildDependencyChains(tasks);
     }
 
     renderChain(chain) {
-        const firstUncompleted = chain.findIndex(t => !t.completed);
-
-        return `
-            <div class="dependency-chain">
-                <div class="dependency-chain-header">
-                    <span class="dependency-chain-title">
-                        ${escapeHtml(chain[0].title)} → ${escapeHtml(chain[chain.length - 1].title)}
-                    </span>
-                    <span class="dependency-chain-length">${chain.length} tasks</span>
-                </div>
-                <div class="dependency-chain-items">
-                    ${chain.map((task, index) => {
-                        let itemClass = 'dependency-chain-item';
-                        if (task.completed) itemClass += ' completed';
-                        else if (index === firstUncompleted) itemClass += ' current';
-
-                        return `
-                            <div class="${itemClass}" onclick="app.openTaskModal(app.tasks.find(t => t.id === '${task.id}'))">
-                                <div style="font-weight: 600; margin-bottom: 4px;">
-                                    ${index + 1}. ${escapeHtml(task.title)}
-                                </div>
-                                <div style="font-size: 0.75rem; color: var(--text-secondary);">
-                                    ${task.completed ? '✓ Completed' : task.areDependenciesMet(this.tasks) ? 'Ready to start' : 'Blocked'}
-                                </div>
-                            </div>
-                            ${index < chain.length - 1 ? '<div class="dependency-chain-arrow">→</div>' : ''}
-                        `;
-                    }).join('')}
-                </div>
-            </div>
-        `;
+        return this.dependencies.renderChain(chain);
     }
 
     renderCriticalPath(tasks, container) {
-        const criticalPath = this.calculateCriticalPath(tasks);
-
-        if (criticalPath.length === 0) {
-            container.innerHTML = `
-                <div class="deps-empty-state">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <h3>No Critical Path Found</h3>
-                    <p>The critical path shows the longest chain of dependent tasks that determines project duration.</p>
-                </div>
-            `;
-            return;
-        }
-
-        container.innerHTML = `
-            <div class="critical-path">
-                <div class="critical-path-header">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <span class="critical-path-title">Critical Path</span>
-                </div>
-                <div class="critical-path-timeline">
-                    ${criticalPath.map((task, index) => `
-                        <div class="critical-path-item ${task.completed ? 'completed' : ''}" style="position: relative;">
-                            ${index < criticalPath.length - 1 ? '<div class="critical-path-connector"></div>' : ''}
-                            <div class="critical-path-item-title">${escapeHtml(task.title)}</div>
-                            <div class="critical-path-item-meta">
-                                ${task.completed ? '✓ Completed' : `⏱️ ${task.time || 0} min • Due: ${task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No date'}`}
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-        `;
+        this.dependencies.renderCriticalPath(tasks, container);
     }
 
     calculateCriticalPath(tasks) {
-        // Build dependency graph
-        const graph = {};
-        const inDegree = {};
-
-        tasks.forEach(task => {
-            graph[task.id] = [];
-            inDegree[task.id] = 0;
-        });
-
-        tasks.forEach(task => {
-            if (task.waitingForTaskIds) {
-                task.waitingForTaskIds.forEach(depId => {
-                    if (graph[depId]) {
-                        graph[depId].push(task);
-                        inDegree[task.id]++;
-                    }
-                });
-            }
-        });
-
-        // Find all paths and return the longest one
-        const allPaths = [];
-        const visited = new Set();
-
-        const dfs = (taskId, path) => {
-            visited.add(taskId);
-            const task = tasks.find(t => t.id === taskId);
-            if (task) path.push(task);
-
-            const dependents = graph[taskId] || [];
-            if (dependents.length === 0) {
-                if (path.length > 1) {
-                    allPaths.push([...path]);
-                }
-            } else {
-                dependents.forEach(dep => {
-                    if (!visited.has(dep.id)) {
-                        dfs(dep.id, path);
-                    }
-                });
-            }
-
-            path.pop();
-            visited.delete(taskId);
-        };
-
-        // Start from root nodes (no incoming edges)
-        tasks.filter(t => inDegree[t.id] === 0).forEach(task => {
-            dfs(task.id, []);
-        });
-
-        // Return the longest path
-        if (allPaths.length === 0) return [];
-        return allPaths.sort((a, b) => b.length - a.length)[0];
+        return this.dependencies.calculateCriticalPath(tasks);
     }
 
     // ==================== PRODUCTIVITY HEATMAP ====================
@@ -5129,262 +3589,7 @@ class GTDApp {
     // ==================== MOBILE NAVIGATION ====================
 
     setupMobileNavigation() {
-        // Wait for DOM to be ready before setting up mobile navigation
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => this.setupMobileNavigationInternal());
-        } else {
-            // Use setTimeout to ensure DOM is fully parsed
-            setTimeout(() => this.setupMobileNavigationInternal(), 0);
-        }
-    }
-
-    setupMobileNavigationInternal() {
-        console.log('[Mobile Nav] Setting up mobile navigation...');
-
-        // Hamburger Menu
-        const hamburger = document.getElementById('hamburger-menu');
-        const sidebar = document.querySelector('.sidebar');
-        const overlay = document.getElementById('sidebar-overlay');
-
-        if (hamburger && sidebar && overlay) {
-            hamburger.addEventListener('click', () => {
-                const isOpen = sidebar.classList.contains('active');
-                sidebar.classList.toggle('active');
-                overlay.classList.toggle('active');
-                hamburger.classList.toggle('active');
-                hamburger.setAttribute('aria-expanded', !isOpen);
-            });
-
-            overlay.addEventListener('click', () => {
-                sidebar.classList.remove('active');
-                overlay.classList.remove('active');
-                hamburger.classList.remove('active');
-                hamburger.setAttribute('aria-expanded', 'false');
-            });
-        }
-
-        // Bottom Navigation
-        const bottomNavItems = document.querySelectorAll('.bottom-nav-item[data-view]');
-        console.log('[Mobile Nav] Found bottom nav items:', bottomNavItems.length);
-
-        bottomNavItems.forEach((item, index) => {
-            console.log('[Mobile Nav] Setting up item:', item.dataset.view);
-
-            // Use click event with proper binding
-            item.addEventListener('click', (e) => {
-                e.preventDefault();
-                const view = item.dataset.view;
-                console.log('[Bottom Nav] Clicked view:', view);
-
-                // Call switchView with proper context
-                if (this.switchView && typeof this.switchView === 'function') {
-                    this.switchView(view);
-                } else {
-                    console.error('[Bottom Nav] switchView not available');
-                }
-
-                // Update active state
-                bottomNavItems.forEach(nav => nav.classList.remove('active'));
-                item.classList.add('active');
-
-                // Close sidebar if open
-                if (sidebar) {
-                    sidebar.classList.remove('active');
-                    if (overlay) overlay.classList.remove('active');
-                    if (hamburger) hamburger.classList.remove('active');
-                }
-            });
-
-            // Also add touchend for better mobile responsiveness
-            item.addEventListener('touchend', (e) => {
-                e.preventDefault(); // Prevent mouse click event
-                const view = item.dataset.view;
-                console.log('[Bottom Nav] Touch ended on view:', view);
-
-                if (this.switchView && typeof this.switchView === 'function') {
-                    this.switchView(view);
-                }
-
-                // Update active state
-                bottomNavItems.forEach(nav => nav.classList.remove('active'));
-                item.classList.add('active');
-
-                // Close sidebar if open
-                if (sidebar) {
-                    sidebar.classList.remove('active');
-                    if (overlay) overlay.classList.remove('active');
-                    if (hamburger) hamburger.classList.remove('active');
-                }
-            });
-        });
-
-        // FAB Quick Add
-        const fabQuickAdd = document.getElementById('fab-quick-add');
-        if (fabQuickAdd) {
-            fabQuickAdd.addEventListener('click', () => {
-                this.openGlobalQuickCapture();
-            });
-        }
-
-        // Templates Mobile Button
-        const btnTemplatesMobile = document.getElementById('btn-templates-mobile');
-        if (btnTemplatesMobile) {
-            btnTemplatesMobile.addEventListener('click', () => {
-                this.openTemplatesModal();
-            });
-        }
-
-        // Search Mobile Button
-        const btnSearchMobile = document.getElementById('btn-search-mobile');
-        if (btnSearchMobile) {
-            btnSearchMobile.addEventListener('click', () => {
-                const searchInput = document.getElementById('global-search');
-                if (searchInput) {
-                    searchInput.focus();
-                }
-            });
-        }
-
-        // Pull to Refresh
-        this.setupPullToRefresh();
-
-        // Swipe Gestures for Tasks
-        this.setupSwipeGestures();
-    }
-
-    setupPullToRefresh() {
-        let startY = 0;
-        let currentY = 0;
-        let isPulling = false;
-        const pullThreshold = 80;
-        const contentArea = document.querySelector('.content-area');
-
-        if (!contentArea) return;
-
-        // Add pull-to-refresh indicator
-        const indicator = document.createElement('div');
-        indicator.className = 'pull-to-refresh';
-        indicator.innerHTML = '<i class="fas fa-sync-alt"></i> <span>Pull to refresh</span>';
-        contentArea.style.position = 'relative';
-        contentArea.insertBefore(indicator, contentArea.firstChild);
-
-        contentArea.addEventListener('touchstart', (e) => {
-            if (contentArea.scrollTop === 0) {
-                startY = e.touches[0].clientY;
-                isPulling = true;
-            }
-        }, { passive: true });
-
-        contentArea.addEventListener('touchmove', (e) => {
-            if (!isPulling) return;
-
-            currentY = e.touches[0].clientY;
-            const diff = currentY - startY;
-
-            if (diff > 0 && contentArea.scrollTop === 0) {
-                const pullDistance = Math.min(diff * 0.5, pullThreshold);
-                indicator.style.transform = `translateY(${pullDistance}px)`;
-
-                if (pullDistance >= pullThreshold) {
-                    indicator.classList.add('refreshing');
-                } else {
-                    indicator.classList.remove('refreshing');
-                }
-            }
-        }, { passive: true });
-
-        contentArea.addEventListener('touchend', async () => {
-            if (!isPulling) return;
-
-            const diff = currentY - startY;
-            indicator.style.transform = 'translateY(0)';
-
-            if (diff >= pullThreshold * 2) {
-                // Trigger refresh
-                indicator.classList.add('refreshing');
-                await this.refreshTasks();
-                setTimeout(() => {
-                    indicator.classList.remove('refreshing');
-                }, 1000);
-            }
-
-            isPulling = false;
-            startY = 0;
-            currentY = 0;
-        });
-    }
-
-    async refreshTasks() {
-        // Reload tasks from storage
-        const tasksData = this.storage.getTasks();
-        this.tasks = tasksData.map(data => Task.fromJSON(data));
-        this.renderView();
-        this.updateCounts();
-    }
-
-    setupSwipeGestures() {
-        // Only enable swipe gestures on touch devices
-        if (!('ontouchstart' in window)) return;
-
-        const tasksContainer = document.querySelector('.content-area');
-        if (!tasksContainer) return;
-
-        let startX = 0;
-        let currentX = 0;
-        let currentTaskElement = null;
-        let isSwipping = false;
-
-        tasksContainer.addEventListener('touchstart', (e) => {
-            const taskItem = e.target.closest('.task-item');
-            if (!taskItem) return;
-
-            startX = e.touches[0].clientX;
-            currentTaskElement = taskItem;
-            isSwipping = true;
-        }, { passive: true });
-
-        tasksContainer.addEventListener('touchmove', (e) => {
-            if (!isSwipping || !currentTaskElement) return;
-
-            currentX = e.touches[0].clientX;
-            const diff = currentX - startX;
-            const threshold = 50;
-
-            // Prevent scrolling while swiping
-            if (Math.abs(diff) > 10) {
-                e.preventDefault();
-            }
-
-            if (Math.abs(diff) > threshold) {
-                currentTaskElement.style.transform = `translateX(${diff}px)`;
-            }
-        }, { passive: false });
-
-        tasksContainer.addEventListener('touchend', (e) => {
-            if (!isSwipping || !currentTaskElement) return;
-
-            const diff = currentX - startX;
-            const threshold = 80;
-            const taskId = currentTaskElement.dataset.taskId;
-
-            if (Math.abs(diff) > threshold) {
-                // Swipe completed - trigger action
-                if (diff > 0) {
-                    // Swipe right - complete task
-                    this.toggleTaskComplete(taskId);
-                } else {
-                    // Swipe left - delete/archive task
-                    this.archiveTask(taskId);
-                }
-            }
-
-            // Reset
-            currentTaskElement.style.transform = '';
-            currentTaskElement = null;
-            isSwipping = false;
-            startX = 0;
-            currentX = 0;
-        });
+        this.mobileNavigation.setupMobileNavigation();
     }
 
     showNotification(message) {
@@ -6144,6 +4349,9 @@ class GTDApp {
         }
     }
 
+    // =========================================================================
+    // VIEW MANAGEMENT
+    // =========================================================================
     switchView(view) {
         // Clear project filter when switching views
         this.currentProjectId = null;
@@ -7118,6 +5326,9 @@ class GTDApp {
         `;
     }
 
+    // =========================================================================
+    // TASK OPERATIONS
+    // =========================================================================
     async quickAddTask(title) {
         // Save state for undo
         this.saveState('Add task');
