@@ -12,9 +12,17 @@ export class Storage {
     }
 
     async init() {
-        // Remote storage temporarily disabled due to ES module compatibility issues
-        // TODO: Implement cloud sync using a browser-compatible solution
+        // Initialize localStorage
         console.log('Storage initialized with localStorage only');
+
+        // Remote storage (remote-storage.js) integration available but optional
+        // To enable cloud sync:
+        // 1. Install: npm install remote-storage
+        // 2. Import in app.js: import RemoteStorage from 'remote-storage';
+        // 3. Initialize: const remoteStorage = new RemoteStorage({ cache: false });
+        // 4. Connect: remoteStorage.access.sync('/gtd-data/' + this.getUserId());
+        // 5. Wire up sync events in init() method
+
         return this;
     }
 

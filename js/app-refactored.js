@@ -315,9 +315,11 @@ class GTDApp {
     }
 
     openProjectModal(project, pendingTaskData) {
+        // Project modal is handled through task-modal.js
+        // The task modal supports both 'task' and 'project' types
+        // Projects are created/edited using the same modal with type='project'
         this.taskModal.pendingTaskData = pendingTaskData;
-        // TODO: Implement project modal
-        console.log('Open project modal:', project);
+        this.taskModal.openTaskModal(project, null, { type: 'project' });
     }
 
     closeProjectModal() {

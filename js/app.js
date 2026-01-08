@@ -9,6 +9,7 @@ import { ElementIds, StorageKeys, TaskStatus, Views, RecurrenceLabels, ViewLabel
 import { getElement, setTextContent, escapeHtml, announce } from './dom-utils.js';
 import { TaskParser } from './nlp-parser.js';
 import { getDefaultContextIds } from './config/defaultContexts.js';
+import { performanceMonitor } from './utils/performance-monitor.js';
 
 // Core modules
 import { AppState } from './modules/core/app-state.js';
@@ -43,6 +44,10 @@ import { UndoRedoManager } from './modules/ui/undo-redo.js';
 
 class GTDApp {
     constructor() {
+        // Initialize performance monitoring
+        this.performanceMonitor = performanceMonitor;
+        this.performanceMonitor.observeLongTasks();
+
         // Initialize state
         this.state = new AppState();
 
@@ -157,6 +162,13 @@ class GTDApp {
                 } catch (swError) {
                     console.log('Service Worker registration failed:', swError);
                 }
+            }
+
+            // Make performance monitoring available in console
+            if (typeof window !== 'undefined') {
+                window.perf = this.performanceMonitor;
+                window.perfSummary = () => this.performanceMonitor.logSummary();
+                console.log('💡 Performance monitoring available: window.perf.logSummary()');
             }
 
             // Initialize dark mode from preference
@@ -302,7 +314,9 @@ class GTDApp {
     }
 
     renderView() {
+        const endMeasure = this.performanceMonitor.monitorRender('renderView');
         this.viewManager.renderView();
+        endMeasure();
     }
 
     // ==================== TASK OPERATIONS ====================
@@ -386,9 +400,11 @@ class GTDApp {
     }
 
     openProjectModal(project, pendingTaskData) {
+        // Project modal is handled through task-modal.js
+        // The task modal supports both 'task' and 'project' types
+        // Projects are created/edited using the same modal with type='project'
         this.taskModal.pendingTaskData = pendingTaskData;
-        // TODO: Implement project modal
-        console.log('Open project modal:', project);
+        this.taskModal.openTaskModal(project, null, { type: 'project' });
     }
 
     closeProjectModal() {
@@ -642,7 +658,10 @@ class GTDApp {
     // ==================== DATA PERSISTENCE ====================
 
     async saveTasks() {
-        return this.storageOps.saveTasks();
+        const operationId = this.performanceMonitor.startMeasure('saveTasks');
+        const result = await this.storageOps.saveTasks();
+        if (operationId) this.performanceMonitor.endMeasure(operationId);
+        return result;
     }
 
     async saveProjects() {
