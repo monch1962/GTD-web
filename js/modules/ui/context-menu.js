@@ -150,7 +150,15 @@ export class ContextMenuManager {
             item.className = 'context-menu-item';
             item.dataset.action = 'set-project';
             item.dataset.project = project.id;
-            item.innerHTML = `<i class="fas fa-folder"></i> ${escapeHtml(project.title)}`;
+
+            // Safe DOM creation (no innerHTML)
+            const icon = document.createElement('i');
+            icon.className = 'fas fa-folder';
+            item.appendChild(icon);
+
+            const text = document.createTextNode(' ' + project.title); // Safe: textContent escapes HTML
+            item.appendChild(text);
+
             submenu.appendChild(item);
         });
     }
