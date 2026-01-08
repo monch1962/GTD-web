@@ -160,7 +160,9 @@ class GTDApp {
     async init() {
         try {
             // Setup global error handling
-            setupGlobalErrorHandling();
+            if (typeof window !== 'undefined') {
+                setupGlobalErrorHandling();
+            }
 
             // Register service worker for PWA support
             if ('serviceWorker' in navigator) {

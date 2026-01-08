@@ -15,6 +15,13 @@ export class StorageOperations {
     set storage(value) { this._storage = value; }
 
     /**
+     * Initialize storage
+     */
+    async initializeStorage() {
+        await this._storage.init();
+    }
+
+    /**
      * Load all data from storage
      */
     async loadData() {

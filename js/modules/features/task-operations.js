@@ -4,7 +4,6 @@
  */
 
 import { Task } from '../../models.js';
-import { errorHandler } from '../../utils/error-handler.js';
 
 export class TaskOperations {
     constructor(state, app) {
@@ -17,7 +16,6 @@ export class TaskOperations {
      * @param {string} title - Task title (may contain NLP)
      */
     async quickAddTask(title) {
-        return errorHandler.execute(async () => {
         // Save state for undo
         this.app.saveState?.('Add task');
 
@@ -50,7 +48,6 @@ export class TaskOperations {
         this.app.renderView?.();
         this.app.updateCounts?.();
         this.app.updateContextFilter?.();
-        }, { method: 'quickAddTask', module: 'TaskOperations' });
     }
 
     /**
@@ -84,7 +81,6 @@ export class TaskOperations {
      * @param {string} taskId - Task ID
      */
     async toggleTaskComplete(taskId) {
-        return errorHandler.execute(async () => {
         // Save state for undo
         this.app.saveState?.('Toggle task completion');
 
@@ -112,7 +108,6 @@ export class TaskOperations {
             this.app.renderView?.();
             this.app.updateCounts?.();
         }
-        }, { method: 'toggleTaskComplete', module: 'TaskOperations', taskId });
     }
 
     /**
@@ -120,18 +115,16 @@ export class TaskOperations {
      * @param {string} taskId - Task ID to delete
      */
     async deleteTask(taskId) {
-        return errorHandler.execute(async () => {
-            if (!confirm('Are you sure you want to delete this task?')) return;
+        if (!confirm('Are you sure you want to delete this task?')) return;
 
-            // Save state for undo
-            this.app.saveState?.('Delete task');
+        // Save state for undo
+        this.app.saveState?.('Delete task');
 
         this.state.tasks = this.state.tasks.filter(t => t.id !== taskId);
         await this.app.saveTasks?.();
 
         this.app.renderView?.();
         this.app.updateCounts?.();
-        }, { method: 'deleteTask', module: 'TaskOperations', taskId });
     }
 
     /**
