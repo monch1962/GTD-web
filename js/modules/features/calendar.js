@@ -10,8 +10,13 @@ export class CalendarManager {
         this.state = state;
         this.app = app;
 
-        // Initialize calendar date to current date
-        this.calendarDate = new Date();
+        // Use the app's calendarDate instead of creating our own
+        // This ensures synchronization between app and calendar module
+    }
+
+    // Getter for calendarDate - uses app's calendarDate
+    get calendarDate() {
+        return this.app.calendarDate;
     }
 
     /**

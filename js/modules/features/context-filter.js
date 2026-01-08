@@ -115,7 +115,7 @@ export class ContextFilterManager {
 
         // Show context name and task count
         const taskCount = contextTaskCounts[context] || 0;
-        const isDefaultContext = this.state.defaultContexts.includes(context);
+        const isDefaultContext = Array.isArray(this.state.defaultContexts) && this.state.defaultContexts.includes(context);
 
         label.innerHTML = `
             <span style="flex: 1; cursor: pointer; font-size: 0.85rem; color: var(--text-light);">

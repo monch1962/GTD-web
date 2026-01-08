@@ -50,7 +50,7 @@ export class TaskRenderer {
      */
     _renderWithVirtualScroll(container, tasks) {
         // Log activation for performance monitoring
-        console.log(`🚀 Virtual scrolling ACTIVATED: ${tasks.length} tasks (threshold: ${VIRTUAL_SCROLL_THRESHOLD})`);
+        console.log(`🚀 Virtual scrolling ACTIVATED: ${tasks.length} tasks (threshold: ${VirtualScrollConfig.ACTIVATION_THRESHOLD})`);
 
         // Initialize or update virtual scroll
         if (!this.virtualScroll || this.virtualScroll.container !== container) {
@@ -74,7 +74,7 @@ export class TaskRenderer {
     _renderRegular(container, tasks) {
         // Clean up virtual scroll if exists
         if (this.virtualScroll) {
-            console.log(`📋 Virtual scrolling DEACTIVATED: ${tasks.length} tasks (< ${VIRTUAL_SCROLL_THRESHOLD} threshold)`);
+            console.log(`📋 Virtual scrolling DEACTIVATED: ${tasks.length} tasks (< ${VirtualScrollConfig.ACTIVATION_THRESHOLD} threshold)`);
             this.virtualScroll.destroy();
             this.virtualScroll = null;
         }

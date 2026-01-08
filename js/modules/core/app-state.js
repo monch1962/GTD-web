@@ -63,8 +63,8 @@ export class AppState {
         // Usage tracking for smart defaults
         this.usageStats = this.loadUsageStats();
 
-        // Default contexts
-        this.defaultContexts = null; // Will be loaded from config
+        // Default contexts - initialize with standard defaults
+        this.defaultContexts = ['@home', '@work', '@personal', '@computer', '@phone', '@errand'];
     }
 
     /**
@@ -188,5 +188,97 @@ export class AppState {
         this.selectedTaskIds.clear();
         this.showingArchivedProjects = false;
         this.focusTaskId = null;
+    }
+
+    /**
+     * Get smart suggestions for tasks to work on
+     * @param {Array} tasks - All tasks
+     * @param {Object} options - Filter options
+     * @returns {Array} Array of suggested tasks with scores
+     */
+    getSmartSuggestions(tasks = this.tasks, options = {}) {
+        const {
+            maxSuggestions = 10,
+            context = null,
+            time = null,
+            energy = null
+        } = options;
+
+        // Get active next action tasks
+        let suggestions = tasks.filter(t =>
+            !t.completed &&
+            t.status === 'next' &&
+            (!t.deferDate || t.isAvailable())
+        );
+
+        // Apply filters
+        if (context) {
+            suggestions = suggestions.filter(t =>
+                t.contexts && t.contexts.includes(context)
+            );
+        }
+        if (time) {
+            suggestions = suggestions.filter(t => t.time <= parseInt(time));
+        }
+        if (energy) {
+            suggestions = suggestions.filter(t => t.energy === energy);
+        }
+
+        // Score tasks based on multiple factors
+        suggestions = suggestions.map(task => {
+            let score = 0;
+            const reasons = [];
+
+            // Starred tasks get priority
+            if (task.starred) {
+                score += 50;
+                reasons.push('⭐ Starred');
+            }
+
+            // Due date urgency
+            if (task.dueDate) {
+                const daysUntilDue = Math.ceil((new Date(task.dueDate) - new Date()) / (1000 * 60 * 60 * 24));
+                if (daysUntilDue <= 0) {
+                    score += 40; // Overdue
+                    reasons.push('🔴 Overdue');
+                } else if (daysUntilDue <= 2) {
+                    score += 30; // Due soon
+                    reasons.push(`🟡 Due in ${daysUntilDue} days`);
+                } else if (daysUntilDue <= 7) {
+                    score += 20; // Due this week
+                    reasons.push(`🟢 Due in ${daysUntilDue} days`);
+                }
+            }
+
+            // Time estimate (shorter tasks get slight priority)
+            if (task.time) {
+                score += Math.max(0, 20 - task.time);
+                reasons.push(`⏱️ ${task.time} min`);
+            }
+
+            // Contexts
+            if (task.contexts && task.contexts.length > 0) {
+                reasons.push(task.contexts.join(', '));
+            }
+
+            // Usage-based suggestions (frequently used contexts)
+            if (task.contexts && this.usageStats.contexts) {
+                task.contexts.forEach(ctx => {
+                    score += (this.usageStats.contexts[ctx] || 0) * 2;
+                });
+            }
+
+            // Add default reason if no specific reasons
+            if (reasons.length === 0) {
+                reasons.push('Ready to start');
+            }
+
+            return { task, score, reasons };
+        });
+
+        // Sort by score (highest first) and limit results
+        return suggestions
+            .sort((a, b) => b.score - a.score)
+            .slice(0, maxSuggestions);
     }
 }
