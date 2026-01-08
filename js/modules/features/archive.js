@@ -89,7 +89,7 @@ export class ArchiveManager {
         });
 
         if (tasksToArchive.length === 0) {
-            this.app.showNotification?.(`No tasks to archive (none older than ${daysOld} days)`);
+            this.app.showToast?.(`No tasks to archive (none older than ${daysOld} days)`);
             return;
         }
 
@@ -107,7 +107,7 @@ export class ArchiveManager {
         this.renderArchive();
         this.app.renderView?.();
         this.app.updateCounts?.();
-        this.app.showNotification?.(`Archived ${tasksToArchive.length} tasks`);
+        this.app.showToast?.(`Archived ${tasksToArchive.length} tasks`);
     }
 
     /**
@@ -128,16 +128,8 @@ export class ArchiveManager {
 
         this.app.saveState?.('Archive task');
 
-        // Create archive entry
-        const archiveEntry = {
-            task: task.toJSON(),
-            originalProjectId: task.projectId, // Store project reference
-            archivedAt: new Date().toISOString(),
-            completedAt: task.completedAt || new Date().toISOString()
-        };
-
-        // Add to archive
-        await this.app.storage.addToArchive([archiveEntry]);
+        // Add to archive - storage.addToArchive expects Task objects and creates the entry structure
+        await this.app.storage.addToArchive([task]);
 
         // Remove from active tasks
         this.state.tasks = this.state.tasks.filter(t => t.id !== taskId);
@@ -145,7 +137,7 @@ export class ArchiveManager {
 
         this.app.renderView?.();
         this.app.updateCounts?.();
-        this.app.showNotification?.(`Task "${task.title}" archived`);
+        this.app.showToast?.(`Task "${task.title}" archived`);
     }
 
     /**
@@ -171,7 +163,7 @@ export class ArchiveManager {
         this.renderArchive();
         this.app.renderView?.();
         this.app.updateCounts?.();
-        this.app.showNotification?.('Task restored');
+        this.app.showToast?.('Task restored');
     }
 
     /**
@@ -185,7 +177,7 @@ export class ArchiveManager {
         await this.app.storage.saveArchivedTasks(updatedArchive);
 
         this.renderArchive();
-        this.app.showNotification?.('Archived task deleted');
+        this.app.showToast?.('Archived task deleted');
     }
 
     /**
@@ -247,7 +239,7 @@ export class ArchiveManager {
             const completedDate = task.completedAt ? new Date(task.completedAt) : null;
 
             return `
-                <div class="archived-task-card" style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: var(--spacing-md); margin-bottom: var(--spacing-sm);">
+                <div class="archived-task-card" style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: var(--spacing-md); margin-bottom: var(--spacing-sm);" data-task-id="${task.id}">
                     <div style="display: flex; justify-content: space-between; align-items: start;">
                         <div style="flex: 1;">
                             <h4 style="margin: 0 0 var(--spacing-xs) 0;">
@@ -263,10 +255,10 @@ export class ArchiveManager {
                             </div>
                         </div>
                         <div style="display: flex; gap: var(--spacing-xs); margin-left: var(--spacing-md);">
-                            <button class="btn btn-sm btn-primary" onclick="app.restoreFromArchive('${task.id}')" title="Restore task">
+                            <button class="btn btn-sm btn-primary archive-restore-btn" title="Restore task">
                                 <i class="fas fa-undo"></i> Restore
                             </button>
-                            <button class="btn btn-sm btn-secondary" onclick="app.deleteFromArchive('${task.id}')" title="Delete permanently">
+                            <button class="btn btn-sm btn-secondary archive-delete-btn" title="Delete permanently">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -274,6 +266,23 @@ export class ArchiveManager {
                 </div>
             `;
         }).join('');
+
+        // Attach event listeners to restore and delete buttons
+        filteredArchive.forEach(entry => {
+            const task = entry.task;
+            const taskCard = container.querySelector(`[data-task-id="${task.id}"]`);
+            if (taskCard) {
+                const restoreBtn = taskCard.querySelector('.archive-restore-btn');
+                const deleteBtn = taskCard.querySelector('.archive-delete-btn');
+
+                if (restoreBtn) {
+                    restoreBtn.addEventListener('click', () => this.restoreFromArchive(task.id));
+                }
+                if (deleteBtn) {
+                    deleteBtn.addEventListener('click', () => this.deleteFromArchive(task.id));
+                }
+            }
+        });
 
         if (filteredArchive.length === 0) {
             container.innerHTML = `

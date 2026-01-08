@@ -539,6 +539,12 @@ export class TaskRenderer {
         // Action buttons
         html += `<button class="task-action-btn duplicate" title="Duplicate"><i class="fas fa-copy"></i></button>`;
         html += `<button class="task-action-btn edit" title="Edit"><i class="fas fa-edit"></i></button>`;
+
+        // Archive button (only for completed tasks)
+        if (task.completed) {
+            html += `<button class="task-action-btn archive" title="Archive"><i class="fas fa-archive"></i></button>`;
+        }
+
         html += `<button class="task-action-btn delete" title="Delete"><i class="fas fa-trash"></i></button>`;
 
         html += '</div>';
@@ -615,6 +621,12 @@ export class TaskRenderer {
         const deleteBtn = element.querySelector('.task-action-btn.delete');
         if (deleteBtn) {
             deleteBtn.addEventListener('click', () => this.app.deleteTask?.(task.id));
+        }
+
+        // Archive button (only for completed tasks)
+        const archiveBtn = element.querySelector('.task-action-btn.archive');
+        if (archiveBtn) {
+            archiveBtn.addEventListener('click', () => this.app.archiveTask?.(task.id));
         }
 
         // Inline edit on double-click
