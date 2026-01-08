@@ -51,6 +51,7 @@ import { DarkModeManager } from './modules/ui/dark-mode.js';
 import { CalendarManager } from './modules/features/calendar.js';
 import { ArchiveManager } from './modules/features/archive.js';
 import { ContextMenuManager } from './modules/ui/context-menu.js';
+import { WeeklyReviewManager } from './modules/features/weekly-review.js';
 
 class GTDApp {
     // =========================================================================
@@ -102,6 +103,7 @@ class GTDApp {
         this.calendar = new CalendarManager(this, this);
         this.archive = new ArchiveManager(this, this);
         this.contextMenu = new ContextMenuManager(this, this);
+        this.weeklyReview = new WeeklyReviewManager(this, this);
     }
 
     async init() {
@@ -207,6 +209,7 @@ class GTDApp {
         this.setupFocusMode();
         this.setupNewProjectButton();
         this.setupTemplates();
+        this.setupMobileMenu();
         this.setupDailyReview();
         this.setupArchive();
         this.setupContextMenu();
@@ -2037,24 +2040,41 @@ class GTDApp {
         }
     }
 
-    // ==================== WEEKLY REVIEW FUNCTIONALITY ====================
+    // =========================================================================
+    // WEEKLY REVIEW (Delegated to WeeklyReviewManager module)
+    // =========================================================================
 
     setupWeeklyReview() {
-        const weeklyReviewBtn = document.getElementById('btn-weekly-review');
-        const closeWeeklyReviewBtn = document.getElementById('close-weekly-review-modal');
-
-        if (weeklyReviewBtn) {
-            weeklyReviewBtn.addEventListener('click', () => {
-                this.showWeeklyReview();
-            });
-        }
-
-        if (closeWeeklyReviewBtn) {
-            closeWeeklyReviewBtn.addEventListener('click', () => {
-                this.closeWeeklyReview();
-            });
-        }
+        this.weeklyReview.setupWeeklyReview();
     }
+
+    showWeeklyReview() {
+        this.weeklyReview.showWeeklyReview();
+    }
+
+    closeWeeklyReview() {
+        this.weeklyReview.closeWeeklyReview();
+    }
+
+    renderWeeklyReview() {
+        this.weeklyReview.renderWeeklyReview();
+    }
+
+    async cleanupEmptyProjects() {
+        return this.weeklyReview.cleanupEmptyProjects();
+    }
+
+    async cleanupOldCompletedTasks() {
+        return this.weeklyReview.cleanupOldCompletedTasks();
+    }
+
+    async markStaleProjectsSomeday() {
+        return this.weeklyReview.markStaleProjectsSomeday();
+    }
+
+    // =========================================================================
+    // DAILY REVIEW (Still in app.js - to be modularized later)
+    // =========================================================================
 
     setupDailyReview() {
         const dailyReviewBtn = document.getElementById('btn-daily-review');
@@ -2318,250 +2338,9 @@ class GTDApp {
         return project ? project.title : '';
     }
 
-    showWeeklyReview() {
-        const modal = document.getElementById('weekly-review-modal');
-        if (!modal) return;
-
-        modal.style.display = 'block';
-        this.renderWeeklyReview();
-    }
-
-    closeWeeklyReview() {
-        const modal = document.getElementById('weekly-review-modal');
-        if (modal) modal.style.display = 'none';
-    }
-
-    renderWeeklyReview() {
-        const weeklyReviewContent = document.getElementById('weekly-review-content');
-        if (!weeklyReviewContent) return;
-
-        const now = new Date();
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const weekAgo = new Date(today);
-        weekAgo.setDate(weekAgo.getDate() - 7);
-
-        // Gather review data
-        const completedThisWeek = this.tasks.filter(t =>
-            t.completed && t.completedAt && new Date(t.completedAt) >= weekAgo
-        );
-
-        const incompleteTasks = this.tasks.filter(t => !t.completed && t.status !== 'someday' && t.status !== 'reference');
-
-        const overdueTasks = incompleteTasks.filter(t => t.isOverdue());
-
-        const dueThisWeek = incompleteTasks.filter(t => {
-            if (!t.dueDate) return false;
-            const dueDate = new Date(t.dueDate);
-            const nextWeek = new Date(today);
-            nextWeek.setDate(nextWeek.getDate() + 7);
-            return dueDate >= today && dueDate <= nextWeek;
-        });
-
-        const waitingTasks = this.tasks.filter(t => t.status === 'waiting' && !t.completed);
-
-        const somedayTasks = this.tasks.filter(t => t.status === 'someday' && !t.completed);
-
-        const staleProjects = this.projects.filter(p => {
-            if (p.status !== 'active') return false;
-            const projectTasks = this.tasks.filter(t => t.projectId === p.id && !t.completed);
-            const thirtyDaysAgo = new Date(today);
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            return projectTasks.length > 0 && projectTasks.every(t => new Date(t.updatedAt) < thirtyDaysAgo);
-        });
-
-        // Render weekly review
-        weeklyReviewContent.innerHTML = `
-            <div style="max-width: 800px; margin: 0 auto;">
-                <div style="background: var(--bg-secondary); padding: var(--spacing-lg); border-radius: var(--radius-md); margin-bottom: var(--spacing-lg);">
-                    <h3 style="margin-top: 0;">📅 Weekly Review Checklist</h3>
-                    <p style="color: var(--text-secondary); margin-bottom: var(--spacing-md);">
-                        Complete this review to get clear and current. Follow the GTD weekly review process.
-                    </p>
-
-                    <div style="display: grid; gap: var(--spacing-sm);">
-                        <label style="display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer;">
-                            <input type="checkbox" class="weekly-review-checkbox">
-                            <span>Get clear: Empty your head - put all uncaptured ideas, thoughts, and tasks in Inbox</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer;">
-                            <input type="checkbox" class="weekly-review-checkbox">
-                            <span>Review <strong>${completedThisWeek.length} completed tasks</strong> from last week</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer;">
-                            <input type="checkbox" class="weekly-review-checkbox">
-                            <span>Review your calendar for upcoming commitments</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer;">
-                            <input type="checkbox" class="weekly-review-checkbox">
-                            <span>Review your projects and project lists</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer;">
-                            <input type="checkbox" class="weekly-review-checkbox">
-                            <span>Review <strong>${waitingTasks.length} Waiting</strong> items</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer;">
-                            <input type="checkbox" class="weekly-review-checkbox">
-                            <span>Review <strong>${somedayTasks.length} Someday</strong> items - activate any that are now relevant</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer;">
-                            <input type="checkbox" class="weekly-review-checkbox">
-                            <span>Be creative and courageous: Any new, fun, exciting projects?</span>
-                        </label>
-                    </div>
-                </div>
-
-                ${overdueTasks.length > 0 ? `
-                <div style="background: #fef5e7; padding: var(--spacing-md); border-radius: var(--radius-md); border-left: 4px solid var(--warning-color); margin-bottom: var(--spacing-md);">
-                    <h4 style="margin: 0 0 var(--spacing-sm) 0; color: var(--warning-color);">
-                        <i class="fas fa-exclamation-triangle"></i> ${overdueTasks.length} Overdue Tasks
-                    </h4>
-                    <div style="max-height: 200px; overflow-y: auto;">
-                        ${overdueTasks.slice(0, 10).map(task => `
-                            <div style="padding: 4px 0; border-bottom: 1px solid rgba(0,0,0,0.1);">
-                                <strong>${escapeHtml(task.title)}</strong>
-                                ${task.dueDate ? `<span style="color: var(--danger-color); font-size: 0.85rem;"> Due: ${task.dueDate}</span>` : ''}
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-                ` : ''}
-
-                ${dueThisWeek.length > 0 ? `
-                <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: var(--spacing-md);">
-                    <h4 style="margin: 0 0 var(--spacing-sm) 0;">
-                        <i class="fas fa-calendar-day"></i> ${dueThisWeek.length} Tasks Due This Week
-                    </h4>
-                    <div style="max-height: 200px; overflow-y: auto;">
-                        ${dueThisWeek.map(task => `
-                            <div style="padding: 4px 0; border-bottom: 1px solid var(--border-color);">
-                                <strong>${escapeHtml(task.title)}</strong>
-                                ${task.dueDate ? `<span style="color: var(--text-secondary); font-size: 0.85rem;"> Due: ${task.dueDate}</span>` : ''}
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-                ` : ''}
-
-                ${staleProjects.length > 0 ? `
-                <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: var(--spacing-md);">
-                    <h4 style="margin: 0 0 var(--spacing-sm) 0; color: var(--text-secondary);">
-                        <i class="fas fa-pause-circle"></i> ${staleProjects.length} Stalled Projects (consider activating or completing)
-                    </h4>
-                    ${staleProjects.map(project => `
-                        <div style="padding: 8px; background: var(--bg-secondary); border-radius: var(--radius-sm); margin-top: var(--spacing-xs);">
-                            <strong>${escapeHtml(project.title)}</strong>
-                            <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 4px 0;">${this.tasks.filter(t => t.projectId === project.id && !t.completed).length} tasks remaining</p>
-                        </div>
-                    `).join('')}
-                </div>
-                ` : ''}
-
-                <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                    <h4 style="margin: 0 0 var(--spacing-sm) 0;">
-                        <i class="fas fa-broom"></i> Cleanup Actions
-                    </h4>
-                    <div style="display: flex; flex-direction: column; gap: var(--spacing-sm);">
-                        <button class="btn btn-secondary" onclick="app.cleanupEmptyProjects()">
-                            <i class="fas fa-trash"></i> Delete empty projects
-                        </button>
-                        <button class="btn btn-secondary" onclick="app.cleanupOldCompletedTasks()">
-                            <i class="fas fa-broom"></i> Archive tasks completed > 90 days ago
-                        </button>
-                        <button class="btn btn-secondary" onclick="app.markStaleProjectsSomeday()">
-                            <i class="fas fa-pause"></i> Move stale projects to Someday
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    async cleanupEmptyProjects() {
-        const emptyProjects = this.projects.filter(p => {
-            const projectTasks = this.tasks.filter(t => t.projectId === p.id);
-            return projectTasks.length === 0;
-        });
-
-        if (emptyProjects.length === 0) {
-            alert('No empty projects to clean up.');
-            return;
-        }
-
-        if (!confirm(`Delete ${emptyProjects.length} empty projects?`)) return;
-
-        this.projects = this.projects.filter(p => !emptyProjects.includes(p));
-        await this.saveProjects();
-        this.renderWeeklyReview();
-        this.renderProjectsDropdown();
-        alert(`Cleaned up ${emptyProjects.length} empty projects.`);
-    }
-
-    async cleanupOldCompletedTasks() {
-        const ninetyDaysAgo = new Date();
-        ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-
-        const oldCompletedTasks = this.tasks.filter(t =>
-            t.completed && t.completedAt && new Date(t.completedAt) < ninetyDaysAgo
-        );
-
-        if (oldCompletedTasks.length === 0) {
-            alert('No old completed tasks to archive.');
-            return;
-        }
-
-        if (!confirm(`Archive ${oldCompletedTasks.length} tasks completed more than 90 days ago?`)) return;
-
-        // Create an export of these tasks before deleting
-        const archiveData = {
-            archivedAt: new Date().toISOString(),
-            tasks: oldCompletedTasks.map(t => t.toJSON())
-        };
-
-        const dataStr = JSON.stringify(archiveData, null, 2);
-        const dataBlob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(dataBlob);
-
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `gtd-archive-${new Date().toISOString().split('T')[0]}.json`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-
-        // Remove from active tasks
-        this.tasks = this.tasks.filter(t => !oldCompletedTasks.includes(t));
-        await this.saveTasks();
-        this.renderWeeklyReview();
-        this.renderView();
-        this.updateCounts();
-        alert(`Archived ${oldCompletedTasks.length} old completed tasks.`);
-    }
-
-    async markStaleProjectsSomeday() {
-        const staleProjects = this.projects.filter(p => {
-            if (p.status !== 'active') return false;
-            const projectTasks = this.tasks.filter(t => t.projectId === p.id && !t.completed);
-            const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            return projectTasks.length > 0 && projectTasks.every(t => new Date(t.updatedAt) < thirtyDaysAgo);
-        });
-
-        if (staleProjects.length === 0) {
-            alert('No stale projects to move.');
-            return;
-        }
-
-        if (!confirm(`Move ${staleProjects.length} stale projects to Someday?`)) return;
-
-        staleProjects.forEach(p => p.status = 'someday');
-        await this.saveProjects();
-        this.renderWeeklyReview();
-        this.renderProjectsDropdown();
-        alert(`Moved ${staleProjects.length} projects to Someday.`);
-    }
-
-    // ==================== TIME TRACKING FUNCTIONALITY ====================
+    // =========================================================================
+    // TIME TRACKING FUNCTIONALITY
+    // =========================================================================
 
     setupTimeTracking() {
         // Time tracking is handled per-task in the task element creation
@@ -2719,6 +2498,76 @@ class GTDApp {
         if (addSubtaskBtn) {
             addSubtaskBtn.addEventListener('click', () => this.addTemplateSubtask());
         }
+    }
+
+    setupMobileMenu() {
+        const mobileMenuBtn = document.getElementById('btn-mobile-menu');
+        const mobileMenuDropdown = document.getElementById('mobile-menu-dropdown');
+
+        if (!mobileMenuBtn || !mobileMenuDropdown) return;
+
+        // Toggle mobile menu
+        mobileMenuBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const isOpen = mobileMenuDropdown.style.display === 'block';
+            mobileMenuDropdown.style.display = isOpen ? 'none' : 'block';
+            mobileMenuBtn.setAttribute('aria-expanded', !isOpen);
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (mobileMenuDropdown.style.display === 'block' &&
+                !mobileMenuDropdown.contains(e.target) &&
+                !mobileMenuBtn.contains(e.target)) {
+                mobileMenuDropdown.style.display = 'none';
+                mobileMenuBtn.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        // Handle menu item clicks
+        const menuItems = mobileMenuDropdown.querySelectorAll('.mobile-menu-item');
+        menuItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                const action = e.currentTarget.dataset.action;
+
+                // Close the menu
+                mobileMenuDropdown.style.display = 'none';
+                mobileMenuBtn.setAttribute('aria-expanded', 'false');
+
+                // Execute the corresponding action
+                switch (action) {
+                    case 'calendar-view':
+                        this.showCalendar?.();
+                        break;
+                    case 'focus-mode':
+                        this.enterFocusMode?.();
+                        break;
+                    case 'new-project':
+                        this.openProjectModal?.();
+                        break;
+                    case 'daily-review':
+                        this.showDailyReview?.();
+                        break;
+                    case 'weekly-review':
+                        this.showWeeklyReview?.();
+                        break;
+                    case 'dashboard':
+                        this.showDashboard?.();
+                        break;
+                    case 'dependencies':
+                        this.showDependencies?.();
+                        break;
+                    case 'heatmap':
+                        this.openHeatmapModal?.();
+                        break;
+                    case 'suggestions':
+                        this.getSuggestions?.();
+                        break;
+                }
+            });
+        });
     }
 
     openTemplatesModal() {
@@ -4646,14 +4495,6 @@ class GTDApp {
                 }
             });
         });
-
-        // FAB Quick Add
-        const fabQuickAdd = document.getElementById('fab-quick-add');
-        if (fabQuickAdd) {
-            fabQuickAdd.addEventListener('click', () => {
-                this.openGlobalQuickCapture();
-            });
-        }
 
         // Templates Mobile Button
         const btnTemplatesMobile = document.getElementById('btn-templates-mobile');

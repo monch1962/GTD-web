@@ -1161,6 +1161,142 @@ body {
     border-color: var(--primary-color);
 }
 
+/* Large screens but tight space (≤1400px) */
+@media (max-width: 1400px) {
+    .content-header {
+        flex-wrap: wrap;
+        gap: var(--spacing-sm);
+    }
+
+    /* Make buttons slightly more compact */
+    .content-header button {
+        padding: var(--spacing-sm);
+    }
+}
+
+/* Medium screens / small laptops (≤1200px) */
+@media (max-width: 1200px) {
+    .content-header {
+        flex-wrap: wrap;
+        gap: var(--spacing-sm);
+    }
+
+    /* Reduce search box width */
+    .content-header > div:first-child {
+        max-width: 300px;
+        flex: 0 0 auto;
+    }
+
+    /* Make buttons more compact */
+    .content-header button {
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: 0.875rem;
+        min-width: 36px;
+    }
+
+    /* Hide some less critical buttons on medium screens */
+    #btn-calendar-view,
+    #btn-heatmap {
+        display: none;
+    }
+
+    /* Hide button text, show only icons */
+    #btn-dark-mode,
+    #btn-focus-mode,
+    #btn-new-project,
+    #btn-daily-review,
+    #btn-weekly-review,
+    #btn-dashboard,
+    #btn-dependencies {
+        padding: var(--spacing-xs);
+        min-width: 36px;
+    }
+
+    #btn-dark-mode span,
+    #btn-focus-mode span,
+    #btn-new-project span,
+    #btn-daily-review span,
+    #btn-weekly-review span,
+    #btn-dashboard span,
+    #btn-dependencies span {
+        display: none;
+    }
+
+    #btn-dark-mode i,
+    #btn-focus-mode i,
+    #btn-new-project i,
+    #btn-daily-review i,
+    #btn-weekly-review i,
+    #btn-dashboard i,
+    #btn-dependencies i {
+        margin: 0;
+    }
+
+    /* "What should I work on?" button - show only icon on medium screens */
+    #btn-suggestions {
+        padding: var(--spacing-xs) var(--spacing-sm);
+    }
+
+    #btn-suggestions span {
+        display: none;
+    }
+
+    #btn-suggestions i {
+        margin: 0;
+    }
+
+    /* Show mobile menu button */
+    .mobile-only {
+        display: inline-flex !important;
+    }
+}
+
+/* Mobile Menu Dropdown */
+.mobile-menu-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: var(--spacing-xs);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    min-width: 200px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.mobile-menu-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--border-color);
+    text-align: left;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.mobile-menu-item:last-child {
+    border-bottom: none;
+}
+
+.mobile-menu-item:hover {
+    background-color: var(--bg-secondary);
+}
+
+.mobile-menu-item i {
+    width: 20px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .app-container {
@@ -2223,23 +2359,6 @@ textarea:focus-visible {
     color: var(--primary-color);
 }
 
-.bottom-nav-item#fab-quick-add {
-    background: var(--primary-color);
-    color: white;
-    border-radius: 50%;
-    width: 56px;
-    height: 56px;
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
-    min-width: 56px;
-    min-height: 56px;
-    flex-shrink: 0;
-}
-
-.bottom-nav-item#fab-quick-add i {
-    font-size: 1.5rem;
-    margin-bottom: 0;
-}
-
 /* Pull to Refresh Indicator */
 .pull-to-refresh {
     display: none;
@@ -2381,7 +2500,7 @@ textarea:focus-visible {
         white-space: nowrap;
     }
 
-    /* Hide non-essential header buttons on mobile to save space */
+    /* Hide non-essential header buttons on mobile - show in menu instead */
     #btn-calendar-view,
     #btn-focus-mode,
     #btn-daily-review,
@@ -2394,11 +2513,17 @@ textarea:focus-visible {
         display: none;
     }
 
+    /* Show mobile menu button */
+    #btn-mobile-menu {
+        display: inline-flex !important;
+    }
+
     /* Keep essential buttons visible and smaller on mobile */
     .content-header > div:last-child {
         display: flex;
         gap: var(--spacing-xs);
         flex-wrap: wrap;
+        position: relative; /* For dropdown positioning */
     }
 
     .content-header button {

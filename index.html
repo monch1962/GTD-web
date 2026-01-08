@@ -186,6 +186,40 @@
                     <button id="btn-suggestions" class="btn btn-primary" aria-label="Get smart task suggestions">
                         <i class="fas fa-lightbulb" aria-hidden="true"></i> What should I work on?
                     </button>
+                    <!-- Mobile Menu Button -->
+                    <button id="btn-mobile-menu" class="btn btn-secondary mobile-only" style="display: none;" aria-label="Open mobile menu" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <!-- Mobile Menu Dropdown -->
+                <div id="mobile-menu-dropdown" class="mobile-menu-dropdown" style="display: none;" role="menu" aria-label="Mobile menu">
+                    <button class="mobile-menu-item" data-action="calendar-view" role="menuitem">
+                        <i class="fas fa-calendar-alt"></i> Calendar View
+                    </button>
+                    <button class="mobile-menu-item" data-action="focus-mode" role="menuitem">
+                        <i class="fas fa-bullseye"></i> Focus Mode
+                    </button>
+                    <button class="mobile-menu-item" data-action="new-project" role="menuitem">
+                        <i class="fas fa-folder-plus"></i> New Project
+                    </button>
+                    <button class="mobile-menu-item" data-action="daily-review" role="menuitem">
+                        <i class="fas fa-sun"></i> Daily Review
+                    </button>
+                    <button class="mobile-menu-item" data-action="weekly-review" role="menuitem">
+                        <i class="fas fa-calendar-week"></i> Weekly Review
+                    </button>
+                    <button class="mobile-menu-item" data-action="dashboard" role="menuitem">
+                        <i class="fas fa-chart-bar"></i> Dashboard
+                    </button>
+                    <button class="mobile-menu-item" data-action="dependencies" role="menuitem">
+                        <i class="fas fa-project-diagram"></i> Dependencies
+                    </button>
+                    <button class="mobile-menu-item" data-action="heatmap" role="menuitem">
+                        <i class="fas fa-calendar-alt"></i> Productivity Heatmap
+                    </button>
+                    <button class="mobile-menu-item" data-action="suggestions" role="menuitem">
+                        <i class="fas fa-lightbulb"></i> What should I work on?
+                    </button>
                 </div>
             </header>
 
@@ -1483,9 +1517,6 @@
         <button class="bottom-nav-item" data-view="waiting" aria-label="Waiting">
             <i class="fas fa-clock"></i>
             <span>Waiting</span>
-        </button>
-        <button class="bottom-nav-item" id="fab-quick-add" aria-label="Quick Add Task">
-            <i class="fas fa-plus"></i>
         </button>
         <button class="bottom-nav-item" id="btn-templates-mobile" aria-label="Templates">
             <i class="fas fa-copy"></i>
