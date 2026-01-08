@@ -6,6 +6,9 @@
 import { escapeHtml } from '../../dom-utils.js';
 import { VirtualScrollManager } from '../ui/virtual-scroll.js';
 
+// Threshold for activating virtual scrolling
+const VIRTUAL_SCROLL_THRESHOLD = 50;
+
 export class TaskRenderer {
     constructor(state, app) {
         this.state = state;
@@ -33,17 +36,59 @@ export class TaskRenderer {
             return;
         }
 
+        // Use virtual scrolling for 50+ tasks, regular rendering for smaller lists
+        if (filteredTasks.length >= VIRTUAL_SCROLL_THRESHOLD) {
+            this._renderWithVirtualScroll(container, filteredTasks);
+        } else {
+            this._renderRegular(container, filteredTasks);
+        }
+    }
+
+    /**
+     * Render tasks using virtual scrolling (for large lists)
+     * @private
+     * @param {HTMLElement} container - Container element
+     * @param {Array} tasks - Tasks to render
+     */
+    _renderWithVirtualScroll(container, tasks) {
+        // Log activation for performance monitoring
+        console.log(`🚀 Virtual scrolling ACTIVATED: ${tasks.length} tasks (threshold: ${VIRTUAL_SCROLL_THRESHOLD})`);
+
         // Initialize or update virtual scroll
         if (!this.virtualScroll || this.virtualScroll.container !== container) {
             this._initializeVirtualScroll(container);
         }
 
         // Set items with render function
-        this.virtualScroll.setItems(filteredTasks, (task, index) => {
+        this.virtualScroll.setItems(tasks, (task, index) => {
             const element = this.createTaskElement(task, index);
             this._attachTaskListeners(element, task);
             return element;
         });
+    }
+
+    /**
+     * Render tasks using regular DOM rendering (for small lists)
+     * @private
+     * @param {HTMLElement} container - Container element
+     * @param {Array} tasks - Tasks to render
+     */
+    _renderRegular(container, tasks) {
+        // Clean up virtual scroll if exists
+        if (this.virtualScroll) {
+            console.log(`📋 Virtual scrolling DEACTIVATED: ${tasks.length} tasks (< ${VIRTUAL_SCROLL_THRESHOLD} threshold)`);
+            this.virtualScroll.destroy();
+            this.virtualScroll = null;
+        }
+
+        // Render all tasks directly (faster for small lists)
+        const fragment = document.createDocumentFragment();
+        tasks.forEach((task, index) => {
+            const element = this.createTaskElement(task, index);
+            this._attachTaskListeners(element, task);
+            fragment.appendChild(element);
+        });
+        container.appendChild(fragment);
     }
 
     /**
