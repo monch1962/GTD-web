@@ -3,11 +3,13 @@
  * Renders only visible items + buffer for optimal performance
  */
 
+import { VirtualScrollConfig } from '../../constants.js';
+
 export class VirtualScrollManager {
     constructor(container, options = {}) {
         this.container = container;
-        this.itemHeight = options.itemHeight || 120; // pixels
-        this.bufferItems = options.bufferItems || 5;
+        this.itemHeight = options.itemHeight || VirtualScrollConfig.ITEM_HEIGHT;
+        this.bufferItems = options.bufferItems || VirtualScrollConfig.BUFFER_ITEMS;
         this.renderItem = options.renderItem || ((item) => item);
 
         // Scroll state
@@ -48,14 +50,14 @@ export class VirtualScrollManager {
         this.container.appendChild(this.spacerBottom);
 
         // Throttled scroll handler (60fps)
-        this.handleScroll = this._throttle(() => this._updateViewport(), 16);
+        this.handleScroll = this._throttle(() => this._updateViewport(), VirtualScrollConfig.THROTTLE_DELAY);
         this.container.addEventListener('scroll', this.handleScroll);
 
         // Handle resize
         this.handleResize = this._debounce(() => {
             this.viewportHeight = this.container.clientHeight;
             this._updateViewport();
-        }, 100);
+        }, VirtualScrollConfig.DEBOUNCE_DELAY);
         window.addEventListener('resize', this.handleResize);
     }
 

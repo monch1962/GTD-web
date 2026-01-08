@@ -3,6 +3,8 @@
  * Tracks and reports application performance metrics
  */
 
+import { PerformanceThresholds } from '../constants.js';
+
 export class PerformanceMonitor {
     constructor() {
         this.metrics = new Map();
@@ -44,7 +46,7 @@ export class PerformanceMonitor {
         metric.duration = metric.endTime - metric.startTime;
 
         // Log if slow operation (> 100ms)
-        if (metric.duration > 100) {
+        if (metric.duration > PerformanceThresholds.SLOW_OPERATION_MS) {
             console.warn(`⚠️  Slow operation: ${metric.name} took ${metric.duration.toFixed(2)}ms`);
         }
 
@@ -160,7 +162,7 @@ export class PerformanceMonitor {
         console.log(`💾 Memory Usage: ${usedMB}MB / ${totalMB}MB (${percentage}%)`);
 
         // Warn if using > 80% of available memory
-        if (parseFloat(percentage) > 80) {
+        if (parseFloat(percentage) > PerformanceThresholds.HIGH_MEMORY_PERCENT) {
             console.warn('⚠️  High memory usage detected');
         }
     }
@@ -172,7 +174,7 @@ export class PerformanceMonitor {
     logFPS(fps) {
         if (!this.isEnabled) return;
 
-        const status = fps >= 55 ? '✅ Excellent' : fps >= 30 ? '✅ Good' : '⚠️  Poor';
+        const status = fps >= PerformanceThresholds.FPS_EXCELLENT ? '✅ Excellent' : fps >= PerformanceThresholds.FPS_GOOD ? '✅ Good' : '⚠️  Poor';
         console.log(`🎯 FPS: ${fps.toFixed(1)} - ${status}`);
     }
 
@@ -238,7 +240,7 @@ export class PerformanceMonitor {
         // Check memory
         if (performance.memory) {
             const memoryPercentage = (performance.memory.usedJSHeapSize / performance.memory.jsHeapSizeLimit) * 100;
-            if (memoryPercentage > 80) {
+            if (memoryPercentage > PerformanceThresholds.HIGH_MEMORY_PERCENT) {
                 hints.push({
                     type: 'warning',
                     message: `High memory usage: ${memoryPercentage.toFixed(1)}%`
@@ -251,14 +253,14 @@ export class PerformanceMonitor {
         const firstPaint = paintEntries.find(e => e.name === 'first-paint');
         const firstContentfulPaint = paintEntries.find(e => e.name === 'first-contentful-paint');
 
-        if (firstPaint && firstPaint.startTime > 2000) {
+        if (firstPaint && firstPaint.startTime > PerformanceThresholds.FIRST_PAINT_MS) {
             hints.push({
                 type: 'warning',
                 message: `Slow first paint: ${firstPaint.startTime.toFixed(0)}ms`
             });
         }
 
-        if (firstContentfulPaint && firstContentfulPaint.startTime > 3000) {
+        if (firstContentfulPaint && firstContentfulPaint.startTime > PerformanceThresholds.FIRST_CONTENTFUL_PAINT_MS) {
             hints.push({
                 type: 'warning',
                 message: `Slow first contentful paint: ${firstContentfulPaint.startTime.toFixed(0)}ms`
@@ -300,7 +302,7 @@ export class PerformanceMonitor {
             });
 
             // Warn if render is slow
-            if (duration > 100) {
+            if (duration > PerformanceThresholds.SLOW_OPERATION_MS) {
                 console.warn(`⚠️  Slow render: ${viewName} took ${duration.toFixed(2)}ms`);
             }
         };

@@ -2,13 +2,15 @@
  * Storage Layer - Handles localStorage and remote-storage integration
  */
 
+import { StorageConfig } from './constants.js';
+
 export class Storage {
     constructor(userId = null) {
         this.userId = userId || this.getUserId();
         this.remoteStorage = null;
         this.syncEnabled = false; // Disabled for now
         this.listeners = new Map();
-        this.QUOTA_WARNING_THRESHOLD = 0.9; // Warn at 90% capacity
+        this.QUOTA_WARNING_THRESHOLD = StorageConfig.QUOTA_WARNING_THRESHOLD;
     }
 
     async init() {
@@ -58,7 +60,7 @@ export class Storage {
 
         // Estimate total (typically 5-10MB, varies by browser)
         // We'll estimate based on actual usage patterns
-        total = 5 * 1024 * 1024; // Conservative 5MB estimate
+        total = StorageConfig.ESTIMATED_TOTAL_SIZE;
 
         const percentage = (used / total) * 100;
         const available = total - used;
@@ -93,7 +95,7 @@ export class Storage {
 
                 // Remove entries older than 180 days
                 const archiveAge = Date.now() - new Date(entry.archivedAt).getTime();
-                const maxAge = 180 * 24 * 60 * 60 * 1000; // 180 days in ms
+                const maxAge = StorageConfig.ARCHIVE_MAX_AGE_MS;
 
                 if (archiveAge > maxAge || (bytesFreed < bytesToFree)) {
                     toRemove.push(entry.task.id);

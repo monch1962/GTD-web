@@ -5,9 +5,7 @@
 
 import { escapeHtml } from '../../dom-utils.js';
 import { VirtualScrollManager } from '../ui/virtual-scroll.js';
-
-// Threshold for activating virtual scrolling
-const VIRTUAL_SCROLL_THRESHOLD = 50;
+import { VirtualScrollConfig } from '../../constants.js';
 
 export class TaskRenderer {
     constructor(state, app) {
@@ -37,7 +35,7 @@ export class TaskRenderer {
         }
 
         // Use virtual scrolling for 50+ tasks, regular rendering for smaller lists
-        if (filteredTasks.length >= VIRTUAL_SCROLL_THRESHOLD) {
+        if (filteredTasks.length >= VirtualScrollConfig.ACTIVATION_THRESHOLD) {
             this._renderWithVirtualScroll(container, filteredTasks);
         } else {
             this._renderRegular(container, filteredTasks);

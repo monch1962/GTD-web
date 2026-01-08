@@ -341,3 +341,30 @@ export const HeatmapColors = {
     LEVEL_3: '#30a14e',
     LEVEL_4: '#216e39'
 };
+
+// Virtual Scrolling Configuration
+export const VirtualScrollConfig = {
+    ITEM_HEIGHT: 120,              // Default item height in pixels
+    BUFFER_ITEMS: 5,               // Number of items to render above/below viewport
+    THROTTLE_DELAY: 16,            // Scroll throttle delay (60fps = ~16ms)
+    DEBOUNCE_DELAY: 100,           // Resize debounce delay in ms
+    ACTIVATION_THRESHOLD: 50       // Minimum items to activate virtual scrolling
+};
+
+// Performance Monitoring Thresholds
+export const PerformanceThresholds = {
+    SLOW_OPERATION_MS: 100,        // Operation duration considered slow (ms)
+    HIGH_MEMORY_PERCENT: 80,       // Memory usage considered high (%)
+    FPS_EXCELLENT: 55,             // FPS threshold for excellent performance
+    FPS_GOOD: 30,                  // FPS threshold for good performance
+    FIRST_PAINT_MS: 2000,          // First paint warning threshold (ms)
+    FIRST_CONTENTFUL_PAINT_MS: 3000 // First contentful paint warning threshold (ms)
+};
+
+// Storage Configuration
+export const StorageConfig = {
+    QUOTA_WARNING_THRESHOLD: 0.9,        // Warn at 90% capacity
+    ESTIMATED_TOTAL_SIZE: 5 * 1024 * 1024, // Conservative 5MB estimate
+    ARCHIVE_MAX_AGE_DAYS: 180,           // Remove archive entries older than 180 days
+    ARCHIVE_MAX_AGE_MS: 180 * 24 * 60 * 60 * 1000 // 180 days in milliseconds
+};
