@@ -10,6 +10,7 @@ import { getElement, setTextContent, escapeHtml, announce } from './dom-utils.js
 import { TaskParser } from './nlp-parser.js';
 import { getDefaultContextIds } from './config/defaultContexts.js';
 import { performanceMonitor } from './utils/performance-monitor.js';
+import { errorHandler, setupGlobalErrorHandling } from './utils/error-handler.js';
 
 // Core modules
 import { AppState } from './modules/core/app-state.js';
@@ -44,6 +45,10 @@ import { UndoRedoManager } from './modules/ui/undo-redo.js';
 
 class GTDApp {
     constructor() {
+        // Initialize error handling
+        this.errorHandler = errorHandler;
+        setupGlobalErrorHandling();
+
         // Initialize performance monitoring
         this.performanceMonitor = performanceMonitor;
         this.performanceMonitor.observeLongTasks();
@@ -154,6 +159,9 @@ class GTDApp {
 
     async init() {
         try {
+            // Setup global error handling
+            setupGlobalErrorHandling();
+
             // Register service worker for PWA support
             if ('serviceWorker' in navigator) {
                 try {
@@ -168,7 +176,10 @@ class GTDApp {
             if (typeof window !== 'undefined') {
                 window.perf = this.performanceMonitor;
                 window.perfSummary = () => this.performanceMonitor.logSummary();
+                window.errors = this.errorHandler;
+                window.errorSummary = () => this.errorHandler.getSummary();
                 console.log('💡 Performance monitoring available: window.perf.logSummary()');
+                console.log('💡 Error handling available: window.errors.getSummary()');
             }
 
             // Initialize dark mode from preference
