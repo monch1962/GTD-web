@@ -1418,12 +1418,21 @@
                 <!-- Projects will be dynamically added here -->
             </div>
         </div>
-        <div class="context-menu-divider"></div>
-        <div class="context-menu-item" data-action="add-context">
-            <i class="fas fa-tag"></i> Add Context
+        <div class="context-menu-submenu">
+            <div class="context-menu-item">
+                <i class="fas fa-tag"></i> Add Context <i class="fas fa-chevron-right" style="float: right;"></i>
+            </div>
+            <div class="context-menu-submenu-content" id="context-menu-add-context">
+                <!-- Available contexts will be dynamically added here -->
+            </div>
         </div>
-        <div class="context-menu-item" data-action="remove-context">
-            <i class="fas fa-eraser"></i> Remove Context
+        <div class="context-menu-submenu">
+            <div class="context-menu-item">
+                <i class="fas fa-eraser"></i> Remove Context <i class="fas fa-chevron-right" style="float: right;"></i>
+            </div>
+            <div class="context-menu-submenu-content" id="context-menu-remove-context">
+                <!-- Task's contexts will be dynamically added here -->
+            </div>
         </div>
         <div class="context-menu-divider"></div>
         <div class="context-menu-item context-menu-danger" data-action="complete">

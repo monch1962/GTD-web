@@ -50,6 +50,7 @@ import { getDefaultContextIds, getAllContexts, getContextTaskCounts } from './co
 import { DarkModeManager } from './modules/ui/dark-mode.js';
 import { CalendarManager } from './modules/features/calendar.js';
 import { ArchiveManager } from './modules/features/archive.js';
+import { ContextMenuManager } from './modules/ui/context-menu.js';
 
 class GTDApp {
     // =========================================================================
@@ -100,6 +101,7 @@ class GTDApp {
         this.darkMode = new DarkModeManager();
         this.calendar = new CalendarManager(this, this);
         this.archive = new ArchiveManager(this, this);
+        this.contextMenu = new ContextMenuManager(this, this);
     }
 
     async init() {
@@ -3116,264 +3118,23 @@ class GTDApp {
     // ==================== QUICK ACTIONS CONTEXT MENU ====================
 
     setupContextMenu() {
-        const contextMenu = document.getElementById('context-menu');
-        if (!contextMenu) return;
-
-        this.contextMenuTaskId = null;
-
-        // Close context menu on click outside
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.context-menu')) {
-                this.hideContextMenu();
-            }
-        });
-
-        // Context menu item clicks
-        contextMenu.addEventListener('click', (e) => {
-            const menuItem = e.target.closest('.context-menu-item');
-            if (!menuItem) return;
-
-            const action = menuItem.dataset.action;
-            const taskId = this.contextMenuTaskId;
-
-            if (!taskId) return;
-
-            e.preventDefault();
-            e.stopPropagation();
-
-            this.handleContextMenuAction(action, menuItem.dataset, taskId);
-            this.hideContextMenu();
-        });
-
-        // Add right-click handler to task container
-        document.addEventListener('contextmenu', (e) => {
-            const taskItem = e.target.closest('.task-item');
-            if (taskItem) {
-                e.preventDefault();
-                const taskId = taskItem.dataset.taskId;
-                this.showContextMenu(e, taskId);
-            }
-        });
-
-        // Long-press for mobile
-        let longPressTimer;
-        document.addEventListener('touchstart', (e) => {
-            const taskItem = e.target.closest('.task-item');
-            if (taskItem) {
-                longPressTimer = setTimeout(() => {
-                    const taskId = taskItem.dataset.taskId;
-                    this.showContextMenu(e.touches[0], taskId);
-                }, 500);
-            }
-        });
-
-        document.addEventListener('touchend', () => {
-            clearTimeout(longPressTimer);
-        });
-
-        document.addEventListener('touchmove', () => {
-            clearTimeout(longPressTimer);
-        });
+        this.contextMenu.setupContextMenu();
     }
 
     showContextMenu(event, taskId) {
-        const contextMenu = document.getElementById('context-menu');
-        if (!contextMenu) return;
-
-        this.contextMenuTaskId = taskId;
-
-        // Populate projects submenu
-        this.populateContextMenuProjects();
-
-        // Position menu
-        const x = event.clientX || event.pageX;
-        const y = event.clientY || event.pageY;
-
-        contextMenu.style.display = 'block';
-
-        // Ensure menu stays within viewport
-        const rect = contextMenu.getBoundingClientRect();
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-
-        let posX = x;
-        let posY = y;
-
-        if (posX + rect.width > viewportWidth) {
-            posX = viewportWidth - rect.width - 10;
-        }
-
-        if (posY + rect.height > viewportHeight) {
-            posY = viewportHeight - rect.height - 10;
-        }
-
-        contextMenu.style.left = posX + 'px';
-        contextMenu.style.top = posY + 'px';
-
-        // Update star button text
-        const task = this.tasks.find(t => t.id === taskId);
-        if (task) {
-            const starItem = contextMenu.querySelector('[data-action="toggle-star"]');
-            if (starItem) {
-                starItem.innerHTML = task.starred
-                    ? '<i class="fas fa-star" style="color: gold;"></i> Unstar'
-                    : '<i class="far fa-star"></i> Star';
-            }
-        }
+        this.contextMenu.showContextMenu(event, taskId);
     }
 
     hideContextMenu() {
-        const contextMenu = document.getElementById('context-menu');
-        if (contextMenu) {
-            contextMenu.style.display = 'none';
-        }
-        this.contextMenuTaskId = null;
+        this.contextMenu.hideContextMenu();
     }
 
     populateContextMenuProjects() {
-        const submenu = document.getElementById('context-menu-projects');
-        if (!submenu) return;
-
-        // Clear existing items
-        submenu.innerHTML = '<div class="context-menu-item" data-action="set-project" data-project=""><i class="fas fa-times-circle"></i> No Project</div>';
-
-        // Add projects
-        this.projects.forEach(project => {
-            const item = document.createElement('div');
-            item.className = 'context-menu-item';
-            item.dataset.action = 'set-project';
-            item.dataset.project = project.id;
-            item.innerHTML = `<i class="fas fa-folder"></i> ${escapeHtml(project.title)}`;
-            submenu.appendChild(item);
-        });
+        this.contextMenu.populateContextMenuProjects();
     }
 
     async handleContextMenuAction(action, data, taskId) {
-        const task = this.tasks.find(t => t.id === taskId);
-        if (!task) return;
-
-        switch (action) {
-            case 'edit':
-                this.openTaskModal(task);
-                break;
-
-            case 'duplicate':
-                this.duplicateTask(taskId);
-                break;
-
-            case 'save-as-template':
-                this.saveTaskAsTemplate(taskId);
-                break;
-
-            case 'toggle-star':
-                this.saveState('Toggle task star');
-                task.toggleStar();
-                await this.saveTasks();
-                this.renderView();
-                this.showToast(task.starred ? 'Task starred' : 'Task unstarred');
-                break;
-
-            case 'set-status':
-                this.saveState('Change task status');
-                task.status = data.status;
-                task.updatedAt = new Date().toISOString();
-                await this.saveTasks();
-                this.renderView();
-                this.updateCounts();
-                this.showToast(`Status changed to ${data.status}`);
-                break;
-
-            case 'set-energy':
-                this.saveState('Change task energy');
-                task.energy = data.energy;
-                task.updatedAt = new Date().toISOString();
-                await this.saveTasks();
-                this.renderView();
-                this.showToast(`Energy changed to ${data.energy || 'none'}`);
-                break;
-
-            case 'set-project':
-                const projectId = data.project || null;
-                this.saveState('Change task project');
-                task.projectId = projectId;
-                task.updatedAt = new Date().toISOString();
-                await this.saveTasks();
-                this.renderView();
-                this.showToast(projectId ? 'Moved to project' : 'Removed from project');
-                break;
-
-            case 'add-context':
-                this.addContextFromMenu(task);
-                break;
-
-            case 'remove-context':
-                this.removeContextFromMenu(task);
-                break;
-
-            case 'complete':
-                this.toggleTaskComplete(taskId);
-                break;
-
-            case 'archive':
-                this.archiveTask(taskId);
-                break;
-
-            case 'delete':
-                this.deleteTask(taskId);
-                break;
-        }
-    }
-
-    addContextFromMenu(task) {
-        const allContexts = [...this.defaultContexts, ...this.getCustomContexts()];
-        const usedContexts = task.contexts || [];
-        const availableContexts = allContexts.filter(c => !usedContexts.includes(c));
-
-        if (availableContexts.length === 0) {
-            this.showToast('No more contexts to add');
-            return;
-        }
-
-        // Simple prompt for now (could be improved with a custom modal)
-        const context = prompt(`Enter context name or choose from:\n${availableContexts.join(', ')}`);
-
-        if (!context) return;
-
-        this.saveState('Add context to task');
-        const formattedContext = context.startsWith('@') ? context : `@${context}`;
-        task.contexts = task.contexts || [];
-        task.contexts.push(formattedContext);
-        task.updatedAt = new Date().toISOString();
-
-        this.saveTasks();
-        this.renderView();
-        this.showToast(`Added ${formattedContext}`);
-    }
-
-    removeContextFromMenu(task) {
-        const contexts = task.contexts || [];
-        if (contexts.length === 0) {
-            this.showToast('No contexts to remove');
-            return;
-        }
-
-        // Simple prompt for now
-        const contextList = contexts.map((c, i) => `${i + 1}. ${c}`).join('\n');
-        const choice = prompt(`Enter number of context to remove:\n${contextList}`);
-
-        if (!choice) return;
-
-        const index = parseInt(choice) - 1;
-        if (index >= 0 && index < contexts.length) {
-            this.saveState('Remove context from task');
-            const removed = task.contexts.splice(index, 1)[0];
-            task.updatedAt = new Date().toISOString();
-            this.saveTasks();
-            this.renderView();
-            this.showToast(`Removed ${removed}`);
-        } else {
-            this.showToast('Invalid choice');
-        }
+        return this.contextMenu.handleContextMenuAction(action, data, taskId);
     }
 
     // ==================== DEPENDENCIES VISUALIZATION ====================

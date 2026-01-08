@@ -54,24 +54,53 @@ export class ContextMenuManager {
             }
         });
 
-        // Long-press for mobile
+        // Long-press for mobile - improved implementation
+        let touchStartPos = null;
+
         document.addEventListener('touchstart', (e) => {
             const taskItem = e.target.closest('.task-item');
-            if (taskItem) {
+            if (taskItem && e.touches.length > 0) {
+                // Store touch position for later use
+                touchStartPos = {
+                    x: e.touches[0].clientX,
+                    y: e.touches[0].clientY
+                };
+
                 this.longPressTimer = setTimeout(() => {
-                    const taskId = taskItem.dataset.taskId;
-                    this.showContextMenu(e.touches[0], taskId);
+                    // Check if we're still on the same task item
+                    const currentTaskItem = document.elementFromPoint(touchStartPos.x, touchStartPos.y)?.closest('.task-item');
+                    if (currentTaskItem && currentTaskItem.dataset.taskId === taskItem.dataset.taskId) {
+                        const taskId = taskItem.dataset.taskId;
+                        // Create a synthetic event object with the stored coordinates
+                        const syntheticEvent = {
+                            clientX: touchStartPos.x,
+                            clientY: touchStartPos.y,
+                            preventDefault: () => {}
+                        };
+                        this.showContextMenu(syntheticEvent, taskId);
+                    }
+                    touchStartPos = null;
                 }, 500);
             }
+        }, { passive: true }); // Use passive for better scroll performance
+
+        document.addEventListener('touchend', (e) => {
+            clearTimeout(this.longPressTimer);
+            touchStartPos = null;
         });
 
-        document.addEventListener('touchend', () => {
-            clearTimeout(this.longPressTimer);
-        });
-
-        document.addEventListener('touchmove', () => {
-            clearTimeout(this.longPressTimer);
-        });
+        document.addEventListener('touchmove', (e) => {
+            // Clear timer if moved too much (to prevent accidental triggers during scroll)
+            if (touchStartPos && e.touches.length > 0) {
+                const moveX = Math.abs(e.touches[0].clientX - touchStartPos.x);
+                const moveY = Math.abs(e.touches[0].clientY - touchStartPos.y);
+                // Allow small movements but cancel if moved more than 10px
+                if (moveX > 10 || moveY > 10) {
+                    clearTimeout(this.longPressTimer);
+                    touchStartPos = null;
+                }
+            }
+        }, { passive: true });
     }
 
     /**
@@ -85,6 +114,10 @@ export class ContextMenuManager {
 
         // Populate projects submenu
         this.populateContextMenuProjects();
+
+        // Populate context submenus
+        this.populateAddContextMenu(taskId);
+        this.populateRemoveContextMenu(taskId);
 
         // Position menu
         const x = event.clientX || event.pageX;
@@ -188,7 +221,7 @@ export class ContextMenuManager {
                 task.toggleStar();
                 await this.app.saveTasks?.();
                 this.app.renderView?.();
-                this.app.showNotification?.(task.starred ? 'Task starred' : 'Task unstarred');
+                this.app.showToast?.(task.starred ? 'Task starred' : 'Task unstarred');
                 break;
 
             case 'set-status':
@@ -198,7 +231,7 @@ export class ContextMenuManager {
                 await this.app.saveTasks?.();
                 this.app.renderView?.();
                 this.app.updateCounts?.();
-                this.app.showNotification?.(`Status changed to ${data.status}`);
+                this.app.showToast?.(`Status changed to ${data.status}`);
                 break;
 
             case 'set-energy':
@@ -207,7 +240,7 @@ export class ContextMenuManager {
                 task.updatedAt = new Date().toISOString();
                 await this.app.saveTasks?.();
                 this.app.renderView?.();
-                this.app.showNotification?.(`Energy changed to ${data.energy || 'none'}`);
+                this.app.showToast?.(`Energy changed to ${data.energy || 'none'}`);
                 break;
 
             case 'set-project':
@@ -217,15 +250,37 @@ export class ContextMenuManager {
                 task.updatedAt = new Date().toISOString();
                 await this.app.saveTasks?.();
                 this.app.renderView?.();
-                this.app.showNotification?.(projectId ? 'Moved to project' : 'Removed from project');
+                this.app.showToast?.(projectId ? 'Moved to project' : 'Removed from project');
                 break;
 
             case 'add-context':
-                this.addContextFromMenu(task);
+                const contextToAdd = data.context;
+                if (contextToAdd) {
+                    this.app.saveState?.('Add context to task');
+                    task.contexts = task.contexts || [];
+                    if (!task.contexts.includes(contextToAdd)) {
+                        task.contexts.push(contextToAdd);
+                        task.updatedAt = new Date().toISOString();
+                        await this.app.saveTasks?.();
+                        this.app.renderView?.();
+                        this.app.showToast?.(`Added ${contextToAdd}`);
+                    }
+                }
                 break;
 
             case 'remove-context':
-                this.removeContextFromMenu(task);
+                const contextToRemove = data.context;
+                if (contextToRemove && task.contexts) {
+                    this.app.saveState?.('Remove context from task');
+                    const index = task.contexts.indexOf(contextToRemove);
+                    if (index > -1) {
+                        task.contexts.splice(index, 1);
+                        task.updatedAt = new Date().toISOString();
+                        await this.app.saveTasks?.();
+                        this.app.renderView?.();
+                        this.app.showToast?.(`Removed ${contextToRemove}`);
+                    }
+                }
                 break;
 
             case 'complete':
@@ -243,61 +298,89 @@ export class ContextMenuManager {
     }
 
     /**
-     * Add context to task from context menu
+     * Populate "Add Context" submenu with available contexts
      */
-    async addContextFromMenu(task) {
-        const allContexts = [...this.state.defaultContexts, ...this.getCustomContexts()];
+    populateAddContextMenu(taskId) {
+        const submenu = document.getElementById('context-menu-add-context');
+        if (!submenu) return;
+
+        const task = this.state.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
         const usedContexts = task.contexts || [];
+        const allContexts = [...this.state.defaultContexts, ...this.getCustomContexts()];
         const availableContexts = allContexts.filter(c => !usedContexts.includes(c));
 
+        // Clear existing items
+        submenu.innerHTML = '';
+
         if (availableContexts.length === 0) {
-            this.app.showNotification?.('No more contexts to add');
+            const item = document.createElement('div');
+            item.className = 'context-menu-item context-menu-disabled';
+            item.textContent = 'No contexts available';
+            submenu.appendChild(item);
             return;
         }
 
-        // Simple prompt for now (could be improved with a custom modal)
-        const context = prompt(`Enter context name or choose from:\n${availableContexts.join(', ')}`);
+        // Add available contexts
+        availableContexts.forEach(context => {
+            const item = document.createElement('div');
+            item.className = 'context-menu-item';
+            item.dataset.action = 'add-context';
+            item.dataset.context = context;
 
-        if (!context) return;
+            // Safe DOM creation
+            const icon = document.createElement('i');
+            icon.className = 'fas fa-tag';
+            item.appendChild(icon);
 
-        this.app.saveState?.('Add context to task');
-        const formattedContext = context.startsWith('@') ? context : `@${context}`;
-        task.contexts = task.contexts || [];
-        task.contexts.push(formattedContext);
-        task.updatedAt = new Date().toISOString();
+            const text = document.createTextNode(' ' + context);
+            item.appendChild(text);
 
-        await this.app.saveTasks?.();
-        this.app.renderView?.();
-        this.app.showNotification?.(`Added ${formattedContext}`);
+            submenu.appendChild(item);
+        });
     }
 
     /**
-     * Remove context from task from context menu
+     * Populate "Remove Context" submenu with task's current contexts
      */
-    async removeContextFromMenu(task) {
+    populateRemoveContextMenu(taskId) {
+        const submenu = document.getElementById('context-menu-remove-context');
+        if (!submenu) return;
+
+        const task = this.state.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
         const contexts = task.contexts || [];
+
+        // Clear existing items
+        submenu.innerHTML = '';
+
         if (contexts.length === 0) {
-            this.app.showNotification?.('No contexts to remove');
+            const item = document.createElement('div');
+            item.className = 'context-menu-item context-menu-disabled';
+            item.textContent = 'No contexts to remove';
+            submenu.appendChild(item);
             return;
         }
 
-        // Simple prompt for now
-        const contextList = contexts.map((c, i) => `${i + 1}. ${c}`).join('\n');
-        const choice = prompt(`Enter number of context to remove:\n${contextList}`);
+        // Add task's contexts
+        contexts.forEach(context => {
+            const item = document.createElement('div');
+            item.className = 'context-menu-item';
+            item.dataset.action = 'remove-context';
+            item.dataset.context = context;
 
-        if (!choice) return;
+            // Safe DOM creation
+            const icon = document.createElement('i');
+            icon.className = 'fas fa-eraser';
+            item.appendChild(icon);
 
-        const index = parseInt(choice) - 1;
-        if (index >= 0 && index < contexts.length) {
-            this.app.saveState?.('Remove context from task');
-            const removed = task.contexts.splice(index, 1)[0];
-            task.updatedAt = new Date().toISOString();
-            await this.app.saveTasks?.();
-            this.app.renderView?.();
-            this.app.showNotification?.(`Removed ${removed}`);
-        } else {
-            this.app.showNotification?.('Invalid choice');
-        }
+            const text = document.createTextNode(' ' + context);
+            item.appendChild(text);
+
+            submenu.appendChild(item);
+        });
     }
 
     /**

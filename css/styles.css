@@ -1447,6 +1447,17 @@ body {
     color: white;
 }
 
+.context-menu-disabled {
+    color: var(--text-secondary);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.context-menu-disabled:hover {
+    background: transparent !important;
+    cursor: not-allowed;
+}
+
 /* Submenu Styles */
 .context-menu-submenu {
     position: relative;
