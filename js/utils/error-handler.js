@@ -71,7 +71,7 @@ export class ErrorHandler {
         this.errors = [];
         this.maxErrors = 100; // Keep last 100 errors in memory
         this.listeners = new Set();
-        this.isEnabled = process.env.NODE_ENV !== 'production';
+        this.isEnabled = typeof process !== 'undefined' && process.env && process.env.NODE_ENV !== 'production';
     }
 
     /**

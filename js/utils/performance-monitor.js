@@ -9,7 +9,7 @@ export class PerformanceMonitor {
     constructor() {
         this.metrics = new Map();
         this.observers = new Set();
-        this.isEnabled = process.env.NODE_ENV !== 'production';
+        this.isEnabled = typeof process !== 'undefined' && process.env && process.env.NODE_ENV !== 'production';
     }
 
     /**
