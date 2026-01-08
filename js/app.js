@@ -54,6 +54,8 @@ import { ContextMenuManager } from './modules/ui/context-menu.js';
 import { WeeklyReviewManager } from './modules/features/weekly-review.js';
 import { DependenciesManager } from './modules/features/dependencies.js';
 import { TemplatesManager } from './modules/features/templates.js';
+import { MobileNavigationManager } from './modules/ui/mobile-navigation.js';
+import { DashboardManager } from './modules/features/dashboard.js';
 
 class GTDApp {
     // =========================================================================
@@ -108,6 +110,8 @@ class GTDApp {
         this.weeklyReview = new WeeklyReviewManager(this, this);
         this.dependencies = new DependenciesManager(this, this);
         this.templatesManager = new TemplatesManager(this, this);
+        this.mobileNavigation = new MobileNavigationManager(this, this);
+        this.dashboard = new DashboardManager(this, this);
     }
 
     async init() {
@@ -213,7 +217,6 @@ class GTDApp {
         this.setupFocusMode();
         this.setupNewProjectButton();
         this.setupTemplates();
-        this.setupMobileMenu();
         this.setupDailyReview();
         this.setupArchive();
         this.setupContextMenu();
@@ -2529,76 +2532,6 @@ class GTDApp {
         return this.templatesManager.getTemplateSubtasks();
     }
 
-    setupMobileMenu() {
-        const mobileMenuBtn = document.getElementById('btn-mobile-menu');
-        const mobileMenuDropdown = document.getElementById('mobile-menu-dropdown');
-
-        if (!mobileMenuBtn || !mobileMenuDropdown) return;
-
-        // Toggle mobile menu
-        mobileMenuBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const isOpen = mobileMenuDropdown.style.display === 'block';
-            mobileMenuDropdown.style.display = isOpen ? 'none' : 'block';
-            mobileMenuBtn.setAttribute('aria-expanded', !isOpen);
-        });
-
-        // Close menu when clicking outside
-        document.addEventListener('click', (e) => {
-            if (mobileMenuDropdown.style.display === 'block' &&
-                !mobileMenuDropdown.contains(e.target) &&
-                !mobileMenuBtn.contains(e.target)) {
-                mobileMenuDropdown.style.display = 'none';
-                mobileMenuBtn.setAttribute('aria-expanded', 'false');
-            }
-        });
-
-        // Handle menu item clicks
-        const menuItems = mobileMenuDropdown.querySelectorAll('.mobile-menu-item');
-        menuItems.forEach(item => {
-            item.addEventListener('click', (e) => {
-                const action = e.currentTarget.dataset.action;
-
-                // Close the menu
-                mobileMenuDropdown.style.display = 'none';
-                mobileMenuBtn.setAttribute('aria-expanded', 'false');
-
-                // Execute the corresponding action
-                switch (action) {
-                    case 'calendar-view':
-                        this.showCalendar?.();
-                        break;
-                    case 'focus-mode':
-                        this.enterFocusMode?.();
-                        break;
-                    case 'new-project':
-                        this.openProjectModal?.();
-                        break;
-                    case 'daily-review':
-                        this.showDailyReview?.();
-                        break;
-                    case 'weekly-review':
-                        this.showWeeklyReview?.();
-                        break;
-                    case 'dashboard':
-                        this.showDashboard?.();
-                        break;
-                    case 'dependencies':
-                        this.showDependencies?.();
-                        break;
-                    case 'heatmap':
-                        this.openHeatmapModal?.();
-                        break;
-                    case 'suggestions':
-                        this.getSuggestions?.();
-                        break;
-                }
-            });
-        });
-    }
-
     // ==================== ARCHIVE SYSTEM ====================
 
     setupArchive() {
@@ -3656,254 +3589,7 @@ class GTDApp {
     // ==================== MOBILE NAVIGATION ====================
 
     setupMobileNavigation() {
-        // Wait for DOM to be ready before setting up mobile navigation
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => this.setupMobileNavigationInternal());
-        } else {
-            // Use setTimeout to ensure DOM is fully parsed
-            setTimeout(() => this.setupMobileNavigationInternal(), 0);
-        }
-    }
-
-    setupMobileNavigationInternal() {
-        console.log('[Mobile Nav] Setting up mobile navigation...');
-
-        // Hamburger Menu
-        const hamburger = document.getElementById('hamburger-menu');
-        const sidebar = document.querySelector('.sidebar');
-        const overlay = document.getElementById('sidebar-overlay');
-
-        if (hamburger && sidebar && overlay) {
-            hamburger.addEventListener('click', () => {
-                const isOpen = sidebar.classList.contains('active');
-                sidebar.classList.toggle('active');
-                overlay.classList.toggle('active');
-                hamburger.classList.toggle('active');
-                hamburger.setAttribute('aria-expanded', !isOpen);
-            });
-
-            overlay.addEventListener('click', () => {
-                sidebar.classList.remove('active');
-                overlay.classList.remove('active');
-                hamburger.classList.remove('active');
-                hamburger.setAttribute('aria-expanded', 'false');
-            });
-        }
-
-        // Bottom Navigation
-        const bottomNavItems = document.querySelectorAll('.bottom-nav-item[data-view]');
-        console.log('[Mobile Nav] Found bottom nav items:', bottomNavItems.length);
-
-        bottomNavItems.forEach((item, index) => {
-            console.log('[Mobile Nav] Setting up item:', item.dataset.view);
-
-            // Use click event with proper binding
-            item.addEventListener('click', (e) => {
-                e.preventDefault();
-                const view = item.dataset.view;
-                console.log('[Bottom Nav] Clicked view:', view);
-
-                // Call switchView with proper context
-                if (this.switchView && typeof this.switchView === 'function') {
-                    this.switchView(view);
-                } else {
-                    console.error('[Bottom Nav] switchView not available');
-                }
-
-                // Update active state
-                bottomNavItems.forEach(nav => nav.classList.remove('active'));
-                item.classList.add('active');
-
-                // Close sidebar if open
-                if (sidebar) {
-                    sidebar.classList.remove('active');
-                    if (overlay) overlay.classList.remove('active');
-                    if (hamburger) hamburger.classList.remove('active');
-                }
-            });
-
-            // Also add touchend for better mobile responsiveness
-            item.addEventListener('touchend', (e) => {
-                e.preventDefault(); // Prevent mouse click event
-                const view = item.dataset.view;
-                console.log('[Bottom Nav] Touch ended on view:', view);
-
-                if (this.switchView && typeof this.switchView === 'function') {
-                    this.switchView(view);
-                }
-
-                // Update active state
-                bottomNavItems.forEach(nav => nav.classList.remove('active'));
-                item.classList.add('active');
-
-                // Close sidebar if open
-                if (sidebar) {
-                    sidebar.classList.remove('active');
-                    if (overlay) overlay.classList.remove('active');
-                    if (hamburger) hamburger.classList.remove('active');
-                }
-            });
-        });
-
-        // Templates Mobile Button
-        const btnTemplatesMobile = document.getElementById('btn-templates-mobile');
-        if (btnTemplatesMobile) {
-            btnTemplatesMobile.addEventListener('click', () => {
-                this.openTemplatesModal();
-            });
-        }
-
-        // Search Mobile Button
-        const btnSearchMobile = document.getElementById('btn-search-mobile');
-        if (btnSearchMobile) {
-            btnSearchMobile.addEventListener('click', () => {
-                const searchInput = document.getElementById('global-search');
-                if (searchInput) {
-                    searchInput.focus();
-                }
-            });
-        }
-
-        // Pull to Refresh
-        this.setupPullToRefresh();
-
-        // Swipe Gestures for Tasks
-        this.setupSwipeGestures();
-    }
-
-    setupPullToRefresh() {
-        let startY = 0;
-        let currentY = 0;
-        let isPulling = false;
-        const pullThreshold = 80;
-        const contentArea = document.querySelector('.content-area');
-
-        if (!contentArea) return;
-
-        // Add pull-to-refresh indicator
-        const indicator = document.createElement('div');
-        indicator.className = 'pull-to-refresh';
-        indicator.innerHTML = '<i class="fas fa-sync-alt"></i> <span>Pull to refresh</span>';
-        contentArea.style.position = 'relative';
-        contentArea.insertBefore(indicator, contentArea.firstChild);
-
-        contentArea.addEventListener('touchstart', (e) => {
-            if (contentArea.scrollTop === 0) {
-                startY = e.touches[0].clientY;
-                isPulling = true;
-            }
-        }, { passive: true });
-
-        contentArea.addEventListener('touchmove', (e) => {
-            if (!isPulling) return;
-
-            currentY = e.touches[0].clientY;
-            const diff = currentY - startY;
-
-            if (diff > 0 && contentArea.scrollTop === 0) {
-                const pullDistance = Math.min(diff * 0.5, pullThreshold);
-                indicator.style.transform = `translateY(${pullDistance}px)`;
-
-                if (pullDistance >= pullThreshold) {
-                    indicator.classList.add('refreshing');
-                } else {
-                    indicator.classList.remove('refreshing');
-                }
-            }
-        }, { passive: true });
-
-        contentArea.addEventListener('touchend', async () => {
-            if (!isPulling) return;
-
-            const diff = currentY - startY;
-            indicator.style.transform = 'translateY(0)';
-
-            if (diff >= pullThreshold * 2) {
-                // Trigger refresh
-                indicator.classList.add('refreshing');
-                await this.refreshTasks();
-                setTimeout(() => {
-                    indicator.classList.remove('refreshing');
-                }, 1000);
-            }
-
-            isPulling = false;
-            startY = 0;
-            currentY = 0;
-        });
-    }
-
-    async refreshTasks() {
-        // Reload tasks from storage
-        const tasksData = this.storage.getTasks();
-        this.tasks = tasksData.map(data => Task.fromJSON(data));
-        this.renderView();
-        this.updateCounts();
-    }
-
-    setupSwipeGestures() {
-        // Only enable swipe gestures on touch devices
-        if (!('ontouchstart' in window)) return;
-
-        const tasksContainer = document.querySelector('.content-area');
-        if (!tasksContainer) return;
-
-        let startX = 0;
-        let currentX = 0;
-        let currentTaskElement = null;
-        let isSwipping = false;
-
-        tasksContainer.addEventListener('touchstart', (e) => {
-            const taskItem = e.target.closest('.task-item');
-            if (!taskItem) return;
-
-            startX = e.touches[0].clientX;
-            currentTaskElement = taskItem;
-            isSwipping = true;
-        }, { passive: true });
-
-        tasksContainer.addEventListener('touchmove', (e) => {
-            if (!isSwipping || !currentTaskElement) return;
-
-            currentX = e.touches[0].clientX;
-            const diff = currentX - startX;
-            const threshold = 50;
-
-            // Prevent scrolling while swiping
-            if (Math.abs(diff) > 10) {
-                e.preventDefault();
-            }
-
-            if (Math.abs(diff) > threshold) {
-                currentTaskElement.style.transform = `translateX(${diff}px)`;
-            }
-        }, { passive: false });
-
-        tasksContainer.addEventListener('touchend', (e) => {
-            if (!isSwipping || !currentTaskElement) return;
-
-            const diff = currentX - startX;
-            const threshold = 80;
-            const taskId = currentTaskElement.dataset.taskId;
-
-            if (Math.abs(diff) > threshold) {
-                // Swipe completed - trigger action
-                if (diff > 0) {
-                    // Swipe right - complete task
-                    this.toggleTaskComplete(taskId);
-                } else {
-                    // Swipe left - delete/archive task
-                    this.archiveTask(taskId);
-                }
-            }
-
-            // Reset
-            currentTaskElement.style.transform = '';
-            currentTaskElement = null;
-            isSwipping = false;
-            startX = 0;
-            currentX = 0;
-        });
+        this.mobileNavigation.setupMobileNavigation();
     }
 
     showNotification(message) {
