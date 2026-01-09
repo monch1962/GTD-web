@@ -148,7 +148,7 @@ export class MobileNavigationManager {
                         this.app.openHeatmapModal?.();
                         break;
                     case 'suggestions':
-                        this.app.getSuggestions?.();
+                        this.app.showSuggestions?.();
                         break;
                 }
             });

@@ -6058,21 +6058,21 @@ class GTDApp {
      * Show suggestion modal with smart recommendations
      */
     showSuggestions() {
-        return this.smartSuggestions.showSuggestions();
+        this.smartSuggestions.showSuggestions();
     }
 
     /**
      * Render task suggestions in the modal
      */
     renderSuggestions() {
-        return this.smartSuggestions.renderSuggestions();
+        this.smartSuggestions.renderSuggestions();
     }
 
     /**
      * User clicked on a suggested task - highlight it and close modal
      */
     selectSuggestedTask(taskId) {
-        return this.smartSuggestions.selectSuggestedTask(taskId);
+        this.smartSuggestions.selectSuggestedTask(taskId);
     }
 }
 
