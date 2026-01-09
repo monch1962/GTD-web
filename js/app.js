@@ -74,6 +74,7 @@ import { SearchManager } from './modules/features/search.js';
 import { TaskOperations } from './modules/features/task-operations.js';
 import { ContextFilterManager } from './modules/features/context-filter.js';
 import { ProjectOperations } from './modules/features/project-operations.js';
+import { TaskModalManager } from './modules/features/task-modal.js';
 
 class GTDApp {
     // =========================================================================
@@ -129,6 +130,7 @@ class GTDApp {
         this.taskOperations = new TaskOperations(this, this);
         this.contextFilter = new ContextFilterManager(this, this);
         this.projectOperations = new ProjectOperations(this, this);
+        this.taskModal = new TaskModalManager(this, this);
     }
 
     async init() {
@@ -2933,7 +2935,59 @@ class GTDApp {
         return this.projectOperations.searchProjects(query);
     }
 
+    // =========================================================================
+    // TASK MODAL (Delegated to TaskModal module)
+    // =========================================================================
+
     openTaskModal(task = null, defaultProjectId = null, defaultData = {}) {
+        return this.taskModal.openTaskModal(task, defaultProjectId, defaultData);
+    }
+
+    closeTaskModal() {
+        return this.taskModal.closeTaskModal();
+    }
+
+    async saveTaskFromForm() {
+        return this.taskModal.saveTaskFromForm();
+    }
+
+    openTaskModalWithData(formData, projectId = null) {
+        return this.taskModal.openTaskModalWithData(formData, projectId);
+    }
+
+    renderWaitingForTasksList(currentTask) {
+        return this.taskModal.renderWaitingForTasksList(currentTask);
+    }
+
+    getSelectedWaitingForTasks() {
+        return this.taskModal.getSelectedWaitingForTasks();
+    }
+
+    renderSubtasksInModal(subtasks) {
+        return this.taskModal.renderSubtasksInModal(subtasks);
+    }
+
+    addSubtask() {
+        return this.taskModal.addSubtask();
+    }
+
+    removeSubtask(index) {
+        return this.taskModal.removeSubtask(index);
+    }
+
+    toggleSubtaskCompletion(index) {
+        return this.taskModal.toggleSubtaskCompletion(index);
+    }
+
+    getSubtasksFromModal() {
+        return this.taskModal.getSubtasksFromModal();
+    }
+
+    escapeHtml(text) {
+        return this.taskModal.escapeHtml(text);
+    }
+
+    openTaskModal_DEPRECATED(task = null, defaultProjectId = null, defaultData = {}) {
         const modal = document.getElementById('task-modal');
         const form = document.getElementById('task-form');
         const title = document.getElementById('modal-title');
