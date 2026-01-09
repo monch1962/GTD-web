@@ -76,6 +76,7 @@ import { ContextFilterManager } from './modules/features/context-filter.js';
 import { ProjectOperations } from './modules/features/project-operations.js';
 import { TaskModalManager } from './modules/features/task-modal.js';
 import { ProjectModalManager } from './modules/features/project-modal.js';
+import { DataExportImportManager } from './modules/features/data-export-import.js';
 
 class GTDApp {
     // =========================================================================
@@ -133,6 +134,7 @@ class GTDApp {
         this.projectOperations = new ProjectOperations(this, this);
         this.taskModal = new TaskModalManager(this, this);
         this.projectModal = new ProjectModalManager(this, this);
+        this.dataExportImport = new DataExportImportManager(this, this);
     }
 
     async init() {
@@ -386,157 +388,6 @@ class GTDApp {
             this.filters[filterKey] = e.target.value;
             this.renderView();
         });
-    }
-
-    setupDataExportImport() {
-        const exportBtn = document.getElementById('btn-export');
-        const importBtn = document.getElementById('btn-import');
-        const fileInput = document.getElementById('import-file-input');
-
-        if (!exportBtn || !importBtn || !fileInput) return;
-
-        // Export functionality
-        exportBtn.addEventListener('click', () => {
-            this.exportData();
-        });
-
-        // Import functionality
-        importBtn.addEventListener('click', () => {
-            fileInput.click();
-        });
-
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                this.importData(file);
-                // Reset file input so same file can be selected again if needed
-                fileInput.value = '';
-            }
-        });
-    }
-
-    /**
-     * Export all GTD data to a JSON file
-     */
-    exportData() {
-        try {
-            const exportData = {
-                version: '1.0',
-                exportDate: new Date().toISOString(),
-                tasks: this.tasks.map(task => task.toJSON()),
-                projects: this.projects.map(project => project.toJSON()),
-                customContexts: JSON.parse(localStorage.getItem('gtd_custom_contexts') || '[]'),
-                usageStats: this.usageStats
-            };
-
-            // Create a blob and download
-            const dataStr = JSON.stringify(exportData, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(dataBlob);
-
-            const link = document.createElement('a');
-            const now = new Date();
-            const timestamp = now.getFullYear() + '-' +
-                String(now.getMonth() + 1).padStart(2, '0') + '-' +
-                String(now.getDate()).padStart(2, '0') + '-' +
-                String(now.getHours()).padStart(2, '0') + '-' +
-                String(now.getMinutes()).padStart(2, '0') + '-' +
-                String(now.getSeconds()).padStart(2, '0');
-            link.href = url;
-            link.download = `gtd-backup-${timestamp}.json`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            URL.revokeObjectURL(url);
-
-            alert('Data exported successfully! File downloaded.');
-        } catch (error) {
-            console.error('Export failed:', error);
-            alert('Failed to export data. Please try again.');
-        }
-    }
-
-    /**
-     * Import GTD data from a JSON file
-     */
-    async importData(file) {
-        try {
-            // Confirm import with user
-            const confirmMsg = 'This will replace all your current GTD data with the imported data.\n\n' +
-                              'Are you sure you want to continue?';
-            if (!confirm(confirmMsg)) {
-                return;
-            }
-
-            // Read file
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                try {
-                    const importData = JSON.parse(e.target.result);
-
-                    // Validate import data
-                    if (!importData.tasks || !Array.isArray(importData.tasks)) {
-                        throw new Error('Invalid import file: missing or invalid tasks array');
-                    }
-                    if (!importData.projects || !Array.isArray(importData.projects)) {
-                        throw new Error('Invalid import file: missing or invalid projects array');
-                    }
-
-                    // Clear existing data
-                    this.tasks = [];
-                    this.projects = [];
-
-                    // Import tasks
-                    importData.tasks.forEach(taskData => {
-                        const task = new Task(taskData);
-                        this.tasks.push(task);
-                    });
-
-                    // Import projects
-                    importData.projects.forEach(projectData => {
-                        const project = new Project(projectData);
-                        this.projects.push(project);
-                    });
-
-                    // Import custom contexts if present
-                    if (importData.customContexts && Array.isArray(importData.customContexts)) {
-                        localStorage.setItem('gtd_custom_contexts', JSON.stringify(importData.customContexts));
-                    }
-
-                    // Import usage stats if present
-                    if (importData.usageStats) {
-                        this.usageStats = importData.usageStats;
-                        this.saveUsageStats();
-                    }
-
-                    // Save to storage
-                    await this.saveTasks();
-                    await this.saveProjects();
-
-                    // Refresh UI
-                    this.renderView();
-                    this.updateCounts();
-                    this.renderProjectsDropdown();
-                    this.renderCustomContexts();
-                    this.updateQuickAddPlaceholder();
-
-                    alert(`Import successful!\n\nImported ${this.tasks.length} tasks and ${this.projects.length} projects.`);
-                } catch (parseError) {
-                    console.error('Failed to parse import file:', parseError);
-                    alert('Failed to parse import file. Please make sure it\'s a valid GTD backup file.');
-                }
-            };
-
-            reader.onerror = () => {
-                alert('Failed to read file. Please try again.');
-            };
-
-            reader.readAsText(file);
-        } catch (error) {
-            console.error('Import failed:', error);
-            alert('Failed to import data. Please try again.');
-        }
     }
 
     setupSyncButton() {
@@ -3015,6 +2866,22 @@ class GTDApp {
 
     renderGanttChart(project) {
         return this.projectModal.renderGanttChart(project);
+    }
+
+    // =========================================================================
+    // DATA EXPORT/IMPORT (Delegated to DataExportImport module)
+    // =========================================================================
+
+    setupDataExportImport() {
+        return this.dataExportImport.setupDataExportImport();
+    }
+
+    exportData() {
+        return this.dataExportImport.exportData();
+    }
+
+    async importData(file) {
+        return this.dataExportImport.importData(file);
     }
 
     openTaskModal_DEPRECATED(task = null, defaultProjectId = null, defaultData = {}) {
