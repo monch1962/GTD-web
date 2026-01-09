@@ -71,6 +71,7 @@ import { NewProjectButtonManager } from './modules/features/new-project-button.j
 import { NavigationManager } from './modules/features/navigation.js';
 import { SmartDateSuggestionsManager } from './modules/features/smart-date-suggestions.js';
 import { SearchManager } from './modules/features/search.js';
+import { TaskOperations } from './modules/features/task-operations.js';
 
 class GTDApp {
     // =========================================================================
@@ -123,6 +124,7 @@ class GTDApp {
         this.navigation = new NavigationManager(this, this);
         this.smartDateSuggestions = new SmartDateSuggestionsManager(this, this);
         this.search = new SearchManager(this, this);
+        this.taskOperations = new TaskOperations(this, this);
     }
 
     async init() {
@@ -2764,204 +2766,71 @@ class GTDApp {
     }
 
     // =========================================================================
-    // TASK OPERATIONS
+    // TASK OPERATIONS (Delegated to TaskOperations module)
     // =========================================================================
+
     async quickAddTask(title) {
-        // Save state for undo
-        this.saveState('Add task');
-
-        // Use natural language parser to extract task properties
-        const parsed = this.parser.parse(title);
-
-        // Determine status: if viewing a project, default to 'next', otherwise use current view
-        const status = this.currentProjectId ? 'next' : (this.currentView === 'all' ? 'inbox' : this.currentView);
-
-        const task = new Task({
-            title: parsed.title || title,
-            status: status,
-            type: 'task',
-            contexts: parsed.contexts,
-            energy: parsed.energy,
-            time: parsed.time,
-            dueDate: parsed.dueDate,
-            recurrence: parsed.recurrence,
-            projectId: this.currentProjectId || null
-        });
-
-        this.tasks.push(task);
-        await this.saveTasks();
-
-        // Track usage for smart defaults
-        this.trackTaskUsage(task);
-
-        this.renderView();
-        this.updateCounts();
-        this.updateContextFilter();
+        return this.taskOperations.quickAddTask(title);
     }
 
-    /**
-     * Duplicate a task with a new ID
-     */
     async duplicateTask(taskId) {
-        // Save state for undo
-        this.saveState('Duplicate task');
-
-        const originalTask = this.tasks.find(t => t.id === taskId);
-        if (!originalTask) return;
-
-        const duplicatedData = {
-            ...originalTask.toJSON(),
-            title: `${originalTask.title} (copy)`,
-            completed: false,
-            completedAt: null
-        };
-
-        const duplicateTask = new Task(duplicatedData);
-        this.tasks.push(duplicateTask);
-        await this.saveTasks();
-        this.renderView();
-        this.updateCounts();
+        return this.taskOperations.duplicateTask(taskId);
     }
 
     async toggleTaskComplete(taskId) {
-        // Save state for undo
-        this.saveState('Toggle task completion');
+        return this.taskOperations.toggleTaskComplete(taskId);
+    }
 
-        const task = this.tasks.find(t => t.id === taskId);
-        if (task) {
-            if (task.completed) {
-                task.markIncomplete();
-            } else {
-                task.markComplete();
-
-                // Check if task is recurring and create next instance
-                if (task.isRecurring() && !task.shouldRecurrenceEnd()) {
-                    const nextInstance = task.createNextInstance();
-                    if (nextInstance) {
-                        this.tasks.push(nextInstance);
-                        await this.saveTasks();
-                    }
-                }
-            }
-            await this.saveTasks();
-
-            // Check if any waiting tasks now have their dependencies met
-            await this.checkWaitingTasksDependencies();
-
-            this.renderView();
-            this.updateCounts();
-        }
+    async deleteTask(taskId) {
+        return this.taskOperations.deleteTask(taskId);
     }
 
     async migrateBlockedTasksToWaiting() {
-        let movedCount = 0;
-
-        // Check all tasks in Next or Someday that have unmet dependencies
-        this.tasks.forEach(task => {
-            if ((task.status === 'next' || task.status === 'someday') && !task.completed) {
-                // Check if task has unmet dependencies
-                if (task.waitingForTaskIds && task.waitingForTaskIds.length > 0) {
-                    if (!task.areDependenciesMet(this.tasks)) {
-                        // Move to Waiting
-                        task.status = 'waiting';
-                        task.updatedAt = new Date().toISOString();
-                        movedCount++;
-                    }
-                }
-            }
-        });
-
-        if (movedCount > 0) {
-            await this.saveTasks();
-            console.log(`Migrated ${movedCount} blocked task(s) to Waiting`);
-        }
-
-        // Update project dropdown counts since tasks changed status
-        this.renderProjectsDropdown();
-
-        return movedCount;
+        return this.taskOperations.migrateBlockedTasksToWaiting();
     }
 
     async checkWaitingTasksDependencies() {
-        let movedCount = 0;
-
-        // Check all waiting tasks
-        this.tasks.forEach(task => {
-            if (task.status === 'waiting') {
-                let shouldMove = false;
-                let reason = '';
-
-                // Check if task dependencies are met
-                if (task.waitingForTaskIds && task.waitingForTaskIds.length > 0) {
-                    if (task.areDependenciesMet(this.tasks)) {
-                        shouldMove = true;
-                        reason = 'dependencies met';
-                    }
-                }
-                // If no task dependencies, check if defer date has arrived
-                else if (!task.waitingForTaskIds || task.waitingForTaskIds.length === 0) {
-                    if (task.deferDate && task.isAvailable()) {
-                        shouldMove = true;
-                        reason = 'defer date arrived';
-                    }
-                    // If no defer date and no description, it's just waiting - move it
-                    else if (!task.deferDate && !task.waitingForDescription) {
-                        shouldMove = true;
-                        reason = 'no longer blocked';
-                    }
-                }
-
-                if (shouldMove) {
-                    // Move to Next Actions
-                    task.status = 'next';
-                    task.waitingForTaskIds = []; // Clear dependencies
-                    task.waitingForDescription = ''; // Clear description
-                    task.updatedAt = new Date().toISOString();
-                    movedCount++;
-                }
-            }
-        });
-
-        if (movedCount > 0) {
-            await this.saveTasks();
-        }
+        return this.taskOperations.checkWaitingTasksDependencies();
     }
 
-    /**
-     * Check if creating a dependency from prerequisiteTaskId to dependentTaskId
-     * would create a circular dependency
-     */
     wouldCreateCircularDependency(prerequisiteTaskId, dependentTaskId) {
-        const visited = new Set();
-        const queue = [prerequisiteTaskId];
+        return this.taskOperations.wouldCreateCircularDependency(prerequisiteTaskId, dependentTaskId);
+    }
 
-        while (queue.length > 0) {
-            const currentId = queue.shift();
+    async updateTaskPositions() {
+        return this.taskOperations.updateTaskPositions();
+    }
 
-            // If we've reached the dependent task, we have a circular dependency
-            if (currentId === dependentTaskId) {
-                return true;
-            }
+    getTaskById(taskId) {
+        return this.taskOperations.getTaskById(taskId);
+    }
 
-            if (visited.has(currentId)) {
-                continue;
-            }
-            visited.add(currentId);
+    async updateTask(taskId, updates) {
+        return this.taskOperations.updateTask(taskId, updates);
+    }
 
-            // Find all tasks that depend on the current task
-            const dependentTasks = this.tasks.filter(t =>
-                t.waitingForTaskIds && t.waitingForTaskIds.includes(currentId)
-            );
+    async assignTaskToProject(taskId, projectId) {
+        return this.taskOperations.assignTaskToProject(taskId, projectId);
+    }
 
-            // Add them to the queue to check
-            dependentTasks.forEach(t => {
-                if (!visited.has(t.id)) {
-                    queue.push(t.id);
-                }
-            });
-        }
+    async addTimeSpent(taskId, minutes) {
+        return this.taskOperations.addTimeSpent(taskId, minutes);
+    }
 
-        return false;
+    getTasksForProject(projectId) {
+        return this.taskOperations.getTasksForProject(projectId);
+    }
+
+    getActiveTasks() {
+        return this.taskOperations.getActiveTasks();
+    }
+
+    getCompletedTasks() {
+        return this.taskOperations.getCompletedTasks();
+    }
+
+    searchTasks(query) {
+        return this.taskOperations.searchTasks(query);
     }
 
     openTaskModal(task = null, defaultProjectId = null, defaultData = {}) {
@@ -3965,18 +3834,6 @@ class GTDApp {
         modal.classList.add('active');
     }
 
-    async deleteTask(taskId) {
-        if (!confirm('Are you sure you want to delete this task?')) return;
-
-        // Save state for undo
-        this.saveState('Delete task');
-
-        this.tasks = this.tasks.filter(t => t.id !== taskId);
-        await this.saveTasks();
-        this.renderView();
-        this.updateCounts();
-    }
-
     async deleteProject(projectId) {
         if (!confirm('Are you sure you want to delete this project? Tasks will not be deleted.')) return;
 
@@ -4280,30 +4137,6 @@ class GTDApp {
         });
     }
 
-    async assignTaskToProject(taskId, projectId) {
-        const task = this.tasks.find(t => t.id === taskId);
-        if (!task) return;
-
-        // Update task
-        task.projectId = projectId;
-
-        // If task was in Inbox, move it to Next Actions
-        if (task.status === 'inbox') {
-            task.status = 'next';
-        }
-
-        task.updatedAt = new Date().toISOString();
-
-        // Save changes
-        await this.saveTasks();
-
-        // Refresh UI
-        this.renderView();
-        this.updateCounts();
-        this.renderProjectsDropdown();
-
-    }
-
     getProjectTitle(projectId) {
         const project = this.projects.find(p => p.id === projectId);
         return project ? project.title : 'Unknown Project';
@@ -4421,26 +4254,6 @@ class GTDApp {
         // Re-render
         this.renderCustomContexts();
         this.renderView();
-    }
-
-    async updateTaskPositions() {
-        const container = document.querySelector('.tasks-container');
-        if (!container) return;
-
-        const taskElements = container.querySelectorAll('.task-item');
-
-        // Update position for each task based on its DOM order
-        taskElements.forEach((element, index) => {
-            const taskId = element.dataset.taskId;
-            const task = this.tasks.find(t => t.id === taskId);
-            if (task) {
-                task.position = index;
-                task.updatedAt = new Date().toISOString();
-            }
-        });
-
-        // Save the updated positions
-        await this.saveTasks();
     }
 
     async updateProjectPositions() {
