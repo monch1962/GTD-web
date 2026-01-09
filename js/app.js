@@ -65,6 +65,7 @@ import { ProductivityHeatmapManager } from './modules/features/productivity-heat
 import { UndoRedoManager } from './modules/features/undo-redo.js';
 import { BulkOperationsManager } from './modules/features/bulk-operations.js';
 import { TimeTrackingManager } from './modules/features/time-tracking.js';
+import { SubtasksManager } from './modules/features/subtasks.js';
 
 class GTDApp {
     // =========================================================================
@@ -120,6 +121,7 @@ class GTDApp {
         this.undoRedo = new UndoRedoManager(this, this);
         this.bulkOperations = new BulkOperationsManager(this, this);
         this.timeTracking = new TimeTrackingManager(this, this);
+        this.subtasks = new SubtasksManager(this, this);
     }
 
     async init() {
@@ -2079,80 +2081,26 @@ class GTDApp {
 
     // ==================================================================
 
-    // ==================== SUBTASKS MANAGEMENT ====================
+    // ==================== SUBTASKS MANAGEMENT (Delegated to SubtasksManager module) ====================
 
     renderSubtasksInModal(subtasks) {
-        const container = document.getElementById('subtasks-container');
-        if (!container) return;
-
-        if (!subtasks || subtasks.length === 0) {
-            container.innerHTML = '<p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: var(--spacing-sm);">No subtasks yet. Add subtasks to break down this task into smaller steps.</p>';
-            return;
-        }
-
-        container.innerHTML = subtasks.map((subtask, index) => `
-            <div data-subtask-index="${index}" style="display: flex; align-items: center; gap: var(--spacing-sm); padding: 6px 0; border-bottom: 1px solid var(--bg-secondary);">
-                <input type="checkbox" ${subtask.completed ? 'checked' : ''} onchange="app.toggleSubtaskCompletion(${index})" style="margin-right: 4px;">
-                <span style="flex: 1; ${subtask.completed ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${escapeHtml(subtask.title)}</span>
-                <button type="button" class="btn btn-secondary" style="font-size: 0.75rem; padding: 2px 6px;" onclick="app.removeSubtask(${index})">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        `).join('');
+        this.subtasks.renderSubtasksInModal(subtasks);
     }
 
     addSubtask() {
-        const input = document.getElementById('new-subtask-input');
-        const title = input.value.trim();
-
-        if (!title) return;
-
-        const container = document.getElementById('subtasks-container');
-        const currentSubtasks = this.getSubtasksFromModal();
-
-        currentSubtasks.push({
-            title: title,
-            completed: false
-        });
-
-        this.renderSubtasksInModal(currentSubtasks);
-        input.value = '';
+        this.subtasks.addSubtask();
     }
 
     removeSubtask(index) {
-        const currentSubtasks = this.getSubtasksFromModal();
-        currentSubtasks.splice(index, 1);
-        this.renderSubtasksInModal(currentSubtasks);
+        this.subtasks.removeSubtask(index);
     }
 
     toggleSubtaskCompletion(index) {
-        const currentSubtasks = this.getSubtasksFromModal();
-        if (currentSubtasks[index]) {
-            currentSubtasks[index].completed = !currentSubtasks[index].completed;
-            this.renderSubtasksInModal(currentSubtasks);
-        }
+        this.subtasks.toggleSubtaskCompletion(index);
     }
 
     getSubtasksFromModal() {
-        const container = document.getElementById('subtasks-container');
-        if (!container) return [];
-
-        const subtaskElements = container.querySelectorAll('div[data-subtask-index]');
-        const subtasks = [];
-
-        subtaskElements.forEach(el => {
-            const index = parseInt(el.dataset.subtaskIndex);
-            const checkbox = el.querySelector('input[type="checkbox"]');
-            const span = el.querySelector('span');
-            if (span) {
-                subtasks[index] = {
-                    title: span.textContent,
-                    completed: checkbox.checked
-                };
-            }
-        });
-
-        return subtasks;
+        return this.subtasks.getSubtasksFromModal();
     }
 
     // ==================== MODAL HELPERS ====================
