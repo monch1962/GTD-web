@@ -2,323 +2,323 @@
  * Comprehensive Tests for New Project Button Feature
  */
 
-import { NewProjectButtonManager } from '../js/modules/features/new-project-button.js';
-import { GTDApp } from '../js/app.js';
+import { GTDApp } from '../js/app.js'
+import { NewProjectButtonManager } from '../js/modules/features/new-project-button.js'
 
 describe('NewProjectButtonManager - Basic Functionality', () => {
-    let manager;
-    let mockState;
-    let mockApp;
+    let manager
+    let mockState
+    let mockApp
 
     beforeEach(() => {
-        localStorage.clear();
-        document.body.innerHTML = '';
+        localStorage.clear()
+        document.body.innerHTML = ''
 
         // Create new project button
-        const newProjectBtn = document.createElement('button');
-        newProjectBtn.id = 'btn-new-project';
-        document.body.appendChild(newProjectBtn);
+        const newProjectBtn = document.createElement('button')
+        newProjectBtn.id = 'btn-new-project'
+        document.body.appendChild(newProjectBtn)
 
         mockState = {
             tasks: [],
             projects: []
-        };
+        }
 
-        mockApp = new GTDApp();
-        mockApp.openTaskModal = jest.fn();
+        mockApp = new GTDApp()
+        mockApp.openTaskModal = jest.fn()
 
-        manager = new NewProjectButtonManager(mockState, mockApp);
-    });
+        manager = new NewProjectButtonManager(mockState, mockApp)
+    })
 
     afterEach(() => {
-        document.body.innerHTML = '';
-    });
+        document.body.innerHTML = ''
+    })
 
     describe('Constructor', () => {
         test('should initialize successfully', () => {
-            expect(manager).toBeDefined();
-            expect(manager.state).toBe(mockState);
-            expect(manager.app).toBe(mockApp);
-        });
-    });
+            expect(manager).toBeDefined()
+            expect(manager.state).toBe(mockState)
+            expect(manager.app).toBe(mockApp)
+        })
+    })
 
     describe('setupNewProjectButton()', () => {
         test('should find and setup the new project button', () => {
-            const button = document.getElementById('btn-new-project');
-            expect(button).toBeTruthy();
-        });
+            const button = document.getElementById('btn-new-project')
+            expect(button).toBeTruthy()
+        })
 
         test('should add click event listener', () => {
-            const button = document.getElementById('btn-new-project');
-            const addEventListenerSpy = jest.spyOn(button, 'addEventListener');
+            const button = document.getElementById('btn-new-project')
+            const addEventListenerSpy = jest.spyOn(button, 'addEventListener')
 
-            manager.setupNewProjectButton();
+            manager.setupNewProjectButton()
 
-            expect(addEventListenerSpy).toHaveBeenCalledWith('click', expect.any(Function));
+            expect(addEventListenerSpy).toHaveBeenCalledWith('click', expect.any(Function))
 
-            addEventListenerSpy.mockRestore();
-        });
+            addEventListenerSpy.mockRestore()
+        })
 
         test('should open task modal with project type on click', () => {
-            manager.setupNewProjectButton();
+            manager.setupNewProjectButton()
 
-            const button = document.getElementById('btn-new-project');
-            button.click();
+            const button = document.getElementById('btn-new-project')
+            button.click()
 
-            expect(mockApp.openTaskModal).toHaveBeenCalledWith(null, null, { type: 'project' });
-        });
+            expect(mockApp.openTaskModal).toHaveBeenCalledWith(null, null, { type: 'project' })
+        })
 
         test('should handle missing button gracefully', () => {
-            document.body.innerHTML = ''; // Remove button
+            document.body.innerHTML = '' // Remove button
 
             expect(() => {
-                manager.setupNewProjectButton();
-            }).not.toThrow();
-        });
+                manager.setupNewProjectButton()
+            }).not.toThrow()
+        })
 
         test('should only open modal when button actually clicked', () => {
-            manager.setupNewProjectButton();
+            manager.setupNewProjectButton()
 
-            expect(mockApp.openTaskModal).not.toHaveBeenCalled();
+            expect(mockApp.openTaskModal).not.toHaveBeenCalled()
 
-            const button = document.getElementById('btn-new-project');
-            button.click();
+            const button = document.getElementById('btn-new-project')
+            button.click()
 
-            expect(mockApp.openTaskModal).toHaveBeenCalled();
-        });
-    });
+            expect(mockApp.openTaskModal).toHaveBeenCalled()
+        })
+    })
 
     describe('Integration with App', () => {
         test('should use optional chaining when calling openTaskModal', () => {
-            const appWithoutModal = {};
-            const managerWithoutModal = new NewProjectButtonManager(mockState, appWithoutModal);
+            const appWithoutModal = {}
+            const managerWithoutModal = new NewProjectButtonManager(mockState, appWithoutModal)
 
             expect(() => {
-                managerWithoutModal.setupNewProjectButton();
-            }).not.toThrow();
-        });
+                managerWithoutModal.setupNewProjectButton()
+            }).not.toThrow()
+        })
 
         test('should pass correct arguments to openTaskModal', () => {
-            manager.setupNewProjectButton();
+            manager.setupNewProjectButton()
 
-            const button = document.getElementById('btn-new-project');
-            button.click();
+            const button = document.getElementById('btn-new-project')
+            button.click()
 
             expect(mockApp.openTaskModal).toHaveBeenCalledWith(
-                null,    // taskId
-                null,    // projectId
-                { type: 'project' }  // options
-            );
-        });
+                null, // taskId
+                null, // projectId
+                { type: 'project' } // options
+            )
+        })
 
         test('should allow modal to be opened multiple times', () => {
-            manager.setupNewProjectButton();
+            manager.setupNewProjectButton()
 
-            const button = document.getElementById('btn-new-project');
+            const button = document.getElementById('btn-new-project')
 
-            button.click();
-            button.click();
-            button.click();
+            button.click()
+            button.click()
+            button.click()
 
-            expect(mockApp.openTaskModal).toHaveBeenCalledTimes(3);
-        });
-    });
-});
+            expect(mockApp.openTaskModal).toHaveBeenCalledTimes(3)
+        })
+    })
+})
 
 describe('NewProjectButtonManager - Edge Cases', () => {
-    let manager;
-    let mockState;
-    let mockApp;
+    let manager
+    let mockState
+    let mockApp
 
     beforeEach(() => {
-        localStorage.clear();
-        document.body.innerHTML = '';
+        localStorage.clear()
+        document.body.innerHTML = ''
 
         mockState = {
             tasks: [],
             projects: []
-        };
+        }
 
-        mockApp = new GTDApp();
-        manager = new NewProjectButtonManager(mockState, mockApp);
-    });
+        mockApp = new GTDApp()
+        manager = new NewProjectButtonManager(mockState, mockApp)
+    })
 
     afterEach(() => {
-        document.body.innerHTML = '';
-    });
+        document.body.innerHTML = ''
+    })
 
     test('should handle button created after setup is called', () => {
-        manager.setupNewProjectButton();
+        manager.setupNewProjectButton()
 
-        const button = document.createElement('button');
-        button.id = 'btn-new-project';
-        document.body.appendChild(button);
+        const button = document.createElement('button')
+        button.id = 'btn-new-project'
+        document.body.appendChild(button)
 
         // Button created after setup won't have listener
         // This is expected behavior - setup must be called after DOM is ready
-        expect(button.onclick).toBeNull();
-    });
+        expect(button.onclick).toBeNull()
+    })
 
     test('should handle multiple setup calls', () => {
-        const button = document.createElement('button');
-        button.id = 'btn-new-project';
-        document.body.appendChild(button);
+        const button = document.createElement('button')
+        button.id = 'btn-new-project'
+        document.body.appendChild(button)
 
-        manager.setupNewProjectButton();
-        manager.setupNewProjectButton();
-        manager.setupNewProjectButton();
+        manager.setupNewProjectButton()
+        manager.setupNewProjectButton()
+        manager.setupNewProjectButton()
 
         // Should not throw or cause issues
-        expect(button).toBeTruthy();
-    });
+        expect(button).toBeTruthy()
+    })
 
     test('should work with different button states', () => {
-        const button = document.createElement('button');
-        button.id = 'btn-new-project';
-        button.disabled = true;
-        document.body.appendChild(button);
+        const button = document.createElement('button')
+        button.id = 'btn-new-project'
+        button.disabled = true
+        document.body.appendChild(button)
 
-        manager.setupNewProjectButton();
+        manager.setupNewProjectButton()
 
-        button.click();
+        button.click()
 
         // Event listener still attached even if button is disabled
-        expect(mockApp.openTaskModal).not.toHaveBeenCalled();
-    });
-});
+        expect(mockApp.openTaskModal).not.toHaveBeenCalled()
+    })
+})
 
 describe('NewProjectButtonManager - DOM Integration', () => {
-    let manager;
-    let mockState;
-    let mockApp;
+    let manager
+    let mockState
+    let mockApp
 
     beforeEach(() => {
-        localStorage.clear();
-        document.body.innerHTML = '';
+        localStorage.clear()
+        document.body.innerHTML = ''
 
         mockState = {
             tasks: [],
             projects: []
-        };
+        }
 
-        mockApp = new GTDApp();
-        mockApp.openTaskModal = jest.fn();
+        mockApp = new GTDApp()
+        mockApp.openTaskModal = jest.fn()
 
-        manager = new NewProjectButtonManager(mockState, mockApp);
-    });
+        manager = new NewProjectButtonManager(mockState, mockApp)
+    })
 
     afterEach(() => {
-        document.body.innerHTML = '';
-    });
+        document.body.innerHTML = ''
+    })
 
     test('should work with button in different DOM locations', () => {
         // Button in header
-        const header = document.createElement('header');
-        const button = document.createElement('button');
-        button.id = 'btn-new-project';
-        header.appendChild(button);
-        document.body.appendChild(header);
+        const header = document.createElement('header')
+        const button = document.createElement('button')
+        button.id = 'btn-new-project'
+        header.appendChild(button)
+        document.body.appendChild(header)
 
-        manager.setupNewProjectButton();
-        button.click();
+        manager.setupNewProjectButton()
+        button.click()
 
-        expect(mockApp.openTaskModal).toHaveBeenCalled();
-    });
+        expect(mockApp.openTaskModal).toHaveBeenCalled()
+    })
 
     test('should work with button as child of complex element', () => {
-        const container = document.createElement('div');
-        container.className = 'toolbar';
+        const container = document.createElement('div')
+        container.className = 'toolbar'
 
-        const inner = document.createElement('div');
-        inner.className = 'toolbar-group';
+        const inner = document.createElement('div')
+        inner.className = 'toolbar-group'
 
-        const button = document.createElement('button');
-        button.id = 'btn-new-project';
-        inner.appendChild(button);
-        container.appendChild(inner);
-        document.body.appendChild(container);
+        const button = document.createElement('button')
+        button.id = 'btn-new-project'
+        inner.appendChild(button)
+        container.appendChild(inner)
+        document.body.appendChild(container)
 
-        manager.setupNewProjectButton();
-        button.click();
+        manager.setupNewProjectButton()
+        button.click()
 
-        expect(mockApp.openTaskModal).toHaveBeenCalled();
-    });
+        expect(mockApp.openTaskModal).toHaveBeenCalled()
+    })
 
     test('should handle button with existing click handlers', () => {
-        const button = document.createElement('button');
-        button.id = 'btn-new-project';
-        let otherHandlerCalled = false;
+        const button = document.createElement('button')
+        button.id = 'btn-new-project'
+        let otherHandlerCalled = false
         button.addEventListener('click', () => {
-            otherHandlerCalled = true;
-        });
-        document.body.appendChild(button);
+            otherHandlerCalled = true
+        })
+        document.body.appendChild(button)
 
-        manager.setupNewProjectButton();
-        button.click();
+        manager.setupNewProjectButton()
+        button.click()
 
-        expect(mockApp.openTaskModal).toHaveBeenCalled();
-        expect(otherHandlerCalled).toBe(true);
-    });
-});
+        expect(mockApp.openTaskModal).toHaveBeenCalled()
+        expect(otherHandlerCalled).toBe(true)
+    })
+})
 
 describe('NewProjectButtonManager - Feature Consistency', () => {
-    let manager;
-    let mockState;
-    let mockApp;
+    let manager
+    let mockState
+    let mockApp
 
     beforeEach(() => {
-        localStorage.clear();
-        document.body.innerHTML = '';
+        localStorage.clear()
+        document.body.innerHTML = ''
 
         mockState = {
             tasks: [],
             projects: []
-        };
+        }
 
-        mockApp = new GTDApp();
-        mockApp.openTaskModal = jest.fn();
+        mockApp = new GTDApp()
+        mockApp.openTaskModal = jest.fn()
 
-        manager = new NewProjectButtonManager(mockState, mockApp);
-    });
+        manager = new NewProjectButtonManager(mockState, mockApp)
+    })
 
     afterEach(() => {
-        document.body.innerHTML = '';
-    });
+        document.body.innerHTML = ''
+    })
 
     test('should always pass project type regardless of state', () => {
-        manager.setupNewProjectButton();
+        manager.setupNewProjectButton()
 
-        const button = document.getElementById('btn-new-project');
+        const button = document.getElementById('btn-new-project')
 
         // Test with empty state
-        button.click();
-        expect(mockApp.openTaskModal).toHaveBeenCalledWith(null, null, { type: 'project' });
+        button.click()
+        expect(mockApp.openTaskModal).toHaveBeenCalledWith(null, null, { type: 'project' })
 
         // Test with projects in state
-        mockState.projects.push({ id: '1', title: 'Existing Project' });
-        jest.clearAllMocks();
+        mockState.projects.push({ id: '1', title: 'Existing Project' })
+        jest.clearAllMocks()
 
-        button.click();
-        expect(mockApp.openTaskModal).toHaveBeenCalledWith(null, null, { type: 'project' });
-    });
+        button.click()
+        expect(mockApp.openTaskModal).toHaveBeenCalledWith(null, null, { type: 'project' })
+    })
 
     test('should maintain same behavior across multiple app instances', () => {
-        const app2 = new GTDApp();
-        app2.openTaskModal = jest.fn();
+        const app2 = new GTDApp()
+        app2.openTaskModal = jest.fn()
 
-        const manager2 = new NewProjectButtonManager(mockState, app2);
+        const manager2 = new NewProjectButtonManager(mockState, app2)
 
-        const button = document.createElement('button');
-        button.id = 'btn-new-project';
-        document.body.appendChild(button);
+        const button = document.createElement('button')
+        button.id = 'btn-new-project'
+        document.body.appendChild(button)
 
-        manager.setupNewProjectButton();
-        manager2.setupNewProjectButton();
+        manager.setupNewProjectButton()
+        manager2.setupNewProjectButton()
 
-        button.click();
+        button.click()
 
         // Both managers should have set up the button
-        expect(mockApp.openTaskModal).toHaveBeenCalled();
-        expect(app2.openTaskModal).toHaveBeenCalled();
-    });
-});
+        expect(mockApp.openTaskModal).toHaveBeenCalled()
+        expect(app2.openTaskModal).toHaveBeenCalled()
+    })
+})

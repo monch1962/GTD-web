@@ -115,31 +115,29 @@ export const headerButtons = [
         alwaysVisible: true,
         primary: true
     }
-];
+]
 
 // Helper function to get button by ID
 export function getButtonById(id) {
-    return headerButtons.find(btn => btn.id === id);
+    return headerButtons.find((btn) => btn.id === id)
 }
 
 // Helper function to get essential mobile buttons
 export function getEssentialMobileButtons() {
-    return headerButtons.filter(btn => btn.essentialOnMobile);
+    return headerButtons.filter((btn) => btn.essentialOnMobile)
 }
 
 // Helper function to get buttons hidden on mobile
 export function getButtonsHiddenOnMobile() {
-    return headerButtons.filter(btn => !btn.essentialOnMobile);
+    return headerButtons.filter((btn) => !btn.essentialOnMobile)
 }
 
 // Helper function to get button IDs for CSS selectors
 export function getButtonIds() {
-    return headerButtons.map(btn => btn.id);
+    return headerButtons.map((btn) => btn.id)
 }
 
 // Helper function to get IDs of buttons hidden on mobile
 export function getMobileHiddenButtonIds() {
-    return headerButtons
-        .filter(btn => !btn.essentialOnMobile)
-        .map(btn => btn.id);
+    return headerButtons.filter((btn) => !btn.essentialOnMobile).map((btn) => btn.id)
 }

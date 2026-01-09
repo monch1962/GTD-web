@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+*.min.js
+
+# Test coverage
+coverage/
+
+# Logs
+*.log
+
+# Lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Documentation files
+docs/
+
+# Third-party libraries
+js/lib/
+
+# Config files that are generated
+.eslintrc.js
+babel.config.js
+jest.config.js
+playwright.config.js

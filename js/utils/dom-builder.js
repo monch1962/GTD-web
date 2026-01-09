@@ -18,60 +18,60 @@
  * @returns {HTMLElement} Created element
  */
 export function createElement(tag, options = {}) {
-    const element = document.createElement(tag);
+    const element = document.createElement(tag)
 
     // Set text content (safe, escaped)
     if (options.text) {
-        element.textContent = options.text;
+        element.textContent = options.text
     }
 
     // Set HTML content (UNSAFE - only use with trusted content!)
     if (options.html) {
-        element.innerHTML = options.html;
+        element.innerHTML = options.html
     }
 
     // Set attributes
     if (options.attributes) {
         Object.entries(options.attributes).forEach(([key, value]) => {
             if (value !== null && value !== undefined) {
-                element.setAttribute(key, value);
+                element.setAttribute(key, value)
             }
-        });
+        })
     }
 
     // Set styles
     if (options.style) {
         Object.entries(options.style).forEach(([property, value]) => {
-            element.style[property] = value;
-        });
+            element.style[property] = value
+        })
     }
 
     // Set class name
     if (options.className) {
-        element.className = options.className;
+        element.className = options.className
     }
 
     // Append children
     if (options.children && options.children.length > 0) {
-        const fragment = document.createDocumentFragment();
-        options.children.forEach(child => {
+        const fragment = document.createDocumentFragment()
+        options.children.forEach((child) => {
             if (typeof child === 'string') {
-                fragment.appendChild(document.createTextNode(child));
+                fragment.appendChild(document.createTextNode(child))
             } else if (child instanceof HTMLElement) {
-                fragment.appendChild(child);
+                fragment.appendChild(child)
             }
-        });
-        element.appendChild(fragment);
+        })
+        element.appendChild(fragment)
     }
 
     // Add event listeners
     if (options.events) {
         Object.entries(options.events).forEach(([event, handler]) => {
-            element.addEventListener(event, handler);
-        });
+            element.addEventListener(event, handler)
+        })
     }
 
-    return element;
+    return element
 }
 
 /**
@@ -82,17 +82,17 @@ export function createElement(tag, options = {}) {
  * @param {boolean} escape - true to escape HTML entities (safe)
  */
 export function setElementContent(element, content, isHTML = false, escape = false) {
-    if (!element) return;
+    if (!element) return
 
     if (isHTML && !escape) {
         // Unsafe: only use with trusted static HTML
-        element.innerHTML = content;
+        element.innerHTML = content
     } else if (escape) {
         // Safe: escape HTML entities
-        element.textContent = content;
+        element.textContent = content
     } else {
         // Safe: default to text content
-        element.textContent = content;
+        element.textContent = content
     }
 }
 
@@ -104,11 +104,11 @@ export function setElementContent(element, content, isHTML = false, escape = fal
  * @returns {HTMLOptionElement} Option element
  */
 export function createOption(value, text, selected = false) {
-    const option = document.createElement('option');
-    option.value = value;
-    option.textContent = text; // Safe: textContent escapes HTML
-    option.selected = selected;
-    return option;
+    const option = document.createElement('option')
+    option.value = value
+    option.textContent = text // Safe: textContent escapes HTML
+    option.selected = selected
+    return option
 }
 
 /**
@@ -120,15 +120,15 @@ export function createOption(value, text, selected = false) {
  */
 export function buildSafeTemplate(template, data) {
     return template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
-        const value = data[key];
+        const value = data[key]
         if (value === null || value === undefined) {
-            return '';
+            return ''
         }
         // Escape HTML entities
-        const div = document.createElement('div');
-        div.textContent = value;
-        return div.innerHTML;
-    });
+        const div = document.createElement('div')
+        div.textContent = value
+        return div.innerHTML
+    })
 }
 
 /**
@@ -142,26 +142,26 @@ export function buildSafeTemplate(template, data) {
  * @returns {HTMLElement} Anchor element
  */
 export function createLink(options = {}) {
-    const link = document.createElement('a');
-    link.href = options.href || '#';
-    link.textContent = options.text || '';
-    link.className = options.className || '';
+    const link = document.createElement('a')
+    link.href = options.href || '#'
+    link.textContent = options.text || ''
+    link.className = options.className || ''
 
     if (options.icon) {
-        const icon = document.createElement('i');
-        icon.className = options.icon;
-        link.prepend(icon);
-        link.appendChild(document.createTextNode(' ' + (options.text || '')));
+        const icon = document.createElement('i')
+        icon.className = options.icon
+        link.prepend(icon)
+        link.appendChild(document.createTextNode(' ' + (options.text || '')))
     }
 
     if (options.onClick) {
         link.addEventListener('click', (e) => {
-            e.preventDefault();
-            options.onClick(e);
-        });
+            e.preventDefault()
+            options.onClick(e)
+        })
     }
 
-    return link;
+    return link
 }
 
 /**
@@ -175,22 +175,22 @@ export function createLink(options = {}) {
  * @returns {HTMLButtonElement} Button element
  */
 export function createButton(options = {}) {
-    const button = document.createElement('button');
-    button.type = options.type || 'button';
-    button.textContent = options.text || '';
-    button.className = options.className || '';
+    const button = document.createElement('button')
+    button.type = options.type || 'button'
+    button.textContent = options.text || ''
+    button.className = options.className || ''
 
     if (options.icon) {
-        const icon = document.createElement('i');
-        icon.className = options.icon;
-        button.prepend(icon);
+        const icon = document.createElement('i')
+        icon.className = options.icon
+        button.prepend(icon)
     }
 
     if (options.onClick) {
-        button.addEventListener('click', options.onClick);
+        button.addEventListener('click', options.onClick)
     }
 
-    return button;
+    return button
 }
 
 /**
@@ -201,13 +201,13 @@ export function createButton(options = {}) {
  * @returns {HTMLElement} Span element
  */
 export function createBadge(text, className = '', title = '') {
-    const badge = document.createElement('span');
-    badge.className = className;
-    badge.textContent = text; // Safe: textContent escapes HTML
+    const badge = document.createElement('span')
+    badge.className = className
+    badge.textContent = text // Safe: textContent escapes HTML
     if (title) {
-        badge.title = title;
+        badge.title = title
     }
-    return badge;
+    return badge
 }
 
 /**
@@ -216,7 +216,7 @@ export function createBadge(text, className = '', title = '') {
  */
 export function clearElement(element) {
     if (element) {
-        element.innerHTML = ''; // Safe: no user content
+        element.innerHTML = '' // Safe: no user content
     }
 }
 
@@ -226,7 +226,7 @@ export function clearElement(element) {
  * @returns {boolean} true if potentially dangerous
  */
 export function isUnsafeHTML(html) {
-    if (typeof html !== 'string') return false;
+    if (typeof html !== 'string') return false
 
     const dangerousPatterns = [
         /<script/i,
@@ -235,9 +235,9 @@ export function isUnsafeHTML(html) {
         /<iframe/i,
         /<object/i,
         /<embed/i
-    ];
+    ]
 
-    return dangerousPatterns.some(pattern => pattern.test(html));
+    return dangerousPatterns.some((pattern) => pattern.test(html))
 }
 
 /**
@@ -248,27 +248,27 @@ export function isUnsafeHTML(html) {
  * @returns {string} Sanitized HTML
  */
 export function sanitizeHTML(html, allowedTags = ['b', 'i', 'em', 'strong', 'span', 'br', 'p']) {
-    if (typeof html !== 'string') return '';
+    if (typeof html !== 'string') return ''
 
     // Remove dangerous tags/attributes
-    const div = document.createElement('div');
-    div.innerHTML = html;
+    const div = document.createElement('div')
+    div.innerHTML = html
 
     // Remove script tags, etc.
-    const scripts = div.querySelectorAll('script, iframe, object, embed');
-    scripts.forEach(el => el.remove());
+    const scripts = div.querySelectorAll('script, iframe, object, embed')
+    scripts.forEach((el) => el.remove())
 
     // Remove event handlers
-    const allElements = div.querySelectorAll('*');
-    allElements.forEach(el => {
-        Array.from(el.attributes).forEach(attr => {
+    const allElements = div.querySelectorAll('*')
+    allElements.forEach((el) => {
+        Array.from(el.attributes).forEach((attr) => {
             if (attr.name.startsWith('on')) {
-                el.removeAttribute(attr.name);
+                el.removeAttribute(attr.name)
             }
-        });
-    });
+        })
+    })
 
-    return div.innerHTML;
+    return div.innerHTML
 }
 
 /**
@@ -278,17 +278,17 @@ export function sanitizeHTML(html, allowedTags = ['b', 'i', 'em', 'strong', 'spa
  * @param {Function} renderItem - Function to render single item (must return safe DOM)
  */
 export function renderList(container, items, renderItem) {
-    clearElement(container);
+    clearElement(container)
 
-    const fragment = document.createDocumentFragment();
+    const fragment = document.createDocumentFragment()
     items.forEach((item, index) => {
-        const element = renderItem(item, index);
+        const element = renderItem(item, index)
         if (element instanceof HTMLElement) {
-            fragment.appendChild(element);
+            fragment.appendChild(element)
         }
-    });
+    })
 
-    container.appendChild(fragment);
+    container.appendChild(fragment)
 }
 
 /**
@@ -306,4 +306,4 @@ export default {
     isUnsafeHTML,
     sanitizeHTML,
     renderList
-};
+}

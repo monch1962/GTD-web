@@ -3,586 +3,583 @@
  */
 
 // Mock remote-storage
-jest.mock('remote-storage', () => {
-  return {
-    RemoteStorage: jest.fn().mockImplementation(() => ({
-      getItem: jest.fn(),
-      setItem: jest.fn(),
-      removeItem: jest.fn()
-    }))
-  };
-});
+import { Storage } from '../js/storage.js'
 
-import { Storage } from '../js/storage.js';
+jest.mock('remote-storage', () => {
+    return {
+        RemoteStorage: jest.fn().mockImplementation(() => ({
+            getItem: jest.fn(),
+            setItem: jest.fn(),
+            removeItem: jest.fn()
+        }))
+    }
+})
 
 describe('Storage Class', () => {
-  let storage;
-  let mockRemoteStorage;
+    let storage
+    let mockRemoteStorage
 
-  beforeEach(() => {
-    // Clear localStorage before each test
-    localStorage.clear();
-
-    // Create new storage instance
-    storage = new Storage('test_user_123');
-
-    // Get mock instance
-    const { RemoteStorage } = require('remote-storage');
-    mockRemoteStorage = new RemoteStorage();
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  describe('Constructor', () => {
-    test('should initialize with provided userId', () => {
-      const customStorage = new Storage('custom_user');
-      expect(customStorage.userId).toBe('custom_user');
-    });
-
-    test('should generate userId if not provided', () => {
-      const autoStorage = new Storage();
-      expect(autoStorage.userId).toMatch(/^user_\d+_[a-z0-9]+$/);
-    });
-
-    test('should initialize with empty listeners map', () => {
-      expect(storage.listeners instanceof Map).toBe(true);
-      expect(storage.listeners.size).toBe(0);
-    });
-  });
-
-  describe('getUserId', () => {
-    test('should return existing user ID from localStorage', () => {
-      localStorage.setItem('gtd_user_id', 'existing_user');
-      const newStorage = new Storage();
-      expect(newStorage.getUserId()).toBe('existing_user');
-    });
-
-    test('should generate and store new user ID if none exists', () => {
-      const newStorage = new Storage();
-      const userId = newStorage.getUserId();
-      expect(userId).toMatch(/^user_\d+_[a-z0-9]+$/);
-      expect(localStorage.getItem('gtd_user_id')).toBe(userId);
-    });
-
-    test('should generate unique user IDs', () => {
-      localStorage.clear();
-      const storage1 = new Storage();
-      const storage2 = new Storage();
-
-      // Clear and create new to test uniqueness
-      localStorage.clear();
-      const storage3 = new Storage();
-
-      expect(storage1.getUserId()).not.toBe(storage2.getUserId());
-      expect(storage2.getUserId()).not.toBe(storage3.getUserId());
-    });
-  });
-
-  describe('getItem', () => {
-    test('should retrieve and parse JSON item from localStorage', () => {
-      const testData = { id: 1, name: 'Test' };
-      localStorage.setItem('test_key', JSON.stringify(testData));
-
-      const result = storage.getItem('test_key');
-      expect(result).toEqual(testData);
-    });
-
-    test('should return null for non-existent item', () => {
-      const result = storage.getItem('non_existent');
-      expect(result).toBeNull();
-    });
-
-    test('should handle malformed JSON gracefully', () => {
-      localStorage.setItem('bad_json', 'invalid json{');
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-
-      const result = storage.getItem('bad_json');
-      expect(result).toBeNull();
-      expect(consoleSpy).toHaveBeenCalled();
-
-      consoleSpy.mockRestore();
-    });
-
-    test('should handle empty string', () => {
-      localStorage.setItem('empty', '');
-      const result = storage.getItem('empty');
-      expect(result).toBeNull();
-    });
-  });
-
-  describe('setItem', () => {
-    test('should save item to localStorage', () => {
-      const testData = { id: 1, name: 'Test' };
-      storage.setItem('test_key', testData);
-
-      const stored = localStorage.getItem('test_key');
-      expect(JSON.parse(stored)).toEqual(testData);
-    });
-
-    test('should save item to remote storage when sync enabled', async () => {
-      mockRemoteStorage.setItem.mockResolvedValue(undefined);
-
-      const testData = { id: 1, name: 'Test' };
-      await storage.setItem('test_key', testData);
-
-      expect(mockRemoteStorage.setItem).toHaveBeenCalledWith(
-        'test_key',
-        JSON.stringify(testData)
-      );
-    });
-
-    test('should notify listeners on set', async () => {
-      const callback = jest.fn();
-      storage.subscribe('test_key', callback);
-
-      const testData = { id: 1 };
-      await storage.setItem('test_key', testData);
-
-      expect(callback).toHaveBeenCalledWith(testData);
-    });
-
-    test('should handle remote storage errors', async () => {
-      mockRemoteStorage.setItem.mockRejectedValue(new Error('Sync failed'));
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-
-      const testData = { id: 1 };
-      await storage.setItem('test_key', testData);
-
-      expect(consoleSpy).toHaveBeenCalled();
-
-      consoleSpy.mockRestore();
-    });
-
-    test('should update sync status to error on failure', async () => {
-      mockRemoteStorage.setItem.mockRejectedValue(new Error('Sync failed'));
-      document.body.innerHTML = '<button id="sync-status"><span class="sync-text"></span></button>';
-
-      const testData = { id: 1 };
-      await storage.setItem('test_key', testData);
-
-      const syncButton = document.getElementById('sync-status');
-      expect(syncButton.classList.contains('error')).toBe(true);
-    });
-  });
-
-  describe('removeItem', () => {
-    test('should remove item from localStorage', async () => {
-      localStorage.setItem('test_key', JSON.stringify({ id: 1 }));
-      await storage.removeItem('test_key');
-
-      expect(localStorage.getItem('test_key')).toBeNull();
-    });
-
-    test('should remove from remote storage', async () => {
-      mockRemoteStorage.removeItem.mockResolvedValue(undefined);
-
-      await storage.removeItem('test_key');
-
-      expect(mockRemoteStorage.removeItem).toHaveBeenCalledWith('test_key');
-    });
-
-    test('should notify listeners on remove', async () => {
-      const callback = jest.fn();
-      storage.subscribe('test_key', callback);
-
-      await storage.removeItem('test_key');
-
-      expect(callback).toHaveBeenCalledWith(null);
-    });
-  });
-
-  describe('mergeData', () => {
-    test('should merge local and remote data by timestamp', () => {
-      const local = [
-        { id: '1', name: 'Local 1', updatedAt: '2024-01-01T10:00:00.000Z' },
-        { id: '2', name: 'Local 2', updatedAt: '2024-01-01T09:00:00.000Z' }
-      ];
-
-      const remote = [
-        { id: '1', name: 'Remote 1', updatedAt: '2024-01-01T11:00:00.000Z' },
-        { id: '3', name: 'Remote 3', updatedAt: '2024-01-01T08:00:00.000Z' }
-      ];
-
-      const merged = storage.mergeData(local, remote, 'updatedAt');
-
-      expect(merged).toHaveLength(3);
-      expect(merged.find(item => item.id === '1').name).toBe('Remote 1'); // Remote is newer
-      expect(merged.find(item => item.id === '2').name).toBe('Local 2'); // Only in local
-      expect(merged.find(item => item.id === '3').name).toBe('Remote 3'); // Only in remote
-    });
-
-    test('should handle empty arrays', () => {
-      const merged = storage.mergeData([], [], 'updatedAt');
-      expect(merged).toEqual([]);
-    });
-
-    test('should handle empty local array', () => {
-      const remote = [{ id: '1', name: 'Remote', updatedAt: '2024-01-01T10:00:00.000Z' }];
-      const merged = storage.mergeData([], remote, 'updatedAt');
-
-      expect(merged).toEqual(remote);
-    });
-
-    test('should handle empty remote array', () => {
-      const local = [{ id: '1', name: 'Local', updatedAt: '2024-01-01T10:00:00.000Z' }];
-      const merged = storage.mergeData(local, [], 'updatedAt');
-
-      expect(merged).toEqual(local);
-    });
-
-    test('should preserve all items with same timestamps', () => {
-      const local = [{ id: '1', name: 'Local', updatedAt: '2024-01-01T10:00:00.000Z' }];
-      const remote = [{ id: '1', name: 'Remote', updatedAt: '2024-01-01T10:00:00.000Z' }];
-
-      const merged = storage.mergeData(local, remote, 'updatedAt');
-
-      expect(merged).toHaveLength(1);
-      // Local should be kept when timestamps are equal
-      expect(merged[0].name).toBe('Local');
-    });
-  });
-
-  describe('syncFromRemote', () => {
     beforeEach(() => {
-      document.body.innerHTML = '<button id="sync-status"><span class="sync-text"></span></button>';
-    });
+        // Clear localStorage before each test
+        localStorage.clear()
+
+        // Create new storage instance
+        storage = new Storage('test_user_123')
+
+        // Get mock instance
+        const { RemoteStorage } = require('remote-storage')
+        mockRemoteStorage = new RemoteStorage()
+    })
+
+    afterEach(() => {
+        jest.clearAllMocks()
+    })
+
+    describe('Constructor', () => {
+        test('should initialize with provided userId', () => {
+            const customStorage = new Storage('custom_user')
+            expect(customStorage.userId).toBe('custom_user')
+        })
+
+        test('should generate userId if not provided', () => {
+            const autoStorage = new Storage()
+            expect(autoStorage.userId).toMatch(/^user_\d+_[a-z0-9]+$/)
+        })
+
+        test('should initialize with empty listeners map', () => {
+            expect(storage.listeners instanceof Map).toBe(true)
+            expect(storage.listeners.size).toBe(0)
+        })
+    })
+
+    describe('getUserId', () => {
+        test('should return existing user ID from localStorage', () => {
+            localStorage.setItem('gtd_user_id', 'existing_user')
+            const newStorage = new Storage()
+            expect(newStorage.getUserId()).toBe('existing_user')
+        })
+
+        test('should generate and store new user ID if none exists', () => {
+            const newStorage = new Storage()
+            const userId = newStorage.getUserId()
+            expect(userId).toMatch(/^user_\d+_[a-z0-9]+$/)
+            expect(localStorage.getItem('gtd_user_id')).toBe(userId)
+        })
+
+        test('should generate unique user IDs', () => {
+            localStorage.clear()
+            const storage1 = new Storage()
+            const storage2 = new Storage()
+
+            // Clear and create new to test uniqueness
+            localStorage.clear()
+            const storage3 = new Storage()
+
+            expect(storage1.getUserId()).not.toBe(storage2.getUserId())
+            expect(storage2.getUserId()).not.toBe(storage3.getUserId())
+        })
+    })
+
+    describe('getItem', () => {
+        test('should retrieve and parse JSON item from localStorage', () => {
+            const testData = { id: 1, name: 'Test' }
+            localStorage.setItem('test_key', JSON.stringify(testData))
+
+            const result = storage.getItem('test_key')
+            expect(result).toEqual(testData)
+        })
+
+        test('should return null for non-existent item', () => {
+            const result = storage.getItem('non_existent')
+            expect(result).toBeNull()
+        })
+
+        test('should handle malformed JSON gracefully', () => {
+            localStorage.setItem('bad_json', 'invalid json{')
+            const consoleSpy = jest.spyOn(console, 'error').mockImplementation()
+
+            const result = storage.getItem('bad_json')
+            expect(result).toBeNull()
+            expect(consoleSpy).toHaveBeenCalled()
+
+            consoleSpy.mockRestore()
+        })
+
+        test('should handle empty string', () => {
+            localStorage.setItem('empty', '')
+            const result = storage.getItem('empty')
+            expect(result).toBeNull()
+        })
+    })
+
+    describe('setItem', () => {
+        test('should save item to localStorage', () => {
+            const testData = { id: 1, name: 'Test' }
+            storage.setItem('test_key', testData)
+
+            const stored = localStorage.getItem('test_key')
+            expect(JSON.parse(stored)).toEqual(testData)
+        })
+
+        test('should save item to remote storage when sync enabled', async () => {
+            mockRemoteStorage.setItem.mockResolvedValue(undefined)
 
-    test('should sync tasks from remote storage', async () => {
-      const remoteTasks = [
-        { id: '1', title: 'Remote Task', updatedAt: '2024-01-01T10:00:00.000Z' }
-      ];
+            const testData = { id: 1, name: 'Test' }
+            await storage.setItem('test_key', testData)
 
-      mockRemoteStorage.getItem.mockImplementation((key) => {
-        if (key === 'gtd_tasks') return Promise.resolve(remoteTasks);
-        return Promise.resolve(null);
-      });
+            expect(mockRemoteStorage.setItem).toHaveBeenCalledWith(
+                'test_key',
+                JSON.stringify(testData)
+            )
+        })
 
-      await storage.syncFromRemote();
+        test('should notify listeners on set', async () => {
+            const callback = jest.fn()
+            storage.subscribe('test_key', callback)
 
-      const tasks = storage.getItem('gtd_tasks');
-      expect(tasks).toEqual(remoteTasks);
-    });
+            const testData = { id: 1 }
+            await storage.setItem('test_key', testData)
 
-    test('should sync projects from remote storage', async () => {
-      const remoteProjects = [
-        { id: '1', title: 'Remote Project', updatedAt: '2024-01-01T10:00:00.000Z' }
-      ];
+            expect(callback).toHaveBeenCalledWith(testData)
+        })
 
-      mockRemoteStorage.getItem.mockImplementation((key) => {
-        if (key === 'gtd_projects') return Promise.resolve(remoteProjects);
-        return Promise.resolve(null);
-      });
+        test('should handle remote storage errors', async () => {
+            mockRemoteStorage.setItem.mockRejectedValue(new Error('Sync failed'))
+            const consoleSpy = jest.spyOn(console, 'error').mockImplementation()
 
-      await storage.syncFromRemote();
+            const testData = { id: 1 }
+            await storage.setItem('test_key', testData)
 
-      const projects = storage.getItem('gtd_projects');
-      expect(projects).toEqual(remoteProjects);
-    });
+            expect(consoleSpy).toHaveBeenCalled()
 
-    test('should merge remote and local data', async () => {
-      const localTasks = [
-        { id: '1', title: 'Local Task', updatedAt: '2024-01-01T09:00:00.000Z' }
-      ];
-      const remoteTasks = [
-        { id: '1', title: 'Remote Task', updatedAt: '2024-01-01T10:00:00.000Z' }
-      ];
+            consoleSpy.mockRestore()
+        })
 
-      localStorage.setItem('gtd_tasks', JSON.stringify(localTasks));
+        test('should update sync status to error on failure', async () => {
+            mockRemoteStorage.setItem.mockRejectedValue(new Error('Sync failed'))
+            document.body.innerHTML =
+                '<button id="sync-status"><span class="sync-text"></span></button>'
 
-      mockRemoteStorage.getItem.mockImplementation((key) => {
-        if (key === 'gtd_tasks') return Promise.resolve(remoteTasks);
-        return Promise.resolve(null);
-      });
+            const testData = { id: 1 }
+            await storage.setItem('test_key', testData)
 
-      await storage.syncFromRemote();
+            const syncButton = document.getElementById('sync-status')
+            expect(syncButton.classList.contains('error')).toBe(true)
+        })
+    })
 
-      const tasks = storage.getItem('gtd_tasks');
-      expect(tasks[0].title).toBe('Remote Task'); // Remote is newer
-    });
+    describe('removeItem', () => {
+        test('should remove item from localStorage', async () => {
+            localStorage.setItem('test_key', JSON.stringify({ id: 1 }))
+            await storage.removeItem('test_key')
 
-    test('should update sync status', async () => {
-      mockRemoteStorage.getItem.mockResolvedValue(null);
+            expect(localStorage.getItem('test_key')).toBeNull()
+        })
 
-      await storage.syncFromRemote();
+        test('should remove from remote storage', async () => {
+            mockRemoteStorage.removeItem.mockResolvedValue(undefined)
 
-      const syncButton = document.getElementById('sync-status');
-      expect(syncButton.querySelector('.sync-text').textContent).toBe('Synced');
-    });
+            await storage.removeItem('test_key')
 
-    test('should handle sync errors gracefully', async () => {
-      mockRemoteStorage.getItem.mockRejectedValue(new Error('Network error'));
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+            expect(mockRemoteStorage.removeItem).toHaveBeenCalledWith('test_key')
+        })
 
-      await storage.syncFromRemote();
+        test('should notify listeners on remove', async () => {
+            const callback = jest.fn()
+            storage.subscribe('test_key', callback)
 
-      expect(consoleSpy).toHaveBeenCalled();
+            await storage.removeItem('test_key')
 
-      consoleSpy.mockRestore();
-    });
-  });
+            expect(callback).toHaveBeenCalledWith(null)
+        })
+    })
 
-  describe('sync', () => {
-    test('should call syncFromRemote', async () => {
-      const syncSpy = jest.spyOn(storage, 'syncFromRemote').mockResolvedValue();
+    describe('mergeData', () => {
+        test('should merge local and remote data by timestamp', () => {
+            const local = [
+                { id: '1', name: 'Local 1', updatedAt: '2024-01-01T10:00:00.000Z' },
+                { id: '2', name: 'Local 2', updatedAt: '2024-01-01T09:00:00.000Z' }
+            ]
 
-      await storage.sync();
+            const remote = [
+                { id: '1', name: 'Remote 1', updatedAt: '2024-01-01T11:00:00.000Z' },
+                { id: '3', name: 'Remote 3', updatedAt: '2024-01-01T08:00:00.000Z' }
+            ]
 
-      expect(syncSpy).toHaveBeenCalled();
+            const merged = storage.mergeData(local, remote, 'updatedAt')
 
-      syncSpy.mockRestore();
-    });
-  });
+            expect(merged).toHaveLength(3)
+            expect(merged.find((item) => item.id === '1').name).toBe('Remote 1') // Remote is newer
+            expect(merged.find((item) => item.id === '2').name).toBe('Local 2') // Only in local
+            expect(merged.find((item) => item.id === '3').name).toBe('Remote 3') // Only in remote
+        })
 
-  describe('updateSyncStatus', () => {
-    beforeEach(() => {
-      document.body.innerHTML = '<button id="sync-status"><span class="sync-text"></span></button>';
-    });
+        test('should handle empty arrays', () => {
+            const merged = storage.mergeData([], [], 'updatedAt')
+            expect(merged).toEqual([])
+        })
 
-    test('should update to syncing status', () => {
-      storage.updateSyncStatus('syncing');
+        test('should handle empty local array', () => {
+            const remote = [{ id: '1', name: 'Remote', updatedAt: '2024-01-01T10:00:00.000Z' }]
+            const merged = storage.mergeData([], remote, 'updatedAt')
 
-      const syncButton = document.getElementById('sync-status');
-      expect(syncButton.classList.contains('syncing')).toBe(true);
-      expect(syncButton.querySelector('.sync-text').textContent).toBe('Syncing...');
-    });
+            expect(merged).toEqual(remote)
+        })
 
-    test('should update to synced status', () => {
-      storage.updateSyncStatus('synced');
+        test('should handle empty remote array', () => {
+            const local = [{ id: '1', name: 'Local', updatedAt: '2024-01-01T10:00:00.000Z' }]
+            const merged = storage.mergeData(local, [], 'updatedAt')
 
-      const syncButton = document.getElementById('sync-status');
-      expect(syncButton.querySelector('.sync-text').textContent).toBe('Synced');
-      expect(syncButton.classList.contains('syncing')).toBe(false);
-    });
-
-    test('should update to error status', () => {
-      storage.updateSyncStatus('error');
+            expect(merged).toEqual(local)
+        })
 
-      const syncButton = document.getElementById('sync-status');
-      expect(syncButton.classList.contains('error')).toBe(true);
-      expect(syncButton.querySelector('.sync-text').textContent).toBe('Sync Error');
-    });
-  });
+        test('should preserve all items with same timestamps', () => {
+            const local = [{ id: '1', name: 'Local', updatedAt: '2024-01-01T10:00:00.000Z' }]
+            const remote = [{ id: '1', name: 'Remote', updatedAt: '2024-01-01T10:00:00.000Z' }]
 
-  describe('subscribe', () => {
-    test('should add listener for key', () => {
-      const callback = jest.fn();
-      storage.subscribe('test_key', callback);
+            const merged = storage.mergeData(local, remote, 'updatedAt')
 
-      expect(storage.listeners.has('test_key')).toBe(true);
-      expect(storage.listeners.get('test_key')).toContain(callback);
-    });
+            expect(merged).toHaveLength(1)
+            // Local should be kept when timestamps are equal
+            expect(merged[0].name).toBe('Local')
+        })
+    })
 
-    test('should allow multiple listeners for same key', () => {
-      const callback1 = jest.fn();
-      const callback2 = jest.fn();
+    describe('syncFromRemote', () => {
+        beforeEach(() => {
+            document.body.innerHTML =
+                '<button id="sync-status"><span class="sync-text"></span></button>'
+        })
 
-      storage.subscribe('test_key', callback1);
-      storage.subscribe('test_key', callback2);
+        test('should sync tasks from remote storage', async () => {
+            const remoteTasks = [
+                { id: '1', title: 'Remote Task', updatedAt: '2024-01-01T10:00:00.000Z' }
+            ]
 
-      expect(storage.listeners.get('test_key')).toHaveLength(2);
-    });
-  });
+            mockRemoteStorage.getItem.mockImplementation((key) => {
+                if (key === 'gtd_tasks') return Promise.resolve(remoteTasks)
+                return Promise.resolve(null)
+            })
 
-  describe('notifyListeners', () => {
-    test('should call all listeners for a key', () => {
-      const callback1 = jest.fn();
-      const callback2 = jest.fn();
+            await storage.syncFromRemote()
 
-      storage.subscribe('test_key', callback1);
-      storage.subscribe('test_key', callback2);
+            const tasks = storage.getItem('gtd_tasks')
+            expect(tasks).toEqual(remoteTasks)
+        })
 
-      storage.notifyListeners('test_key', 'test_value');
+        test('should sync projects from remote storage', async () => {
+            const remoteProjects = [
+                { id: '1', title: 'Remote Project', updatedAt: '2024-01-01T10:00:00.000Z' }
+            ]
 
-      expect(callback1).toHaveBeenCalledWith('test_value');
-      expect(callback2).toHaveBeenCalledWith('test_value');
-    });
+            mockRemoteStorage.getItem.mockImplementation((key) => {
+                if (key === 'gtd_projects') return Promise.resolve(remoteProjects)
+                return Promise.resolve(null)
+            })
 
-    test('should not call listeners for different keys', () => {
-      const callback = jest.fn();
-      storage.subscribe('key1', callback);
+            await storage.syncFromRemote()
 
-      storage.notifyListeners('key2', 'value');
+            const projects = storage.getItem('gtd_projects')
+            expect(projects).toEqual(remoteProjects)
+        })
 
-      expect(callback).not.toHaveBeenCalled();
-    });
+        test('should merge remote and local data', async () => {
+            const localTasks = [
+                { id: '1', title: 'Local Task', updatedAt: '2024-01-01T09:00:00.000Z' }
+            ]
+            const remoteTasks = [
+                { id: '1', title: 'Remote Task', updatedAt: '2024-01-01T10:00:00.000Z' }
+            ]
 
-    test('should handle key with no listeners', () => {
-      expect(() => {
-        storage.notifyListeners('non_existent', 'value');
-      }).not.toThrow();
-    });
-  });
+            localStorage.setItem('gtd_tasks', JSON.stringify(localTasks))
 
-  describe('getTasks', () => {
-    test('should return tasks array', () => {
-      const tasks = [
-        { id: '1', title: 'Task 1' },
-        { id: '2', title: 'Task 2' }
-      ];
-      localStorage.setItem('gtd_tasks', JSON.stringify(tasks));
+            mockRemoteStorage.getItem.mockImplementation((key) => {
+                if (key === 'gtd_tasks') return Promise.resolve(remoteTasks)
+                return Promise.resolve(null)
+            })
 
-      const result = storage.getTasks();
+            await storage.syncFromRemote()
 
-      expect(result).toEqual(tasks);
-    });
+            const tasks = storage.getItem('gtd_tasks')
+            expect(tasks[0].title).toBe('Remote Task') // Remote is newer
+        })
 
-    test('should return empty array if no tasks', () => {
-      const result = storage.getTasks();
+        test('should update sync status', async () => {
+            mockRemoteStorage.getItem.mockResolvedValue(null)
 
-      expect(result).toEqual([]);
-    });
-  });
+            await storage.syncFromRemote()
 
-  describe('saveTasks', () => {
-    test('should save tasks to storage', async () => {
-      const tasks = [
-        { id: '1', title: 'Task 1' }
-      ];
+            const syncButton = document.getElementById('sync-status')
+            expect(syncButton.querySelector('.sync-text').textContent).toBe('Synced')
+        })
 
-      mockRemoteStorage.setItem.mockResolvedValue(undefined);
+        test('should handle sync errors gracefully', async () => {
+            mockRemoteStorage.getItem.mockRejectedValue(new Error('Network error'))
+            const consoleSpy = jest.spyOn(console, 'error').mockImplementation()
 
-      await storage.saveTasks(tasks);
+            await storage.syncFromRemote()
 
-      const stored = JSON.parse(localStorage.getItem('gtd_tasks'));
-      expect(stored).toEqual(tasks);
-    });
-  });
+            expect(consoleSpy).toHaveBeenCalled()
 
-  describe('getProjects', () => {
-    test('should return projects array', () => {
-      const projects = [
-        { id: '1', title: 'Project 1' }
-      ];
-      localStorage.setItem('gtd_projects', JSON.stringify(projects));
+            consoleSpy.mockRestore()
+        })
+    })
 
-      const result = storage.getProjects();
+    describe('sync', () => {
+        test('should call syncFromRemote', async () => {
+            const syncSpy = jest.spyOn(storage, 'syncFromRemote').mockResolvedValue()
 
-      expect(result).toEqual(projects);
-    });
+            await storage.sync()
 
-    test('should return empty array if no projects', () => {
-      const result = storage.getProjects();
+            expect(syncSpy).toHaveBeenCalled()
 
-      expect(result).toEqual([]);
-    });
-  });
+            syncSpy.mockRestore()
+        })
+    })
 
-  describe('saveProjects', () => {
-    test('should save projects to storage', async () => {
-      const projects = [
-        { id: '1', title: 'Project 1' }
-      ];
+    describe('updateSyncStatus', () => {
+        beforeEach(() => {
+            document.body.innerHTML =
+                '<button id="sync-status"><span class="sync-text"></span></button>'
+        })
 
-      mockRemoteStorage.setItem.mockResolvedValue(undefined);
+        test('should update to syncing status', () => {
+            storage.updateSyncStatus('syncing')
 
-      await storage.saveProjects(projects);
+            const syncButton = document.getElementById('sync-status')
+            expect(syncButton.classList.contains('syncing')).toBe(true)
+            expect(syncButton.querySelector('.sync-text').textContent).toBe('Syncing...')
+        })
 
-      const stored = JSON.parse(localStorage.getItem('gtd_projects'));
-      expect(stored).toEqual(projects);
-    });
-  });
+        test('should update to synced status', () => {
+            storage.updateSyncStatus('synced')
 
-  describe('getSettings', () => {
-    test('should return default settings if none exist', () => {
-      const result = storage.getSettings();
+            const syncButton = document.getElementById('sync-status')
+            expect(syncButton.querySelector('.sync-text').textContent).toBe('Synced')
+            expect(syncButton.classList.contains('syncing')).toBe(false)
+        })
 
-      expect(result).toEqual({
-        theme: 'light',
-        defaultView: 'inbox'
-      });
-    });
+        test('should update to error status', () => {
+            storage.updateSyncStatus('error')
 
-    test('should return saved settings', () => {
-      const settings = { theme: 'dark', defaultView: 'next' };
-      localStorage.setItem('gtd_settings', JSON.stringify(settings));
+            const syncButton = document.getElementById('sync-status')
+            expect(syncButton.classList.contains('error')).toBe(true)
+            expect(syncButton.querySelector('.sync-text').textContent).toBe('Sync Error')
+        })
+    })
 
-      const result = storage.getSettings();
+    describe('subscribe', () => {
+        test('should add listener for key', () => {
+            const callback = jest.fn()
+            storage.subscribe('test_key', callback)
 
-      expect(result).toEqual(settings);
-    });
-  });
+            expect(storage.listeners.has('test_key')).toBe(true)
+            expect(storage.listeners.get('test_key')).toContain(callback)
+        })
 
-  describe('saveSettings', () => {
-    test('should save settings to storage', async () => {
-      const settings = { theme: 'dark' };
+        test('should allow multiple listeners for same key', () => {
+            const callback1 = jest.fn()
+            const callback2 = jest.fn()
 
-      mockRemoteStorage.setItem.mockResolvedValue(undefined);
+            storage.subscribe('test_key', callback1)
+            storage.subscribe('test_key', callback2)
 
-      await storage.saveSettings(settings);
+            expect(storage.listeners.get('test_key')).toHaveLength(2)
+        })
+    })
 
-      const stored = JSON.parse(localStorage.getItem('gtd_settings'));
-      expect(stored).toEqual(settings);
-    });
-  });
+    describe('notifyListeners', () => {
+        test('should call all listeners for a key', () => {
+            const callback1 = jest.fn()
+            const callback2 = jest.fn()
 
-  describe('init', () => {
-    test('should initialize remote storage instance', async () => {
-      const { RemoteStorage } = require('remote-storage');
+            storage.subscribe('test_key', callback1)
+            storage.subscribe('test_key', callback2)
 
-      await storage.init();
+            storage.notifyListeners('test_key', 'test_value')
 
-      expect(RemoteStorage).toHaveBeenCalledWith({
-        userId: 'test_user_123',
-        instanceId: 'gtd-web-app'
-      });
-      expect(storage.remoteStorage).toBeDefined();
-    });
+            expect(callback1).toHaveBeenCalledWith('test_value')
+            expect(callback2).toHaveBeenCalledWith('test_value')
+        })
 
-    test('should sync from remote on init', async () => {
-      const syncSpy = jest.spyOn(storage, 'syncFromRemote').mockResolvedValue();
+        test('should not call listeners for different keys', () => {
+            const callback = jest.fn()
+            storage.subscribe('key1', callback)
 
-      await storage.init();
+            storage.notifyListeners('key2', 'value')
 
-      expect(syncSpy).toHaveBeenCalled();
+            expect(callback).not.toHaveBeenCalled()
+        })
 
-      syncSpy.mockRestore();
-    });
-  });
+        test('should handle key with no listeners', () => {
+            expect(() => {
+                storage.notifyListeners('non_existent', 'value')
+            }).not.toThrow()
+        })
+    })
 
-  describe('Edge Cases', () => {
-    test('should handle large data sets', async () => {
-      const largeTasks = Array.from({ length: 1000 }, (_, i) => ({
-        id: `task_${i}`,
-        title: `Task ${i}`
-      }));
+    describe('getTasks', () => {
+        test('should return tasks array', () => {
+            const tasks = [
+                { id: '1', title: 'Task 1' },
+                { id: '2', title: 'Task 2' }
+            ]
+            localStorage.setItem('gtd_tasks', JSON.stringify(tasks))
 
-      mockRemoteStorage.setItem.mockResolvedValue(undefined);
+            const result = storage.getTasks()
 
-      await storage.saveTasks(largeTasks);
+            expect(result).toEqual(tasks)
+        })
 
-      const stored = storage.getTasks();
-      expect(stored).toHaveLength(1000);
-    });
+        test('should return empty array if no tasks', () => {
+            const result = storage.getTasks()
 
-    test('should handle special characters in data', async () => {
-      const specialData = {
-        title: 'Task with "quotes" and \'apostrophes\'',
-        description: 'Special chars: <>&\\n\\t',
-        tags: ['tag with spaces', 'tag@symbol']
-      };
+            expect(result).toEqual([])
+        })
+    })
 
-      mockRemoteStorage.setItem.mockResolvedValue(undefined);
+    describe('saveTasks', () => {
+        test('should save tasks to storage', async () => {
+            const tasks = [{ id: '1', title: 'Task 1' }]
 
-      await storage.setItem('special', specialData);
+            mockRemoteStorage.setItem.mockResolvedValue(undefined)
 
-      const retrieved = storage.getItem('special');
-      expect(retrieved).toEqual(specialData);
-    });
+            await storage.saveTasks(tasks)
 
-    test('should handle unicode characters', async () => {
-      const unicodeData = {
-        title: 'Task with emoji 🎉 and unicode 中文',
-        tags: ['日本語', '한국어']
-      };
+            const stored = JSON.parse(localStorage.getItem('gtd_tasks'))
+            expect(stored).toEqual(tasks)
+        })
+    })
 
-      mockRemoteStorage.setItem.mockResolvedValue(undefined);
+    describe('getProjects', () => {
+        test('should return projects array', () => {
+            const projects = [{ id: '1', title: 'Project 1' }]
+            localStorage.setItem('gtd_projects', JSON.stringify(projects))
 
-      await storage.setItem('unicode', unicodeData);
+            const result = storage.getProjects()
 
-      const retrieved = storage.getItem('unicode');
-      expect(retrieved).toEqual(unicodeData);
-    });
-  });
-});
+            expect(result).toEqual(projects)
+        })
+
+        test('should return empty array if no projects', () => {
+            const result = storage.getProjects()
+
+            expect(result).toEqual([])
+        })
+    })
+
+    describe('saveProjects', () => {
+        test('should save projects to storage', async () => {
+            const projects = [{ id: '1', title: 'Project 1' }]
+
+            mockRemoteStorage.setItem.mockResolvedValue(undefined)
+
+            await storage.saveProjects(projects)
+
+            const stored = JSON.parse(localStorage.getItem('gtd_projects'))
+            expect(stored).toEqual(projects)
+        })
+    })
+
+    describe('getSettings', () => {
+        test('should return default settings if none exist', () => {
+            const result = storage.getSettings()
+
+            expect(result).toEqual({
+                theme: 'light',
+                defaultView: 'inbox'
+            })
+        })
+
+        test('should return saved settings', () => {
+            const settings = { theme: 'dark', defaultView: 'next' }
+            localStorage.setItem('gtd_settings', JSON.stringify(settings))
+
+            const result = storage.getSettings()
+
+            expect(result).toEqual(settings)
+        })
+    })
+
+    describe('saveSettings', () => {
+        test('should save settings to storage', async () => {
+            const settings = { theme: 'dark' }
+
+            mockRemoteStorage.setItem.mockResolvedValue(undefined)
+
+            await storage.saveSettings(settings)
+
+            const stored = JSON.parse(localStorage.getItem('gtd_settings'))
+            expect(stored).toEqual(settings)
+        })
+    })
+
+    describe('init', () => {
+        test('should initialize remote storage instance', async () => {
+            const { RemoteStorage } = require('remote-storage')
+
+            await storage.init()
+
+            expect(RemoteStorage).toHaveBeenCalledWith({
+                userId: 'test_user_123',
+                instanceId: 'gtd-web-app'
+            })
+            expect(storage.remoteStorage).toBeDefined()
+        })
+
+        test('should sync from remote on init', async () => {
+            const syncSpy = jest.spyOn(storage, 'syncFromRemote').mockResolvedValue()
+
+            await storage.init()
+
+            expect(syncSpy).toHaveBeenCalled()
+
+            syncSpy.mockRestore()
+        })
+    })
+
+    describe('Edge Cases', () => {
+        test('should handle large data sets', async () => {
+            const largeTasks = Array.from({ length: 1000 }, (_, i) => ({
+                id: `task_${i}`,
+                title: `Task ${i}`
+            }))
+
+            mockRemoteStorage.setItem.mockResolvedValue(undefined)
+
+            await storage.saveTasks(largeTasks)
+
+            const stored = storage.getTasks()
+            expect(stored).toHaveLength(1000)
+        })
+
+        test('should handle special characters in data', async () => {
+            const specialData = {
+                title: 'Task with "quotes" and \'apostrophes\'',
+                description: 'Special chars: <>&\\n\\t',
+                tags: ['tag with spaces', 'tag@symbol']
+            }
+
+            mockRemoteStorage.setItem.mockResolvedValue(undefined)
+
+            await storage.setItem('special', specialData)
+
+            const retrieved = storage.getItem('special')
+            expect(retrieved).toEqual(specialData)
+        })
+
+        test('should handle unicode characters', async () => {
+            const unicodeData = {
+                title: 'Task with emoji 🎉 and unicode 中文',
+                tags: ['日本語', '한국어']
+            }
+
+            mockRemoteStorage.setItem.mockResolvedValue(undefined)
+
+            await storage.setItem('unicode', unicodeData)
+
+            const retrieved = storage.getItem('unicode')
+            expect(retrieved).toEqual(unicodeData)
+        })
+    })
+})

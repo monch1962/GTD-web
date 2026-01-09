@@ -52,37 +52,37 @@ export const defaultContexts = [
         color: '#f39c12',
         category: 'activity'
     }
-];
+]
 
 // Helper function to get all context IDs
 export function getContextIds() {
-    return defaultContexts.map(ctx => ctx.id);
+    return defaultContexts.map((ctx) => ctx.id)
 }
 
 // Helper function to get context by ID
 export function getContextById(id) {
-    return defaultContexts.find(ctx => ctx.id === id);
+    return defaultContexts.find((ctx) => ctx.id === id)
 }
 
 // Helper function to get contexts by category
 export function getContextsByCategory(category) {
-    return defaultContexts.filter(ctx => ctx.category === category);
+    return defaultContexts.filter((ctx) => ctx.category === category)
 }
 
 // Helper function to get simple array of context IDs (for backward compatibility)
 export function getDefaultContextIds() {
-    return getContextIds();
+    return getContextIds()
 }
 
 // Helper function to check if a context is a default context
 export function isDefaultContext(contextId) {
-    return getContextIds().includes(contextId);
+    return getContextIds().includes(contextId)
 }
 
 // Get all categories
 export function getCategories() {
-    const categories = new Set(defaultContexts.map(ctx => ctx.category));
-    return Array.from(categories);
+    const categories = new Set(defaultContexts.map((ctx) => ctx.category))
+    return Array.from(categories)
 }
 
 /**
@@ -93,27 +93,27 @@ export function getCategories() {
  * @returns {Set} Set containing all context IDs (default + custom)
  */
 export function getAllContexts(tasks = []) {
-    const defaultContextIds = getContextIds();
-    const customContexts = new Set();
+    const defaultContextIds = getContextIds()
+    const customContexts = new Set()
 
     // Handle null or undefined tasks
     if (!tasks || !Array.isArray(tasks)) {
-        return new Set(defaultContextIds);
+        return new Set(defaultContextIds)
     }
 
     // Collect custom contexts from tasks
-    tasks.forEach(task => {
+    tasks.forEach((task) => {
         if (task.contexts && Array.isArray(task.contexts)) {
-            task.contexts.forEach(context => {
+            task.contexts.forEach((context) => {
                 if (!defaultContextIds.includes(context)) {
-                    customContexts.add(context);
+                    customContexts.add(context)
                 }
-            });
+            })
         }
-    });
+    })
 
     // Combine default and custom contexts
-    return new Set([...defaultContextIds, ...customContexts]);
+    return new Set([...defaultContextIds, ...customContexts])
 }
 
 /**
@@ -123,20 +123,20 @@ export function getAllContexts(tasks = []) {
  * @returns {Object} Map of context ID to task count
  */
 export function getContextTaskCounts(tasks = []) {
-    const counts = {};
+    const counts = {}
 
     // Handle null or undefined tasks
     if (!tasks || !Array.isArray(tasks)) {
-        return counts;
+        return counts
     }
 
-    tasks.forEach(task => {
+    tasks.forEach((task) => {
         if (task.contexts && Array.isArray(task.contexts)) {
-            task.contexts.forEach(context => {
-                counts[context] = (counts[context] || 0) + 1;
-            });
+            task.contexts.forEach((context) => {
+                counts[context] = (counts[context] || 0) + 1
+            })
         }
-    });
+    })
 
-    return counts;
+    return counts
 }
