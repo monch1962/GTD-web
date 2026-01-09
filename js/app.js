@@ -68,6 +68,7 @@ import { TimeTrackingManager } from './modules/features/time-tracking.js';
 import { SubtasksManager } from './modules/features/subtasks.js';
 import { QuickCaptureWidgetManager } from './modules/features/quick-capture-widget.js';
 import { NewProjectButtonManager } from './modules/features/new-project-button.js';
+import { NavigationManager } from './modules/features/navigation.js';
 
 class GTDApp {
     // =========================================================================
@@ -126,6 +127,7 @@ class GTDApp {
         this.subtasks = new SubtasksManager(this, this);
         this.quickCaptureWidget = new QuickCaptureWidgetManager(this, this);
         this.newProjectButton = new NewProjectButtonManager(this, this);
+        this.navigation = new NavigationManager(this, this);
     }
 
     async init() {
@@ -1342,39 +1344,22 @@ class GTDApp {
 
     // ==================================================================
 
-    // ==================== NAVIGATION & VIEWS ====================
+    // ==================== NAVIGATION & VIEWS (Delegated to NavigationManager module) ====================
 
     getGreeting() {
-        const hour = new Date().getHours();
-        if (hour < 12) return 'Morning';
-        if (hour < 17) return 'Afternoon';
-        return 'Evening';
+        return this.navigation.getGreeting();
     }
 
     getGreetingMessage() {
-        const greeting = this.getGreeting();
-        const totalTasks = this.tasks.filter(t => !t.completed).length;
-        const completedToday = this.tasks.filter(t => t.completed && t.completedAt && new Date(t.completedAt) >= new Date(new Date().setHours(0, 0, 0, 0))).length;
-
-        if (totalTasks === 0) {
-            return `Good ${greeting}! All caught up!`;
-        } else if (completedToday > 0) {
-            return `Good ${greeting}! ${completedToday} task${completedToday > 1 ? 's' : ''} completed today.`;
-        } else {
-            return `Good ${greeting}! You have ${totalTasks} task${totalTasks > 1 ? 's' : ''} to do.`;
-        }
+        return this.navigation.getGreetingMessage();
     }
 
     navigateTo(view) {
-        this.currentView = view;
-        this.currentProjectId = null;
-        this.renderView();
-        this.updateNavigation();
+        this.navigation.navigateTo(view);
     }
 
     getProjectTitle(projectId) {
-        const project = this.projects.find(p => p.id === projectId);
-        return project ? project.title : 'Unknown Project';
+        return this.navigation.getProjectTitle(projectId);
     }
 
     // ==================================================================
