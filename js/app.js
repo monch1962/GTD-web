@@ -1224,22 +1224,48 @@ class GTDApp {
         this.mobileNavigation.setupMobileNavigation();
     }
 
-    showNotification(message) {
+    /**
+     * Show a toast notification message
+     * @param {string} message - The message to display
+     * @param {string} type - Notification type: 'success', 'error', 'warning', 'info', or empty for default
+     * @param {number} duration - How long to show the notification in ms (default: 2000)
+     */
+    showNotification(message, type = '', duration = 2000) {
         // Create toast notification
         const toast = document.createElement('div');
-        toast.textContent = message;
+        toast.className = `toast-notification ${type}`;
+
+        // Set colors based on type
+        const colors = {
+            success: { bg: '#10b981', text: '#ffffff', icon: '✓' },
+            error: { bg: '#ef4444', text: '#ffffff', icon: '✕' },
+            warning: { bg: '#f59e0b', text: '#ffffff', icon: '⚠' },
+            info: { bg: '#3b82f6', text: '#ffffff', icon: 'ℹ' },
+            '': { bg: 'var(--text-primary)', text: 'var(--bg-primary)', icon: '' }
+        };
+
+        const color = colors[type] || colors[''];
+
+        // Add icon if available
+        const icon = color.icon ? `<span style="margin-right: 8px; font-weight: bold;">${color.icon}</span>` : '';
+
+        toast.innerHTML = `${icon}<span>${escapeHtml(message)}</span>`;
         toast.style.cssText = `
             position: fixed;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background-color: var(--text-primary);
-            color: var(--bg-primary);
+            background-color: ${color.bg};
+            color: ${color.text};
             padding: 12px 24px;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             z-index: 10000;
             animation: slideUp 0.3s ease;
+            display: flex;
+            align-items: center;
+            max-width: 90vw;
+            word-wrap: break-word;
         `;
         document.body.appendChild(toast);
 
@@ -1248,13 +1274,42 @@ class GTDApp {
 
         setTimeout(() => {
             toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.3s ease';
             setTimeout(() => toast.remove(), 300);
-        }, 2000);
+        }, duration);
     }
 
     // Alias for showNotification for consistency
-    showToast(message) {
-        this.showNotification(message);
+    showToast(message, type = '') {
+        this.showNotification(message, type);
+    }
+
+    /**
+     * Convenience method for success notifications
+     */
+    showSuccess(message) {
+        this.showNotification(message, 'success');
+    }
+
+    /**
+     * Convenience method for error notifications
+     */
+    showError(message) {
+        this.showNotification(message, 'error', 3000);
+    }
+
+    /**
+     * Convenience method for warning notifications
+     */
+    showWarning(message) {
+        this.showNotification(message, 'warning', 3000);
+    }
+
+    /**
+     * Convenience method for info notifications
+     */
+    showInfo(message) {
+        this.showNotification(message, 'info', 3000);
     }
 
     // ==================== QUICK CAPTURE WIDGET (Delegated to QuickCaptureWidgetManager module) ====================

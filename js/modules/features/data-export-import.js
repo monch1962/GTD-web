@@ -77,10 +77,10 @@ export class DataExportImportManager {
 
             URL.revokeObjectURL(url);
 
-            alert('Data exported successfully! File downloaded.');
+            this.app.showSuccess('Data exported successfully! File downloaded.');
         } catch (error) {
             console.error('Export failed:', error);
-            alert('Failed to export data. Please try again.');
+            this.app.showError('Failed to export data. Please try again.');
         }
     }
 
@@ -149,21 +149,21 @@ export class DataExportImportManager {
                     this.app.renderCustomContexts?.();
                     this.app.updateQuickAddPlaceholder?.();
 
-                    alert(`Import successful!\n\nImported ${this.app.tasks?.length || 0} tasks and ${this.app.projects?.length || 0} projects.`);
+                    this.app.showSuccess(`Import successful! Imported ${this.app.tasks?.length || 0} tasks and ${this.app.projects?.length || 0} projects.`);
                 } catch (parseError) {
                     console.error('Failed to parse import file:', parseError);
-                    alert('Failed to parse import file. Please make sure it\'s a valid GTD backup file.');
+                    this.app.showError('Failed to parse import file. Please make sure it\'s a valid GTD backup file.');
                 }
             };
 
             reader.onerror = () => {
-                alert('Failed to read file. Please try again.');
+                this.app.showError('Failed to read file. Please try again.');
             };
 
             reader.readAsText(file);
         } catch (error) {
             console.error('Import failed:', error);
-            alert('Failed to import data. Please try again.');
+            this.app.showError('Failed to import data. Please try again.');
         }
     }
 }

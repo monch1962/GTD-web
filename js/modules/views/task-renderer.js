@@ -589,8 +589,14 @@ export class TaskRenderer {
         const notesBtn = element.querySelector('.task-action-btn.notes');
         if (notesBtn) {
             notesBtn.addEventListener('click', () => {
-                const notes = task.notes || 'No notes';
-                alert(`${task.title}\n\nNotes:\n${notes}`);
+                if (task.notes) {
+                    const preview = task.notes.length > 100
+                        ? task.notes.substring(0, 100) + '...'
+                        : task.notes;
+                    this.app.showInfo(`${task.title}: ${preview}`);
+                } else {
+                    this.app.showInfo(`${task.title}: No notes`);
+                }
             });
         }
 

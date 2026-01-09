@@ -208,7 +208,7 @@ export class WeeklyReviewManager {
         });
 
         if (emptyProjects.length === 0) {
-            alert('No empty projects to clean up.');
+            this.app.showWarning('No empty projects to clean up.');
             return;
         }
 
@@ -218,7 +218,7 @@ export class WeeklyReviewManager {
         await this.app.saveProjects?.();
         this.renderWeeklyReview();
         this.app.renderProjectsDropdown?.();
-        alert(`Cleaned up ${emptyProjects.length} empty projects.`);
+        this.app.showSuccess(`Cleaned up ${emptyProjects.length} empty projects.`);
     }
 
     /**
@@ -233,7 +233,7 @@ export class WeeklyReviewManager {
         );
 
         if (oldCompletedTasks.length === 0) {
-            alert('No old completed tasks to archive.');
+            this.app.showWarning('No old completed tasks to archive.');
             return;
         }
 
@@ -263,7 +263,7 @@ export class WeeklyReviewManager {
         this.renderWeeklyReview();
         this.app.renderView?.();
         this.app.updateCounts?.();
-        alert(`Archived ${oldCompletedTasks.length} old completed tasks.`);
+        this.app.showSuccess(`Archived ${oldCompletedTasks.length} old completed tasks.`);
     }
 
     /**
@@ -279,7 +279,7 @@ export class WeeklyReviewManager {
         });
 
         if (staleProjects.length === 0) {
-            alert('No stale projects to move.');
+            this.app.showWarning('No stale projects to move.');
             return;
         }
 
@@ -289,6 +289,6 @@ export class WeeklyReviewManager {
         await this.app.saveProjects?.();
         this.renderWeeklyReview();
         this.app.renderProjectsDropdown?.();
-        alert(`Moved ${staleProjects.length} projects to Someday.`);
+        this.app.showSuccess(`Moved ${staleProjects.length} projects to Someday.`);
     }
 }

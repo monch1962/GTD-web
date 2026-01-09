@@ -71,7 +71,7 @@ export class FocusPomodoroManager {
         if (!taskId) {
             const suggestions = this.app.getSmartSuggestions?.({ maxSuggestions: 10 });
             if (!suggestions || suggestions.length === 0) {
-                alert('No tasks available for focus mode. Create some tasks first!');
+                this.app.showWarning('No tasks available for focus mode. Create some tasks first!');
                 return;
             }
 
@@ -87,7 +87,7 @@ export class FocusPomodoroManager {
             if (taskIndex >= 0 && taskIndex < suggestions.length) {
                 taskId = suggestions[taskIndex].task.id;
             } else {
-                alert('Invalid selection');
+                this.app.showError('Invalid selection');
                 return;
             }
         }
@@ -297,7 +297,7 @@ export class FocusPomodoroManager {
         this.pausePomodoro();
 
         if (this.pomodoroIsBreak) {
-            alert('Break complete! Ready to focus again?');
+            this.app.showSuccess('Break complete! Ready to focus again?');
             this.pomodoroIsBreak = false;
             this.pomodoroTimeLeft = 25 * 60;
         } else {

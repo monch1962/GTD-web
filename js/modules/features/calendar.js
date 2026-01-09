@@ -208,8 +208,14 @@ export class CalendarManager {
         });
 
         const dateStr = `${month + 1}/${day}/${year}`;
-        const taskList = tasks.map(t => `- ${t.title}`).join('\n') || 'No tasks';
-        alert(`Tasks due on ${dateStr}:\n\n${taskList}`);
+        if (tasks.length === 0) {
+            this.app.showInfo(`No tasks due on ${dateStr}`);
+        } else {
+            const taskSummary = tasks.length === 1
+                ? tasks[0].title
+                : `${tasks.length} tasks due (e.g., ${tasks[0].title}${tasks.length > 1 ? `, ${tasks[1].title}` : ''}${tasks.length > 2 ? '...' : ''})`;
+            this.app.showInfo(`${dateStr}: ${taskSummary}`);
+        }
     }
 
     /**

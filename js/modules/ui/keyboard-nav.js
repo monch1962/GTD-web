@@ -290,6 +290,6 @@ Quick Views:
   Ctrl+1-5      Switch to view (1=Inbox, 2=Next, etc.)
         `;
 
-        alert(shortcuts);
+        this.app.showInfo('Keyboard shortcuts: Press ? for help');
     }
 }
