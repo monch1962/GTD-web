@@ -1277,7 +1277,7 @@ class GTDApp {
         this.productivityHeatmap.renderProductivityHeatmap();
     }
 
-    // ==================== GLOBAL QUICK CAPTURE ====================
+    // ==================== GLOBAL QUICK CAPTURE (Delegated to GlobalQuickCaptureManager module) ====================
 
     setupGlobalQuickCapture() {
         this.globalQuickCapture.setupGlobalQuickCapture();
