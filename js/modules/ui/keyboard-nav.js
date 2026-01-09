@@ -1,9 +1,35 @@
 /**
- * Keyboard navigation module
- * Handles keyboard shortcuts and task navigation
+ * Keyboard Navigation module
+ * Provides comprehensive keyboard shortcuts and task navigation
+ *
+ * Features:
+ * - Vim-style navigation (j/k or arrow keys)
+ * - Task selection and manipulation
+ * - Quick view switching (Ctrl+1-5)
+ * - Focus mode toggle
+ * - Global shortcuts (Ctrl+K for quick-add, Ctrl+N for suggestions)
+ *
+ * @example
+ * const keyboardNav = new KeyboardNavigation(state, app);
+ * keyboardNav.setupKeyboardShortcuts();
+ * keyboardNav.selectTask('task-123');
  */
 
 export class KeyboardNavigation {
+    /**
+     * Create a new KeyboardNavigation instance
+     * @param {Object} state - Application state object
+     * @param {Array} state.tasks - Array of tasks for navigation
+     * @param {Object} app - Application instance
+     * @param {Function} app.showSuggestions - Show suggestions modal
+     * @param {Function} app.duplicateTask - Duplicate selected task
+     * @param {Function} app.openTaskModal - Open task modal for editing
+     * @param {Function} app.toggleTaskComplete - Toggle task completion
+     * @param {Function} app.deleteTask - Delete selected task
+     * @param {Function} app.enterFocusMode - Enter focus mode for task
+     * @param {Function} app.switchView - Switch to different view
+     * @param {Function} app.showInfo - Show info toast notification
+     */
     constructor(state, app) {
         this.state = state;
         this.app = app;

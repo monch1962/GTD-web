@@ -1,9 +1,29 @@
 /**
  * Project Modal module
- * Handles project creation and editing modal
+ * Handles project creation, editing, and Gantt chart visualization
+ *
+ * @example
+ * const projectModal = new ProjectModalManager(state, app);
+ * projectModal.openProjectModal(); // Open for new project
+ * projectModal.openProjectModal(existingProject); // Open for editing
+ * projectModal.openGanttChart(existingProject); // Show Gantt chart
  */
 
 export class ProjectModalManager {
+    /**
+     * Create a new ProjectModalManager instance
+     * @param {Object} state - Application state object
+     * @param {Array} state.projects - Array of projects
+     * @param {Object} app - Application instance
+     * @param {Array} app.tasks - Array of tasks (for Gantt chart)
+     * @param {Function} app.showNotification - Show toast notification
+     * @param {Function} app.saveState - Save state for undo/redo
+     * @param {Function} app.saveProjects - Save projects to storage
+     * @param {Function} app.renderView - Re-render current view
+     * @param {Function} app.updateCounts - Update task counts
+     * @param {Function} app.renderProjectsDropdown - Update project dropdown
+     * @param {Function} app.openTaskModal - Open task modal (for pending task data)
+     */
     constructor(state, app) {
         this.state = state;
         this.app = app;
@@ -12,8 +32,22 @@ export class ProjectModalManager {
 
     /**
      * Open project modal for creating/editing projects
-     * @param {Project} project - Project to edit (null for new project)
+     *
+     * @param {Project|null} project - Project to edit (null for new project)
      * @param {Object} pendingTaskData - Pending task data when creating project from task modal
+     * @param {string} pendingTaskData.title - Task title
+     * @param {string} pendingTaskData.description - Task description
+     * @returns {void}
+     *
+     * @example
+     * // Open modal for new project
+     * manager.openProjectModal();
+     *
+     * // Open modal for editing existing project
+     * manager.openProjectModal(existingProject);
+     *
+     * // Open modal with pending task data
+     * manager.openProjectModal(null, { title: 'My Task' });
      */
     openProjectModal(project = null, pendingTaskData = null) {
         const modal = document.getElementById('project-modal');

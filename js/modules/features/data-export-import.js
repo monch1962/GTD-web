@@ -1,12 +1,31 @@
 /**
  * Data Export/Import module
  * Handles exporting and importing GTD data to/from JSON files
+ *
+ * @example
+ * const dataExportImport = new DataExportImportManager(state, app);
+ * dataExportImport.setupDataExportImport();
+ * await dataExportImport.exportData();
  */
 
 import { Task } from '../../models.js';
 import { Project } from '../../models.js';
 
 export class DataExportImportManager {
+    /**
+     * Create a new DataExportImportManager instance
+     * @param {Object} state - Application state object
+     * @param {Array} state.tasks - Array of tasks
+     * @param {Array} state.projects - Array of projects
+     * @param {Object} state.usageStats - Usage statistics object
+     * @param {Object} app - Application instance with utility methods
+     * @param {Function} app.showSuccess - Show success toast notification
+     * @param {Function} app.showError - Show error toast notification
+     * @param {Function} app.saveTasks - Save tasks to storage
+     * @param {Function} app.saveProjects - Save projects to storage
+     * @param {Function} app.renderView - Re-render the current view
+     * @param {Function} app.updateCounts - Update task counts
+     */
     constructor(state, app) {
         this.state = state;
         this.app = app;
@@ -14,6 +33,12 @@ export class DataExportImportManager {
 
     /**
      * Setup event listeners for export and import buttons
+     * Binds click handlers to the export and import UI buttons
+     *
+     * @returns {void}
+     *
+     * @example
+     * manager.setupDataExportImport();
      */
     setupDataExportImport() {
         const exportBtn = document.getElementById('btn-export');
@@ -44,6 +69,14 @@ export class DataExportImportManager {
 
     /**
      * Export all GTD data to a JSON file
+     * Creates a timestamped backup file containing tasks, projects, contexts, and usage stats
+     *
+     * @returns {void}
+     * @fires Error if export fails
+     *
+     * @example
+     * manager.exportData();
+     * // Downloads file: gtd-backup-2025-01-09-14-30-15.json
      */
     exportData() {
         try {
@@ -86,7 +119,17 @@ export class DataExportImportManager {
 
     /**
      * Import GTD data from a JSON file
-     * @param {File} file - The file to import
+     * Validates and imports tasks, projects, contexts, and usage stats from a backup file
+     * Replaces all existing data with the imported data
+     *
+     * @param {File} file - The JSON file to import (created by exportData())
+     * @returns {Promise<void>} Resolves when import is complete
+     * @throws {Error} If file is invalid or parsing fails
+     *
+     * @example
+     * const fileInput = document.getElementById('import-file-input');
+     * const file = fileInput.files[0];
+     * await manager.importData(file);
      */
     async importData(file) {
         try {

@@ -1,11 +1,39 @@
 /**
- * Task operations module
+ * Task Operations module
  * Handles CRUD operations for tasks
+ *
+ * Features:
+ * - Quick add with natural language parsing
+ * - Duplicate tasks
+ * - Toggle completion
+ * - Bulk operations
+ * - Task status management
+ *
+ * @example
+ * const taskOps = new TaskOperations(state, app);
+ * await taskOps.quickAddTask('Call mom tomorrow');
+ * await taskOps.duplicateTask('task-123');
+ * await taskOps.toggleTaskComplete('task-123');
  */
 
 import { Task } from '../../models.js';
 
 export class TaskOperations {
+    /**
+     * Create a new TaskOperations instance
+     * @param {Object} state - Application state object
+     * @param {Array} state.tasks - Array of tasks
+     * @param {string} state.currentView - Current view name
+     * @param {string|null} state.currentProjectId - Current project filter
+     * @param {Function} state.trackTaskUsage - Track task usage for smart defaults
+     * @param {Object} app - Application instance
+     * @param {Function} app.parser - Natural language parser
+     * @param {Function} app.saveState - Save state for undo/redo
+     * @param {Function} app.saveTasks - Save tasks to storage
+     * @param {Function} app.renderView - Re-render current view
+     * @param {Function} app.updateCounts - Update task counts
+     * @param {Function} app.updateContextFilter - Update context filter UI
+     */
     constructor(state, app) {
         this.state = state;
         this.app = app;

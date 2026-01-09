@@ -1,11 +1,37 @@
 /**
- * Project operations module
+ * Project Operations module
  * Handles CRUD operations for projects
+ *
+ * Features:
+ * - Create new projects
+ * - Delete projects (unlinks tasks but doesn't delete them)
+ * - Archive/restore projects
+ * - Update project health indicators
+ *
+ * @example
+ * const projectOps = new ProjectOperations(state, app);
+ * const project = projectOps.createProject({ title: 'My Project' });
+ * await projectOps.deleteProject('project-123');
+ * await projectOps.archiveProject('project-123');
  */
 
 import { Project } from '../../models.js';
 
 export class ProjectOperations {
+    /**
+     * Create a new ProjectOperations instance
+     * @param {Object} state - Application state object
+     * @param {Array} state.projects - Array of projects
+     * @param {Array} state.tasks - Array of tasks (for unlinking)
+     * @param {Object} app - Application instance
+     * @param {Function} app.saveState - Save state for undo/redo
+     * @param {Function} app.saveProjects - Save projects to storage
+     * @param {Function} app.saveTasks - Save tasks to storage
+     * @param {Function} app.renderView - Re-render current view
+     * @param {Function} app.updateCounts - Update task counts
+     * @param {Function} app.renderProjectsDropdown - Update project dropdown
+     * @param {Function} app.showNotification - Show toast notification
+     */
     constructor(state, app) {
         this.state = state;
         this.app = app;

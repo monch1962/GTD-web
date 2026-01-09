@@ -1,7 +1,21 @@
 /**
  * Task Modal module
- * Handles task/project creation and editing modal
- * Complex form with recurrence, dependencies, subtasks, and GTD rules
+ * Handles task creation and editing with comprehensive form support
+ *
+ * Features:
+ * - GTD status management (inbox, next, waiting, someday)
+ * - Recurrence patterns (daily, weekly, monthly, yearly)
+ * - Task dependencies and subtasks
+ * - Natural language parsing integration
+ * - Energy and time estimates
+ * - Context tags
+ * - Project assignment
+ *
+ * @example
+ * const taskModal = new TaskModalManager(state, app);
+ * taskModal.openTaskModal(); // Open for new task
+ * taskModal.openTaskModal(existingTask); // Open for editing
+ * taskModal.openTaskModal(null, 'project-123'); // Open with default project
  */
 
 import { Task } from '../../models.js';
@@ -35,6 +49,21 @@ const NthWeekdayLabels = {
 };
 
 export class TaskModalManager {
+    /**
+     * Create a new TaskModalManager instance
+     * @param {Object} state - Application state object
+     * @param {Array} state.tasks - Array of tasks
+     * @param {Array} state.projects - Array of projects
+     * @param {Object} app - Application instance
+     * @param {Array} app.tasks - Tasks array (for dependencies)
+     * @param {Function} app.openProjectModal - Open project modal
+     * @param {Function} app.showNotification - Show toast notification
+     * @param {Function} app.saveState - Save state for undo/redo
+     * @param {Function} app.saveTasks - Save tasks to storage
+     * @param {Function} app.renderView - Re-render current view
+     * @param {Function} app.updateCounts - Update task counts
+     * @param {Function} app.updateContextFilter - Update context filter UI
+     */
     constructor(state, app) {
         this.state = state;
         this.app = app;
