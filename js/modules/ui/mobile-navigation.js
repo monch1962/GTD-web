@@ -8,6 +8,8 @@
  * - Swipe gestures for tasks
  */
 
+import { createLogger } from '../utils/logger.js';
+
 export class MobileNavigationManager {
     /**
      * @param {Object} state - The application state object
@@ -16,6 +18,7 @@ export class MobileNavigationManager {
     constructor(state, app) {
         this.state = state;
         this.app = app;
+        this.logger = createLogger('MobileNav');
     }
 
     /**
@@ -33,7 +36,7 @@ export class MobileNavigationManager {
      * Can be called directly for testing purposes
      */
     setupMobileNavigationInternal() {
-        console.log('[Mobile Nav] Setting up mobile navigation...');
+        this.logger.debug('Setting up mobile navigation...');
 
         this.setupHamburgerMenu();
         this.setupMobileMenuDropdown();
@@ -59,7 +62,7 @@ export class MobileNavigationManager {
         const overlay = document.getElementById('sidebar-overlay');
 
         if (!hamburger || !sidebar || !overlay) {
-            console.warn('[Mobile Nav] Hamburger menu elements not found');
+            this.logger.warn('Hamburger menu elements not found');
             return;
         }
 
@@ -87,7 +90,7 @@ export class MobileNavigationManager {
         const mobileMenuDropdown = document.getElementById('mobile-menu-dropdown');
 
         if (!mobileMenuBtn || !mobileMenuDropdown) {
-            console.warn('[Mobile Nav] Mobile menu dropdown elements not found');
+            this.logger.warn('Mobile menu dropdown elements not found');
             return;
         }
 
@@ -166,26 +169,26 @@ export class MobileNavigationManager {
      */
     setupBottomNavigation() {
         const bottomNavItems = document.querySelectorAll('.bottom-nav-item[data-view]');
-        console.log('[Mobile Nav] Found bottom nav items:', bottomNavItems.length);
+        this.logger.debug(`Found bottom nav items: ${bottomNavItems.length}`);
 
         const sidebar = document.querySelector('.sidebar');
         const overlay = document.getElementById('sidebar-overlay');
         const hamburger = document.getElementById('hamburger-menu');
 
         bottomNavItems.forEach((item, index) => {
-            console.log('[Mobile Nav] Setting up item:', item.dataset.view);
+            this.logger.debug(`Setting up item: ${item.dataset.view}`);
 
             // Use click event with proper binding
             item.addEventListener('click', (e) => {
                 e.preventDefault();
                 const view = item.dataset.view;
-                console.log('[Bottom Nav] Clicked view:', view);
+                this.logger.debug(`Clicked view: ${view}`);
 
                 // Call switchView with proper context
                 if (this.app.switchView && typeof this.app.switchView === 'function') {
                     this.app.switchView(view);
                 } else {
-                    console.error('[Bottom Nav] switchView not available');
+                    this.logger.error('switchView not available');
                 }
 
                 // Update active state
@@ -204,7 +207,7 @@ export class MobileNavigationManager {
             item.addEventListener('touchend', (e) => {
                 e.preventDefault(); // Prevent mouse click event
                 const view = item.dataset.view;
-                console.log('[Bottom Nav] Touch ended on view:', view);
+                this.logger.debug(`Touch ended on view: ${view}`);
 
                 if (this.app.switchView && typeof this.app.switchView === 'function') {
                     this.app.switchView(view);
@@ -254,7 +257,7 @@ export class MobileNavigationManager {
         const contentArea = document.querySelector('.content-area');
 
         if (!contentArea) {
-            console.warn('[Mobile Nav] Content area not found for pull-to-refresh');
+            this.logger.warn('Content area not found for pull-to-refresh');
             return;
         }
 
@@ -317,13 +320,13 @@ export class MobileNavigationManager {
     setupSwipeGestures() {
         // Only enable swipe gestures on touch devices
         if (!('ontouchstart' in window)) {
-            console.log('[Mobile Nav] Touch not available, skipping swipe gestures');
+            this.logger.debug('Touch not available, skipping swipe gestures');
             return;
         }
 
         const tasksContainer = document.querySelector('.content-area');
         if (!tasksContainer) {
-            console.warn('[Mobile Nav] Tasks container not found for swipe gestures');
+            this.logger.warn('Tasks container not found for swipe gestures');
             return;
         }
 

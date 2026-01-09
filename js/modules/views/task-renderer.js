@@ -6,6 +6,7 @@
 import { escapeHtml } from '../../dom-utils.js';
 import { VirtualScrollManager } from '../ui/virtual-scroll.js';
 import { VirtualScrollConfig } from '../../constants.js';
+import { createLogger } from '../utils/logger.js';
 
 export class TaskRenderer {
     constructor(state, app) {
@@ -13,6 +14,7 @@ export class TaskRenderer {
         this.app = app; // Reference to main app for callbacks
         this.virtualScroll = null;
         this.currentContainer = null;
+        this.logger = createLogger('TaskRenderer');
     }
 
     /**
@@ -50,7 +52,7 @@ export class TaskRenderer {
      */
     _renderWithVirtualScroll(container, tasks) {
         // Log activation for performance monitoring
-        console.log(`🚀 Virtual scrolling ACTIVATED: ${tasks.length} tasks (threshold: ${VirtualScrollConfig.ACTIVATION_THRESHOLD})`);
+        this.logger.debug(`Virtual scrolling ACTIVATED: ${tasks.length} tasks (threshold: ${VirtualScrollConfig.ACTIVATION_THRESHOLD})`);
 
         // Initialize or update virtual scroll
         if (!this.virtualScroll || this.virtualScroll.container !== container) {
@@ -74,7 +76,7 @@ export class TaskRenderer {
     _renderRegular(container, tasks) {
         // Clean up virtual scroll if exists
         if (this.virtualScroll) {
-            console.log(`📋 Virtual scrolling DEACTIVATED: ${tasks.length} tasks (< ${VirtualScrollConfig.ACTIVATION_THRESHOLD} threshold)`);
+            this.logger.debug(`Virtual scrolling DEACTIVATED: ${tasks.length} tasks (< ${VirtualScrollConfig.ACTIVATION_THRESHOLD} threshold)`);
             this.virtualScroll.destroy();
             this.virtualScroll = null;
         }

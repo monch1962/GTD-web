@@ -12,10 +12,13 @@
  * - Visual feedback for active timer state
  */
 
+import { createLogger } from '../utils/logger.js';
+
 export class TimeTrackingManager {
     constructor(state, app) {
         this.state = state;
         this.app = app;
+        this.logger = createLogger('TimeTracking');
 
         // Initialize timer state properties
         this.state.timerInterval = null;
@@ -33,7 +36,7 @@ export class TimeTrackingManager {
     setupTimeTracking() {
         // Time tracking is handled per-task in the task element creation
         // This method is for global time tracking setup
-        console.log('[Time Tracking] Time tracking initialized');
+        this.logger.debug('Time tracking initialized');
     }
 
     // =========================================================================

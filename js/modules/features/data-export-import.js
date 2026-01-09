@@ -10,6 +10,7 @@
 
 import { Task } from '../../models.js';
 import { Project } from '../../models.js';
+import { createLogger } from '../utils/logger.js';
 
 export class DataExportImportManager {
     /**
@@ -29,6 +30,7 @@ export class DataExportImportManager {
     constructor(state, app) {
         this.state = state;
         this.app = app;
+        this.logger = createLogger('DataExportImport');
     }
 
     /**
@@ -112,7 +114,7 @@ export class DataExportImportManager {
 
             this.app.showSuccess('Data exported successfully! File downloaded.');
         } catch (error) {
-            console.error('Export failed:', error);
+            this.logger.error('Export failed:', error);
             this.app.showError('Failed to export data. Please try again.');
         }
     }
@@ -194,7 +196,7 @@ export class DataExportImportManager {
 
                     this.app.showSuccess(`Import successful! Imported ${this.app.tasks?.length || 0} tasks and ${this.app.projects?.length || 0} projects.`);
                 } catch (parseError) {
-                    console.error('Failed to parse import file:', parseError);
+                    this.logger.error('Failed to parse import file:', parseError);
                     this.app.showError('Failed to parse import file. Please make sure it\'s a valid GTD backup file.');
                 }
             };
@@ -205,7 +207,7 @@ export class DataExportImportManager {
 
             reader.readAsText(file);
         } catch (error) {
-            console.error('Import failed:', error);
+            this.logger.error('Import failed:', error);
             this.app.showError('Failed to import data. Please try again.');
         }
     }

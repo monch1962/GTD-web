@@ -3,8 +3,12 @@
  * Provides a single source of truth for all application state
  */
 
+import { createLogger } from '../utils/logger.js';
+
 export class AppState {
     constructor() {
+        this.logger = createLogger('AppState');
+
         // Core data
         this.tasks = [];
         this.projects = [];
@@ -108,7 +112,7 @@ export class AppState {
             if (key in this) {
                 this[key] = updates[key];
             } else {
-                console.warn(`Attempted to set unknown state property: ${key}`);
+                this.logger.warn(`Attempted to set unknown state property: ${key}`);
             }
         });
     }
@@ -126,7 +130,7 @@ export class AppState {
                 lastUpdated: null
             };
         } catch (error) {
-            console.warn('Failed to load usage stats:', error);
+            this.logger.warn('Failed to load usage stats:', error);
             return {
                 contexts: {},
                 times: {},
@@ -143,7 +147,7 @@ export class AppState {
             localStorage.setItem('gtd_usage_stats', JSON.stringify(this.usageStats));
             this.usageStats.lastUpdated = new Date().toISOString();
         } catch (error) {
-            console.warn('Failed to save usage stats:', error);
+            this.logger.warn('Failed to save usage stats:', error);
         }
     }
 

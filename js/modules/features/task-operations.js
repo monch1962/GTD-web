@@ -17,6 +17,7 @@
  */
 
 import { Task } from '../../models.js';
+import { createLogger } from '../utils/logger.js';
 
 export class TaskOperations {
     /**
@@ -37,6 +38,7 @@ export class TaskOperations {
     constructor(state, app) {
         this.state = state;
         this.app = app;
+        this.logger = createLogger('TaskOperations');
     }
 
     /**
@@ -180,7 +182,7 @@ export class TaskOperations {
 
         if (movedCount > 0) {
             await this.app.saveTasks?.();
-            console.log(`Migrated ${movedCount} blocked task(s) to Waiting`);
+            this.logger.info(`Migrated ${movedCount} blocked task(s) to Waiting`);
         }
 
         // Update project dropdown counts since tasks changed status

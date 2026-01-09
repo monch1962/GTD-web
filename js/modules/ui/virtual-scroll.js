@@ -4,6 +4,7 @@
  */
 
 import { VirtualScrollConfig } from '../../constants.js';
+import { createLogger } from '../utils/logger.js';
 
 export class VirtualScrollManager {
     constructor(container, options = {}) {
@@ -11,6 +12,7 @@ export class VirtualScrollManager {
         this.itemHeight = options.itemHeight || VirtualScrollConfig.ITEM_HEIGHT;
         this.bufferItems = options.bufferItems || VirtualScrollConfig.BUFFER_ITEMS;
         this.renderItem = options.renderItem || ((item) => item);
+        this.logger = createLogger('VirtualScroll');
 
         // Scroll state
         this.scrollTop = 0;
@@ -182,7 +184,7 @@ export class VirtualScrollManager {
      */
     scrollToItem(index, smooth = true) {
         if (index < 0 || index >= this.totalItems) {
-            console.warn(`Invalid index: ${index}`);
+            this.logger.warn(`Invalid index: ${index}`);
             return;
         }
 
