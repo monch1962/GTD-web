@@ -57,6 +57,8 @@ import { TemplatesManager } from './modules/features/templates.js';
 import { MobileNavigationManager } from './modules/ui/mobile-navigation.js';
 import { DashboardManager } from './modules/features/dashboard.js';
 import { FocusPomodoroManager } from './modules/features/focus-pomodoro.js';
+import { DailyReviewManager } from './modules/features/daily-review.js';
+import { SmartSuggestionsManager } from './modules/features/smart-suggestions.js';
 
 class GTDApp {
     // =========================================================================
@@ -109,6 +111,8 @@ class GTDApp {
         this.mobileNavigation = new MobileNavigationManager(this, this);
         this.dashboard = new DashboardManager(this, this);
         this.focusPomodoro = new FocusPomodoroManager(this, this);
+        this.dailyReview = new DailyReviewManager(this, this);
+        this.smartSuggestions = new SmartSuggestionsManager(this, this);
     }
 
     async init() {
@@ -1595,217 +1599,26 @@ class GTDApp {
 
     // ==================================================================
 
-    // ==================== DAILY REVIEW ====================
+    // ==================== DAILY REVIEW (Delegated to DailyReviewManager module) ====================
 
     setupDailyReview() {
-        const dailyReviewBtn = document.getElementById('btn-daily-review');
-        const closeDailyReviewBtn = document.getElementById('close-daily-review-modal');
-
-        if (dailyReviewBtn) {
-            dailyReviewBtn.addEventListener('click', () => {
-                this.showDailyReview();
-            });
-        }
-
-        if (closeDailyReviewBtn) {
-            closeDailyReviewBtn.addEventListener('click', () => {
-                this.closeDailyReview();
-            });
-        }
+        this.dailyReview.setupDailyReview();
     }
 
     showDailyReview() {
-        const modal = document.getElementById('daily-review-modal');
-        if (!modal) return;
-
-        modal.style.display = 'block';
-        this.renderDailyReview();
+        this.dailyReview.showDailyReview();
     }
 
     closeDailyReview() {
-        const modal = document.getElementById('daily-review-modal');
-        if (modal) modal.style.display = 'none';
+        this.dailyReview.closeDailyReview();
     }
 
     renderDailyReview() {
-        const dailyReviewContent = document.getElementById('daily-review-content');
-        if (!dailyReviewContent) return;
-
-        const now = new Date();
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-
-        // Get tasks due today
-        const dueToday = this.tasks.filter(t => !t.completed && t.dueDate && new Date(t.dueDate) <= today);
-
-        // Get tasks due tomorrow
-        const dueTomorrow = this.tasks.filter(t => !t.completed && t.dueDate && new Date(t.dueDate) >= tomorrow && new Date(t.dueDate) < new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000));
-
-        // Get overdue tasks
-        const overdue = this.tasks.filter(t => !t.completed && t.dueDate && new Date(t.dueDate) < today);
-
-        // Get high priority tasks
-        const highPriority = this.tasks.filter(t => !t.completed && t.priority && t.priority >= 80);
-
-        // Get tasks due this week
-        const weekEnd = new Date(today);
-        weekEnd.setDate(weekEnd.getDate() + 7);
-        const dueThisWeek = this.tasks.filter(t => !t.completed && t.dueDate && new Date(t.dueDate) >= today && new Date(t.dueDate) < weekEnd);
-
-        // Render daily review
-        dailyReviewContent.innerHTML = `
-            <div style="max-width: 800px; margin: 0 auto;">
-                <div style="text-align: center; margin-bottom: var(--spacing-lg);">
-                    <h2 style="margin: 0; font-size: 1.8rem;">${this.getGreetingMessage()}</h2>
-                    <div style="color: var(--text-secondary); margin-top: var(--spacing-sm);">${now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
-                </div>
-
-                <!-- Quick Stats -->
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--spacing-md); margin-bottom: var(--spacing-lg);">
-                    <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: var(--radius-md); border: 1px solid var(--border-color); text-align: center;">
-                        <div style="font-size: 2rem; font-weight: bold; color: var(--primary-color);">${dueToday.length}</div>
-                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Due Today</div>
-                    </div>
-                    <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: var(--radius-md); border: 1px solid var(--border-color); text-align: center;">
-                        <div style="font-size: 2rem; font-weight: bold; color: var(--warning-color);">${overdue.length}</div>
-                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Overdue</div>
-                    </div>
-                    <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: var(--radius-md); border: 1px solid var(--border-color); text-align: center;">
-                        <div style="font-size: 2rem; font-weight: bold; color: var(--info-color);">${dueThisWeek.length}</div>
-                        <div style="font-size: 0.85rem; color: var(--text-secondary);">This Week</div>
-                    </div>
-                    <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: var(--radius-md); border: 1px solid var(--border-color); text-align: center;">
-                        <div style="font-size: 2rem; font-weight: bold; color: var(--accent-color);">${highPriority.length}</div>
-                        <div style="font-size: 0.85rem; color: var(--text-secondary);">High Priority</div>
-                    </div>
-                </div>
-
-                <!-- Due Today -->
-                ${dueToday.length > 0 ? `
-                    <div style="margin-bottom: var(--spacing-lg);">
-                        <h3 style="margin-bottom: var(--spacing-md); color: var(--primary-color);">
-                            <i class="fas fa-calendar-day"></i> Due Today
-                        </h3>
-                        <div class="task-list">
-                            ${dueToday.map(task => this.renderDailyReviewTask(task, 'today')).join('')}
-                        </div>
-                    </div>
-                ` : ''}
-
-                <!-- Overdue -->
-                ${overdue.length > 0 ? `
-                    <div style="margin-bottom: var(--spacing-lg);">
-                        <h3 style="margin-bottom: var(--spacing-md); color: var(--warning-color);">
-                            <i class="fas fa-exclamation-circle"></i> Overdue
-                        </h3>
-                        <div class="task-list">
-                            ${overdue.slice(0, 10).map(task => this.renderDailyReviewTask(task, 'overdue')).join('')}
-                        </div>
-                    </div>
-                ` : ''}
-
-                <!-- Due This Week -->
-                ${dueThisWeek.length > 0 ? `
-                    <div style="margin-bottom: var(--spacing-lg);">
-                        <h3 style="margin-bottom: var(--spacing-md); color: var(--info-color);">
-                            <i class="fas fa-calendar-week"></i> Due This Week
-                        </h3>
-                        <div class="task-list">
-                            ${dueThisWeek.slice(0, 10).map(task => this.renderDailyReviewTask(task, 'week')).join('')}
-                        </div>
-                    </div>
-                ` : ''}
-
-                <!-- High Priority -->
-                ${highPriority.length > 0 ? `
-                    <div style="margin-bottom: var(--spacing-lg);">
-                        <h3 style="margin-bottom: var(--spacing-md); color: var(--accent-color);">
-                            <i class="fas fa-star"></i> High Priority
-                        </h3>
-                        <div class="task-list">
-                            ${highPriority.slice(0, 10).map(task => this.renderDailyReviewTask(task, 'priority')).join('')}
-                        </div>
-                    </div>
-                ` : ''}
-
-                ${dueToday.length === 0 && overdue.length === 0 && dueThisWeek.length === 0 && highPriority.length === 0 ? `
-                    <div style="text-align: center; padding: var(--spacing-xl); color: var(--text-secondary);">
-                        <i class="fas fa-check-circle" style="font-size: 3rem; margin-bottom: var(--spacing-md);"></i>
-                        <div>All caught up! No urgent tasks.</div>
-                    </div>
-                ` : ''}
-            </div>
-        `;
+        this.dailyReview.renderDailyReview();
     }
 
     renderDailyReviewTask(task, type) {
-        const dueDate = task.dueDate ? new Date(task.dueDate) : null;
-        const isOverdue = dueDate && dueDate < new Date() && !task.completed;
-        const isDueToday = dueDate && dueDate.toDateString() === new Date().toDateString();
-        const isDueTomorrow = dueDate && dueDate.toDateString() === new Date(Date.now() + 24 * 60 * 60 * 1000).toDateString();
-
-        let dateClass = '';
-        let dateLabel = '';
-        let dateIcon = '';
-
-        if (isOverdue) {
-            dateClass = 'overdue';
-            dateLabel = 'Overdue';
-            dateIcon = 'fa-exclamation-circle';
-        } else if (isDueToday) {
-            dateClass = 'due-today';
-            dateLabel = 'Today';
-            dateIcon = 'fa-calendar-day';
-        } else if (isDueTomorrow) {
-            dateClass = 'due-tomorrow';
-            dateLabel = 'Tomorrow';
-            dateIcon = 'fa-calendar-day';
-        } else if (dueDate) {
-            dateLabel = dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            dateIcon = 'fa-calendar';
-        }
-
-        return `
-            <div class="task-item" data-task-id="${task.id}">
-                <div class="task-checkbox">
-                    <input type="checkbox" ${task.completed ? 'checked' : ''} data-action="complete">
-                </div>
-                <div class="task-content">
-                    <div class="task-title">${escapeHtml(task.title)}</div>
-                    <div class="task-meta">
-                        ${task.contexts && task.contexts.length > 0 ? `
-                            <span class="task-contexts">
-                                ${task.contexts.map(c => `<span class="context-tag">${escapeHtml(c)}</span>`).join('')}
-                            </span>
-                        ` : ''}
-                        ${task.projectId ? `
-                            <span class="task-project">
-                                <i class="fas fa-folder"></i>
-                                ${escapeHtml(this.getProjectTitle(task.projectId))}
-                            </span>
-                        ` : ''}
-                        ${dueDate ? `
-                            <span class="task-due-date ${dateClass}">
-                                <i class="fas ${dateIcon}"></i>
-                                ${dateLabel}
-                            </span>
-                        ` : ''}
-                        ${task.priority && task.priority >= 80 ? `
-                            <span class="task-priority high">
-                                <i class="fas fa-star"></i>
-                                ${task.priority}
-                            </span>
-                        ` : ''}
-                    </div>
-                </div>
-                <div class="task-actions">
-                    <button class="btn-icon" data-action="focus" title="Focus on this task">
-                        <i class="fas fa-expand"></i>
-                    </button>
-                </div>
-            </div>
-        `;
+        return this.dailyReview.renderDailyReviewTask(task, type);
     }
 
     // ==================================================================
@@ -6238,298 +6051,28 @@ class GTDApp {
      * @returns {Array} - Suggested tasks with reasons
      */
     getSmartSuggestions(preferences = {}) {
-        const {
-            context = '',
-            availableMinutes = null,
-            energyLevel = '',
-            maxSuggestions = 5
-        } = preferences;
-
-        // Get all actionable tasks (not completed, not deferred)
-        let candidateTasks = this.tasks.filter(task => {
-            if (task.completed) return false;
-            if (task.type === 'reference') return false;
-            if (task.status === 'someday') return false;
-            if (task.status === 'completed') return false;
-            if (!task.isAvailable()) return false; // Deferred tasks
-
-            // Skip tasks with unmet dependencies
-            if (!task.areDependenciesMet(this.tasks)) return false;
-
-            // Filter by current view context
-            if (this.currentView !== 'all' && this.currentView !== 'inbox') {
-                if (this.currentView === 'next' && task.status !== 'next') return false;
-                if (this.currentView === 'waiting' && task.status !== 'waiting') return false;
-            }
-
-            return true;
-        });
-
-        // Score each task based on multiple factors
-        const scoredTasks = candidateTasks.map(task => {
-            let score = 0;
-            const reasons = [];
-
-            // Factor 1: Overdue tasks (highest priority)
-            if (task.isOverdue()) {
-                score += 100;
-                reasons.push('Overdue');
-            }
-
-            // Factor 2: Due today or soon
-            if (task.isDueToday()) {
-                score += 75;
-                reasons.push('Due today');
-            } else if (task.isDueWithin(3)) {
-                score += 50;
-                reasons.push(`Due in ${this.getDaysUntilDue(task)} days`);
-            }
-
-            // Factor 3: Context match
-            if (context && task.contexts && task.contexts.includes(context)) {
-                score += 60;
-                reasons.push(`Matches current context (${context})`);
-            }
-
-            // Factor 4: Energy level match
-            if (energyLevel && task.energy === energyLevel) {
-                score += 40;
-                reasons.push(`Matches your energy level (${energyLevel})`);
-            }
-
-            // Factor 5: Time available match
-            if (availableMinutes && task.time) {
-                if (task.time <= availableMinutes) {
-                    score += 35;
-                    reasons.push(`Fits your available time (${task.time}m)`);
-                } else if (task.time > availableMinutes * 1.5) {
-                    score -= 30; // Penalty for tasks too long
-                    reasons.push(`Too long for available time (${task.time}m)`);
-                }
-            } else if (!availableMinutes && task.time && task.time <= 15) {
-                score += 20;
-                reasons.push('Quick task');
-            }
-
-            // Factor 6: Next Actions get priority
-            if (task.status === 'next') {
-                score += 25;
-                reasons.push('Next Action');
-            }
-
-            // Factor 7: Quick tasks get slight boost
-            if (task.time && task.time <= 5) {
-                score += 15;
-            }
-
-            // Factor 8: Project urgency (projects due soon get priority)
-            if (task.projectId) {
-                const project = this.projects.find(p => p.id === task.projectId);
-                if (project && project.status === 'active') {
-                    score += 10;
-                    reasons.push('Active project');
-                }
-            }
-
-            // Factor 9: Waiting tasks get lower priority unless dependencies met
-            if (task.status === 'waiting') {
-                score -= 20;
-                if (!reasons.includes('Dependencies met')) {
-                    reasons.push('Waiting for something');
-                }
-            }
-
-            // Factor 10: Tasks with descriptions are more defined
-            if (task.description && task.description.trim().length > 10) {
-                score += 5;
-            }
-
-            return { task, score, reasons };
-        });
-
-        // Sort by score (highest first) and limit results
-        scoredTasks.sort((a, b) => b.score - a.score);
-
-        // Return top suggestions
-        return scoredTasks.slice(0, maxSuggestions);
-    }
-
-    /**
-     * Get days until due date
-     */
-    getDaysUntilDue(task) {
-        if (!task.dueDate) return null;
-        const dueDate = new Date(task.dueDate);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const diffTime = dueDate - today;
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        return diffDays;
+        return this.smartSuggestions.getSmartSuggestions(preferences);
     }
 
     /**
      * Show suggestion modal with smart recommendations
      */
     showSuggestions() {
-        const modal = document.createElement('div');
-        modal.className = 'modal active';
-        modal.id = 'suggestions-modal';
-
-        // Get all contexts (default + custom) using standard function
-        const allContexts = getAllContexts(this.tasks);
-        const sortedContexts = Array.from(allContexts).sort();
-
-        // Generate context options dynamically
-        const contextOptions = sortedContexts.map(context =>
-            `<option value="${escapeHtml(context)}">${escapeHtml(context)}</option>`
-        ).join('\n                                ');
-
-        modal.innerHTML = `
-            <div class="modal-content" style="max-width: 700px;">
-                <div class="modal-header">
-                    <h3><i class="fas fa-lightbulb" style="color: var(--warning-color);"></i> What Should I Work On?</h3>
-                    <button class="close-button" onclick="document.getElementById('suggestions-modal').remove()">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div style="padding: var(--spacing-lg);">
-                    <div id="suggestions-filters" style="margin-bottom: var(--spacing-lg); padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--radius-md);">
-                        <h4 style="margin: 0 0 var(--spacing-sm) 0; font-size: 1rem;">Your Current Situation:</h4>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-md);">
-                            <div>
-                                <label style="font-size: 0.875rem; font-weight: 500; display: block; margin-bottom: var(--spacing-xs);">Where are you?</label>
-                                <select id="suggestion-context" class="filter-select" style="width: 100%;">
-                                    <option value="">Anywhere</option>
-                                ${contextOptions}
-                                </select>
-                            </div>
-                            <div>
-                                <label style="font-size: 0.875rem; font-weight: 500; display: block; margin-bottom: var(--spacing-xs);">How much time?</label>
-                                <select id="suggestion-time" class="filter-select" style="width: 100%;">
-                                    <option value="">Any amount</option>
-                                    <option value="5">5 minutes</option>
-                                    <option value="15">15 minutes</option>
-                                    <option value="30">30 minutes</option>
-                                    <option value="60">1 hour</option>
-                                    <option value="120">2+ hours</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label style="font-size: 0.875rem; font-weight: 500; display: block; margin-bottom: var(--spacing-xs);">Energy level?</label>
-                                <select id="suggestion-energy" class="filter-select" style="width: 100%;">
-                                    <option value="">Any level</option>
-                                    <option value="high">High energy</option>
-                                    <option value="medium">Medium energy</option>
-                                    <option value="low">Low energy</option>
-                                </select>
-                            </div>
-                        </div>
-                        <button id="refresh-suggestions" class="btn btn-primary" style="margin-top: var(--spacing-md); width: 100%;">
-                            <i class="fas fa-sync"></i> Get Suggestions
-                        </button>
-                    </div>
-                    <div id="suggestions-list"></div>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(modal);
-
-        // Setup event listeners for automatic filter updates
-        const contextSelect = document.getElementById('suggestion-context');
-        const timeSelect = document.getElementById('suggestion-time');
-        const energySelect = document.getElementById('suggestion-energy');
-        const refreshBtn = document.getElementById('refresh-suggestions');
-
-        // Auto-update when any filter changes
-        const updateSuggestions = () => this.renderSuggestions();
-
-        if (contextSelect) contextSelect.addEventListener('change', updateSuggestions);
-        if (timeSelect) timeSelect.addEventListener('change', updateSuggestions);
-        if (energySelect) energySelect.addEventListener('change', updateSuggestions);
-        if (refreshBtn) refreshBtn.addEventListener('click', updateSuggestions);
-
-        // Initial render
-        this.renderSuggestions();
+        return this.smartSuggestions.showSuggestions();
     }
 
     /**
      * Render task suggestions in the modal
      */
     renderSuggestions() {
-        const context = document.getElementById('suggestion-context').value;
-        const time = document.getElementById('suggestion-time').value;
-        const energy = document.getElementById('suggestion-energy').value;
-
-        const suggestions = this.getSmartSuggestions({
-            context,
-            availableMinutes: time ? parseInt(time) : null,
-            energyLevel: energy
-        });
-
-        const container = document.getElementById('suggestions-list');
-
-        if (suggestions.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-check-circle" style="font-size: 3rem; margin-bottom: var(--spacing-md); color: var(--success-color); opacity: 0.5;"></i>
-                    <h3>No Tasks Available</h3>
-                    <p>No actionable tasks match your current situation. Try adjusting your filters!</p>
-                </div>
-            `;
-            return;
-        }
-
-        container.innerHTML = suggestions.map(({ task, score, reasons }) => {
-            const contexts = task.contexts && task.contexts.length > 0
-                ? task.contexts.map(c => `<span class="task-context">${escapeHtml(c)}</span>`).join(' ')
-                : '';
-
-            const reasonBadges = reasons.slice(0, 3).map(reason =>
-                `<span style="background: var(--info-color); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; margin-right: 4px;">${reason}</span>`
-            ).join('');
-
-            return `
-                <div class="task-item" style="border-left: 4px solid var(--primary-color); cursor: pointer;" onclick="app.selectSuggestedTask('${task.id}')">
-                    <div class="task-checkbox">
-                        <span style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);">${score}</span>
-                    </div>
-                    <div class="task-content">
-                        <div class="task-title">${escapeHtml(task.title)}</div>
-                        ${task.description ? `<div class="task-description">${escapeHtml(task.description)}</div>` : ''}
-                        <div class="task-meta">
-                            ${contexts}
-                            ${task.energy ? `<span class="task-energy"><i class="fas fa-bolt"></i> ${task.energy}</span>` : ''}
-                            ${task.time ? `<span class="task-time"><i class="fas fa-clock"></i> ${task.time}m</span>` : ''}
-                            ${task.dueDate ? `<span class="task-due-date"><i class="fas fa-calendar-day"></i> ${new Date(task.dueDate).toLocaleDateString()}</span>` : ''}
-                        </div>
-                        <div style="margin-top: var(--spacing-sm);">
-                            ${reasonBadges}
-                        </div>
-                    </div>
-                </div>
-            `;
-        }).join('');
+        return this.smartSuggestions.renderSuggestions();
     }
 
     /**
      * User clicked on a suggested task - highlight it and close modal
      */
     selectSuggestedTask(taskId) {
-        // Remove the modal
-        const modal = document.getElementById('suggestions-modal');
-        if (modal) {
-            modal.remove();
-        }
-
-        // Scroll to and highlight the task
-        setTimeout(() => {
-            const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
-            if (taskElement) {
-                taskElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                taskElement.style.animation = 'pulse 0.5s ease-in-out 3';
-            }
-        }, 100);
+        return this.smartSuggestions.selectSuggestedTask(taskId);
     }
 }
 
