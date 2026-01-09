@@ -72,6 +72,7 @@ import { NavigationManager } from './modules/features/navigation.js';
 import { SmartDateSuggestionsManager } from './modules/features/smart-date-suggestions.js';
 import { SearchManager } from './modules/features/search.js';
 import { TaskOperations } from './modules/features/task-operations.js';
+import { ContextFilterManager } from './modules/features/context-filter.js';
 
 class GTDApp {
     // =========================================================================
@@ -125,6 +126,7 @@ class GTDApp {
         this.smartDateSuggestions = new SmartDateSuggestionsManager(this, this);
         this.search = new SearchManager(this, this);
         this.taskOperations = new TaskOperations(this, this);
+        this.contextFilter = new ContextFilterManager(this, this);
     }
 
     async init() {
@@ -2833,6 +2835,34 @@ class GTDApp {
         return this.taskOperations.searchTasks(query);
     }
 
+    // =========================================================================
+    // CONTEXT FILTER (Delegated to ContextFilter module)
+    // =========================================================================
+
+    updateContextFilter() {
+        return this.contextFilter.updateContextFilter();
+    }
+
+    updateSidebarContextFilters() {
+        return this.contextFilter.updateSidebarContextFilters();
+    }
+
+    toggleContextFilter(context, isChecked) {
+        return this.contextFilter.toggleContextFilter(context, isChecked);
+    }
+
+    clearContextFilters() {
+        return this.contextFilter.clearContextFilters();
+    }
+
+    getSelectedContexts() {
+        return this.contextFilter.getSelectedContexts();
+    }
+
+    isContextSelected(context) {
+        return this.contextFilter.isContextSelected(context);
+    }
+
     openTaskModal(task = null, defaultProjectId = null, defaultData = {}) {
         const modal = document.getElementById('task-modal');
         const form = document.getElementById('task-form');
@@ -3927,138 +3957,6 @@ class GTDApp {
         document.getElementById('projects-count').textContent = counts.projects || '';
         document.getElementById('reference-count').textContent = this.tasks.filter(t => t.type === 'reference').length || '';
         document.getElementById('templates-count').textContent = this.templates.length || '';
-    }
-
-    updateContextFilter() {
-        const contextFilter = document.getElementById('context-filter');
-
-        // Build set of all contexts from tasks and projects
-        const allContexts = new Set();
-        this.tasks.forEach(task => {
-            if (task.contexts) {
-                task.contexts.forEach(context => allContexts.add(context));
-            }
-        });
-        this.projects.forEach(project => {
-            if (project.contexts) {
-                project.contexts.forEach(context => allContexts.add(context));
-            }
-        });
-
-        // Update dropdown filter if it exists
-        if (contextFilter) {
-            const currentValue = contextFilter.value;
-            contextFilter.innerHTML = '<option value="">All Contexts</option>';
-
-            Array.from(allContexts).sort().forEach(context => {
-                const option = document.createElement('option');
-                option.value = context;
-                option.textContent = context;
-                contextFilter.appendChild(option);
-            });
-
-            contextFilter.value = currentValue;
-        }
-
-        // Always update sidebar context filters (even if dropdown doesn't exist)
-        this.updateSidebarContextFilters();
-    }
-
-    updateSidebarContextFilters() {
-        const container = document.getElementById('context-filters');
-        if (!container) return;
-
-        // Get all contexts (default + custom) using standard function
-        const allContexts = getAllContexts(this.tasks);
-
-        // Initialize selected contexts filter if not exists
-        if (!this.selectedContextFilters) {
-            this.selectedContextFilters = new Set();
-        }
-
-        // Clear existing filters
-        container.innerHTML = '';
-
-        if (allContexts.size === 0) {
-            container.innerHTML = '<div style="padding: var(--spacing-sm); font-size: 0.8rem; color: var(--text-light); opacity: 0.7;">No contexts yet</div>';
-            return;
-        }
-
-        // Get task counts per context using standard function
-        const contextTaskCounts = getContextTaskCounts(this.tasks);
-
-        // Create checkbox for each context (sorted)
-        Array.from(allContexts).sort().forEach(context => {
-            const wrapper = document.createElement('div');
-            wrapper.style.cssText = 'display: flex; align-items: center; padding: 6px 12px; cursor: pointer; border-radius: 4px; transition: background 0.2s;';
-            wrapper.style.marginBottom = '2px';
-
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.id = `context-filter-${context.replace('@', '').replace(/\s/g, '-')}`;
-            checkbox.value = context;
-            checkbox.checked = this.selectedContextFilters.has(context);
-            checkbox.style.cssText = 'margin-right: 8px; cursor: pointer;';
-
-            const label = document.createElement('label');
-            label.htmlFor = checkbox.id;
-
-            // Show context name and task count
-            const taskCount = contextTaskCounts[context] || 0;
-            const isDefaultContext = this.defaultContexts.includes(context);
-
-            label.innerHTML = `
-                <span style="flex: 1; cursor: pointer; font-size: 0.85rem; color: var(--text-light);">
-                    ${context}
-                    ${taskCount > 0 ? `<span style="font-size: 0.75rem; opacity: 0.6; margin-left: 4px;">(${taskCount})</span>` : ''}
-                    ${!isDefaultContext ? '<span style="font-size: 0.7rem; opacity: 0.5; margin-left: 4px;">custom</span>' : ''}
-                </span>
-            `;
-
-            // Add click handler
-            wrapper.addEventListener('click', (e) => {
-                if (e.target !== checkbox) {
-                    checkbox.checked = !checkbox.checked;
-                }
-                this.toggleContextFilter(context, checkbox.checked);
-            });
-
-            wrapper.appendChild(checkbox);
-            wrapper.appendChild(label);
-            container.appendChild(wrapper);
-        });
-
-        // Add click handler for clear button
-        const clearBtn = document.getElementById('clear-context-filters');
-        if (clearBtn) {
-            clearBtn.removeEventListener('click', this.clearContextFiltersHandler);
-            this.clearContextFiltersHandler = () => this.clearContextFilters();
-            clearBtn.addEventListener('click', this.clearContextFiltersHandler);
-        }
-    }
-
-    toggleContextFilter(context, isChecked) {
-        if (isChecked) {
-            this.selectedContextFilters.add(context);
-        } else {
-            this.selectedContextFilters.delete(context);
-        }
-
-        // Re-render view with updated filters
-        this.renderView();
-
-        // Show notification with count
-        const count = this.selectedContextFilters.size;
-        if (count > 0) {
-            this.showNotification(`Filtering by ${count} context${count > 1 ? 's' : ''}`);
-        }
-    }
-
-    clearContextFilters() {
-        this.selectedContextFilters = new Set();
-        this.renderView();
-        this.updateSidebarContextFilters();
-        this.showNotification('Context filters cleared');
     }
 
     renderProjectsDropdown() {
