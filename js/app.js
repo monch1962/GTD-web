@@ -70,6 +70,7 @@ import { QuickCaptureWidgetManager } from './modules/features/quick-capture-widg
 import { NewProjectButtonManager } from './modules/features/new-project-button.js';
 import { NavigationManager } from './modules/features/navigation.js';
 import { SmartDateSuggestionsManager } from './modules/features/smart-date-suggestions.js';
+import { SearchManager } from './modules/features/search.js';
 
 class GTDApp {
     // =========================================================================
@@ -92,15 +93,6 @@ class GTDApp {
         this.selectedTaskId = null; // Track currently selected task for keyboard shortcuts
         this.usageStats = this.loadUsageStats(); // Track usage patterns for smart defaults
         this.defaultContexts = getDefaultContextIds(); // Import from single source of truth
-        this.searchQuery = ''; // Current search query
-        this.advancedSearchFilters = {
-            context: '',
-            energy: '',
-            status: '',
-            due: '',
-            sort: 'updated'
-        }; // Advanced search filters
-        this.savedSearches = JSON.parse(localStorage.getItem('gtd_saved_searches') || '[]'); // Saved searches
         this.activeTimers = new Map(); // Track active timers for tasks
         this.calendarView = 'month'; // Calendar view: month, week
         this.calendarDate = new Date(); // Currently viewed month in calendar
@@ -130,6 +122,7 @@ class GTDApp {
         this.newProjectButton = new NewProjectButtonManager(this, this);
         this.navigation = new NavigationManager(this, this);
         this.smartDateSuggestions = new SmartDateSuggestionsManager(this, this);
+        this.search = new SearchManager(this, this);
     }
 
     async init() {
@@ -863,322 +856,42 @@ class GTDApp {
         return this.bulkOperations.bulkDeleteTasks();
     }
 
-    // ==================== SEARCH FUNCTIONALITY ====================
+    // ==================== SEARCH FUNCTIONALITY (Delegated to SearchManager module) ====================
 
     setupSearch() {
-        const searchInput = document.getElementById('global-search');
-        const clearSearchBtn = document.getElementById('clear-search');
-        const advancedSearchPanel = document.getElementById('advanced-search-panel');
-        const searchContext = document.getElementById('search-context');
-        const searchEnergy = document.getElementById('search-energy');
-        const searchStatus = document.getElementById('search-status');
-        const searchDue = document.getElementById('search-due');
-        const searchSort = document.getElementById('search-sort');
-        const saveSearchBtn = document.getElementById('save-search');
-        const savedSearchesSelect = document.getElementById('saved-searches');
-        const deleteSavedSearchBtn = document.getElementById('delete-saved-search');
-        const clearAdvancedSearchBtn = document.getElementById('clear-advanced-search');
-
-        if (!searchInput) return;
-
-        // Populate context dropdown
-        this.populateSearchContexts(searchContext);
-
-        // Global search input
-        searchInput.addEventListener('input', (e) => {
-            this.searchQuery = e.target.value;
-            clearSearchBtn.style.display = this.searchQuery ? 'block' : 'none';
-
-            // Show advanced search panel when typing
-            if (this.searchQuery && advancedSearchPanel) {
-                advancedSearchPanel.style.display = 'block';
-            }
-
-            this.renderView();
-        });
-
-        // Clear search
-        clearSearchBtn.addEventListener('click', () => {
-            this.clearSearch();
-        });
-
-        // Advanced filters
-        [searchContext, searchEnergy, searchStatus, searchDue].forEach(filter => {
-            if (filter) {
-                filter.addEventListener('change', () => {
-                    this.advancedSearchFilters.context = searchContext.value;
-                    this.advancedSearchFilters.energy = searchEnergy.value;
-                    this.advancedSearchFilters.status = searchStatus.value;
-                    this.advancedSearchFilters.due = searchDue.value;
-                    this.renderView();
-                });
-            }
-        });
-
-        // Sort dropdown
-        if (searchSort) {
-            searchSort.addEventListener('change', () => {
-                this.advancedSearchFilters.sort = searchSort.value;
-                this.renderView();
-            });
-        }
-
-        // Save search
-        saveSearchBtn.addEventListener('click', () => {
-            this.saveCurrentSearch();
-        });
-
-        // Load saved search
-        savedSearchesSelect.addEventListener('change', (e) => {
-            const searchId = e.target.value;
-            if (searchId) {
-                this.loadSavedSearch(searchId);
-                deleteSavedSearchBtn.style.display = 'inline-block';
-            } else {
-                deleteSavedSearchBtn.style.display = 'none';
-            }
-        });
-
-        // Delete saved search
-        deleteSavedSearchBtn.addEventListener('click', () => {
-            const searchId = savedSearchesSelect.value;
-            if (searchId && confirm('Delete this saved search?')) {
-                this.deleteSavedSearch(searchId);
-            }
-        });
-
-        // Clear advanced filters
-        clearAdvancedSearchBtn.addEventListener('click', () => {
-            this.clearAdvancedSearch();
-        });
+        this.search.setupSearch();
     }
 
     populateSearchContexts(selectElement) {
-        if (!selectElement) return;
-
-        // Get all unique contexts
-        const allContexts = new Set(this.defaultContexts);
-        this.tasks.forEach(task => {
-            if (task.contexts) {
-                task.contexts.forEach(context => allContexts.add(context));
-            }
-        });
-
-        // Clear existing options (except first)
-        while (selectElement.options.length > 1) {
-            selectElement.remove(1);
-        }
-
-        // Add sorted context options
-        Array.from(allContexts).sort().forEach(context => {
-            const option = document.createElement('option');
-            option.value = context;
-            option.textContent = context;
-            selectElement.appendChild(option);
-        });
+        this.search.populateSearchContexts(selectElement);
     }
 
     clearSearch() {
-        this.searchQuery = '';
-        this.advancedSearchFilters = { context: '', energy: '', status: '', due: '' };
-
-        const searchInput = document.getElementById('global-search');
-        const clearSearchBtn = document.getElementById('clear-search');
-        const advancedSearchPanel = document.getElementById('advanced-search-panel');
-
-        if (searchInput) searchInput.value = '';
-        if (clearSearchBtn) clearSearchBtn.style.display = 'none';
-        if (advancedSearchPanel) advancedSearchPanel.style.display = 'none';
-
-        this.renderView();
+        this.search.clearSearch();
     }
 
     clearAdvancedSearch() {
-        this.advancedSearchFilters = { context: '', energy: '', status: '', due: '', sort: 'updated' };
-
-        const searchContext = document.getElementById('search-context');
-        const searchEnergy = document.getElementById('search-energy');
-        const searchStatus = document.getElementById('search-status');
-        const searchDue = document.getElementById('search-due');
-        const searchSort = document.getElementById('search-sort');
-
-        if (searchContext) searchContext.value = '';
-        if (searchEnergy) searchEnergy.value = '';
-        if (searchStatus) searchStatus.value = '';
-        if (searchDue) searchDue.value = '';
-        if (searchSort) searchSort.value = 'updated';
-
-        this.renderView();
+        this.search.clearAdvancedSearch();
     }
 
     saveCurrentSearch() {
-        const name = prompt('Name this search:');
-        if (!name) return;
-
-        const search = {
-            id: Date.now().toString(),
-            name: name,
-            query: this.searchQuery,
-            filters: { ...this.advancedSearchFilters },
-            createdAt: new Date().toISOString()
-        };
-
-        this.savedSearches.push(search);
-        localStorage.setItem('gtd_saved_searches', JSON.stringify(this.savedSearches));
-        this.renderSavedSearches();
-
-        alert('Search saved!');
+        this.search.saveCurrentSearch();
     }
 
     loadSavedSearch(searchId) {
-        const search = this.savedSearches.find(s => s.id === searchId);
-        if (!search) return;
-
-        this.searchQuery = search.query || '';
-        this.advancedSearchFilters = { ...search.filters };
-
-        const searchInput = document.getElementById('global-search');
-        const clearSearchBtn = document.getElementById('clear-search');
-        const advancedSearchPanel = document.getElementById('advanced-search-panel');
-        const searchContext = document.getElementById('search-context');
-        const searchEnergy = document.getElementById('search-energy');
-        const searchStatus = document.getElementById('search-status');
-        const searchDue = document.getElementById('search-due');
-        const searchSort = document.getElementById('search-sort');
-
-        if (searchInput) {
-            searchInput.value = this.searchQuery;
-        }
-        if (clearSearchBtn) {
-            clearSearchBtn.style.display = this.searchQuery ? 'block' : 'none';
-        }
-        if (advancedSearchPanel) {
-            advancedSearchPanel.style.display = 'block';
-        }
-        if (searchContext) searchContext.value = this.advancedSearchFilters.context;
-        if (searchEnergy) searchEnergy.value = this.advancedSearchFilters.energy;
-        if (searchStatus) searchStatus.value = this.advancedSearchFilters.status;
-        if (searchDue) searchDue.value = this.advancedSearchFilters.due;
-        if (searchSort) searchSort.value = this.advancedSearchFilters.sort || 'updated';
-
-        this.renderView();
+        this.search.loadSavedSearch(searchId);
     }
 
     deleteSavedSearch(searchId) {
-        this.savedSearches = this.savedSearches.filter(s => s.id !== searchId);
-        localStorage.setItem('gtd_saved_searches', JSON.stringify(this.savedSearches));
-        this.renderSavedSearches();
-
-        const savedSearchesSelect = document.getElementById('saved-searches');
-        const deleteSavedSearchBtn = document.getElementById('delete-saved-search');
-
-        if (savedSearchesSelect) savedSearchesSelect.value = '';
-        if (deleteSavedSearchBtn) deleteSavedSearchBtn.style.display = 'none';
+        this.search.deleteSavedSearch(searchId);
     }
 
     renderSavedSearches() {
-        const savedSearchesSelect = document.getElementById('saved-searches');
-        if (!savedSearchesSelect) return;
-
-        // Save current selection
-        const currentValue = savedSearchesSelect.value;
-
-        // Clear existing options (except first)
-        while (savedSearchesSelect.options.length > 1) {
-            savedSearchesSelect.remove(1);
-        }
-
-        // Add saved searches
-        this.savedSearches.forEach(search => {
-            const option = document.createElement('option');
-            option.value = search.id;
-            option.textContent = search.name;
-            savedSearchesSelect.appendChild(option);
-        });
-
-        // Restore selection if it still exists
-        if (currentValue && this.savedSearches.find(s => s.id === currentValue)) {
-            savedSearchesSelect.value = currentValue;
-        }
+        this.search.renderSavedSearches();
     }
 
     filterTasksBySearch(tasks) {
-        if (!this.searchQuery && !this.advancedSearchFilters.context &&
-            !this.advancedSearchFilters.energy && !this.advancedSearchFilters.status &&
-            !this.advancedSearchFilters.due) {
-            return tasks;
-        }
-
-        return tasks.filter(task => {
-            // Text search
-            if (this.searchQuery) {
-                const searchLower = this.searchQuery.toLowerCase();
-                const titleMatch = task.title && task.title.toLowerCase().includes(searchLower);
-                const descriptionMatch = task.description && task.description.toLowerCase().includes(searchLower);
-                const contextMatch = task.contexts && task.contexts.some(c =>
-                    c.toLowerCase().includes(searchLower)
-                );
-
-                if (!titleMatch && !descriptionMatch && !contextMatch) {
-                    return false;
-                }
-            }
-
-            // Context filter
-            if (this.advancedSearchFilters.context) {
-                if (!task.contexts || !task.contexts.includes(this.advancedSearchFilters.context)) {
-                    return false;
-                }
-            }
-
-            // Energy filter
-            if (this.advancedSearchFilters.energy) {
-                if (task.energy !== this.advancedSearchFilters.energy) {
-                    return false;
-                }
-            }
-
-            // Status filter
-            if (this.advancedSearchFilters.status) {
-                if (task.status !== this.advancedSearchFilters.status) {
-                    return false;
-                }
-            }
-
-            // Due date filter
-            if (this.advancedSearchFilters.due) {
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-
-                switch (this.advancedSearchFilters.due) {
-                    case 'overdue':
-                        if (!task.isOverdue()) return false;
-                        break;
-                    case 'today':
-                        if (!task.isDueToday()) return false;
-                        break;
-                    case 'week':
-                        if (!task.dueDate) return false;
-                        const dueDate = new Date(task.dueDate);
-                        const weekFromNow = new Date(today);
-                        weekFromNow.setDate(weekFromNow.getDate() + 7);
-                        if (dueDate < today || dueDate > weekFromNow) return false;
-                        break;
-                    case 'month':
-                        if (!task.dueDate) return false;
-                        const monthFromNow = new Date(today);
-                        monthFromNow.setMonth(monthFromNow.getMonth() + 1);
-                        const dueDateMonth = new Date(task.dueDate);
-                        if (dueDateMonth < today || dueDateMonth > monthFromNow) return false;
-                        break;
-                    case 'nodate':
-                        if (task.dueDate) return false;
-                        break;
-                }
-            }
-
-            return true;
-        });
+        return this.search.filterTasksBySearch(tasks);
     }
 
 
