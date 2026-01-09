@@ -75,6 +75,7 @@ import { TaskOperations } from './modules/features/task-operations.js';
 import { ContextFilterManager } from './modules/features/context-filter.js';
 import { ProjectOperations } from './modules/features/project-operations.js';
 import { TaskModalManager } from './modules/features/task-modal.js';
+import { ProjectModalManager } from './modules/features/project-modal.js';
 
 class GTDApp {
     // =========================================================================
@@ -131,6 +132,7 @@ class GTDApp {
         this.contextFilter = new ContextFilterManager(this, this);
         this.projectOperations = new ProjectOperations(this, this);
         this.taskModal = new TaskModalManager(this, this);
+        this.projectModal = new ProjectModalManager(this, this);
     }
 
     async init() {
@@ -2987,6 +2989,34 @@ class GTDApp {
         return this.taskModal.escapeHtml(text);
     }
 
+    // =========================================================================
+    // PROJECT MODAL (Delegated to ProjectModal module)
+    // =========================================================================
+
+    openProjectModal(project = null, pendingTaskData = null) {
+        return this.projectModal.openProjectModal(project, pendingTaskData);
+    }
+
+    closeProjectModal() {
+        return this.projectModal.closeProjectModal();
+    }
+
+    async saveProjectFromForm() {
+        return this.projectModal.saveProjectFromForm();
+    }
+
+    openGanttChart(project) {
+        return this.projectModal.openGanttChart(project);
+    }
+
+    closeGanttModal() {
+        return this.projectModal.closeGanttModal();
+    }
+
+    renderGanttChart(project) {
+        return this.projectModal.renderGanttChart(project);
+    }
+
     openTaskModal_DEPRECATED(task = null, defaultProjectId = null, defaultData = {}) {
         const modal = document.getElementById('task-modal');
         const form = document.getElementById('task-form');
@@ -3626,303 +3656,6 @@ class GTDApp {
         // 2. Creating a new task with a project assignment
         if (newType === 'project' || (newType === 'task' && projectId && !taskId)) {
             this.renderProjectsDropdown();
-        }
-    }
-
-    openProjectModal(project = null, pendingTaskData = null) {
-        const modal = document.getElementById('project-modal');
-        const form = document.getElementById('project-form');
-        const title = document.getElementById('project-modal-title');
-
-        form.reset();
-
-        // Store pending task data if coming from task modal
-        this.pendingTaskData = pendingTaskData;
-
-        if (project) {
-            title.textContent = 'Edit Project';
-            document.getElementById('project-id').value = project.id;
-            document.getElementById('project-title').value = project.title;
-            document.getElementById('project-description').value = project.description || '';
-            document.getElementById('project-status').value = project.status || 'active';
-            document.getElementById('project-contexts').value = project.contexts ? project.contexts.join(', ') : '';
-        } else {
-            title.textContent = 'Add Project';
-            document.getElementById('project-id').value = '';
-        }
-
-        modal.classList.add('active');
-    }
-
-    closeProjectModal() {
-        document.getElementById('project-modal').classList.remove('active');
-        this.pendingTaskData = null;
-    }
-
-    openGanttChart(project) {
-        const modal = document.getElementById('gantt-modal');
-        const title = document.getElementById('gantt-modal-title');
-        title.textContent = `${project.title} - Gantt Chart`;
-
-        modal.classList.add('active');
-        this.renderGanttChart(project);
-    }
-
-    closeGanttModal() {
-        document.getElementById('gantt-modal').classList.remove('active');
-    }
-
-    renderGanttChart(project) {
-        const container = document.getElementById('gantt-chart');
-        if (!container) return;
-
-        // Get all tasks for this project (including completed ones)
-        const projectTasks = this.tasks.filter(t => t.projectId === project.id);
-
-        if (projectTasks.length === 0) {
-            container.innerHTML = `
-                <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
-                    <i class="fas fa-project-diagram" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
-                    <h3>No Tasks in This Project</h3>
-                    <p>Add tasks to this project to see their dependencies.</p>
-                </div>
-            `;
-            return;
-        }
-
-        // Calculate dependency levels for tasks
-        const taskLevels = {}; // task.id -> level (0 = no dependencies)
-        const maxIterations = projectTasks.length + 1;
-
-        // Initialize all tasks at level 0
-        projectTasks.forEach(task => {
-            taskLevels[task.id] = 0;
-        });
-
-        // Calculate levels based on dependencies
-        for (let iter = 0; iter < maxIterations; iter++) {
-            projectTasks.forEach(task => {
-                if (task.waitingForTaskIds && task.waitingForTaskIds.length > 0) {
-                    const maxDepLevel = Math.max(0, ...task.waitingForTaskIds.map(depId => taskLevels[depId] || 0));
-                    if (taskLevels[task.id] < maxDepLevel + 1) {
-                        taskLevels[task.id] = maxDepLevel + 1;
-                    }
-                }
-            });
-        }
-
-        // Group tasks by level
-        const levelGroups = {};
-        projectTasks.forEach(task => {
-            const level = taskLevels[task.id];
-            if (!levelGroups[level]) {
-                levelGroups[level] = [];
-            }
-            levelGroups[level].push(task);
-        });
-
-        // Layout parameters
-        const taskWidth = 200;
-        const taskHeight = 60;
-        const horizontalSpacing = 80;
-        const verticalSpacing = 100;
-        const marginLeft = 50;
-        const marginTop = 50;
-
-        // Calculate positions
-        const taskPositions = {};
-        Object.keys(levelGroups).forEach(level => {
-            const tasksInLevel = levelGroups[level];
-            const levelWidth = tasksInLevel.length * taskWidth + (tasksInLevel.length - 1) * horizontalSpacing;
-            let startX = marginLeft;
-
-            tasksInLevel.forEach(task => {
-                taskPositions[task.id] = {
-                    x: startX,
-                    y: marginTop + (level * verticalSpacing)
-                };
-                startX += taskWidth + horizontalSpacing;
-            });
-        });
-
-        // Calculate chart dimensions
-        const maxLevel = Math.max(...Object.keys(levelGroups).map(Number));
-        const chartWidth = Math.max(800, Object.values(levelGroups).reduce((max, tasks) => Math.max(max, tasks.length * (taskWidth + horizontalSpacing)), 0) + marginLeft * 2);
-        const chartHeight = marginTop + (maxLevel + 1) * verticalSpacing + 150;
-
-        // Build the dependency diagram HTML
-        let html = `
-            <div style="overflow-x: auto; overflow-y: auto; max-height: 600px;">
-                <svg width="${chartWidth}" height="${chartHeight}" style="display: block;">
-                    <!-- Background -->
-                    <rect width="100%" height="100%" fill="#ffffff"/>
-
-                    <!-- Define markers for dependency arrows -->
-                    <defs>
-                        <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
-                            <polygon points="0 0, 10 3, 0 6" fill="#666"/>
-                        </marker>
-                    </defs>
-        `;
-
-        // Draw dependency lines first (so they appear behind task boxes)
-        projectTasks.forEach(task => {
-            if (task.waitingForTaskIds && task.waitingForTaskIds.length > 0) {
-                const toTask = taskPositions[task.id];
-                if (!toTask) return;
-
-                task.waitingForTaskIds.forEach(depTaskId => {
-                    const fromTask = taskPositions[depTaskId];
-                    if (!fromTask) return;
-
-                    // Draw line from bottom of parent task to top of dependent task
-                    const fromX = fromTask.x + taskWidth / 2;
-                    const fromY = fromTask.y + taskHeight;
-                    const toX = toTask.x + taskWidth / 2;
-                    const toY = toTask.y;
-
-                    // Create a curved path (s-curve)
-                    const midY = (fromY + toY) / 2;
-                    html += `
-                        <path d="M ${fromX} ${fromY} C ${fromX} ${midY}, ${toX} ${midY}, ${toX} ${toY}"
-                              fill="none" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)" opacity="0.6"/>
-                    `;
-                });
-            }
-        });
-
-        // Draw task boxes
-        projectTasks.forEach(task => {
-            const pos = taskPositions[task.id];
-            if (!pos) return;
-
-            // Determine effective status (tasks with unmet dependencies show as waiting)
-            const hasUnmetDependencies = !task.completed && task.waitingForTaskIds && task.waitingForTaskIds.length > 0 && !task.areDependenciesMet(this.tasks);
-            const effectiveStatus = hasUnmetDependencies ? 'waiting' : task.status;
-
-            // Task bar color based on effective status
-            let barColor = '#5cb85c'; // completed
-            if (!task.completed) {
-                if (effectiveStatus === 'inbox') barColor = '#95a5a6';
-                else if (effectiveStatus === 'next') barColor = '#4a90d9';
-                else if (effectiveStatus === 'waiting') barColor = '#f39c12';
-                else if (effectiveStatus === 'someday') barColor = '#9b59b6';
-            }
-
-            // Overdue indication
-            const isOverdue = task.isOverdue && task.isOverdue();
-            if (isOverdue && !task.completed) {
-                barColor = '#e74c3c';
-            }
-
-            // Draw task box
-            html += `
-                <rect x="${pos.x}" y="${pos.y}" width="${taskWidth}" height="${taskHeight}" rx="6"
-                      fill="${barColor}" opacity="0.9" stroke="${barColor}" stroke-width="2"/>
-            `;
-
-            // Task title (truncate if needed)
-            const title = escapeHtml(task.title);
-            const truncatedTitle = title.length > 25 ? title.substring(0, 25) + '...' : title;
-
-            // Completion indicator
-            const completionIcon = task.completed ? '✓ ' : '';
-
-            // Draw task title
-            html += `
-                <text x="${pos.x + 10}" y="${pos.y + 25}" font-size="13" font-weight="600" fill="white">
-                    ${completionIcon}${truncatedTitle}
-                </text>
-            `;
-
-            // Status text
-            const statusText = task.completed ? 'Completed' :
-                              effectiveStatus === 'inbox' ? 'Inbox' :
-                              effectiveStatus === 'next' ? 'Next' :
-                              effectiveStatus === 'waiting' ? 'Waiting' :
-                              effectiveStatus === 'someday' ? 'Someday' : effectiveStatus;
-            html += `
-                <text x="${pos.x + 10}" y="${pos.y + 45}" font-size="11" fill="white" opacity="0.9">
-                    ${statusText}
-                </text>
-            `;
-        });
-
-        // Legend
-        const legendY = chartHeight - 50;
-        html += `
-            <text x="10" y="${legendY}" font-size="11" font-weight="600" fill="#666">Status:</text>
-            <rect x="60" y="${legendY - 10}" width="15" height="15" rx="3" fill="#95a5a6" opacity="0.9"/>
-            <text x="80" y="${legendY + 2}" font-size="11" fill="#666">Inbox</text>
-            <rect x="130" y="${legendY - 10}" width="15" height="15" rx="3" fill="#4a90d9" opacity="0.9"/>
-            <text x="150" y="${legendY + 2}" font-size="11" fill="#666">Next</text>
-            <rect x="200" y="${legendY - 10}" width="15" height="15" rx="3" fill="#f39c12" opacity="0.9"/>
-            <text x="220" y="${legendY + 2}" font-size="11" fill="#666">Waiting</text>
-            <rect x="280" y="${legendY - 10}" width="15" height="15" rx="3" fill="#5cb85c" opacity="0.9"/>
-            <text x="300" y="${legendY + 2}" font-size="11" fill="#666">Completed</text>
-            <rect x="375" y="${legendY - 10}" width="15" height="15" rx="3" fill="#e74c3c" opacity="0.9"/>
-            <text x="395" y="${legendY + 2}" font-size="11" fill="#666">Overdue</text>
-            <line x1="460" y1="${legendY - 2}" x2="490" y2="${legendY - 2}" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)" opacity="0.6"/>
-            <text x="500" y="${legendY + 2}" font-size="11" fill="#666">Dependency</text>
-        `;
-
-        html += `
-                </svg>
-            </div>
-        `;
-
-        container.innerHTML = html;
-    }
-
-    async saveProjectFromForm() {
-        const projectId = document.getElementById('project-id').value;
-        const tagsValue = document.getElementById('project-contexts').value;
-        let tags = tagsValue ? tagsValue.split(',').map(t => t.trim()).filter(t => t) : [];
-
-        // Ensure all contexts start with @
-        tags = tags.map(context => this.normalizeContextName(context));
-
-        // Save state for undo
-        if (projectId) {
-            this.saveState('Edit project');
-        } else {
-            this.saveState('Create project');
-        }
-
-        const projectData = {
-            title: document.getElementById('project-title').value,
-            description: document.getElementById('project-description').value,
-            status: document.getElementById('project-status').value,
-            contexts: tags
-        };
-
-        let newProjectId = null;
-
-        if (projectId) {
-            // Update existing project
-            const project = this.projects.find(p => p.id === projectId);
-            if (project) {
-                Object.assign(project, projectData);
-                project.updatedAt = new Date().toISOString();
-            }
-        } else {
-            // Create new project
-            const project = new Project(projectData);
-            this.projects.push(project);
-            newProjectId = project.id;
-        }
-
-        await this.saveProjects();
-        this.closeProjectModal();
-        this.renderView();
-        this.updateCounts();
-        this.renderProjectsDropdown();
-        this.updateContextFilter();
-
-        // If we came from task modal, reopen it with the new project selected
-        if (this.pendingTaskData) {
-            this.openTaskModalWithData(this.pendingTaskData, newProjectId);
-            this.pendingTaskData = null;
         }
     }
 
