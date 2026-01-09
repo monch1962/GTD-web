@@ -1311,26 +1311,16 @@ class GTDApp {
         this.globalQuickCapture.selectTemplateForQuickCapture(templateId);
     }
 
-    // ==================== TASK PRIORITY SCORING ====================
+    // ==================== TASK PRIORITY SCORING (Delegated to PriorityScoringManager module) ====================
 
-    /**
-     * Calculate automatic priority score (0-100) for a task
-     * Higher score = higher priority
-     */
     calculatePriorityScore(task) {
         return this.priorityScoring.calculatePriorityScore(task);
     }
 
-    /**
-     * Get priority score color class
-     */
     getPriorityScoreColor(score) {
         return this.priorityScoring.getPriorityScoreColor(score);
     }
 
-    /**
-     * Get priority label
-     */
     getPriorityLabel(score) {
         return this.priorityScoring.getPriorityLabel(score);
     }
