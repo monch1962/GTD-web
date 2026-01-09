@@ -73,6 +73,7 @@ import { SmartDateSuggestionsManager } from './modules/features/smart-date-sugge
 import { SearchManager } from './modules/features/search.js';
 import { TaskOperations } from './modules/features/task-operations.js';
 import { ContextFilterManager } from './modules/features/context-filter.js';
+import { ProjectOperations } from './modules/features/project-operations.js';
 
 class GTDApp {
     // =========================================================================
@@ -127,6 +128,7 @@ class GTDApp {
         this.search = new SearchManager(this, this);
         this.taskOperations = new TaskOperations(this, this);
         this.contextFilter = new ContextFilterManager(this, this);
+        this.projectOperations = new ProjectOperations(this, this);
     }
 
     async init() {
@@ -2863,6 +2865,74 @@ class GTDApp {
         return this.contextFilter.isContextSelected(context);
     }
 
+    // =========================================================================
+    // PROJECT OPERATIONS (Delegated to ProjectOperations module)
+    // =========================================================================
+
+    createProject(projectData) {
+        return this.projectOperations.createProject(projectData);
+    }
+
+    async deleteProject(projectId) {
+        return this.projectOperations.deleteProject(projectId);
+    }
+
+    async archiveProject(projectId) {
+        return this.projectOperations.archiveProject(projectId);
+    }
+
+    async restoreProject(projectId) {
+        return this.projectOperations.restoreProject(projectId);
+    }
+
+    async updateProjectPositions() {
+        return this.projectOperations.updateProjectPositions();
+    }
+
+    getProjectById(projectId) {
+        return this.projectOperations.getProjectById(projectId);
+    }
+
+    getActiveProjects() {
+        return this.projectOperations.getActiveProjects();
+    }
+
+    getArchivedProjects() {
+        return this.projectOperations.getArchivedProjects();
+    }
+
+    getProjectsByStatus(status) {
+        return this.projectOperations.getProjectsByStatus(status);
+    }
+
+    getTasksForProject(projectId) {
+        return this.projectOperations.getTasksForProject(projectId);
+    }
+
+    getIncompleteTasksForProject(projectId) {
+        return this.projectOperations.getIncompleteTasksForProject(projectId);
+    }
+
+    getCompletedTasksForProject(projectId) {
+        return this.projectOperations.getCompletedTasksForProject(projectId);
+    }
+
+    getProjectCompletion(projectId) {
+        return this.projectOperations.getProjectCompletion(projectId);
+    }
+
+    getProjectStats(projectId) {
+        return this.projectOperations.getProjectStats(projectId);
+    }
+
+    async updateProject(projectId, updates) {
+        return this.projectOperations.updateProject(projectId, updates);
+    }
+
+    searchProjects(query) {
+        return this.projectOperations.searchProjects(query);
+    }
+
     openTaskModal(task = null, defaultProjectId = null, defaultData = {}) {
         const modal = document.getElementById('task-modal');
         const form = document.getElementById('task-form');
@@ -3864,68 +3934,6 @@ class GTDApp {
         modal.classList.add('active');
     }
 
-    async deleteProject(projectId) {
-        if (!confirm('Are you sure you want to delete this project? Tasks will not be deleted.')) return;
-
-        // Save state for undo
-        this.saveState('Delete project');
-
-        this.projects = this.projects.filter(p => p.id !== projectId);
-
-        // Remove project reference from tasks
-        this.tasks.forEach(task => {
-            if (task.projectId === projectId) {
-                task.projectId = null;
-            }
-        });
-
-        await this.saveProjects();
-        await this.saveTasks();
-        this.renderView();
-        this.updateCounts();
-        this.renderProjectsDropdown();
-    }
-
-    async archiveProject(projectId) {
-        const project = this.projects.find(p => p.id === projectId);
-        if (!project) return;
-
-        if (!confirm(`Archive "${project.title}"? The project will be hidden but can be restored later.`)) return;
-
-        // Save state for undo
-        this.saveState('Archive project');
-
-        // Mark project as archived
-        project.status = 'archived';
-        project.updatedAt = new Date().toISOString();
-
-        await this.saveProjects();
-        this.renderView();
-        this.updateCounts();
-        this.renderProjectsDropdown();
-
-        this.showNotification(`Project "${project.title}" archived`);
-    }
-
-    async restoreProject(projectId) {
-        const project = this.projects.find(p => p.id === projectId);
-        if (!project) return;
-
-        // Save state for undo
-        this.saveState('Restore project');
-
-        // Restore project to active status
-        project.status = 'active';
-        project.updatedAt = new Date().toISOString();
-
-        await this.saveProjects();
-        this.renderView();
-        this.updateCounts();
-        this.renderProjectsDropdown();
-
-        this.showNotification(`Project "${project.title}" restored`);
-    }
-
     async saveTasks() {
         const tasksData = this.tasks.map(t => t.toJSON());
         await this.storage.saveTasks(tasksData);
@@ -4152,28 +4160,6 @@ class GTDApp {
         // Re-render
         this.renderCustomContexts();
         this.renderView();
-    }
-
-    async updateProjectPositions() {
-        const container = document.querySelector('.projects-container');
-        if (!container) return;
-
-        const projectElements = container.querySelectorAll('.project-card');
-
-        // Update position for each project based on its DOM order
-        projectElements.forEach((element, index) => {
-            const projectId = element.dataset.projectId;
-            const project = this.projects.find(p => p.id === projectId);
-            if (project) {
-                project.position = index;
-                project.updatedAt = new Date().toISOString();
-            }
-        });
-
-        // Save the updated positions
-        await this.saveProjects();
-        // Update dropdown to reflect new order
-        this.renderProjectsDropdown();
     }
 
     /**
