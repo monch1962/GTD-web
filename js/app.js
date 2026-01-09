@@ -61,6 +61,10 @@ import { DailyReviewManager } from './modules/features/daily-review.js';
 import { SmartSuggestionsManager } from './modules/features/smart-suggestions.js';
 import { PriorityScoringManager } from './modules/features/priority-scoring.js';
 import { GlobalQuickCaptureManager } from './modules/features/global-quick-capture.js';
+import { ProductivityHeatmapManager } from './modules/features/productivity-heatmap.js';
+import { UndoRedoManager } from './modules/features/undo-redo.js';
+import { BulkOperationsManager } from './modules/features/bulk-operations.js';
+import { TimeTrackingManager } from './modules/features/time-tracking.js';
 
 class GTDApp {
     // =========================================================================
@@ -81,8 +85,6 @@ class GTDApp {
         this.pendingTaskData = null;
         this.parser = new TaskParser();
         this.selectedTaskId = null; // Track currently selected task for keyboard shortcuts
-        this.bulkSelectionMode = false; // Track if bulk selection mode is active
-        this.selectedTaskIds = new Set(); // Track selected task IDs for bulk operations
         this.usageStats = this.loadUsageStats(); // Track usage patterns for smart defaults
         this.defaultContexts = getDefaultContextIds(); // Import from single source of truth
         this.searchQuery = ''; // Current search query
@@ -97,9 +99,6 @@ class GTDApp {
         this.activeTimers = new Map(); // Track active timers for tasks
         this.calendarView = 'month'; // Calendar view: month, week
         this.calendarDate = new Date(); // Currently viewed month in calendar
-        this.history = []; // Undo/Redo history
-        this.historyIndex = -1; // Current position in history
-        this.maxHistorySize = 50; // Maximum history entries
         this.showingArchivedProjects = false; // Track if viewing archived projects
 
         // Initialize feature modules
@@ -117,6 +116,10 @@ class GTDApp {
         this.smartSuggestions = new SmartSuggestionsManager(this, this);
         this.priorityScoring = new PriorityScoringManager(this, this);
         this.globalQuickCapture = new GlobalQuickCaptureManager(this, this);
+        this.productivityHeatmap = new ProductivityHeatmapManager(this, this);
+        this.undoRedo = new UndoRedoManager(this, this);
+        this.bulkOperations = new BulkOperationsManager(this, this);
+        this.timeTracking = new TimeTrackingManager(this, this);
     }
 
     async init() {
@@ -795,347 +798,59 @@ class GTDApp {
     }
 
     setupBulkSelection() {
-        const bulkSelectBtn = document.getElementById('btn-bulk-select');
-        const bulkActionsBar = document.getElementById('bulk-actions-bar');
-        const bulkCompleteBtn = document.getElementById('btn-bulk-complete');
-        const bulkCancelBtn = document.getElementById('btn-bulk-cancel');
-        const bulkSelectedCount = document.getElementById('bulk-selected-count');
-        const bulkSelectAllBtn = document.getElementById('btn-bulk-select-all');
-        const bulkStatusBtn = document.getElementById('btn-bulk-status');
-        const bulkEnergyBtn = document.getElementById('btn-bulk-energy');
-        const bulkProjectBtn = document.getElementById('btn-bulk-project');
-        const bulkContextBtn = document.getElementById('btn-bulk-context');
-        const bulkDueDateBtn = document.getElementById('btn-bulk-due-date');
-        const bulkDeleteBtn = document.getElementById('btn-bulk-delete');
-
-        // Show bulk select button when there are tasks
-        this.updateBulkSelectButtonVisibility();
-
-        // Toggle bulk selection mode
-        if (bulkSelectBtn) {
-            bulkSelectBtn.addEventListener('click', () => {
-                this.toggleBulkSelectionMode();
-            });
-        }
-
-        // Complete selected tasks
-        if (bulkCompleteBtn) {
-            bulkCompleteBtn.addEventListener('click', async () => {
-                await this.bulkCompleteTasks();
-            });
-        }
-
-        // Select all visible tasks
-        if (bulkSelectAllBtn) {
-            bulkSelectAllBtn.addEventListener('click', () => {
-                this.bulkSelectAllVisible();
-            });
-        }
-
-        // Set status for selected tasks
-        if (bulkStatusBtn) {
-            bulkStatusBtn.addEventListener('click', () => {
-                this.bulkSetStatus();
-            });
-        }
-
-        // Set energy for selected tasks
-        if (bulkEnergyBtn) {
-            bulkEnergyBtn.addEventListener('click', () => {
-                this.bulkSetEnergy();
-            });
-        }
-
-        // Move selected tasks to project
-        if (bulkProjectBtn) {
-            bulkProjectBtn.addEventListener('click', () => {
-                this.bulkSetProject();
-            });
-        }
-
-        // Add context to selected tasks
-        if (bulkContextBtn) {
-            bulkContextBtn.addEventListener('click', () => {
-                this.bulkAddContext();
-            });
-        }
-
-        // Set due date for selected tasks
-        if (bulkDueDateBtn) {
-            bulkDueDateBtn.addEventListener('click', () => {
-                this.bulkSetDueDate();
-            });
-        }
-
-        // Delete selected tasks
-        if (bulkDeleteBtn) {
-            bulkDeleteBtn.addEventListener('click', () => {
-                this.bulkDeleteTasks();
-            });
-        }
-
-        // Cancel bulk selection
-        if (bulkCancelBtn) {
-            bulkCancelBtn.addEventListener('click', () => {
-                this.exitBulkSelectionMode();
-            });
-        }
+        this.bulkOperations.setupBulkSelection();
     }
 
     updateBulkSelectButtonVisibility() {
-        const bulkSelectBtn = document.getElementById('btn-bulk-select');
-        const tasks = document.querySelectorAll('.task-item');
-        if (bulkSelectBtn) {
-            bulkSelectBtn.style.display = tasks.length > 0 ? 'block' : 'none';
-        }
+        this.bulkOperations.updateBulkSelectButtonVisibility();
     }
 
     toggleBulkSelectionMode() {
-        this.bulkSelectionMode = !this.bulkSelectionMode;
-        const bulkActionsBar = document.getElementById('bulk-actions-bar');
-        const bulkSelectBtn = document.getElementById('btn-bulk-select');
-
-        if (this.bulkSelectionMode) {
-            bulkActionsBar.style.display = 'flex';
-            bulkSelectBtn.innerHTML = '<i class="fas fa-times"></i> Exit Selection';
-            this.renderView(); // Re-render to show bulk checkboxes
-        } else {
-            this.exitBulkSelectionMode();
-        }
+        this.bulkOperations.toggleBulkSelectionMode();
     }
 
     exitBulkSelectionMode() {
-        this.bulkSelectionMode = false;
-        this.selectedTaskIds.clear();
-        const bulkActionsBar = document.getElementById('bulk-actions-bar');
-        const bulkSelectBtn = document.getElementById('btn-bulk-select');
-
-        if (bulkActionsBar) {
-            bulkActionsBar.style.display = 'none';
-        }
-        if (bulkSelectBtn) {
-            bulkSelectBtn.innerHTML = '<i class="fas fa-check-square"></i> Select Multiple';
-        }
-        this.updateBulkSelectedCount();
-        this.renderView(); // Re-render to hide bulk checkboxes
+        this.bulkOperations.exitBulkSelectionMode();
     }
 
     toggleBulkTaskSelection(taskId) {
-        if (this.selectedTaskIds.has(taskId)) {
-            this.selectedTaskIds.delete(taskId);
-        } else {
-            this.selectedTaskIds.add(taskId);
-        }
-        this.updateBulkSelectedCount();
+        this.bulkOperations.toggleBulkTaskSelection(taskId);
     }
 
     updateBulkSelectedCount() {
-        const bulkSelectedCount = document.getElementById('bulk-selected-count');
-        const bulkCompleteBtn = document.getElementById('btn-bulk-complete');
-
-        if (bulkSelectedCount) {
-            bulkSelectedCount.textContent = this.selectedTaskIds.size;
-        }
-
-        if (bulkCompleteBtn) {
-            bulkCompleteBtn.disabled = this.selectedTaskIds.size === 0;
-            bulkCompleteBtn.style.opacity = this.selectedTaskIds.size === 0 ? '0.5' : '1';
-        }
+        this.bulkOperations.updateBulkSelectedCount();
     }
 
     async bulkCompleteTasks() {
-        if (this.selectedTaskIds.size === 0) return;
-
-        for (const taskId of this.selectedTaskIds) {
-            const task = this.tasks.find(t => t.id === taskId);
-            if (task && !task.completed) {
-                task.completed = true;
-                task.completedAt = new Date().toISOString();
-            }
-        }
-
-        await this.saveTasks();
-        this.exitBulkSelectionMode();
-        this.renderView();
-        this.updateCounts();
-        this.renderProjectsDropdown(); // Update project task counts
-        this.showToast(`${this.selectedTaskIds.size} task(s) completed`);
+        return this.bulkOperations.bulkCompleteTasks();
     }
 
     bulkSelectAllVisible() {
-        const visibleTasks = document.querySelectorAll('.task-item');
-        visibleTasks.forEach(taskElement => {
-            const taskId = taskElement.dataset.taskId;
-            const checkbox = taskElement.querySelector('.bulk-select-checkbox');
-            if (checkbox && taskId) {
-                this.selectedTaskIds.add(taskId);
-                checkbox.checked = true;
-            }
-        });
-        this.updateBulkSelectedCount();
-        this.showToast(`${this.selectedTaskIds.size} tasks selected`);
+        this.bulkOperations.bulkSelectAllVisible();
     }
 
     async bulkSetStatus() {
-        if (this.selectedTaskIds.size === 0) return;
-
-        const status = prompt('Enter status (inbox, next, waiting, someday):');
-        if (!status || !['inbox', 'next', 'waiting', 'someday'].includes(status)) {
-            this.showToast('Invalid status');
-            return;
-        }
-
-        this.saveState('Bulk set status');
-        for (const taskId of this.selectedTaskIds) {
-            const task = this.tasks.find(t => t.id === taskId);
-            if (task) {
-                task.status = status;
-                task.updatedAt = new Date().toISOString();
-            }
-        }
-
-        await this.saveTasks();
-        this.exitBulkSelectionMode();
-        this.renderView();
-        this.updateCounts();
-        this.showToast(`Status set to ${status}`);
+        return this.bulkOperations.bulkSetStatus();
     }
 
     async bulkSetEnergy() {
-        if (this.selectedTaskIds.size === 0) return;
-
-        const energy = prompt('Enter energy level (high, medium, low, or leave empty for none):');
-        if (energy === null || (energy && !['high', 'medium', 'low'].includes(energy))) {
-            this.showToast('Invalid energy level');
-            return;
-        }
-
-        this.saveState('Bulk set energy');
-        for (const taskId of this.selectedTaskIds) {
-            const task = this.tasks.find(t => t.id === taskId);
-            if (task) {
-                task.energy = energy || '';
-                task.updatedAt = new Date().toISOString();
-            }
-        }
-
-        await this.saveTasks();
-        this.exitBulkSelectionMode();
-        this.renderView();
-        this.showToast(`Energy set to ${energy || 'none'}`);
+        return this.bulkOperations.bulkSetEnergy();
     }
 
     async bulkSetProject() {
-        if (this.selectedTaskIds.size === 0) return;
-
-        // Simple prompt - could be enhanced with a custom modal
-        const projectTitles = this.projects.map((p, i) => `${i + 1}. ${p.title}`).join('\n');
-        const choice = prompt(`Enter project number to move tasks to:\n0. No Project\n${projectTitles}`);
-
-        if (choice === null) return;
-
-        const index = parseInt(choice) - 1;
-        const projectId = index === -1 ? null : (this.projects[index] ? this.projects[index].id : null);
-
-        this.saveState('Bulk set project');
-        for (const taskId of this.selectedTaskIds) {
-            const task = this.tasks.find(t => t.id === taskId);
-            if (task) {
-                task.projectId = projectId;
-                task.updatedAt = new Date().toISOString();
-            }
-        }
-
-        await this.saveTasks();
-        this.exitBulkSelectionMode();
-        this.renderView();
-        this.showToast(`Moved ${this.selectedTaskIds.size} task(s) to project`);
+        return this.bulkOperations.bulkSetProject();
     }
 
     async bulkAddContext() {
-        if (this.selectedTaskIds.size === 0) return;
-
-        const context = prompt('Enter context name (will be prefixed with @):');
-        if (!context) return;
-
-        const formattedContext = context.startsWith('@') ? context : `@${context}`;
-
-        this.saveState('Bulk add context');
-        for (const taskId of this.selectedTaskIds) {
-            const task = this.tasks.find(t => t.id === taskId);
-            if (task) {
-                task.contexts = task.contexts || [];
-                if (!task.contexts.includes(formattedContext)) {
-                    task.contexts.push(formattedContext);
-                }
-                task.updatedAt = new Date().toISOString();
-            }
-        }
-
-        await this.saveTasks();
-        this.exitBulkSelectionMode();
-        this.renderView();
-        this.showToast(`Added ${formattedContext} to ${this.selectedTaskIds.size} task(s)`);
+        return this.bulkOperations.bulkAddContext();
     }
 
     async bulkSetDueDate() {
-        if (this.selectedTaskIds.size === 0) return;
-
-        const date = prompt('Enter due date (YYYY-MM-DD) or relative (today, tomorrow, in 3 days):');
-        if (!date) return;
-
-        // Parse relative dates
-        let dueDate = date;
-        if (date.toLowerCase() === 'today') {
-            dueDate = new Date().toISOString().split('T')[0];
-        } else if (date.toLowerCase() === 'tomorrow') {
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            dueDate = tomorrow.toISOString().split('T')[0];
-        } else if (date.toLowerCase().startsWith('in ')) {
-            const match = date.match(/in\s+(\d+)\s+(day|days|week|weeks)/);
-            if (match) {
-                const amount = parseInt(match[1]);
-                const unit = match[2];
-                const targetDate = new Date();
-                if (unit.startsWith('day')) {
-                    targetDate.setDate(targetDate.getDate() + amount);
-                } else if (unit.startsWith('week')) {
-                    targetDate.setDate(targetDate.getDate() + (amount * 7));
-                }
-                dueDate = targetDate.toISOString().split('T')[0];
-            }
-        }
-
-        this.saveState('Bulk set due date');
-        for (const taskId of this.selectedTaskIds) {
-            const task = this.tasks.find(t => t.id === taskId);
-            if (task) {
-                task.dueDate = dueDate;
-                task.updatedAt = new Date().toISOString();
-            }
-        }
-
-        await this.saveTasks();
-        this.exitBulkSelectionMode();
-        this.renderView();
-        this.showToast(`Due date set to ${dueDate}`);
+        return this.bulkOperations.bulkSetDueDate();
     }
 
     async bulkDeleteTasks() {
-        if (this.selectedTaskIds.size === 0) return;
-
-        if (!confirm(`Are you sure you want to delete ${this.selectedTaskIds.size} task(s)?`)) {
-            return;
-        }
-
-        this.saveState('Bulk delete tasks');
-        this.tasks = this.tasks.filter(task => !this.selectedTaskIds.has(task.id));
-        await this.saveTasks();
-        this.exitBulkSelectionMode();
-        this.renderView();
-        this.updateCounts();
-        this.showToast(`${this.selectedTaskIds.size} task(s) deleted`);
+        return this.bulkOperations.bulkDeleteTasks();
     }
 
     // ==================== SEARCH FUNCTIONALITY ====================
@@ -1664,71 +1379,18 @@ class GTDApp {
 
     // ==================================================================
 
-    // ==================== TIME TRACKING ====================
+    // ==================== TIME TRACKING (Delegated to TimeTrackingManager module) ====================
 
     setupTimeTracking() {
-        // Time tracking is handled per-task in the task element creation
-        // This method is for global time tracking setup
-        console.log('[Time Tracking] Time tracking initialized');
+        this.timeTracking.setupTimeTracking();
     }
 
     startTaskTimer(taskId) {
-        const task = this.tasks.find(t => t.id === taskId);
-        if (!task) return;
-
-        if (this.timerInterval) {
-            this.stopTaskTimer();
-        }
-
-        this.currentTimerTask = taskId;
-        this.timerStartTime = Date.now();
-
-        const timerBtn = document.querySelector(`[data-task-id="${taskId}"] .btn-timer`);
-        if (timerBtn) {
-            timerBtn.classList.add('active');
-            timerBtn.innerHTML = '<i class="fas fa-stop"></i>';
-        }
-
-        this.timerInterval = setInterval(() => {
-            const elapsed = Math.floor((Date.now() - this.timerStartTime) / 1000);
-            const minutes = Math.floor(elapsed / 60);
-            const seconds = elapsed % 60;
-
-            const timerDisplay = document.querySelector(`[data-task-id="${taskId}"] .timer-display`);
-            if (timerDisplay) {
-                timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-            }
-        }, 1000);
-
-        this.showToast('Timer started', 'info');
+        this.timeTracking.startTaskTimer(taskId);
     }
 
     stopTaskTimer() {
-        if (!this.timerInterval || !this.currentTimerTask) return;
-
-        clearInterval(this.timerInterval);
-        this.timerInterval = null;
-
-        const elapsedMinutes = Math.floor((Date.now() - this.timerStartTime) / 1000 / 60);
-
-        const task = this.tasks.find(t => t.id === this.currentTimerTask);
-        if (task) {
-            task.timeSpent = (task.timeSpent || 0) + elapsedMinutes;
-            task.updatedAt = new Date().toISOString();
-            this.saveTasks();
-            this.renderView();
-        }
-
-        const timerBtn = document.querySelector(`[data-task-id="${this.currentTimerTask}"] .btn-timer`);
-        if (timerBtn) {
-            timerBtn.classList.remove('active');
-            timerBtn.innerHTML = '<i class="fas fa-play"></i>';
-        }
-
-        this.currentTimerTask = null;
-        this.timerStartTime = null;
-
-        this.showToast(`Timer stopped. Added ${elapsedMinutes} minutes.`, 'success');
+        this.timeTracking.stopTaskTimer();
     }
 
     // ==================================================================
@@ -1900,232 +1562,19 @@ class GTDApp {
     // ==================== PRODUCTIVITY HEATMAP ====================
 
     setupProductivityHeatmap() {
-        const heatmapBtn = document.getElementById('btn-heatmap');
-        if (heatmapBtn) {
-            heatmapBtn.addEventListener('click', () => this.openHeatmapModal());
-        }
-
-        const closeBtn = document.getElementById('close-heatmap-modal');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => this.closeHeatmapModal());
-        }
+        this.productivityHeatmap.setupProductivityHeatmap();
     }
 
     openHeatmapModal() {
-        const modal = document.getElementById('heatmap-modal');
-        if (modal) {
-            modal.classList.add('active');
-            this.renderProductivityHeatmap();
-        }
+        this.productivityHeatmap.openHeatmapModal();
     }
 
     closeHeatmapModal() {
-        const modal = document.getElementById('heatmap-modal');
-        if (modal) {
-            modal.classList.remove('active');
-        }
+        this.productivityHeatmap.closeHeatmapModal();
     }
 
     renderProductivityHeatmap() {
-        const container = document.getElementById('heatmap-container');
-        if (!container) return;
-
-        // Get completion data for the last 365 days
-        const days = 365;
-        const endDate = new Date();
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - days);
-
-        // Build completion count per day
-        const completionData = this.buildCompletionData(startDate, endDate);
-
-        // Update statistics
-        this.updateHeatmapStats(completionData);
-
-        // Render the heatmap grid
-        this.renderHeatmapGrid(completionData, days, container);
-    }
-
-    buildCompletionData(startDate, endDate) {
-        const data = {};
-        const currentDate = new Date(startDate);
-
-        // Initialize all days with 0
-        while (currentDate <= endDate) {
-            const dateKey = this.getDateKey(currentDate);
-            data[dateKey] = 0;
-            currentDate.setDate(currentDate.getDate() + 1);
-        }
-
-        // Count completed tasks per day
-        this.tasks.forEach(task => {
-            if (task.completed && task.completedAt) {
-                const completedDate = new Date(task.completedAt);
-                const dateKey = this.getDateKey(completedDate);
-                if (data.hasOwnProperty(dateKey)) {
-                    data[dateKey]++;
-                }
-            }
-        });
-
-        return data;
-    }
-
-    getDateKey(date) {
-        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-    }
-
-    updateHeatmapStats(completionData) {
-        const values = Object.values(completionData);
-        const totalCompleted = values.reduce((sum, count) => sum + count, 0);
-        const bestDay = Math.max(...values);
-        const daysWithData = values.filter(v => v > 0).length;
-        const avgPerDay = daysWithData > 0 ? Math.round(totalCompleted / daysWithData * 10) / 10 : 0;
-
-        // Calculate current streak
-        const streak = this.calculateCurrentStreak(completionData);
-
-        document.getElementById('heatmap-total-completed').textContent = totalCompleted;
-        document.getElementById('heatmap-best-day').textContent = bestDay;
-        document.getElementById('heatmap-avg-day').textContent = avgPerDay;
-        document.getElementById('heatmap-streak').textContent = streak;
-    }
-
-    calculateCurrentStreak(completionData) {
-        let streak = 0;
-        const today = new Date();
-        const checkDate = new Date(today);
-
-        while (true) {
-            const dateKey = this.getDateKey(checkDate);
-            if (completionData[dateKey] > 0) {
-                streak++;
-                checkDate.setDate(checkDate.getDate() - 1);
-            } else if (dateKey === this.getDateKey(today)) {
-                // Today has no completions yet, check yesterday
-                checkDate.setDate(checkDate.getDate() - 1);
-            } else {
-                break;
-            }
-        }
-
-        return streak;
-    }
-
-    renderHeatmapGrid(completionData, days, container) {
-        const endDate = new Date();
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - days);
-
-        // Find the max value for normalization
-        const maxCount = Math.max(...Object.values(completionData), 1);
-
-        // Create day labels
-        const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const dayLabelsHTML = dayLabels.map((day, index) => {
-            if (index % 2 === 1) { // Show every other day
-                return `<div class="heatmap-day-label">${day}</div>`;
-            }
-            return '<div class="heatmap-day-label"></div>';
-        }).join('');
-
-        // Create cells
-        let cellsHTML = '';
-        let currentDate = new Date(startDate);
-
-        while (currentDate <= endDate) {
-            const dateKey = this.getDateKey(currentDate);
-            const count = completionData[dateKey] || 0;
-            const level = this.getHeatmapLevel(count, maxCount);
-            const formattedDate = currentDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-
-            cellsHTML += `<div class="heatmap-cell level-${level}" data-date="${formattedDate}" data-count="${count}"></div>`;
-            currentDate.setDate(currentDate.getDate() + 1);
-        }
-
-        // Create month labels
-        const monthLabelsHTML = this.createMonthLabels(startDate, endDate);
-
-        container.innerHTML = `
-            <div class="heatmap-wrapper">
-                <div class="heatmap-day-labels">${dayLabelsHTML}</div>
-                <div>
-                    <div class="heatmap-grid">${cellsHTML}</div>
-                    <div class="heatmap-month-labels">${monthLabelsHTML}</div>
-                </div>
-            </div>
-        `;
-
-        // Add tooltip functionality
-        this.setupHeatmapTooltips();
-    }
-
-    getHeatmapLevel(count, maxCount) {
-        if (count === 0) return 0;
-        if (maxCount <= 4) {
-            return Math.min(count, 4);
-        }
-        const percentage = count / maxCount;
-        if (percentage < 0.25) return 1;
-        if (percentage < 0.5) return 2;
-        if (percentage < 0.75) return 3;
-        return 4;
-    }
-
-    createMonthLabels(startDate, endDate) {
-        const labels = [];
-        const currentMonth = new Date(startDate);
-        currentMonth.setDate(1); // Set to first of month
-
-        let weekIndex = 0;
-        let weeksInMonth = 0;
-
-        while (currentMonth <= endDate) {
-            const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
-            weeksInMonth = Math.ceil(daysInMonth / 7);
-
-            const monthName = currentMonth.toLocaleDateString('en-US', { month: 'short' });
-            const leftPos = weekIndex * 15 + 8; // 15px per week, 8px offset
-
-            labels.push(`<span class="heatmap-month-label" style="left: ${leftPos}px;">${monthName}</span>`);
-
-            weekIndex += weeksInMonth;
-            currentMonth.setMonth(currentMonth.getMonth() + 1);
-        }
-
-        return labels.join('');
-    }
-
-    setupHeatmapTooltips() {
-        const cells = document.querySelectorAll('.heatmap-cell');
-        let tooltip = null;
-
-        cells.forEach(cell => {
-            cell.addEventListener('mouseenter', (e) => {
-                const date = e.target.dataset.date;
-                const count = e.target.dataset.count;
-
-                if (!tooltip) {
-                    tooltip = document.createElement('div');
-                    tooltip.className = 'heatmap-tooltip';
-                    document.body.appendChild(tooltip);
-                }
-
-                tooltip.innerHTML = `<strong>${count}</strong> tasks completed on ${date}`;
-                tooltip.style.display = 'block';
-
-                const rect = e.target.getBoundingClientRect();
-                tooltip.style.left = `${rect.left + rect.width / 2}px`;
-                tooltip.style.top = `${rect.top - 40}px`;
-                tooltip.style.transform = 'translateX(-50%)';
-            });
-
-            cell.addEventListener('mouseleave', () => {
-                if (tooltip) {
-                    tooltip.style.display = 'none';
-                }
-            });
-        });
+        this.productivityHeatmap.renderProductivityHeatmap();
     }
 
     // ==================== GLOBAL QUICK CAPTURE ====================
@@ -2433,111 +1882,19 @@ class GTDApp {
     // ==================== UNDO/REDO SYSTEM ====================
 
     setupUndoRedo() {
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            // Ctrl+Z for undo
-            if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
-                e.preventDefault();
-                this.undo();
-            }
-            // Ctrl+Y or Ctrl+Shift+Z for redo
-            if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
-                e.preventDefault();
-                this.redo();
-            }
-        });
-
-        // Button listeners
-        const undoBtn = document.getElementById('btn-undo');
-        const redoBtn = document.getElementById('btn-redo');
-
-        if (undoBtn) {
-            undoBtn.addEventListener('click', () => this.undo());
-        }
-        if (redoBtn) {
-            redoBtn.addEventListener('click', () => this.redo());
-        }
-
-        this.updateUndoRedoButtons();
+        this.undoRedo.setupUndoRedo();
     }
 
     saveState(action) {
-        // Save current state to history
-        const state = {
-            action: action,
-            tasks: JSON.parse(JSON.stringify(this.tasks.map(t => t.toJSON()))),
-            projects: JSON.parse(JSON.stringify(this.projects.map(p => p.toJSON()))),
-            timestamp: new Date().toISOString()
-        };
-
-        // Remove any states after current index (we're creating a new branch)
-        this.history = this.history.slice(0, this.historyIndex + 1);
-
-        // Add new state
-        this.history.push(state);
-        this.historyIndex++;
-
-        // Limit history size
-        if (this.history.length > this.maxHistorySize) {
-            this.history.shift();
-            this.historyIndex--;
-        }
-
-        this.updateUndoRedoButtons();
+        this.undoRedo.saveState(action);
     }
 
     async undo() {
-        if (this.historyIndex <= 0) return;
-
-        this.historyIndex--;
-        const state = this.history[this.historyIndex];
-
-        // Restore state
-        this.tasks = state.tasks.map(t => Task.fromJSON(t));
-        this.projects = state.projects.map(p => Project.fromJSON(p));
-
-        await this.saveTasks();
-        await this.saveProjects();
-        this.renderView();
-        this.updateCounts();
-        this.renderProjectsDropdown();
-        this.updateUndoRedoButtons();
-
-        this.showNotification(`Undid: ${state.action}`);
+        return this.undoRedo.undo();
     }
 
     async redo() {
-        if (this.historyIndex >= this.history.length - 1) return;
-
-        this.historyIndex++;
-        const state = this.history[this.historyIndex];
-
-        // Restore state
-        this.tasks = state.tasks.map(t => Task.fromJSON(t));
-        this.projects = state.projects.map(p => Project.fromJSON(p));
-
-        await this.saveTasks();
-        await this.saveProjects();
-        this.renderView();
-        this.updateCounts();
-        this.renderProjectsDropdown();
-        this.updateUndoRedoButtons();
-
-        this.showNotification(`Redid: ${state.action}`);
-    }
-
-    updateUndoRedoButtons() {
-        const undoBtn = document.getElementById('btn-undo');
-        const redoBtn = document.getElementById('btn-redo');
-
-        if (undoBtn) {
-            undoBtn.disabled = this.historyIndex <= 0;
-            undoBtn.style.opacity = this.historyIndex <= 0 ? '0.5' : '1';
-        }
-        if (redoBtn) {
-            redoBtn.disabled = this.historyIndex >= this.history.length - 1;
-            redoBtn.style.opacity = this.historyIndex >= this.history.length - 1 ? '0.5' : '1';
-        }
+        return this.undoRedo.redo();
     }
 
     // ==================== MOBILE NAVIGATION ====================

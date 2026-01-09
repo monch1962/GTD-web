@@ -150,6 +150,12 @@ export class MobileNavigationManager {
                     case 'suggestions':
                         this.app.showSuggestions?.();
                         break;
+                    case 'undo':
+                        this.app.undo?.();
+                        break;
+                    case 'redo':
+                        this.app.redo?.();
+                        break;
                 }
             });
         });
