@@ -67,6 +67,7 @@ import { BulkOperationsManager } from './modules/features/bulk-operations.js';
 import { TimeTrackingManager } from './modules/features/time-tracking.js';
 import { SubtasksManager } from './modules/features/subtasks.js';
 import { QuickCaptureWidgetManager } from './modules/features/quick-capture-widget.js';
+import { NewProjectButtonManager } from './modules/features/new-project-button.js';
 
 class GTDApp {
     // =========================================================================
@@ -124,6 +125,7 @@ class GTDApp {
         this.timeTracking = new TimeTrackingManager(this, this);
         this.subtasks = new SubtasksManager(this, this);
         this.quickCaptureWidget = new QuickCaptureWidgetManager(this, this);
+        this.newProjectButton = new NewProjectButtonManager(this, this);
     }
 
     async init() {
@@ -1194,16 +1196,10 @@ class GTDApp {
         this.dashboard.renderDashboard();
     }
 
-    // ==================== NEW PROJECT BUTTON ====================
+    // ==================== NEW PROJECT BUTTON (Delegated to NewProjectButtonManager module) ====================
 
     setupNewProjectButton() {
-        const newProjectBtn = document.getElementById('btn-new-project');
-        if (newProjectBtn) {
-            newProjectBtn.addEventListener('click', () => {
-                // Open task modal with type pre-selected as 'project'
-                this.openTaskModal(null, null, { type: 'project' });
-            });
-        }
+        this.newProjectButton.setupNewProjectButton();
     }
 
     // ==================== TEMPLATES SYSTEM (Delegated to TemplatesManager module) ====================
