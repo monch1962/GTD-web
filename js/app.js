@@ -60,6 +60,7 @@ import { FocusPomodoroManager } from './modules/features/focus-pomodoro.js';
 import { DailyReviewManager } from './modules/features/daily-review.js';
 import { SmartSuggestionsManager } from './modules/features/smart-suggestions.js';
 import { PriorityScoringManager } from './modules/features/priority-scoring.js';
+import { GlobalQuickCaptureManager } from './modules/features/global-quick-capture.js';
 
 class GTDApp {
     // =========================================================================
@@ -115,6 +116,7 @@ class GTDApp {
         this.dailyReview = new DailyReviewManager(this, this);
         this.smartSuggestions = new SmartSuggestionsManager(this, this);
         this.priorityScoring = new PriorityScoringManager(this, this);
+        this.globalQuickCapture = new GlobalQuickCaptureManager(this, this);
     }
 
     async init() {
@@ -2129,203 +2131,35 @@ class GTDApp {
     // ==================== GLOBAL QUICK CAPTURE ====================
 
     setupGlobalQuickCapture() {
-        // Global hotkey listener (Alt+N)
-        document.addEventListener('keydown', (e) => {
-            if (e.altKey && e.key === 'n') {
-                e.preventDefault();
-                this.openGlobalQuickCapture();
-            }
-        });
-
-        // Close overlay
-        const closeBtn = document.getElementById('close-global-quick-capture');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => this.closeGlobalQuickCapture());
-        }
-
-        // Close on Escape
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                const overlay = document.getElementById('global-quick-capture-overlay');
-                if (overlay && overlay.style.display !== 'none') {
-                    this.closeGlobalQuickCapture();
-                }
-            }
-        });
-
-        // Handle input
-        const input = document.getElementById('global-quick-capture-input');
-        if (input) {
-            input.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' && input.value.trim()) {
-                    this.handleGlobalQuickCapture(input.value.trim());
-                }
-            });
-
-            input.addEventListener('keydown', (e) => {
-                // Press T to show templates
-                if (e.key === 't' || e.key === 'T') {
-                    e.preventDefault();
-                    this.toggleQuickCaptureTemplates();
-                }
-            });
-        }
-
-        // Close on overlay click
-        const overlay = document.getElementById('global-quick-capture-overlay');
-        if (overlay) {
-            overlay.addEventListener('click', (e) => {
-                if (e.target === overlay) {
-                    this.closeGlobalQuickCapture();
-                }
-            });
-        }
+        this.globalQuickCapture.setupGlobalQuickCapture();
     }
 
     openGlobalQuickCapture() {
-        const overlay = document.getElementById('global-quick-capture-overlay');
-        if (overlay) {
-            overlay.style.display = 'flex';
-            const input = document.getElementById('global-quick-capture-input');
-            if (input) {
-                input.value = '';
-                input.focus();
-            }
-            // Hide templates initially
-            const templates = document.getElementById('global-quick-capture-templates');
-            if (templates) {
-                templates.style.display = 'none';
-            }
-        }
+        this.globalQuickCapture.openGlobalQuickCapture();
     }
 
     closeGlobalQuickCapture() {
-        const overlay = document.getElementById('global-quick-capture-overlay');
-        if (overlay) {
-            overlay.style.display = 'none';
-        }
+        this.globalQuickCapture.closeGlobalQuickCapture();
     }
 
     handleGlobalQuickCapture(input) {
-        // Parse the input with enhanced NLP
-        const taskData = this.parseQuickCaptureInput(input);
-
-        // Create the task
-        const task = new Task(taskData);
-        this.tasks.unshift(task);
-        this.saveTasks();
-        this.renderView();
-        this.updateCounts();
-
-        this.closeGlobalQuickCapture();
-        this.showToast('Task captured!');
-
-        // Save state for undo
-        this.saveState('Quick capture task');
+        this.globalQuickCapture.handleGlobalQuickCapture(input);
     }
 
     parseQuickCaptureInput(input) {
-        const taskData = {
-            title: input,
-            status: 'inbox'
-        };
-
-        // Extract contexts (@work, @home, etc.)
-        const contextMatches = input.match(/@(\w+)/g);
-        if (contextMatches) {
-            taskData.contexts = contextMatches.map(c => c.startsWith('@') ? c : '@' + c);
-            taskData.title = input.replace(/@\w+/g, '').trim();
-        }
-
-        // Extract energy (!high, !medium, !low)
-        const energyMatch = input.match(/!(high|medium|low)/i);
-        if (energyMatch) {
-            taskData.energy = energyMatch[1].toLowerCase();
-            taskData.title = taskData.title.replace(/!high|!medium|!low/gi, '').trim();
-        }
-
-        // Extract project (#projectname)
-        const projectMatch = input.match(/#(\w+)/);
-        if (projectMatch) {
-            const projectName = projectMatch[1];
-            const project = this.projects.find(p => p.title.toLowerCase() === projectName.toLowerCase());
-            if (project) {
-                taskData.projectId = project.id;
-            }
-            taskData.title = taskData.title.replace(/#\w+/g, '').trim();
-        }
-
-        // Extract dates (today, tomorrow, in X days)
-        const lowerTitle = taskData.title.toLowerCase();
-
-        if (lowerTitle.includes('today') || lowerTitle.includes('due today')) {
-            taskData.dueDate = new Date().toISOString().split('T')[0];
-            taskData.title = taskData.title.replace(/today|due today/gi, '').trim();
-        } else if (lowerTitle.includes('tomorrow') || lowerTitle.includes('due tomorrow')) {
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            taskData.dueDate = tomorrow.toISOString().split('T')[0];
-            taskData.title = taskData.title.replace(/tomorrow|due tomorrow/gi, '').trim();
-        }
-
-        // Extract "in X days"
-        const inDaysMatch = lowerTitle.match(/in\s+(\d+)\s+days?/);
-        if (inDaysMatch) {
-            const days = parseInt(inDaysMatch[1]);
-            const targetDate = new Date();
-            targetDate.setDate(targetDate.getDate() + days);
-            taskData.dueDate = targetDate.toISOString().split('T')[0];
-            taskData.title = taskData.title.replace(/in\s+\d+\s+days?/gi, '').trim();
-        }
-
-        return taskData;
+        return this.globalQuickCapture.parseQuickCaptureInput(input);
     }
 
     toggleQuickCaptureTemplates() {
-        const templatesDiv = document.getElementById('global-quick-capture-templates');
-        const listDiv = document.getElementById('global-quick-capture-templates-list');
-
-        if (!templatesDiv || !listDiv) return;
-
-        if (templatesDiv.style.display === 'none') {
-            // Render templates
-            this.renderQuickCaptureTemplates(listDiv);
-            templatesDiv.style.display = 'block';
-        } else {
-            templatesDiv.style.display = 'none';
-        }
+        this.globalQuickCapture.toggleQuickCaptureTemplates();
     }
 
     renderQuickCaptureTemplates(container) {
-        if (this.templates.length === 0) {
-            container.innerHTML = '<p style="color: var(--text-secondary);">No templates available. Create some in the Templates modal!</p>';
-            return;
-        }
-
-        container.innerHTML = this.templates.map(template => `
-            <button onclick="app.selectTemplateForQuickCapture('${template.id}')">
-                <h4>${escapeHtml(template.title)}</h4>
-                ${template.description ? `<p>${escapeHtml(template.description)}</p>` : ''}
-                <div style="margin-top: var(--spacing-xs); font-size: 0.75rem; color: var(--text-secondary);">
-                    ${template.category ? `<span style="background: var(--primary-color); color: white; padding: 2px 6px; border-radius: 4px;">${template.category}</span>` : ''}
-                </div>
-            </button>
-        `).join('');
+        this.globalQuickCapture.renderQuickCaptureTemplates(container);
     }
 
     selectTemplateForQuickCapture(templateId) {
-        const template = this.templates.find(t => t.id === templateId);
-        if (!template) return;
-
-        // Create task from template
-        const task = template.createTask();
-        this.tasks.unshift(task);
-        this.saveTasks();
-        this.renderView();
-        this.updateCounts();
-
-        this.closeGlobalQuickCapture();
-        this.showToast(`Created task from template: ${template.title}`);
+        this.globalQuickCapture.selectTemplateForQuickCapture(templateId);
     }
 
     // ==================== TASK PRIORITY SCORING ====================
