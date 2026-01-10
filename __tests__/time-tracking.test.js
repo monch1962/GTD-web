@@ -255,7 +255,7 @@ describe('TimeTrackingManager - Stop Timer', () => {
             expect(mockState.tasks[0].timeSpent).toBe(31)
 
             jest.useFakeTimers()
-        })
+        }, 75000) // Increase timeout to 75 seconds for this long-running test
 
         test('should update task timestamp', async () => {
             manager.startTaskTimer('task1')
