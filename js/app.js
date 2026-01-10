@@ -103,6 +103,7 @@ class GTDApp {
         this.calendarView = 'month'; // Calendar view: month, week
         this.calendarDate = new Date(); // Currently viewed month in calendar
         this.showingArchivedProjects = false; // Track if viewing archived projects
+        this.selectedContextFilters = new Set(); // Track selected context filters from sidebar
 
         // Initialize feature modules
         this.darkMode = new DarkModeManager();
