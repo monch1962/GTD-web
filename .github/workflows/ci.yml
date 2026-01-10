@@ -141,8 +141,8 @@ jobs:
         run: |
           echo "## Bundle Size Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          ls -lh dist/assets/main.*.js | awk '{print "**JavaScript Bundle:** " $5 " (" $9 ")"}' >> $GITHUB_STEP_SUMMARY
-          ls -lh dist/assets/main.*.css | awk '{print "**CSS Bundle:** " $5 " (" $9 ")"}' >> $GITHUB_STEP_SUMMARY
+          ls -lh dist/index.html | awk '{print "**Single HTML Bundle:** " $5 " (" $9 ")"}' >> $GITHUB_STEP_SUMMARY
+          ls -lh dist/assets/manifest.*.json 2>/dev/null | awk '{print "**PWA Manifest:** " $5 " (" $9 ")"}' >> $GITHUB_STEP_SUMMARY || echo "**PWA Manifest:** Not found" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           du -sh dist/ | awk '{print "**Total Build Size:** " $1}' >> $GITHUB_STEP_SUMMARY
 

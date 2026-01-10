@@ -31,10 +31,14 @@ npm run prepare
 ### Development Server
 
 ```bash
-# Start the development server
-npm start
+# Start the Vite development server (recommended)
+npm run dev
 
 # App will be available at http://localhost:8080
+# Hot Module Replacement enabled
+
+# Alternative: Preview production build locally
+npm run preview
 ```
 
 ### Testing
@@ -246,7 +250,10 @@ File: `.github/workflows/ci.yml`
 
 **4. Build Verification**
 
-- Verifies build process (if configured)
+- Runs Vite build process
+- Creates single-file bundle in `dist/` directory
+- Checks bundle size in CI summary
+- Uploads build artifacts for review
 
 **5. Security Audit**
 
@@ -394,7 +401,9 @@ npm run lint:fix
 
 ```bash
 # Development
-npm start                          # Start dev server
+npm run dev                        # Start Vite dev server
+npm run build                      # Build for production
+npm run preview                    # Preview production build
 npm test                           # Run unit tests
 npm run test:watch                # Watch mode testing
 npm run test:e2e                  # Run E2E tests
