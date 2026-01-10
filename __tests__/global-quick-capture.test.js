@@ -202,14 +202,14 @@ describe('GlobalQuickCaptureManager - Input Parsing', () => {
 
             expect(result.contexts).toContain('@john')
             expect(result.contexts).toContain('@work')
-            expect(result.title).toBe('Call   about  project')
+            expect(result.title).toBe('Call  about  project')
         })
 
         test('should extract !energy', () => {
             const result = manager.parseQuickCaptureInput('Quick task !high')
 
             expect(result.energy).toBe('high')
-            expect(result.title).toBe('Quick task ')
+            expect(result.title).toBe('Quick task')
         })
 
         test('should extract !medium energy', () => {
@@ -228,7 +228,7 @@ describe('GlobalQuickCaptureManager - Input Parsing', () => {
             const result = manager.parseQuickCaptureInput('Finish report #Work')
 
             expect(result.projectId).toBe('proj1')
-            expect(result.title).toBe('Finish report ')
+            expect(result.title).toBe('Finish report')
         })
 
         test('should match project case-insensitively', () => {
@@ -241,7 +241,7 @@ describe('GlobalQuickCaptureManager - Input Parsing', () => {
             const result = manager.parseQuickCaptureInput('Task #nonexistent')
 
             expect(result.projectId).toBeUndefined()
-            expect(result.title).toBe('Task ')
+            expect(result.title).toBe('Task')
         })
 
         test('should parse "today"', () => {
@@ -249,7 +249,7 @@ describe('GlobalQuickCaptureManager - Input Parsing', () => {
 
             const today = new Date().toISOString().split('T')[0]
             expect(result.dueDate).toBe(today)
-            expect(result.title).toBe('Task due ')
+            expect(result.title).toBe('Task')
         })
 
         test('should parse "tomorrow"', () => {
@@ -260,7 +260,7 @@ describe('GlobalQuickCaptureManager - Input Parsing', () => {
             const expected = tomorrow.toISOString().split('T')[0]
 
             expect(result.dueDate).toBe(expected)
-            expect(result.title).toBe('Task due ')
+            expect(result.title).toBe('Task')
         })
 
         test('should parse "in X days"', () => {
@@ -270,7 +270,7 @@ describe('GlobalQuickCaptureManager - Input Parsing', () => {
             expectedDate.setDate(expectedDate.getDate() + 5)
 
             expect(result.dueDate).toBe(expectedDate.toISOString().split('T')[0])
-            expect(result.title).toBe('Task ')
+            expect(result.title).toBe('Task')
         })
 
         test('should parse complex input with multiple elements', () => {
@@ -572,6 +572,7 @@ describe('GlobalQuickCaptureManager - Keyboard Shortcuts', () => {
         mockApp.showToast = jest.fn()
 
         manager = new GlobalQuickCaptureManager(mockState, mockApp)
+        manager.setupGlobalQuickCapture()
     })
 
     afterEach(() => {
