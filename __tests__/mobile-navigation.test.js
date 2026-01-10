@@ -18,6 +18,7 @@ const mockApp = {
     showDependencies: jest.fn(),
     openHeatmapModal: jest.fn(),
     getSuggestions: jest.fn(),
+    showSuggestions: jest.fn(),
     toggleTaskComplete: jest.fn(),
     archiveTask: jest.fn(),
     storage: {
@@ -391,7 +392,9 @@ describe('MobileNavigationManager', () => {
 
         test('should handle suggestions menu item click', () => {
             manager.setupForTest()
-            const getSuggestionsSpy = jest.spyOn(manager.app, 'getSuggestions').mockImplementation()
+            const showSuggestionsSpy = jest
+                .spyOn(manager.app, 'showSuggestions')
+                .mockImplementation()
 
             mockMobileMenuBtn.click()
 
@@ -400,10 +403,10 @@ describe('MobileNavigationManager', () => {
             )
             suggestionsItem.click()
 
-            expect(getSuggestionsSpy).toHaveBeenCalled()
+            expect(showSuggestionsSpy).toHaveBeenCalled()
             expect(mockMobileMenuDropdown.style.display).toBe('none')
 
-            getSuggestionsSpy.mockRestore()
+            showSuggestionsSpy.mockRestore()
         })
 
         test('should handle missing mobile menu button gracefully', () => {
