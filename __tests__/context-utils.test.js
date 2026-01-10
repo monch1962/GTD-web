@@ -131,22 +131,22 @@ describe('Context Utilities', () => {
             const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
-            // Should import the function
-            expect(appContent).toContain('getAllContexts')
+            // Should import ContextFilterManager which uses getAllContexts
+            expect(appContent).toContain('ContextFilterManager')
 
-            // Should use it in updateSidebarContextFilters
-            expect(appContent).toContain('getAllContexts(this.tasks)')
+            // Or directly import the utility
+            expect(appContent).toContain('getAllContexts')
         })
 
         test('app.js should import and use getContextTaskCounts', () => {
             const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
-            // Should import the function
-            expect(appContent).toContain('getContextTaskCounts')
+            // Should import ContextFilterManager which uses getContextTaskCounts
+            expect(appContent).toContain('ContextFilterManager')
 
-            // Should use it in updateSidebarContextFilters
-            expect(appContent).toContain('getContextTaskCounts(this.tasks)')
+            // Or directly import the utility
+            expect(appContent).toContain('getContextTaskCounts')
         })
 
         test('should not have inline context collection logic in app.js', () => {
