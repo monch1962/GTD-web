@@ -240,6 +240,9 @@ describe('SubtasksManager - Add Subtask', () => {
 
         mockApp = new GTDApp()
         manager = new SubtasksManager(mockState, mockApp)
+
+        // Initialize container with empty subtasks message
+        manager.renderSubtasksInModal([])
     })
 
     afterEach(() => {

@@ -299,7 +299,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
             }
 
             const score = manager.calculatePriorityScore(task)
-            expect(score).toBe(58) // 50 base + 8
+            expect(score).toBe(61) // 50 base + 8 (high energy + quick) + 3 (time estimate)
         })
 
         test('should subtract 5 points for long low-energy tasks', () => {
@@ -603,7 +603,7 @@ describe('PriorityScoringManager - Score Color Mapping', () => {
 
         test('should return text-secondary for very low scores (<20)', () => {
             expect(manager.getPriorityScoreColor(0)).toBe('var(--text-secondary)')
-            expect(manager.getPriorityScoreColor(10)).toBe('var(--text-score)')
+            expect(manager.getPriorityScoreColor(10)).toBe('var(--text-secondary)')
             expect(manager.getPriorityScoreColor(19)).toBe('var(--text-secondary)')
         })
 

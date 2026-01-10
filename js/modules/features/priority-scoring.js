@@ -24,8 +24,8 @@
 
 export class PriorityScoringManager {
     constructor(state, app) {
-        this.state = state;
-        this.app = app;
+        this.state = state
+        this.app = app
     }
 
     // =========================================================================
@@ -38,53 +38,53 @@ export class PriorityScoringManager {
      * @returns {number} Priority score from 0-100
      */
     calculatePriorityScore(task) {
-        if (!task || task.completed) return 0;
+        if (!task || task.completed) return 0
 
-        let score = 50; // Base score
-        const reasons = [];
+        let score = 50 // Base score
+        const reasons = []
 
         // Factor 1: Due date urgency (0-25 points)
         if (task.dueDate) {
-            const daysUntilDue = this.getDaysUntilDue(task);
+            const daysUntilDue = this.getDaysUntilDue(task)
             if (daysUntilDue < 0) {
-                score += 25;
-                reasons.push('Overdue');
+                score += 25
+                reasons.push('Overdue')
             } else if (daysUntilDue === 0) {
-                score += 20;
-                reasons.push('Due today');
+                score += 20
+                reasons.push('Due today')
             } else if (daysUntilDue === 1) {
-                score += 15;
-                reasons.push('Due tomorrow');
+                score += 15
+                reasons.push('Due tomorrow')
             } else if (daysUntilDue <= 3) {
-                score += 10;
-                reasons.push('Due soon');
+                score += 10
+                reasons.push('Due soon')
             } else if (daysUntilDue <= 7) {
-                score += 5;
+                score += 5
             }
         }
 
         // Factor 2: Starred tasks (0-15 points)
         if (task.starred) {
-            score += 15;
-            reasons.push('Starred');
+            score += 15
+            reasons.push('Starred')
         }
 
         // Factor 3: Task status priority (0-10 points)
         if (task.status === 'next') {
-            score += 10;
-            reasons.push('Next Action');
+            score += 10
+            reasons.push('Next Action')
         } else if (task.status === 'inbox') {
-            score += 5;
+            score += 5
         }
 
         // Factor 4: Dependencies (0-10 points)
         if (task.waitingForTaskIds && task.waitingForTaskIds.length > 0) {
             if (task.areDependenciesMet(this.state.tasks)) {
-                score += 10;
-                reasons.push('Ready to start');
+                score += 10
+                reasons.push('Ready to start')
             } else {
-                score -= 10;
-                reasons.push('Blocked');
+                score -= 10
+                reasons.push('Blocked')
             }
         }
 
@@ -92,54 +92,56 @@ export class PriorityScoringManager {
         if (task.energy && task.time) {
             // Quick high-energy tasks get boost
             if (task.energy === 'high' && task.time <= 15) {
-                score += 8;
-                reasons.push('Quick & high energy');
+                score += 8
+                reasons.push('Quick & high energy')
             } else if (task.energy === 'low' && task.time > 60) {
                 // Long low-energy tasks get lower priority
-                score -= 5;
+                score -= 5
             }
         }
 
         // Factor 6: Time estimate (0-5 points)
         if (task.time) {
             if (task.time <= 5) {
-                score += 5;
-                reasons.push('Quick task');
+                score += 5
+                reasons.push('Quick task')
             } else if (task.time <= 15) {
-                score += 3;
+                score += 3
             }
         }
 
         // Factor 7: Project priority (0-5 points)
         if (task.projectId) {
-            const project = this.state.projects.find(p => p.id === task.projectId);
+            const project = this.state.projects.find((p) => p.id === task.projectId)
             if (project && project.status === 'active') {
-                score += 5;
-                reasons.push('Active project');
+                score += 5
+                reasons.push('Active project')
             }
         }
 
         // Factor 8: Defer date (0-20 points penalty)
         if (task.deferDate && !task.isAvailable()) {
-            score -= 20;
-            reasons.push('Deferred');
+            score -= 20
+            reasons.push('Deferred')
         }
 
         // Factor 9: Age of task (0-7 points)
-        const daysSinceCreated = Math.floor((new Date() - new Date(task.createdAt)) / (1000 * 60 * 60 * 24));
+        const daysSinceCreated = Math.floor(
+            (new Date() - new Date(task.createdAt)) / (1000 * 60 * 60 * 24)
+        )
         if (daysSinceCreated > 30) {
-            score += 7;
-            reasons.push('Old task');
+            score += 7
+            reasons.push('Old task')
         } else if (daysSinceCreated > 14) {
-            score += 5;
+            score += 5
         } else if (daysSinceCreated > 7) {
-            score += 3;
+            score += 3
         }
 
         // Ensure score is within 0-100 range
-        score = Math.max(0, Math.min(100, score));
+        score = Math.max(0, Math.min(100, score))
 
-        return score;
+        return score
     }
 
     /**
@@ -148,11 +150,11 @@ export class PriorityScoringManager {
      * @returns {string} CSS color value
      */
     getPriorityScoreColor(score) {
-        if (score >= 80) return 'var(--danger-color)'; // High priority - red
-        if (score >= 60) return '#f39c12'; // Medium-high - orange
-        if (score >= 40) return 'var(--warning-color)'; // Medium - yellow
-        if (score >= 20) return 'var(--info-color)'; // Low - blue
-        return 'var(--text-secondary)'; // Very low - gray
+        if (score >= 80) return 'var(--danger-color)' // High priority - red
+        if (score >= 60) return '#f39c12' // Medium-high - orange
+        if (score >= 40) return 'var(--warning-color)' // Medium - yellow
+        if (score >= 20) return 'var(--info-color)' // Low - blue
+        return 'var(--text-secondary)' // Very low - gray
     }
 
     /**
@@ -161,11 +163,11 @@ export class PriorityScoringManager {
      * @returns {string} Priority label
      */
     getPriorityLabel(score) {
-        if (score >= 80) return 'Urgent';
-        if (score >= 60) return 'High';
-        if (score >= 40) return 'Medium';
-        if (score >= 20) return 'Low';
-        return 'Very Low';
+        if (score >= 80) return 'Urgent'
+        if (score >= 60) return 'High'
+        if (score >= 40) return 'Medium'
+        if (score >= 20) return 'Low'
+        return 'Very Low'
     }
 
     // =========================================================================
@@ -178,12 +180,17 @@ export class PriorityScoringManager {
      * @returns {number|null} Days until due, or null if no due date
      */
     getDaysUntilDue(task) {
-        if (!task.dueDate) return null;
-        const dueDate = new Date(task.dueDate);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const diffTime = dueDate - today;
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        return diffDays;
+        if (!task.dueDate) return null
+
+        // Parse date string as local time (not UTC) to avoid timezone issues
+        const [year, month, day] = task.dueDate.split('-').map(Number)
+        const dueDate = new Date(year, month - 1, day)
+
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+
+        const diffTime = dueDate - today
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+        return diffDays
     }
 }
