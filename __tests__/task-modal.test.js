@@ -659,3 +659,553 @@ describe('TaskModalManager - Integration', () => {
         expect(label).toBe('Daily')
     })
 })
+
+describe('TaskModalManager - openTaskModal() Complete Workflow', () => {
+    let manager
+    let mockState
+    let mockApp
+
+    beforeEach(() => {
+        mockState = {
+            tasks: [],
+            projects: [
+                { id: 'project-1', title: 'Project 1' },
+                { id: 'project-2', title: 'Project 2' }
+            ],
+            currentView: 'inbox'
+        }
+
+        mockApp = {
+            openProjectModal: jest.fn(),
+            saveTasks: jest.fn().mockResolvedValue(undefined),
+            saveState: jest.fn(),
+            renderView: jest.fn(),
+            updateCounts: jest.fn(),
+            updateContextFilter: jest.fn(),
+            renderProjectsDropdown: jest.fn()
+        }
+
+        // Create full modal structure
+        document.body.innerHTML = `
+            <div id="task-modal">
+                <form id="task-form">
+                    <h3 id="modal-title">Add Task</h3>
+                    <input type="hidden" id="task-id" value="">
+                    <input type="text" id="task-title">
+                    <textarea id="task-description"></textarea>
+                    <select id="task-type">
+                        <option value="task">Task</option>
+                        <option value="project">Project</option>
+                        <option value="reference">Reference</option>
+                    </select>
+                    <select id="task-status">
+                        <option value="inbox">Inbox</option>
+                        <option value="next">Next</option>
+                        <option value="waiting">Waiting</option>
+                        <option value="someday">Someday</option>
+                    </select>
+                    <select id="task-energy">
+                        <option value="">None</option>
+                        <option value="high">High</option>
+                    </select>
+                    <input type="number" id="task-time" value="">
+                    <select id="task-project"></select>
+                    <input type="date" id="task-due-date">
+                    <input type="date" id="task-defer-date">
+                    <input type="text" id="task-waiting-for-description">
+                    <input type="text" id="task-contexts">
+                    <select id="task-recurrence-type">
+                        <option value="">None</option>
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="yearly">Yearly</option>
+                    </select>
+                    <div id="recurrence-end-date-group" style="display: none;"></div>
+                    <div id="recurrence-weekly-options" style="display: none;"></div>
+                    <div id="recurrence-monthly-options" style="display: none;"></div>
+                    <div id="recurrence-yearly-options" style="display: none;"></div>
+                    <input type="date" id="task-recurrence-end-date">
+                    <textarea id="task-notes"></textarea>
+                    <div id="subtasks-container"></div>
+                    <input type="text" id="new-subtask-input">
+                    <button type="button" id="btn-add-subtask"></button>
+                    <div id="waiting-for-section" style="display: none;"></div>
+                    <div id="waiting-for-deps-section" style="display: none;"></div>
+                    <div id="waiting-for-tasks-list"></div>
+                    <input type="checkbox" class="recurrence-day-checkbox" value="1">
+                    <input type="number" id="recurrence-day-of-month" value="1">
+                    <input type="number" id="recurrence-nth" value="1">
+                    <input type="number" id="recurrence-weekday" value="1">
+                    <input type="number" id="recurrence-year-month" value="1">
+                    <input type="number" id="recurrence-year-day" value="1">
+                    <input type="radio" name="monthly-recurrence-type" value="day-of-month" checked>
+                    <input type="radio" name="monthly-recurrence-type" value="nth-weekday">
+                </form>
+            </div>
+        `
+
+        manager = new TaskModalManager(mockState, mockApp)
+    })
+
+    afterEach(() => {
+        document.body.innerHTML = ''
+    })
+
+    test('should open modal for new task with default values', () => {
+        manager.openTaskModal()
+
+        expect(document.getElementById('task-modal').classList.contains('active')).toBe(true)
+        expect(document.getElementById('modal-title').textContent).toBe('Add Task')
+        expect(document.getElementById('task-id').value).toBe('')
+        expect(document.getElementById('task-status').value).toBe('inbox')
+    })
+
+    test('should populate project select with create option', () => {
+        manager.openTaskModal()
+
+        const projectSelect = document.getElementById('task-project')
+        const options = Array.from(projectSelect.options)
+
+        expect(options.length).toBe(4) // No Project + Create New + 2 Projects
+        expect(options[0].value).toBe('')
+        expect(options[0].textContent).toBe('No Project')
+        expect(options[1].value).toBe('__create_new__')
+        expect(options[1].textContent).toBe('+ Create new project...')
+    })
+
+    test('should open project modal when create new project selected', () => {
+        document.getElementById('task-title').value = 'Test Task'
+        document.getElementById('task-description').value = 'Test Description'
+
+        manager.openTaskModal()
+
+        const projectSelect = document.getElementById('task-project')
+        projectSelect.value = '__create_new__'
+        projectSelect.dispatchEvent(new Event('change'))
+
+        expect(mockApp.openProjectModal).toHaveBeenCalled()
+        expect(document.getElementById('task-modal').classList.contains('active')).toBe(false)
+    })
+
+    test('should open for editing existing task', () => {
+        const task = new Task({
+            id: 'task-1',
+            title: 'Edit Task',
+            description: 'Description',
+            status: 'next',
+            energy: 'high',
+            time: 60,
+            projectId: 'project-1',
+            dueDate: '2025-01-15',
+            deferDate: '2025-01-10',
+            waitingForDescription: 'Waiting for John',
+            contexts: ['@home', '@work'],
+            recurrence: 'daily',
+            recurrenceEndDate: '2025-12-31',
+            notes: 'Some notes'
+        })
+
+        manager.openTaskModal(task)
+
+        expect(document.getElementById('modal-title').textContent).toBe('Edit Task')
+        expect(document.getElementById('task-id').value).toBe('task-1')
+        expect(document.getElementById('task-title').value).toBe('Edit Task')
+        expect(document.getElementById('task-status').value).toBe('next')
+        expect(document.getElementById('task-energy').value).toBe('high')
+        expect(document.getElementById('task-time').value).toBe('60')
+        expect(document.getElementById('task-project').value).toBe('project-1')
+    })
+
+    test('should set default project ID', () => {
+        manager.openTaskModal(null, 'project-2')
+
+        expect(document.getElementById('task-project').value).toBe('project-2')
+    })
+
+    test('should handle project type default data', () => {
+        manager.openTaskModal(null, null, { type: 'project' })
+
+        expect(document.getElementById('task-type').value).toBe('project')
+        expect(document.getElementById('modal-title').textContent).toBe('Add Project')
+    })
+
+    test('should handle reference type default data', () => {
+        manager.openTaskModal(null, null, { type: 'reference' })
+
+        expect(document.getElementById('task-type').value).toBe('reference')
+        expect(document.getElementById('modal-title').textContent).toBe('Add Reference')
+    })
+
+    test('should setup subtask button event listeners', () => {
+        const addBtn = document.getElementById('btn-add-subtask')
+        const input = document.getElementById('new-subtask-input')
+
+        manager.openTaskModal()
+
+        expect(addBtn.onclick).toBeDefined()
+    })
+
+    test('should show waiting for section when status is waiting', () => {
+        manager.openTaskModal()
+
+        const statusSelect = document.getElementById('task-status')
+        statusSelect.value = 'waiting'
+        statusSelect.dispatchEvent(new Event('change'))
+
+        expect(document.getElementById('waiting-for-section').style.display).toBe('block')
+    })
+
+    test('should hide waiting for section when status is not waiting', () => {
+        manager.openTaskModal()
+
+        const statusSelect = document.getElementById('task-status')
+        statusSelect.value = 'next'
+        statusSelect.dispatchEvent(new Event('change'))
+
+        expect(document.getElementById('waiting-for-section').style.display).toBe('none')
+    })
+
+    test('should always show waiting for deps section', () => {
+        manager.openTaskModal()
+
+        const statusSelect = document.getElementById('task-status')
+        statusSelect.value = 'inbox'
+        statusSelect.dispatchEvent(new Event('change'))
+
+        expect(document.getElementById('waiting-for-deps-section').style.display).toBe('block')
+    })
+
+    test('should show recurrence end date when recurrence type selected', () => {
+        manager.openTaskModal()
+
+        const recurrenceSelect = document.getElementById('task-recurrence-type')
+        recurrenceSelect.value = 'daily'
+        recurrenceSelect.dispatchEvent(new Event('change'))
+
+        expect(document.getElementById('recurrence-end-date-group').style.display).toBe('block')
+    })
+
+    test('should show weekly options when weekly selected', () => {
+        manager.openTaskModal()
+
+        const recurrenceSelect = document.getElementById('task-recurrence-type')
+        recurrenceSelect.value = 'weekly'
+        recurrenceSelect.dispatchEvent(new Event('change'))
+
+        expect(document.getElementById('recurrence-weekly-options').style.display).toBe('block')
+        expect(document.getElementById('recurrence-monthly-options').style.display).toBe('none')
+    })
+
+    test('should show monthly options when monthly selected', () => {
+        manager.openTaskModal()
+
+        const recurrenceSelect = document.getElementById('task-recurrence-type')
+        recurrenceSelect.value = 'monthly'
+        recurrenceSelect.dispatchEvent(new Event('change'))
+
+        expect(document.getElementById('recurrence-monthly-options').style.display).toBe('block')
+        expect(document.getElementById('recurrence-weekly-options').style.display).toBe('none')
+    })
+
+    test('should show yearly options when yearly selected', () => {
+        manager.openTaskModal()
+
+        const recurrenceSelect = document.getElementById('task-recurrence-type')
+        recurrenceSelect.value = 'yearly'
+        recurrenceSelect.dispatchEvent(new Event('change'))
+
+        expect(document.getElementById('recurrence-yearly-options').style.display).toBe('block')
+        expect(document.getElementById('recurrence-weekly-options').style.display).toBe('none')
+    })
+
+    test('should hide all recurrence options when no recurrence selected', () => {
+        manager.openTaskModal()
+
+        const recurrenceSelect = document.getElementById('task-recurrence-type')
+        recurrenceSelect.value = ''
+        recurrenceSelect.dispatchEvent(new Event('change'))
+
+        expect(document.getElementById('recurrence-end-date-group').style.display).toBe('none')
+        expect(document.getElementById('recurrence-weekly-options').style.display).toBe('none')
+        expect(document.getElementById('recurrence-monthly-options').style.display).toBe('none')
+        expect(document.getElementById('recurrence-yearly-options').style.display).toBe('none')
+    })
+})
+
+describe('TaskModalManager - populateRecurrenceInForm()', () => {
+    let manager
+    let mockState
+    let mockApp
+
+    beforeEach(() => {
+        mockState = { tasks: [], projects: [] }
+        mockApp = {}
+
+        document.body.innerHTML = `
+            <select id="task-recurrence-type"></select>
+            <input type="checkbox" class="recurrence-day-checkbox" value="1">
+            <input type="checkbox" class="recurrence-day-checkbox" value="2">
+            <input type="checkbox" class="recurrence-day-checkbox" value="3">
+            <input type="number" id="recurrence-day-of-month" value="1">
+            <input type="number" id="recurrence-nth" value="1">
+            <input type="number" id="recurrence-weekday" value="1">
+            <input type="number" id="recurrence-year-month" value="1">
+            <input type="number" id="recurrence-year-day" value="1">
+            <input type="radio" name="monthly-recurrence-type" value="day-of-month">
+            <input type="radio" name="monthly-recurrence-type" value="nth-weekday">
+        `
+
+        manager = new TaskModalManager(mockState, mockApp)
+    })
+
+    test('should handle empty recurrence', () => {
+        expect(() => manager.populateRecurrenceInForm('')).not.toThrow()
+    })
+
+    test('should handle string format recurrence', () => {
+        expect(() => manager.populateRecurrenceInForm('daily')).not.toThrow()
+    })
+
+    test('should handle object format recurrence', () => {
+        expect(() => manager.populateRecurrenceInForm({ type: 'weekly' })).not.toThrow()
+    })
+
+    // Note: These tests verify the function doesn't throw. The actual DOM manipulation
+    // is better tested through integration tests with full modal setup.
+})
+
+// Note: Complex buildRecurrenceFromForm() tests require full DOM setup
+// and are better tested through integration tests. The existing basic tests
+// in the "Build Recurrence From Form" section cover the happy path.
+
+describe('TaskModalManager - getRecurrenceLabel() Complete', () => {
+    let manager
+    let mockState
+    let mockApp
+
+    beforeEach(() => {
+        mockState = { tasks: [], projects: [] }
+        mockApp = {}
+        manager = new TaskModalManager(mockState, mockApp)
+    })
+
+    test('should return empty string for empty recurrence', () => {
+        expect(manager.getRecurrenceLabel('')).toBe('')
+        expect(manager.getRecurrenceLabel(null)).toBe('')
+    })
+
+    test('should return label for biweekly string', () => {
+        expect(manager.getRecurrenceLabel('biweekly')).toBe('Bi-weekly')
+    })
+
+    test('should return weekly with days label', () => {
+        const result = manager.getRecurrenceLabel({
+            type: 'weekly',
+            daysOfWeek: [1, 3, 5]
+        })
+
+        expect(result).toBe('Weekly (Mon, Wed, Fri)')
+    })
+
+    test('should return monthly with day of month label', () => {
+        const result = manager.getRecurrenceLabel({
+            type: 'monthly',
+            dayOfMonth: 15
+        })
+
+        expect(result).toBe('Monthly (day 15)')
+    })
+
+    test('should return monthly with nth weekday label', () => {
+        const result = manager.getRecurrenceLabel({
+            type: 'monthly',
+            nthWeekday: { n: 2, weekday: 3 }
+        })
+
+        expect(result).toBe('Monthly (2nd Wed)')
+    })
+
+    test('should return monthly with last weekday label', () => {
+        const result = manager.getRecurrenceLabel({
+            type: 'monthly',
+            nthWeekday: { n: 5, weekday: 1 }
+        })
+
+        expect(result).toBe('Monthly (Last Mon)')
+    })
+
+    test('should return yearly with day of year label', () => {
+        const result = manager.getRecurrenceLabel({
+            type: 'yearly',
+            dayOfYear: '12-25'
+        })
+
+        expect(result).toBe('Yearly (12/25)')
+    })
+
+    test('should return base label for object without details', () => {
+        const result = manager.getRecurrenceLabel({ type: 'daily' })
+
+        expect(result).toBe('Daily')
+    })
+
+    test('should convert unknown recurrence to string', () => {
+        const result = manager.getRecurrenceLabel({ type: 'custom' })
+
+        expect(result).toBe('custom')
+    })
+})
+
+describe('TaskModalManager - saveTaskFromForm()', () => {
+    let manager
+    let mockState
+    let mockApp
+
+    beforeEach(() => {
+        mockState = {
+            tasks: [],
+            projects: [],
+            currentView: 'inbox'
+        }
+
+        mockApp = {
+            saveState: jest.fn(),
+            saveTasks: jest.fn().mockResolvedValue(undefined),
+            saveProjects: jest.fn().mockResolvedValue(undefined),
+            renderView: jest.fn(),
+            updateCounts: jest.fn(),
+            updateContextFilter: jest.fn(),
+            renderProjectsDropdown: jest.fn(),
+            normalizeContextName: jest.fn((ctx) => (ctx.startsWith('@') ? ctx : `@${ctx}`)),
+            trackTaskUsage: jest.fn()
+        }
+
+        document.body.innerHTML = `
+            <div id="task-modal" class="active"></div>
+            <input type="hidden" id="task-id" value="">
+            <input type="text" id="task-title" value="Test Task">
+            <textarea id="task-description">Description</textarea>
+            <select id="task-type"><option value="task" selected></option></select>
+            <select id="task-status"><option value="inbox" selected></option></select>
+            <select id="task-energy"><option value="high" selected></option></select>
+            <input type="number" id="task-time" value="60">
+            <select id="task-project"><option value="" selected></option></select>
+            <input type="date" id="task-due-date" value="2025-01-15">
+            <input type="date" id="task-defer-date" value="2025-01-10">
+            <input type="text" id="task-waiting-for-description" value="Waiting for John">
+            <input type="text" id="task-contexts" value="@home, @work">
+            <select id="task-recurrence-type"><option value="" selected></option></select>
+            <input type="date" id="task-recurrence-end-date" value="2025-12-31">
+            <textarea id="task-notes">Notes</textarea>
+            <div id="subtasks-container"></div>
+            <div id="waiting-for-tasks-list"></div>
+            <input type="radio" name="monthly-recurrence-type" value="day-of-month" checked>
+            <input type="number" id="recurrence-day-of-month" value="1">
+            <input type="number" id="recurrence-nth" value="1">
+            <input type="number" id="recurrence-weekday" value="1">
+            <input type="number" id="recurrence-year-month" value="1">
+            <input type="number" id="recurrence-year-day" value="1">
+        `
+
+        manager = new TaskModalManager(mockState, mockApp)
+    })
+
+    test('should create new task', async () => {
+        await manager.saveTaskFromForm()
+
+        expect(mockApp.saveState).toHaveBeenCalledWith('Create task')
+        expect(mockState.tasks).toHaveLength(1)
+        expect(mockState.tasks[0].title).toBe('Test Task')
+        expect(mockState.tasks[0].status).toBe('inbox')
+        expect(mockApp.trackTaskUsage).toHaveBeenCalled()
+    })
+
+    test('should create new project', async () => {
+        document.getElementById('task-type').innerHTML =
+            '<option value="project" selected></option>'
+        document.getElementById('task-status').value = 'active'
+
+        await manager.saveTaskFromForm()
+
+        expect(mockState.projects).toHaveLength(1)
+        expect(mockState.projects[0].title).toBe('Test Task')
+        expect(mockState.projects[0].status).toBe('active')
+    })
+
+    test('should update existing task', async () => {
+        const existingTask = new Task({
+            id: 'task-1',
+            title: 'Old Title',
+            status: 'next'
+        })
+        mockState.tasks.push(existingTask)
+
+        document.getElementById('task-id').value = 'task-1'
+
+        await manager.saveTaskFromForm()
+
+        expect(existingTask.title).toBe('Test Task')
+        expect(mockApp.saveState).toHaveBeenCalledWith('Edit task')
+    })
+
+    test('should convert context names to start with @', async () => {
+        document.getElementById('task-contexts').value = 'home, work'
+
+        await manager.saveTaskFromForm()
+
+        expect(mockState.tasks[0].contexts).toEqual(['@home', '@work'])
+    })
+
+    test('should move inbox task to next when assigned to project', async () => {
+        document.getElementById('task-status').value = 'inbox'
+        document.getElementById('task-project').innerHTML =
+            '<option value="project-1" selected></option>'
+
+        await manager.saveTaskFromForm()
+
+        expect(mockState.tasks[0].status).toBe('next')
+    })
+
+    test('should move next task to waiting when has dependencies', async () => {
+        const statusSelect = document.getElementById('task-status')
+        // Change the selected option value
+        statusSelect.innerHTML = '<option value="next" selected>Next</option>'
+
+        const depList = document.getElementById('waiting-for-tasks-list')
+        const checkbox = document.createElement('input')
+        checkbox.type = 'checkbox'
+        checkbox.id = 'dep-task-task-2'
+        checkbox.value = 'task-2'
+        checkbox.checked = true
+        depList.appendChild(checkbox)
+
+        await manager.saveTaskFromForm()
+
+        expect(mockState.tasks[0].status).toBe('waiting')
+    })
+
+    test('should close modal after saving', async () => {
+        await manager.saveTaskFromForm()
+
+        expect(document.getElementById('task-modal').classList.contains('active')).toBe(false)
+    })
+
+    test('should call renderView after saving', async () => {
+        await manager.saveTaskFromForm()
+
+        expect(mockApp.renderView).toHaveBeenCalled()
+    })
+
+    test('should call updateCounts after saving', async () => {
+        await manager.saveTaskFromForm()
+
+        expect(mockApp.updateCounts).toHaveBeenCalled()
+    })
+
+    test('should call updateContextFilter after saving', async () => {
+        await manager.saveTaskFromForm()
+
+        expect(mockApp.updateContextFilter).toHaveBeenCalled()
+    })
+})
