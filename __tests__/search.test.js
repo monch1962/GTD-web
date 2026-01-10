@@ -80,6 +80,45 @@ describe('SearchManager - Search Query', () => {
         advancedPanel.style.display = 'none'
         document.body.appendChild(advancedPanel)
 
+        // Save search elements
+        const saveSearchBtn = document.createElement('button')
+        saveSearchBtn.id = 'save-search'
+        document.body.appendChild(saveSearchBtn)
+
+        const savedSearchesSelect = document.createElement('select')
+        savedSearchesSelect.id = 'saved-searches'
+        document.body.appendChild(savedSearchesSelect)
+
+        const deleteSavedSearchBtn = document.createElement('button')
+        deleteSavedSearchBtn.id = 'delete-saved-search'
+        deleteSavedSearchBtn.style.display = 'none'
+        document.body.appendChild(deleteSavedSearchBtn)
+
+        const clearAdvancedSearchBtn = document.createElement('button')
+        clearAdvancedSearchBtn.id = 'clear-advanced-search'
+        document.body.appendChild(clearAdvancedSearchBtn)
+
+        // Advanced filter elements
+        const contextFilter = document.createElement('select')
+        contextFilter.id = 'search-context'
+        document.body.appendChild(contextFilter)
+
+        const energyFilter = document.createElement('select')
+        energyFilter.id = 'search-energy'
+        document.body.appendChild(energyFilter)
+
+        const statusFilter = document.createElement('select')
+        statusFilter.id = 'search-status'
+        document.body.appendChild(statusFilter)
+
+        const dueFilter = document.createElement('select')
+        dueFilter.id = 'search-due'
+        document.body.appendChild(dueFilter)
+
+        const sortOption = document.createElement('select')
+        sortOption.id = 'search-sort'
+        document.body.appendChild(sortOption)
+
         mockState = {
             tasks: [],
             projects: [],
