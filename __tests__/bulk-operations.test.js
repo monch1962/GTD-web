@@ -21,6 +21,11 @@ describe('BulkOperationsManager - Initialization', () => {
         }
 
         mockApp = new GTDApp()
+        // Mock renderView to avoid needing full DOM setup
+        mockApp.renderView = jest.fn()
+        mockApp.renderProjectsDropdown = jest.fn()
+        mockApp.updateCounts = jest.fn()
+
         manager = new BulkOperationsManager(mockState, mockApp)
     })
 
@@ -72,6 +77,11 @@ describe('BulkOperationsManager - Mode Toggle', () => {
         }
 
         mockApp = new GTDApp()
+        // Mock renderView to avoid needing full DOM setup
+        mockApp.renderView = jest.fn()
+        mockApp.renderProjectsDropdown = jest.fn()
+        mockApp.updateCounts = jest.fn()
+
         manager = new BulkOperationsManager(mockState, mockApp)
     })
 
@@ -179,6 +189,11 @@ describe('BulkOperationsManager - Task Selection', () => {
         }
 
         mockApp = new GTDApp()
+        // Mock renderView to avoid needing full DOM setup
+        mockApp.renderView = jest.fn()
+        mockApp.renderProjectsDropdown = jest.fn()
+        mockApp.updateCounts = jest.fn()
+
         manager = new BulkOperationsManager(mockState, mockApp)
     })
 
@@ -322,6 +337,11 @@ describe('BulkOperationsManager - Bulk Actions', () => {
         }
 
         mockApp = new GTDApp()
+        // Mock renderView to avoid needing full DOM setup
+        mockApp.renderView = jest.fn()
+        mockApp.renderProjectsDropdown = jest.fn()
+        mockApp.updateCounts = jest.fn()
+
         manager = new BulkOperationsManager(mockState, mockApp)
 
         // Mock app methods
@@ -414,14 +434,34 @@ describe('BulkOperationsManager - Bulk Actions', () => {
         })
 
         test('should accept valid statuses', async () => {
-            const validStatuses = ['inbox', 'next', 'waiting', 'someday']
+            // Test inbox status
+            global.prompt.mockReturnValue('inbox')
+            await manager.bulkSetStatus()
+            expect(mockState.tasks[0].status).toBe('inbox')
 
-            for (const status of validStatuses) {
-                global.prompt.mockReturnValue(status)
-                await manager.bulkSetStatus()
+            // Reset and test next status
+            mockState.tasks[0].status = 'inbox'
+            manager.state.selectedTaskIds.add('task1')
+            manager.state.selectedTaskIds.add('task2')
+            global.prompt.mockReturnValue('next')
+            await manager.bulkSetStatus()
+            expect(mockState.tasks[0].status).toBe('next')
 
-                expect(mockState.tasks[0].status).toBe(status)
-            }
+            // Reset and test waiting status
+            mockState.tasks[0].status = 'inbox'
+            manager.state.selectedTaskIds.add('task1')
+            manager.state.selectedTaskIds.add('task2')
+            global.prompt.mockReturnValue('waiting')
+            await manager.bulkSetStatus()
+            expect(mockState.tasks[0].status).toBe('waiting')
+
+            // Reset and test someday status
+            mockState.tasks[0].status = 'inbox'
+            manager.state.selectedTaskIds.add('task1')
+            manager.state.selectedTaskIds.add('task2')
+            global.prompt.mockReturnValue('someday')
+            await manager.bulkSetStatus()
+            expect(mockState.tasks[0].status).toBe('someday')
         })
 
         test('should update timestamp', async () => {
@@ -480,14 +520,26 @@ describe('BulkOperationsManager - Bulk Actions', () => {
         })
 
         test('should accept valid energy levels', async () => {
-            const validLevels = ['high', 'medium', 'low']
+            // Test high energy
+            global.prompt.mockReturnValue('high')
+            await manager.bulkSetEnergy()
+            expect(mockState.tasks[0].energy).toBe('high')
 
-            for (const level of validLevels) {
-                global.prompt.mockReturnValue(level)
-                await manager.bulkSetEnergy()
+            // Reset and test medium energy
+            mockState.tasks[0].energy = ''
+            manager.state.selectedTaskIds.add('task1')
+            manager.state.selectedTaskIds.add('task2')
+            global.prompt.mockReturnValue('medium')
+            await manager.bulkSetEnergy()
+            expect(mockState.tasks[0].energy).toBe('medium')
 
-                expect(mockState.tasks[0].energy).toBe(level)
-            }
+            // Reset and test low energy
+            mockState.tasks[0].energy = ''
+            manager.state.selectedTaskIds.add('task1')
+            manager.state.selectedTaskIds.add('task2')
+            global.prompt.mockReturnValue('low')
+            await manager.bulkSetEnergy()
+            expect(mockState.tasks[0].energy).toBe('low')
         })
     })
 
@@ -715,6 +767,11 @@ describe('BulkOperationsManager - Button Visibility', () => {
         }
 
         mockApp = new GTDApp()
+        // Mock renderView to avoid needing full DOM setup
+        mockApp.renderView = jest.fn()
+        mockApp.renderProjectsDropdown = jest.fn()
+        mockApp.updateCounts = jest.fn()
+
         manager = new BulkOperationsManager(mockState, mockApp)
     })
 
