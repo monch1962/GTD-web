@@ -5,15 +5,11 @@
 
 import fs from 'fs'
 import path from 'path'
-import { fileURLToPath } from 'url'
 import {
     getAllContexts,
     getContextTaskCounts,
     getContextIds
 } from '../js/config/defaultContexts.js'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
 
 describe('Context Utilities', () => {
     describe('getAllContexts function', () => {

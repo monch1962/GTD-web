@@ -5,15 +5,11 @@
 
 import fs from 'fs'
 import path from 'path'
-import { fileURLToPath } from 'url'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
 
 describe('Suggestions Modal Filters', () => {
     describe('filter event listeners', () => {
         test('should have change event listeners on all filter selects', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Find the showSuggestions function

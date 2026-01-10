@@ -3,17 +3,13 @@
  * Verify that header buttons are properly laid out on mobile devices
  */
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import fs from 'fs'
+import path from 'path'
 
 describe('Mobile Header Layout', () => {
     test('should hide non-essential buttons on mobile', () => {
-        const cssPath = path.join(__dirname, '..', 'css', 'styles.css');
-        const cssContent = fs.readFileSync(cssPath, 'utf-8');
+        const cssPath = path.resolve(process.cwd(), 'css', 'styles.css')
+        const cssContent = fs.readFileSync(cssPath, 'utf-8')
 
         // These buttons should be hidden on mobile to save space
         const buttonsHiddenOnMobile = [
@@ -26,16 +22,16 @@ describe('Mobile Header Layout', () => {
             'btn-dependencies',
             'btn-heatmap',
             'btn-suggestions'
-        ];
+        ]
 
-        const lines = cssContent.split('\n');
-        let inMainMobileSection = false;
-        const foundHiddenButtons = [];
+        const lines = cssContent.split('\n')
+        let inMainMobileSection = false
+        const foundHiddenButtons = []
 
         for (const line of lines) {
             if (line.includes('MOBILE MEDIA QUERIES')) {
-                inMainMobileSection = true;
-                continue;
+                inMainMobileSection = true
+                continue
             }
 
             if (inMainMobileSection) {
@@ -43,42 +39,42 @@ describe('Mobile Header Layout', () => {
                 if (line.includes('#btn-calendar-view')) {
                     // Found the start of the button hiding block
                     // Check a few lines to see all the buttons
-                    for (let i = lines.indexOf(line); i < Math.min(lines.indexOf(line) + 15, lines.length); i++) {
-                        const checkLine = lines[i];
+                    for (
+                        let i = lines.indexOf(line);
+                        i < Math.min(lines.indexOf(line) + 15, lines.length);
+                        i++
+                    ) {
+                        const checkLine = lines[i]
                         for (const btnId of buttonsHiddenOnMobile) {
                             if (checkLine.includes(`#${btnId}`)) {
                                 if (!foundHiddenButtons.includes(btnId)) {
-                                    foundHiddenButtons.push(btnId);
+                                    foundHiddenButtons.push(btnId)
                                 }
                             }
                         }
                         if (checkLine.includes('display: none')) {
-                            break;
+                            break
                         }
                     }
-                    break;
+                    break
                 }
             }
         }
 
         // Should hide at least 8 non-essential buttons
-        expect(foundHiddenButtons.length).toBeGreaterThanOrEqual(8);
-    });
+        expect(foundHiddenButtons.length).toBeGreaterThanOrEqual(8)
+    })
 
     test('should keep essential buttons visible on mobile', () => {
-        const htmlPath = path.join(__dirname, '..', 'index.html');
-        const htmlContent = fs.readFileSync(htmlPath, 'utf-8');
+        const htmlPath = path.join(__dirname, '..', 'index.html')
+        const htmlContent = fs.readFileSync(htmlPath, 'utf-8')
 
         // These buttons should remain visible on mobile
-        const essentialButtons = [
-            'btn-dark-mode',
-            'btn-undo',
-            'btn-redo'
-        ];
+        const essentialButtons = ['btn-dark-mode', 'btn-undo', 'btn-redo']
 
         // Check that these buttons exist in HTML
         for (const buttonId of essentialButtons) {
-            expect(htmlContent).toContain(`id="${buttonId}"`);
+            expect(htmlContent).toContain(`id="${buttonId}"`)
         }
-    });
-});
+    })
+})

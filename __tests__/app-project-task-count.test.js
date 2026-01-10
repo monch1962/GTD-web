@@ -3,86 +3,91 @@
  * Verifies that project task counts update when tasks are assigned to projects
  */
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import fs from 'fs'
+import path from 'path'
 
 describe('Project Task Count Updates', () => {
-  test('saveTaskFromForm should call renderProjectsDropdown when task project assignment changes', () => {
-    const appJsPath = path.join(__dirname, '..', 'js', 'app.js');
-    const appJsContent = fs.readFileSync(appJsPath, 'utf-8');
+    test('saveTaskFromForm should call renderProjectsDropdown when task project assignment changes', () => {
+        const appJsPath = path.resolve(process.cwd(), 'js', 'app.js')
+        const appJsContent = fs.readFileSync(appJsPath, 'utf-8')
 
-    // Check that the code tracks old project ID
-    expect(appJsContent).toContain('oldProjectId = existingTask.projectId');
+        // Check that the code tracks old project ID
+        expect(appJsContent).toContain('oldProjectId = existingTask.projectId')
 
-    // Check that renderProjectsDropdown is called when projectId changes
-    expect(appJsContent).toContain('if (oldProjectId !== projectId)');
-    expect(appJsContent).toContain('this.renderProjectsDropdown()');
+        // Check that renderProjectsDropdown is called when projectId changes
+        expect(appJsContent).toContain('if (oldProjectId !== projectId)')
+        expect(appJsContent).toContain('this.renderProjectsDropdown()')
 
-    // Verify the call is inside the condition
-    const lines = appJsContent.split('\n');
-    let foundOldProjectIdCheck = false;
-    let foundRenderDropdownCallAfter = false;
+        // Verify the call is inside the condition
+        const lines = appJsContent.split('\n')
+        let foundOldProjectIdCheck = false
+        let foundRenderDropdownCallAfter = false
 
-    for (let i = 0; i < lines.length; i++) {
-      if (lines[i].includes('oldProjectId !== projectId')) {
-        foundOldProjectIdCheck = true;
-        // Check next few lines for renderProjectsDropdown call
-        for (let j = i + 1; j < Math.min(i + 5, lines.length); j++) {
-          if (lines[j].includes('this.renderProjectsDropdown()')) {
-            foundRenderDropdownCallAfter = true;
-            break;
-          }
+        for (let i = 0; i < lines.length; i++) {
+            if (lines[i].includes('oldProjectId !== projectId')) {
+                foundOldProjectIdCheck = true
+                // Check next few lines for renderProjectsDropdown call
+                for (let j = i + 1; j < Math.min(i + 5, lines.length); j++) {
+                    if (lines[j].includes('this.renderProjectsDropdown()')) {
+                        foundRenderDropdownCallAfter = true
+                        break
+                    }
+                }
+                break
+            }
         }
-        break;
-      }
-    }
 
-    expect(foundOldProjectIdCheck).toBe(true);
-    expect(foundRenderDropdownCallAfter).toBe(true);
-  });
+        expect(foundOldProjectIdCheck).toBe(true)
+        expect(foundRenderDropdownCallAfter).toBe(true)
+    })
 
-  test('saveTaskFromForm should call renderProjectsDropdown when creating new task with project', () => {
-    const appJsPath = path.join(__dirname, '..', 'js', 'app.js');
-    const appJsContent = fs.readFileSync(appJsPath, 'utf-8');
+    test('saveTaskFromForm should call renderProjectsDropdown when creating new task with project', () => {
+        const appJsPath = path.join(__dirname, '..', 'js', 'app.js')
+        const appJsContent = fs.readFileSync(appJsPath, 'utf-8')
 
-    // Look for the condition that checks for new task with project
-    // It should be something like: if (newType === 'project' || (newType === 'task' && projectId && !taskId))
-    expect(appJsContent).toMatch(/newType === 'project'.*\|\|.*newType === 'task'.*projectId/);
+        // Look for the condition that checks for new task with project
+        // It should be something like: if (newType === 'project' || (newType === 'task' && projectId && !taskId))
+        expect(appJsContent).toMatch(/newType === 'project'.*\|\|.*newType === 'task'.*projectId/)
 
-    // Verify renderProjectsDropdown is called in this condition
-    const lines = appJsContent.split('\n');
-    let foundCondition = false;
-    let foundRenderDropdownCallAfter = false;
+        // Verify renderProjectsDropdown is called in this condition
+        const lines = appJsContent.split('\n')
+        let foundCondition = false
+        let foundRenderDropdownCallAfter = false
 
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      if (line.includes("newType === 'project'") && line.includes("newType === 'task'") && line.includes('projectId')) {
-        foundCondition = true;
-        // Check next line for renderProjectsDropdown call
-        if (i + 1 < lines.length && lines[i + 1].includes('this.renderProjectsDropdown()')) {
-          foundRenderDropdownCallAfter = true;
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i]
+            if (
+                line.includes("newType === 'project'") &&
+                line.includes("newType === 'task'") &&
+                line.includes('projectId')
+            ) {
+                foundCondition = true
+                // Check next line for renderProjectsDropdown call
+                if (
+                    i + 1 < lines.length &&
+                    lines[i + 1].includes('this.renderProjectsDropdown()')
+                ) {
+                    foundRenderDropdownCallAfter = true
+                }
+                break
+            }
         }
-        break;
-      }
-    }
 
-    expect(foundCondition).toBe(true);
-    expect(foundRenderDropdownCallAfter).toBe(true);
-  });
+        expect(foundCondition).toBe(true)
+        expect(foundRenderDropdownCallAfter).toBe(true)
+    })
 
-  test('renderProjectsDropdown should calculate task count correctly', () => {
-    const appJsPath = path.join(__dirname, '..', 'js', 'app.js');
-    const appJsContent = fs.readFileSync(appJsPath, 'utf-8');
+    test('renderProjectsDropdown should calculate task count correctly', () => {
+        const appJsPath = path.join(__dirname, '..', 'js', 'app.js')
+        const appJsContent = fs.readFileSync(appJsPath, 'utf-8')
 
-    // Check that renderProjectsDropdown filters by projectId and !completed
-    expect(appJsContent).toContain('t.projectId === project.id');
-    expect(appJsContent).toContain('!t.completed');
+        // Check that renderProjectsDropdown filters by projectId and !completed
+        expect(appJsContent).toContain('t.projectId === project.id')
+        expect(appJsContent).toContain('!t.completed')
 
-    // Verify they're used together in a filter
-    expect(appJsContent).toMatch(/this\.tasks\.filter\(t => t\.projectId === project\.id && !t\.completed\)/);
-  });
-});
+        // Verify they're used together in a filter
+        expect(appJsContent).toMatch(
+            /this\.tasks\.filter\(t => t\.projectId === project\.id && !t\.completed\)/
+        )
+    })
+})

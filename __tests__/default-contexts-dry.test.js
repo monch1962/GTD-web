@@ -5,11 +5,7 @@
 
 import fs from 'fs'
 import path from 'path'
-import { fileURLToPath } from 'url'
 import { defaultContexts, getContextIds, isDefaultContext } from '../js/config/defaultContexts.js'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
 
 describe('Default Contexts DRY Compliance', () => {
     test('should have all default contexts defined in config', () => {

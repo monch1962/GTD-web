@@ -5,15 +5,11 @@
 
 import fs from 'fs'
 import path from 'path'
-import { fileURLToPath } from 'url'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
 
 describe('Suggestions Modal Context Display', () => {
     describe('showSuggestions function', () => {
         test('should use getAllContexts to generate context options', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Should import getAllContexts

@@ -4,19 +4,15 @@
 
 import fs from 'fs'
 import path from 'path'
-import { fileURLToPath } from 'url'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
 
 describe('Advanced Recurrence', () => {
-    const modelsPath = path.join(__dirname, '..', 'js', 'models.js')
+    const modelsPath = path.resolve(process.cwd(), 'js', 'models.js')
     const modelsContent = fs.readFileSync(modelsPath, 'utf-8')
 
-    const appJsPath = path.join(__dirname, '..', 'js', 'app.js')
+    const appJsPath = path.resolve(process.cwd(), 'js', 'app.js')
     const appJsContent = fs.readFileSync(appJsPath, 'utf-8')
 
-    const constantsPath = path.join(__dirname, '..', 'js', 'constants.js')
+    const constantsPath = path.resolve(process.cwd(), 'js', 'constants.js')
     const constantsContent = fs.readFileSync(constantsPath, 'utf-8')
 
     test('should have weekday constants defined', () => {
