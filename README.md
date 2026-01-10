@@ -143,7 +143,7 @@ required.
 
 ## Building for Production
 
-The app uses Vite to bundle all code into a single optimized file for
+The app uses Vite to bundle all code into a single optimized HTML file for
 deployment.
 
 ### Development Mode (with HMR)
@@ -162,9 +162,9 @@ npm run dev
 npm run build
 ```
 
-- Creates optimized, minified bundle in `dist/` directory
-- Single JavaScript file (~282 KB, ~60 KB gzipped)
-- Single CSS file (~38 KB, ~7 KB gzipped)
+- Creates optimized, minified single-file bundle in `dist/` directory
+- Single HTML file with all CSS and JavaScript inlined (~425 KB, ~84 KB gzipped)
+- PWA manifest file (cannot be inlined due to browser requirements)
 - Console statements removed for production
 - All dependencies bundled (including remote-storage)
 
@@ -190,10 +190,11 @@ Deploy the `dist/` directory to any static hosting service:
 
 The bundled application:
 
-- ✅ Works offline (PWA support preserved)
+- ✅ Single HTML file contains all application code and styles (inline)
+- ✅ Works offline (PWA support preserved via manifest.json)
 - ✅ All tests and documentation excluded from bundle
 - ✅ Optimized and minified for fast loading
-- ✅ Single file deployment (no build steps required on server)
+- ✅ Simple two-file deployment (index.html + manifest.json)
 
 ## Running Tests
 

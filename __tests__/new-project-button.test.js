@@ -140,6 +140,7 @@ describe('NewProjectButtonManager - Edge Cases', () => {
         }
 
         mockApp = new GTDApp()
+        mockApp.openTaskModal = jest.fn()
         manager = new NewProjectButtonManager(mockState, mockApp)
     })
 
@@ -270,6 +271,11 @@ describe('NewProjectButtonManager - Feature Consistency', () => {
         localStorage.clear()
         document.body.innerHTML = ''
 
+        // Create the button element
+        const button = document.createElement('button')
+        button.id = 'btn-new-project'
+        document.body.appendChild(button)
+
         mockState = {
             tasks: [],
             projects: []
@@ -308,16 +314,15 @@ describe('NewProjectButtonManager - Feature Consistency', () => {
 
         const manager2 = new NewProjectButtonManager(mockState, app2)
 
-        const button = document.createElement('button')
-        button.id = 'btn-new-project'
-        document.body.appendChild(button)
+        // Button already exists from beforeEach
+        const button = document.getElementById('btn-new-project')
 
         manager.setupNewProjectButton()
         manager2.setupNewProjectButton()
 
         button.click()
 
-        // Both managers should have set up the button
+        // Both managers should have set up the button (both listeners should fire)
         expect(mockApp.openTaskModal).toHaveBeenCalled()
         expect(app2.openTaskModal).toHaveBeenCalled()
     })
