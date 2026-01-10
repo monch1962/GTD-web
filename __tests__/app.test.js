@@ -360,7 +360,6 @@ describe('GTDApp Task and Project Saving', () => {
 
             // Mock the methods
             const saveTasksSpy = jest.spyOn(app, 'saveTasks').mockResolvedValue()
-            const renderDropdownSpy = jest.spyOn(app, 'renderProjectsDropdown').mockReturnValue()
             const renderViewSpy = jest.spyOn(app, 'renderView').mockReturnValue()
             const updateCountsSpy = jest.spyOn(app, 'updateCounts').mockReturnValue()
 
@@ -370,9 +369,8 @@ describe('GTDApp Task and Project Saving', () => {
             // Assert: Task should be assigned to project
             expect(task.projectId).toBe(project.id)
 
-            // Assert: renderProjectsDropdown should have been called
-            // to update the project task counts
-            expect(renderDropdownSpy).toHaveBeenCalled()
+            // Assert: updateCounts should have been called to update the project task counts
+            expect(updateCountsSpy).toHaveBeenCalled()
         })
     })
 
