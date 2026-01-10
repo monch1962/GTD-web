@@ -32,7 +32,12 @@ describe('DataExportImportManager - Initialization', () => {
             updateCounts: jest.fn(),
             renderProjectsDropdown: jest.fn(),
             renderCustomContexts: jest.fn(),
-            updateQuickAddPlaceholder: jest.fn()
+            updateQuickAddPlaceholder: jest.fn(),
+            showError: jest.fn(),
+            showSuccess: jest.fn(),
+            showWarning: jest.fn(),
+            showToast: jest.fn(),
+            showNotification: jest.fn()
         }
 
         manager = new DataExportImportManager(mockState, mockApp)
@@ -70,7 +75,17 @@ describe('DataExportImportManager - Setup Event Listeners', () => {
         document.body.appendChild(fileInput)
 
         mockState = { tasks: [], projects: [] }
-        mockApp = {}
+        mockApp = {
+            showError: jest.fn(),
+            showSuccess: jest.fn(),
+            showWarning: jest.fn(),
+            showToast: jest.fn(),
+            showNotification: jest.fn()
+        }
+
+        // Mock URL.createObjectURL
+        global.URL.createObjectURL = jest.fn(() => 'blob:url')
+        global.URL.revokeObjectURL = jest.fn()
 
         manager = new DataExportImportManager(mockState, mockApp)
     })
@@ -133,7 +148,12 @@ describe('DataExportImportManager - Export Data', () => {
         mockApp = {
             tasks: mockState.tasks,
             projects: mockState.projects,
-            usageStats: mockState.usageStats
+            usageStats: mockState.usageStats,
+            showError: jest.fn(),
+            showSuccess: jest.fn(),
+            showWarning: jest.fn(),
+            showToast: jest.fn(),
+            showNotification: jest.fn()
         }
 
         // Mock localStorage
@@ -159,7 +179,7 @@ describe('DataExportImportManager - Export Data', () => {
 
             expect(global.URL.createObjectURL).toHaveBeenCalled()
             expect(global.URL.revokeObjectURL).toHaveBeenCalledWith('blob:mock-url')
-            expect(global.alert).toHaveBeenCalledWith(
+            expect(mockApp.showSuccess).toHaveBeenCalledWith(
                 'Data exported successfully! File downloaded.'
             )
         })
@@ -185,7 +205,9 @@ describe('DataExportImportManager - Export Data', () => {
 
             manager.exportData()
 
-            expect(global.alert).toHaveBeenCalledWith('Failed to export data. Please try again.')
+            expect(mockApp.showError).toHaveBeenCalledWith(
+                'Failed to export data. Please try again.'
+            )
 
             consoleSpy.mockRestore()
         })
@@ -219,7 +241,12 @@ describe('DataExportImportManager - Import Data', () => {
             updateCounts: jest.fn(),
             renderProjectsDropdown: jest.fn(),
             renderCustomContexts: jest.fn(),
-            updateQuickAddPlaceholder: jest.fn()
+            updateQuickAddPlaceholder: jest.fn(),
+            showError: jest.fn(),
+            showSuccess: jest.fn(),
+            showWarning: jest.fn(),
+            showToast: jest.fn(),
+            showNotification: jest.fn()
         }
 
         const originalSetItem = Storage.prototype.setItem
@@ -234,12 +261,20 @@ describe('DataExportImportManager - Import Data', () => {
         jest.clearAllMocks()
     })
 
+    // Helper function to wait for FileReader to complete
+    const waitForImport = (file) => {
+        return new Promise((resolve) => {
+            manager.importData(file)
+            setTimeout(resolve, 100) // Wait for FileReader to complete
+        })
+    }
+
     describe('importData()', () => {
         test('should confirm with user before importing', async () => {
             const mockFile = new File(['{}'], 'test.json', { type: 'application/json' })
             const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
 
-            await manager.importData(mockFile)
+            await waitForImport(mockFile)
 
             expect(global.confirm).toHaveBeenCalledWith(
                 expect.stringContaining('replace all your current GTD data')
@@ -253,7 +288,7 @@ describe('DataExportImportManager - Import Data', () => {
 
             const mockFile = new File(['{}'], 'test.json', { type: 'application/json' })
 
-            await manager.importData(mockFile)
+            await waitForImport(mockFile)
 
             expect(mockApp.saveTasks).not.toHaveBeenCalled()
             expect(mockApp.saveProjects).not.toHaveBeenCalled()
@@ -272,7 +307,11 @@ describe('DataExportImportManager - Import Data', () => {
             const fileContent = JSON.stringify(importData)
             const mockFile = new File([fileContent], 'test.json', { type: 'application/json' })
 
-            await manager.importData(mockFile)
+            // Wrap importData in a promise to wait for FileReader
+            await new Promise((resolve) => {
+                manager.importData(mockFile)
+                setTimeout(resolve, 100) // Wait for FileReader to complete
+            })
 
             expect(mockApp.tasks.length).toBe(2)
             expect(mockApp.tasks[0].title).toBe('Imported Task 1')
@@ -292,7 +331,7 @@ describe('DataExportImportManager - Import Data', () => {
             const fileContent = JSON.stringify(importData)
             const mockFile = new File([fileContent], 'test.json', { type: 'application/json' })
 
-            await manager.importData(mockFile)
+            await waitForImport(mockFile)
 
             expect(mockApp.projects.length).toBe(2)
             expect(mockApp.projects[0].title).toBe('Imported Project 1')
@@ -313,7 +352,7 @@ describe('DataExportImportManager - Import Data', () => {
             expect(mockApp.tasks.length).toBe(1)
             expect(mockApp.tasks[0].title).toBe('Existing Task')
 
-            await manager.importData(mockFile)
+            await waitForImport(mockFile)
 
             // Should have only the imported task
             expect(mockApp.tasks.length).toBe(1)
@@ -331,7 +370,7 @@ describe('DataExportImportManager - Import Data', () => {
             const fileContent = JSON.stringify(importData)
             const mockFile = new File([fileContent], 'test.json', { type: 'application/json' })
 
-            await manager.importData(mockFile)
+            await waitForImport(mockFile)
 
             expect(Storage.prototype.setItem).toHaveBeenCalledWith(
                 'gtd_custom_contexts',
@@ -349,7 +388,7 @@ describe('DataExportImportManager - Import Data', () => {
             const fileContent = JSON.stringify(importData)
             const mockFile = new File([fileContent], 'test.json', { type: 'application/json' })
 
-            await manager.importData(mockFile)
+            await waitForImport(mockFile)
 
             expect(mockApp.saveTasks).toHaveBeenCalled()
             expect(mockApp.saveProjects).toHaveBeenCalled()
@@ -365,10 +404,10 @@ describe('DataExportImportManager - Import Data', () => {
             const fileContent = JSON.stringify(invalidData)
             const mockFile = new File([fileContent], 'test.json', { type: 'application/json' })
 
-            await manager.importData(mockFile)
+            await waitForImport(mockFile)
 
-            expect(global.alert).toHaveBeenCalledWith(
-                expect.stringContaining('Invalid import file')
+            expect(mockApp.showError).toHaveBeenCalledWith(
+                expect.stringContaining('Failed to parse import file')
             )
         })
 
@@ -382,10 +421,10 @@ describe('DataExportImportManager - Import Data', () => {
             const fileContent = JSON.stringify(invalidData)
             const mockFile = new File([fileContent], 'test.json', { type: 'application/json' })
 
-            await manager.importData(mockFile)
+            await waitForImport(mockFile)
 
-            expect(global.alert).toHaveBeenCalledWith(
-                expect.stringContaining('Invalid import file')
+            expect(mockApp.showError).toHaveBeenCalledWith(
+                expect.stringContaining('Failed to parse import file')
             )
         })
     })
@@ -436,7 +475,12 @@ describe('DataExportImportManager - Integration', () => {
             updateCounts: jest.fn(),
             renderProjectsDropdown: jest.fn(),
             renderCustomContexts: jest.fn(),
-            updateQuickAddPlaceholder: jest.fn()
+            updateQuickAddPlaceholder: jest.fn(),
+            showError: jest.fn(),
+            showSuccess: jest.fn(),
+            showWarning: jest.fn(),
+            showToast: jest.fn(),
+            showNotification: jest.fn()
         }
 
         const originalGetItem = Storage.prototype.getItem
@@ -474,7 +518,9 @@ describe('DataExportImportManager - Integration', () => {
         manager.setupDataExportImport()
         document.getElementById('btn-export').click()
 
-        expect(global.alert).toHaveBeenCalledWith('Data exported successfully! File downloaded.')
+        expect(mockApp.showSuccess).toHaveBeenCalledWith(
+            'Data exported successfully! File downloaded.'
+        )
     })
 
     test('should maintain data integrity through export/import cycle', async () => {
