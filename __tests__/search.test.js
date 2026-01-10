@@ -1007,3 +1007,326 @@ describe('SearchManager - Clear Advanced Search', () => {
         expect(mockApp.renderView).toHaveBeenCalled()
     })
 })
+
+describe('SearchManager - filterTasksBySearch()', () => {
+    let manager
+    let mockState
+    let mockApp
+    let tasks
+
+    beforeEach(() => {
+        tasks = [
+            {
+                id: '1',
+                title: 'Buy groceries',
+                description: 'Get milk and eggs',
+                contexts: ['@home', '@errand'],
+                energy: 'high',
+                status: 'next',
+                dueDate: '2025-01-15',
+                isOverdue: () => false,
+                isDueToday: () => false
+            },
+            {
+                id: '2',
+                title: 'Write report',
+                description: 'Quarterly review',
+                contexts: ['@work'],
+                energy: 'medium',
+                status: 'waiting',
+                dueDate: null,
+                isOverdue: () => false,
+                isDueToday: () => false
+            },
+            {
+                id: '3',
+                title: 'Exercise',
+                description: 'Morning workout at home',
+                contexts: ['@home'],
+                energy: 'low',
+                status: 'inbox',
+                dueDate: '2025-01-20',
+                isOverdue: () => false,
+                isDueToday: () => false
+            },
+            {
+                id: '4',
+                title: 'Call mom',
+                description: 'Weekly check-in',
+                contexts: [],
+                energy: 'low',
+                status: 'next',
+                dueDate: null,
+                isOverdue: () => false,
+                isDueToday: () => false
+            }
+        ]
+
+        mockState = {
+            tasks: [],
+            projects: [],
+            defaultContexts: ['@home', '@work'],
+            searchQuery: '',
+            advancedSearchFilters: {
+                context: '',
+                energy: '',
+                status: '',
+                due: '',
+                sort: 'updated'
+            },
+            savedSearches: []
+        }
+
+        mockApp = new GTDApp()
+
+        manager = new SearchManager(mockState, mockApp)
+    })
+
+    test('should return all tasks when no filters active', () => {
+        const result = manager.filterTasksBySearch(tasks)
+
+        expect(result).toEqual(tasks)
+    })
+
+    test('should filter by title text search', () => {
+        manager.state.searchQuery = 'groceries'
+
+        const result = manager.filterTasksBySearch(tasks)
+
+        expect(result).toHaveLength(1)
+        expect(result[0].id).toBe('1')
+    })
+
+    test('should filter by description text search', () => {
+        manager.state.searchQuery = 'milk'
+
+        const result = manager.filterTasksBySearch(tasks)
+
+        expect(result).toHaveLength(1)
+        expect(result[0].id).toBe('1')
+    })
+
+    test('should filter by context text search', () => {
+        manager.state.searchQuery = '@work'
+
+        const result = manager.filterTasksBySearch(tasks)
+
+        expect(result).toHaveLength(1)
+        expect(result[0].id).toBe('2')
+    })
+
+    test('should be case insensitive', () => {
+        manager.state.searchQuery = 'GROCERIES'
+
+        const result = manager.filterTasksBySearch(tasks)
+
+        expect(result).toHaveLength(1)
+        expect(result[0].id).toBe('1')
+    })
+
+    test('should filter by advanced context filter', () => {
+        manager.state.advancedSearchFilters.context = '@home'
+
+        const result = manager.filterTasksBySearch(tasks)
+
+        expect(result).toHaveLength(2)
+        expect(result.map((t) => t.id).sort()).toEqual(['1', '3'])
+    })
+
+    test('should exclude tasks without context when context filter active', () => {
+        manager.state.advancedSearchFilters.context = '@home'
+
+        const result = manager.filterTasksBySearch(tasks)
+
+        expect(result.every((t) => t.contexts && t.contexts.includes('@home'))).toBe(true)
+    })
+
+    test('should filter by advanced energy filter', () => {
+        manager.state.advancedSearchFilters.energy = 'high'
+
+        const result = manager.filterTasksBySearch(tasks)
+
+        expect(result).toHaveLength(1)
+        expect(result[0].id).toBe('1')
+    })
+
+    test('should filter by advanced status filter', () => {
+        manager.state.advancedSearchFilters.status = 'next'
+
+        const result = manager.filterTasksBySearch(tasks)
+
+        expect(result).toHaveLength(2)
+        expect(result.map((t) => t.id).sort()).toEqual(['1', '4'])
+    })
+
+    test('should filter tasks without due date when nodate filter', () => {
+        manager.state.advancedSearchFilters.due = 'nodate'
+
+        const result = manager.filterTasksBySearch(tasks)
+
+        expect(result).toHaveLength(2)
+        expect(result.every((t) => !t.dueDate)).toBe(true)
+    })
+
+    test('should handle multiple filters combined', () => {
+        manager.state.searchQuery = 'home'
+        manager.state.advancedSearchFilters.energy = 'low'
+
+        const result = manager.filterTasksBySearch(tasks)
+
+        expect(result).toHaveLength(1)
+        expect(result[0].id).toBe('3')
+    })
+
+    test('should return empty array when no matches', () => {
+        manager.state.searchQuery = 'nonexistent'
+
+        const result = manager.filterTasksBySearch(tasks)
+
+        expect(result).toEqual([])
+    })
+
+    test('should handle tasks with null description', () => {
+        const taskWithNullDesc = [...tasks]
+        taskWithNullDesc[0].description = null
+
+        manager.state.searchQuery = 'groceries'
+
+        const result = manager.filterTasksBySearch(taskWithNullDesc)
+
+        expect(result).toHaveLength(1)
+    })
+
+    test('should handle tasks with null contexts', () => {
+        manager.state.searchQuery = '@home'
+
+        const result = manager.filterTasksBySearch(tasks)
+
+        // Tasks 1 and 3 have @home, task 2 has @work, task 4 has no contexts
+        expect(result).toHaveLength(2)
+    })
+})
+
+describe('SearchManager - Getters and Utilities', () => {
+    let manager
+    let mockState
+    let mockApp
+
+    beforeEach(() => {
+        mockState = {
+            tasks: [],
+            projects: [],
+            defaultContexts: ['@home', '@work'],
+            searchQuery: 'test query',
+            advancedSearchFilters: {
+                context: '@home',
+                energy: 'high',
+                status: 'next',
+                due: '',
+                sort: 'updated'
+            },
+            savedSearches: [{ id: '1', name: 'Test' }]
+        }
+
+        mockApp = new GTDApp()
+
+        manager = new SearchManager(mockState, mockApp)
+    })
+
+    test('getSearchQuery() should return current query', () => {
+        expect(manager.getSearchQuery()).toBe('test query')
+    })
+
+    test('getAdvancedFilters() should return copy of filters', () => {
+        const filters = manager.getAdvancedFilters()
+
+        expect(filters).toEqual({
+            context: '@home',
+            energy: 'high',
+            status: 'next',
+            due: '',
+            sort: 'updated'
+        })
+
+        // Verify it's a copy, not reference
+        filters.context = '@work'
+        expect(mockState.advancedSearchFilters.context).toBe('@home')
+    })
+
+    test('getSavedSearches() should return copy of saved searches', () => {
+        const searches = manager.getSavedSearches()
+
+        expect(searches).toEqual([{ id: '1', name: 'Test' }])
+
+        // Verify it's a copy
+        searches.push({ id: '2', name: 'Test 2' })
+        expect(mockState.savedSearches).toHaveLength(1)
+    })
+})
+
+describe('SearchManager - isSearchActive()', () => {
+    let manager
+    let mockState
+    let mockApp
+
+    beforeEach(() => {
+        mockState = {
+            tasks: [],
+            projects: [],
+            defaultContexts: ['@home', '@work'],
+            searchQuery: '',
+            advancedSearchFilters: {
+                context: '',
+                energy: '',
+                status: '',
+                due: '',
+                sort: 'updated'
+            },
+            savedSearches: []
+        }
+
+        mockApp = new GTDApp()
+
+        manager = new SearchManager(mockState, mockApp)
+    })
+
+    test('should return false when no filters active', () => {
+        expect(manager.isSearchActive()).toBe(false)
+    })
+
+    test('should return true when searchQuery is active', () => {
+        manager.state.searchQuery = 'test'
+
+        expect(manager.isSearchActive()).toBe(true)
+    })
+
+    test('should return true when context filter is active', () => {
+        manager.state.advancedSearchFilters.context = '@home'
+
+        expect(manager.isSearchActive()).toBe(true)
+    })
+
+    test('should return true when energy filter is active', () => {
+        manager.state.advancedSearchFilters.energy = 'high'
+
+        expect(manager.isSearchActive()).toBe(true)
+    })
+
+    test('should return true when status filter is active', () => {
+        manager.state.advancedSearchFilters.status = 'next'
+
+        expect(manager.isSearchActive()).toBe(true)
+    })
+
+    test('should return true when due filter is active', () => {
+        manager.state.advancedSearchFilters.due = 'today'
+
+        expect(manager.isSearchActive()).toBe(true)
+    })
+
+    test('should return false when only sort is set', () => {
+        manager.state.advancedSearchFilters.sort = 'due'
+
+        expect(manager.isSearchActive()).toBe(false)
+    })
+})
