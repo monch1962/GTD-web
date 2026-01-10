@@ -115,7 +115,7 @@ jobs:
           path: test-results/
           retention-days: 7
 
-  # Job 4: Build verification (if we add a build step later)
+  # Job 4: Build verification with Vite
   build:
     name: Build Verification
     runs-on: ubuntu-latest
@@ -134,11 +134,25 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Verify no TypeScript errors (if using TS)
-        run: echo "No build step configured yet - skipping"
+      - name: Build with Vite
+        run: npm run build
 
-      - name: Check bundle size (optional)
-        run: echo "Bundle size tracking not configured yet"
+      - name: Check bundle size
+        run: |
+          echo "## Bundle Size Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          ls -lh dist/assets/main.*.js | awk '{print "**JavaScript Bundle:** " $5 " (" $9 ")"}' >> $GITHUB_STEP_SUMMARY
+          ls -lh dist/assets/main.*.css | awk '{print "**CSS Bundle:** " $5 " (" $9 ")"}' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          du -sh dist/ | awk '{print "**Total Build Size:** " $1}' >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vite-build
+          path: dist/
+          retention-days: 7
 
   # Job 5: Security audit
   security:
