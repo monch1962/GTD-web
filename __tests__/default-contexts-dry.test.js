@@ -108,7 +108,7 @@ describe('Default Contexts DRY Compliance', () => {
     })
 
     test('constants.js should import from config', () => {
-        const constantsPath = path.join(__dirname, '..', 'js', 'constants.js')
+        const constantsPath = path.resolve(process.cwd(), 'js', 'constants.js')
         const constantsContent = fs.readFileSync(constantsPath, 'utf-8')
 
         // Should import from config
@@ -120,7 +120,7 @@ describe('Default Contexts DRY Compliance', () => {
     })
 
     test('app.js should import from config', () => {
-        const appPath = path.join(__dirname, '..', 'js', 'app.js')
+        const appPath = path.resolve(process.cwd(), 'js', 'app.js')
         const appContent = fs.readFileSync(appPath, 'utf-8')
 
         // Should import from config
@@ -163,7 +163,7 @@ describe('Default Contexts DRY Compliance', () => {
     test('context filter should show all default contexts, not just used ones', () => {
         // The "Filter by Context" section in the sidebar should show ALL default contexts,
         // not just the ones currently used in tasks
-        const appPath = path.join(__dirname, '..', 'js', 'app.js')
+        const appPath = path.resolve(process.cwd(), 'js', 'app.js')
         const appContent = fs.readFileSync(appPath, 'utf-8')
 
         // Find the updateSidebarContextFilters method

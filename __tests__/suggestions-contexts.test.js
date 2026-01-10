@@ -33,7 +33,7 @@ describe('Suggestions Modal Context Display', () => {
         })
 
         test('should not have hardcoded context options', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Find the showSuggestions function
@@ -69,7 +69,7 @@ describe('Suggestions Modal Context Display', () => {
         })
 
         test('should generate options using map and join', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Find the showSuggestions function
@@ -87,7 +87,7 @@ describe('Suggestions Modal Context Display', () => {
         })
 
         test('should include "Anywhere" option plus all contexts', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Find the showSuggestions function
@@ -112,7 +112,7 @@ describe('Suggestions Modal Context Display', () => {
 
     describe('regression test for hardcoded contexts', () => {
         test('should never hardcode default context list in suggestions', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Find all select elements with id="suggestion-context"
@@ -161,7 +161,7 @@ describe('Suggestions Modal Context Display', () => {
         })
 
         test('context list in suggestions should match getAllContexts pattern', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Find showSuggestions function
@@ -190,7 +190,7 @@ describe('Suggestions Modal Context Display', () => {
 
     describe('integration with context utilities', () => {
         test('should import getAllContexts from config', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Should import getAllContexts
@@ -198,7 +198,7 @@ describe('Suggestions Modal Context Display', () => {
         })
 
         test('suggestions modal uses same context source as sidebar', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Both showSuggestions and updateSidebarContextFilters should use getAllContexts
@@ -223,7 +223,7 @@ describe('Suggestions Modal Context Display', () => {
 
     describe('context sorting and formatting', () => {
         test('should sort contexts alphabetically', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             const funcMatch = appContent.match(/showSuggestions\(\)\s*\{[\s\S]*?\n {4}\}/)
@@ -236,7 +236,7 @@ describe('Suggestions Modal Context Display', () => {
         })
 
         test('should escape HTML in context values', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             const funcMatch = appContent.match(/showSuggestions\(\)\s*\{[\s\S]*?\n {4}\}/)
@@ -249,7 +249,7 @@ describe('Suggestions Modal Context Display', () => {
         })
 
         test('should include all contexts including custom ones', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             const funcMatch = appContent.match(/showSuggestions\(\)\s*\{[\s\S]*?\n {4}\}/)
@@ -268,7 +268,7 @@ describe('Suggestions Modal Context Display', () => {
 
     describe('DRY compliance', () => {
         test('should not duplicate context list generation logic', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Count how many times we have inline context array generation
@@ -306,7 +306,7 @@ describe('Suggestions Modal Context Display', () => {
         })
 
         test('all context dropdowns should use getAllContexts pattern', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Find all select elements that might show contexts

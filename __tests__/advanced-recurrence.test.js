@@ -88,7 +88,7 @@ describe('Advanced Recurrence', () => {
     })
 
     test('UI should have recurrence type dropdown', () => {
-        const htmlPath = path.join(__dirname, '..', 'index.html')
+        const htmlPath = path.resolve(process.cwd(), 'index.html')
         const htmlContent = fs.readFileSync(htmlPath, 'utf-8')
 
         expect(htmlContent).toContain('task-recurrence-type')
@@ -96,7 +96,7 @@ describe('Advanced Recurrence', () => {
     })
 
     test('UI should have weekly day checkboxes', () => {
-        const htmlPath = path.join(__dirname, '..', 'index.html')
+        const htmlPath = path.resolve(process.cwd(), 'index.html')
         const htmlContent = fs.readFileSync(htmlPath, 'utf-8')
 
         expect(htmlContent).toContain('recurrence-weekly-options')
@@ -105,7 +105,7 @@ describe('Advanced Recurrence', () => {
     })
 
     test('UI should have monthly options', () => {
-        const htmlPath = path.join(__dirname, '..', 'index.html')
+        const htmlPath = path.resolve(process.cwd(), 'index.html')
         const htmlContent = fs.readFileSync(htmlPath, 'utf-8')
 
         expect(htmlContent).toContain('recurrence-monthly-options')
@@ -115,7 +115,7 @@ describe('Advanced Recurrence', () => {
     })
 
     test('UI should have yearly options', () => {
-        const htmlPath = path.join(__dirname, '..', 'index.html')
+        const htmlPath = path.resolve(process.cwd(), 'index.html')
         const htmlContent = fs.readFileSync(htmlPath, 'utf-8')
 
         expect(htmlContent).toContain('recurrence-yearly-options')

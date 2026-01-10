@@ -33,7 +33,7 @@ describe('Suggestions Modal Filters', () => {
         })
 
         test('should auto-update suggestions when filters change', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Find the showSuggestions function
@@ -55,7 +55,7 @@ describe('Suggestions Modal Filters', () => {
         })
 
         test('should have refresh button that also updates', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Find the showSuggestions function
@@ -74,7 +74,7 @@ describe('Suggestions Modal Filters', () => {
 
     describe('filter values are passed to getSmartSuggestions', () => {
         test('should read filter values from DOM', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Find the renderSuggestions function
@@ -90,7 +90,7 @@ describe('Suggestions Modal Filters', () => {
         })
 
         test('should pass filter values to getSmartSuggestions', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Find the renderSuggestions function
@@ -109,7 +109,7 @@ describe('Suggestions Modal Filters', () => {
 
     describe('getSmartSuggestions uses filters correctly', () => {
         test('should accept and use context parameter', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Find getSmartSuggestions function definition (not calls to it)
@@ -127,7 +127,7 @@ describe('Suggestions Modal Filters', () => {
         })
 
         test('should filter tasks by context with score boost', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Find getSmartSuggestions function - search for context matching logic
@@ -144,7 +144,7 @@ describe('Suggestions Modal Filters', () => {
         })
 
         test('should filter tasks by energy level with score boost', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Find getSmartSuggestions function - search for energy matching logic
@@ -162,7 +162,7 @@ describe('Suggestions Modal Filters', () => {
         })
 
         test('should filter tasks by available time', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Find getSmartSuggestions function - search for time matching logic
@@ -182,7 +182,7 @@ describe('Suggestions Modal Filters', () => {
 
     describe('regression tests', () => {
         test('should not have filters without event listeners', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Find the showSuggestions function
@@ -208,7 +208,7 @@ describe('Suggestions Modal Filters', () => {
         })
 
         test('all filters should trigger renderSuggestions', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Find the showSuggestions function
@@ -228,7 +228,7 @@ describe('Suggestions Modal Filters', () => {
         })
 
         test('should not rely only on manual button click', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Find the showSuggestions function
@@ -248,7 +248,7 @@ describe('Suggestions Modal Filters', () => {
 
     describe('filter behavior', () => {
         test('context filter should boost matching tasks', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             const contextMatch = appContent.match(/Context match[\s\S]*?reasons\.push/)
@@ -265,7 +265,7 @@ describe('Suggestions Modal Filters', () => {
         })
 
         test('energy filter should boost matching tasks', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             const energyMatch = appContent.match(/Energy level match[\s\S]*?reasons\.push/)
@@ -282,7 +282,7 @@ describe('Suggestions Modal Filters', () => {
         })
 
         test('time filter should handle available time', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             const timeMatch = appContent.match(
@@ -301,7 +301,7 @@ describe('Suggestions Modal Filters', () => {
         })
 
         test('empty filter values should not filter out tasks', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             const funcMatch = appContent.match(

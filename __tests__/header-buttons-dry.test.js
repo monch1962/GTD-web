@@ -29,7 +29,7 @@ describe('Header Buttons DRY Compliance', () => {
     test('should not have hardcoded button IDs in CSS', () => {
         // CSS should not have individual #btn- selectors for hiding buttons on mobile
         // Instead, it should reference the config or use a class-based approach
-        const cssPath = path.join(__dirname, '..', 'css', 'styles.css')
+        const cssPath = path.resolve(process.cwd(), 'css', 'styles.css')
         const cssContent = fs.readFileSync(cssPath, 'utf-8')
 
         const lines = cssContent.split('\n')
@@ -54,7 +54,7 @@ describe('Header Buttons DRY Compliance', () => {
 
     test('should use consistent IDs across config and HTML', () => {
         // All buttons in config should exist in HTML
-        const htmlPath = path.join(__dirname, '..', 'index.html')
+        const htmlPath = path.resolve(process.cwd(), 'index.html')
         const htmlContent = fs.readFileSync(htmlPath, 'utf-8')
 
         const configIds = getButtonIds()
@@ -67,7 +67,7 @@ describe('Header Buttons DRY Compliance', () => {
     test('CSS mobile hiding should match config essentialOnMobile property', () => {
         // Buttons that are hidden on mobile in CSS should match those with essentialOnMobile: false
         // (excluding conditionallyShown buttons which are handled programmatically)
-        const cssPath = path.join(__dirname, '..', 'css', 'styles.css')
+        const cssPath = path.resolve(process.cwd(), 'css', 'styles.css')
         const cssContent = fs.readFileSync(cssPath, 'utf-8')
 
         const lines = cssContent.split('\n')

@@ -11,7 +11,7 @@ describe('Mobile Header Buttons', () => {
         // BUG: On mobile, the sidebar-overlay is set to display: block by default
         // This covers the entire screen with z-index: 999, blocking header buttons
 
-        const cssPath = path.join(__dirname, '..', 'css', 'styles.css')
+        const cssPath = path.resolve(process.cwd(), 'css', 'styles.css')
         const cssContent = fs.readFileSync(cssPath, 'utf-8')
         const lines = cssContent.split('\n')
 
@@ -52,7 +52,7 @@ describe('Mobile Header Buttons', () => {
     })
 
     test('should have all header button IDs defined in HTML', () => {
-        const htmlPath = path.join(__dirname, '..', 'index.html')
+        const htmlPath = path.resolve(process.cwd(), 'index.html')
         const htmlContent = fs.readFileSync(htmlPath, 'utf-8')
 
         // Verify all header buttons exist in HTML

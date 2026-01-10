@@ -66,7 +66,7 @@ describe('Mobile Header Layout', () => {
     })
 
     test('should keep essential buttons visible on mobile', () => {
-        const htmlPath = path.join(__dirname, '..', 'index.html')
+        const htmlPath = path.resolve(process.cwd(), 'index.html')
         const htmlContent = fs.readFileSync(htmlPath, 'utf-8')
 
         // These buttons should remain visible on mobile

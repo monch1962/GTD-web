@@ -17,7 +17,7 @@ describe('Recurrence Display', () => {
         })
 
         test('function should exist in app.js', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Should have the getRecurrenceLabel function
@@ -26,7 +26,7 @@ describe('Recurrence Display', () => {
         })
 
         test('function should handle string format (backward compatibility)', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Should handle string recurrence
@@ -35,7 +35,7 @@ describe('Recurrence Display', () => {
         })
 
         test('function should handle object format', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Should handle object recurrence
@@ -44,7 +44,7 @@ describe('Recurrence Display', () => {
         })
 
         test('function should have fallback for unexpected formats', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Should have String() fallback to prevent [object Object]
@@ -52,7 +52,7 @@ describe('Recurrence Display', () => {
         })
 
         test('function should return string for all inputs', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Find the getRecurrenceLabel function
@@ -72,7 +72,7 @@ describe('Recurrence Display', () => {
 
     describe('recurrence display in task rendering', () => {
         test('should use getRecurrenceLabel function', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Find where recurrence is displayed
@@ -93,7 +93,7 @@ describe('Recurrence Display', () => {
         })
 
         test('should not have "[object Object]" in output', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Find the getRecurrenceLabel function
@@ -116,7 +116,7 @@ describe('Recurrence Display', () => {
         })
 
         test('should handle all recurrence object types', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Find the getRecurrenceLabel function
@@ -143,7 +143,7 @@ describe('Recurrence Display', () => {
 
     describe('import required constants', () => {
         test('should import Weekday, WeekdayNames, NthWeekdayLabels', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Should import weekday-related constants for formatting
@@ -155,7 +155,7 @@ describe('Recurrence Display', () => {
 
     describe('regression test for [object Object] bug', () => {
         test('should never directly use object as template literal value', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Find all template literals that might display recurrence
@@ -201,7 +201,7 @@ describe('Recurrence Display', () => {
         })
 
         test('should have helper function to format recurrence', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Should have getRecurrenceLabel method
@@ -211,7 +211,7 @@ describe('Recurrence Display', () => {
         })
 
         test('getRecurrenceLabel should be called in display code', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Find recurrence display section
@@ -230,7 +230,7 @@ describe('Recurrence Display', () => {
 
     describe('edge cases', () => {
         test('should handle null or undefined recurrence', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             const funcMatch = appContent.match(
@@ -245,7 +245,7 @@ describe('Recurrence Display', () => {
         })
 
         test('should handle empty object recurrence', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             const funcMatch = appContent.match(

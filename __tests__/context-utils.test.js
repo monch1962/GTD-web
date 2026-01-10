@@ -128,7 +128,7 @@ describe('Context Utilities', () => {
 
     describe('DRY Compliance', () => {
         test('app.js should import and use getAllContexts', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Should import the function
@@ -139,7 +139,7 @@ describe('Context Utilities', () => {
         })
 
         test('app.js should import and use getContextTaskCounts', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Should import the function
@@ -150,7 +150,7 @@ describe('Context Utilities', () => {
         })
 
         test('should not have inline context collection logic in app.js', () => {
-            const appPath = path.join(__dirname, '..', 'js', 'app.js')
+            const appPath = path.resolve(process.cwd(), 'js', 'app.js')
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Find the updateSidebarContextFilters method

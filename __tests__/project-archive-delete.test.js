@@ -37,7 +37,7 @@ describe('Empty Project Archive and Delete', () => {
     })
 
     test('should add archived status to ProjectStatus enum', () => {
-        const constantsPath = path.join(__dirname, '..', 'js', 'constants.js')
+        const constantsPath = path.resolve(process.cwd(), 'js', 'constants.js')
         const constantsContent = fs.readFileSync(constantsPath, 'utf-8')
 
         expect(constantsContent).toContain("ARCHIVED: 'archived'")
@@ -55,7 +55,7 @@ describe('Empty Project Archive and Delete', () => {
     })
 
     test('should have archive option in project modal', () => {
-        const htmlPath = path.join(__dirname, '..', 'index.html')
+        const htmlPath = path.resolve(process.cwd(), 'index.html')
         const htmlContent = fs.readFileSync(htmlPath, 'utf-8')
 
         expect(htmlContent).toContain('<option value="archived">Archived</option>')

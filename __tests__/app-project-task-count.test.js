@@ -42,7 +42,7 @@ describe('Project Task Count Updates', () => {
     })
 
     test('saveTaskFromForm should call renderProjectsDropdown when creating new task with project', () => {
-        const appJsPath = path.join(__dirname, '..', 'js', 'app.js')
+        const appJsPath = path.resolve(process.cwd(), 'js', 'app.js')
         const appJsContent = fs.readFileSync(appJsPath, 'utf-8')
 
         // Look for the condition that checks for new task with project
@@ -78,7 +78,7 @@ describe('Project Task Count Updates', () => {
     })
 
     test('renderProjectsDropdown should calculate task count correctly', () => {
-        const appJsPath = path.join(__dirname, '..', 'js', 'app.js')
+        const appJsPath = path.resolve(process.cwd(), 'js', 'app.js')
         const appJsContent = fs.readFileSync(appJsPath, 'utf-8')
 
         // Check that renderProjectsDropdown filters by projectId and !completed
