@@ -1,9 +1,15 @@
 import { defineConfig } from 'vite'
 import { resolve } from 'path'
+import { viteSingleFile } from 'vite-plugin-singlefile'
 
 export default defineConfig({
     // Entry point - Vite will process index.html
     root: '.',
+
+    plugins: [
+        // Inline all CSS and JS into a single HTML file
+        viteSingleFile()
+    ],
 
     build: {
         outDir: 'dist',

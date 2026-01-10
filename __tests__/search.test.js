@@ -5,6 +5,14 @@
 import { GTDApp } from '../js/app.js'
 import { SearchManager } from '../js/modules/features/search.js'
 
+// Helper function to add options to select elements
+function addOption(select, value, text) {
+    const option = document.createElement('option')
+    option.value = value
+    option.textContent = text
+    select.appendChild(option)
+}
+
 describe('SearchManager - Initialization', () => {
     let manager
     let mockState
@@ -48,7 +56,23 @@ describe('SearchManager - Initialization', () => {
         const savedSearches = [{ id: '1', name: 'Work tasks', query: 'work', filters: {} }]
         localStorage.setItem('gtd_saved_searches', JSON.stringify(savedSearches))
 
-        const managerWithSaved = new SearchManager(mockState, mockApp)
+        // Create a state without savedSearches defined
+        const stateWithoutSaved = {
+            tasks: [],
+            projects: [],
+            defaultContexts: ['@home', '@work', '@phone'],
+            searchQuery: '',
+            advancedSearchFilters: {
+                context: '',
+                energy: '',
+                status: '',
+                due: '',
+                sort: 'updated'
+            }
+            // Note: savedSearches is NOT defined, so it should load from localStorage
+        }
+
+        const managerWithSaved = new SearchManager(stateWithoutSaved, mockApp)
 
         expect(managerWithSaved.state.savedSearches).toEqual(savedSearches)
 
@@ -215,26 +239,46 @@ describe('SearchManager - Clear Search', () => {
 
         const searchContext = document.createElement('select')
         searchContext.id = 'search-context'
+        addOption(searchContext, '', 'All Contexts')
+        addOption(searchContext, '@home', '@home')
+        addOption(searchContext, '@work', '@work')
+        addOption(searchContext, '@phone', '@phone')
         searchContext.value = '@work'
         document.body.appendChild(searchContext)
 
         const searchEnergy = document.createElement('select')
         searchEnergy.id = 'search-energy'
+        addOption(searchEnergy, '', 'All')
+        addOption(searchEnergy, 'high', 'High')
+        addOption(searchEnergy, 'medium', 'Medium')
+        addOption(searchEnergy, 'low', 'Low')
         searchEnergy.value = 'high'
         document.body.appendChild(searchEnergy)
 
         const searchStatus = document.createElement('select')
         searchStatus.id = 'search-status'
+        addOption(searchStatus, '', 'All')
+        addOption(searchStatus, 'inbox', 'Inbox')
+        addOption(searchStatus, 'next', 'Next')
+        addOption(searchStatus, 'waiting', 'Waiting')
+        addOption(searchStatus, 'someday', 'Someday')
         searchStatus.value = 'next'
         document.body.appendChild(searchStatus)
 
         const searchDue = document.createElement('select')
         searchDue.id = 'search-due'
+        addOption(searchDue, '', 'Any')
+        addOption(searchDue, 'today', 'Today')
+        addOption(searchDue, 'week', 'This Week')
+        addOption(searchDue, 'month', 'This Month')
         searchDue.value = 'today'
         document.body.appendChild(searchDue)
 
         const searchSort = document.createElement('select')
         searchSort.id = 'search-sort'
+        addOption(searchSort, 'updated', 'Recently Updated')
+        addOption(searchSort, 'priority', 'Priority')
+        addOption(searchSort, 'due', 'Due Date')
         searchSort.value = 'priority'
         document.body.appendChild(searchSort)
 
@@ -332,25 +376,76 @@ describe('SearchManager - Advanced Filters', () => {
         localStorage.clear()
         document.body.innerHTML = ''
 
+        // Create required elements for setupSearch
+        const searchInput = document.createElement('input')
+        searchInput.id = 'global-search'
+        document.body.appendChild(searchInput)
+
+        const clearSearchBtn = document.createElement('button')
+        clearSearchBtn.id = 'clear-search'
+        document.body.appendChild(clearSearchBtn)
+
+        const advancedSearchPanel = document.createElement('div')
+        advancedSearchPanel.id = 'advanced-search-panel'
+        document.body.appendChild(advancedSearchPanel)
+
+        // Create filter elements with options
         const searchContext = document.createElement('select')
         searchContext.id = 'search-context'
+        addOption(searchContext, '', 'All Contexts')
+        addOption(searchContext, '@home', '@home')
+        addOption(searchContext, '@work', '@work')
+        addOption(searchContext, '@office', '@office')
         document.body.appendChild(searchContext)
 
         const searchEnergy = document.createElement('select')
         searchEnergy.id = 'search-energy'
+        addOption(searchEnergy, '', 'All')
+        addOption(searchEnergy, 'high', 'High')
+        addOption(searchEnergy, 'medium', 'Medium')
+        addOption(searchEnergy, 'low', 'Low')
         document.body.appendChild(searchEnergy)
 
         const searchStatus = document.createElement('select')
         searchStatus.id = 'search-status'
+        addOption(searchStatus, '', 'All')
+        addOption(searchStatus, 'inbox', 'Inbox')
+        addOption(searchStatus, 'next', 'Next')
+        addOption(searchStatus, 'waiting', 'Waiting')
+        addOption(searchStatus, 'someday', 'Someday')
         document.body.appendChild(searchStatus)
 
         const searchDue = document.createElement('select')
         searchDue.id = 'search-due'
+        addOption(searchDue, '', 'Any')
+        addOption(searchDue, 'today', 'Today')
+        addOption(searchDue, 'week', 'This Week')
+        addOption(searchDue, 'month', 'This Month')
         document.body.appendChild(searchDue)
 
         const searchSort = document.createElement('select')
         searchSort.id = 'search-sort'
+        addOption(searchSort, 'updated', 'Recently Updated')
+        addOption(searchSort, 'priority', 'Priority')
+        addOption(searchSort, 'due', 'Due Date')
+        searchSort.value = 'updated'
         document.body.appendChild(searchSort)
+
+        const saveSearchBtn = document.createElement('button')
+        saveSearchBtn.id = 'save-search'
+        document.body.appendChild(saveSearchBtn)
+
+        const savedSearchesSelect = document.createElement('select')
+        savedSearchesSelect.id = 'saved-searches'
+        document.body.appendChild(savedSearchesSelect)
+
+        const deleteSavedSearchBtn = document.createElement('button')
+        deleteSavedSearchBtn.id = 'delete-saved-search'
+        document.body.appendChild(deleteSavedSearchBtn)
+
+        const clearAdvancedSearchBtn = document.createElement('button')
+        clearAdvancedSearchBtn.id = 'clear-advanced-search'
+        document.body.appendChild(clearAdvancedSearchBtn)
 
         mockState = {
             tasks: [
@@ -453,6 +548,11 @@ describe('SearchManager - Populate Contexts', () => {
 
         const searchContext = document.createElement('select')
         searchContext.id = 'search-context'
+        // Add default "All Contexts" option
+        const defaultOption = document.createElement('option')
+        defaultOption.value = ''
+        defaultOption.textContent = 'All Contexts'
+        searchContext.appendChild(defaultOption)
         document.body.appendChild(searchContext)
 
         mockState = {
@@ -527,6 +627,11 @@ describe('SearchManager - Saved Searches', () => {
         // Create saved searches dropdown
         const savedSearchesSelect = document.createElement('select')
         savedSearchesSelect.id = 'saved-searches'
+        // Add default "Select saved search..." option
+        const defaultOption = document.createElement('option')
+        defaultOption.value = ''
+        defaultOption.textContent = 'Select saved search...'
+        savedSearchesSelect.appendChild(defaultOption)
         document.body.appendChild(savedSearchesSelect)
 
         const deleteSavedSearchBtn = document.createElement('button')
@@ -794,29 +899,48 @@ describe('SearchManager - Clear Advanced Search', () => {
         localStorage.clear()
         document.body.innerHTML = ''
 
-        // Create filter elements
+        // Create filter elements with options
         const searchContext = document.createElement('select')
         searchContext.id = 'search-context'
+        addOption(searchContext, '', 'All Contexts')
+        addOption(searchContext, '@home', '@home')
+        addOption(searchContext, '@work', '@work')
         searchContext.value = '@work'
         document.body.appendChild(searchContext)
 
         const searchEnergy = document.createElement('select')
         searchEnergy.id = 'search-energy'
+        addOption(searchEnergy, '', 'All')
+        addOption(searchEnergy, 'high', 'High')
+        addOption(searchEnergy, 'medium', 'Medium')
+        addOption(searchEnergy, 'low', 'Low')
         searchEnergy.value = 'high'
         document.body.appendChild(searchEnergy)
 
         const searchStatus = document.createElement('select')
         searchStatus.id = 'search-status'
+        addOption(searchStatus, '', 'All')
+        addOption(searchStatus, 'inbox', 'Inbox')
+        addOption(searchStatus, 'next', 'Next')
+        addOption(searchStatus, 'waiting', 'Waiting')
+        addOption(searchStatus, 'someday', 'Someday')
         searchStatus.value = 'next'
         document.body.appendChild(searchStatus)
 
         const searchDue = document.createElement('select')
         searchDue.id = 'search-due'
+        addOption(searchDue, '', 'Any')
+        addOption(searchDue, 'today', 'Today')
+        addOption(searchDue, 'week', 'This Week')
+        addOption(searchDue, 'month', 'This Month')
         searchDue.value = 'today'
         document.body.appendChild(searchDue)
 
         const searchSort = document.createElement('select')
         searchSort.id = 'search-sort'
+        addOption(searchSort, 'updated', 'Recently Updated')
+        addOption(searchSort, 'priority', 'Priority')
+        addOption(searchSort, 'due', 'Due Date')
         searchSort.value = 'priority'
         document.body.appendChild(searchSort)
 

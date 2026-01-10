@@ -62,6 +62,7 @@
     "lint-staged": "^16.2.7",
     "prettier": "^3.7.4",
     "terser": "^5.44.1",
-    "vite": "^7.3.1"
+    "vite": "^7.3.1",
+    "vite-plugin-singlefile": "^2.3.0"
   }
 }
