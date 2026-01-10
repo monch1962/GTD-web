@@ -19,6 +19,9 @@ jest.mock('../js/dom-utils.js', () => ({
 const mockApp = {
     showToast: jest.fn(),
     showNotification: jest.fn(),
+    showWarning: jest.fn(),
+    showError: jest.fn(),
+    showSuccess: jest.fn(),
     renderView: jest.fn(),
     saveTasks: jest.fn().mockResolvedValue(undefined),
     toggleTaskComplete: jest.fn().mockResolvedValue(undefined),
@@ -135,7 +138,7 @@ describe('FocusPomodoroManager', () => {
 
             manager.enterFocusMode()
 
-            expect(global.alert).toHaveBeenCalledWith(
+            expect(mockApp.showWarning).toHaveBeenCalledWith(
                 'No tasks available for focus mode. Create some tasks first!'
             )
         })
@@ -199,7 +202,7 @@ describe('FocusPomodoroManager', () => {
 
             manager.enterFocusMode()
 
-            expect(global.alert).toHaveBeenCalledWith('Invalid selection')
+            expect(mockApp.showError).toHaveBeenCalledWith('Invalid selection')
             expect(manager.focusTaskId).toBeNull()
         })
 
@@ -613,7 +616,9 @@ describe('FocusPomodoroManager', () => {
 
             manager.pomodoroComplete()
 
-            expect(global.alert).toHaveBeenCalledWith('Break complete! Ready to focus again?')
+            expect(mockApp.showSuccess).toHaveBeenCalledWith(
+                'Break complete! Ready to focus again?'
+            )
             expect(manager.pomodoroIsBreak).toBe(false)
             expect(manager.pomodoroTimeLeft).toBe(25 * 60)
         })
@@ -789,9 +794,13 @@ describe('FocusPomodoroManager', () => {
 
             // Complete break
             jest.advanceTimersByTime(5 * 60 * 1000)
+            manager.pomodoroTimeLeft = 0
             manager.pomodoroComplete()
 
             // Should be back to work session
+            expect(mockApp.showSuccess).toHaveBeenCalledWith(
+                'Break complete! Ready to focus again?'
+            )
             expect(manager.isOnBreak()).toBe(false)
             expect(manager.pomodoroTimeLeft).toBe(25 * 60)
         })
