@@ -8,7 +8,7 @@
  * - Swipe gestures for tasks
  */
 
-import { createLogger } from '../utils/logger.js';
+import { createLogger } from '../utils/logger.js'
 
 export class MobileNavigationManager {
     /**
@@ -16,9 +16,9 @@ export class MobileNavigationManager {
      * @param {Object} app - The main app instance for delegation
      */
     constructor(state, app) {
-        this.state = state;
-        this.app = app;
-        this.logger = createLogger('MobileNav');
+        this.state = state
+        this.app = app
+        this.logger = createLogger('MobileNav')
     }
 
     /**
@@ -28,7 +28,7 @@ export class MobileNavigationManager {
     setupMobileNavigation() {
         // Call the internal setup directly
         // The DOM should already be ready when this is called from setupEventListeners
-        this.setupMobileNavigationInternal();
+        this.setupMobileNavigationInternal()
     }
 
     /**
@@ -36,13 +36,13 @@ export class MobileNavigationManager {
      * Can be called directly for testing purposes
      */
     setupMobileNavigationInternal() {
-        this.logger.debug('Setting up mobile navigation...');
+        this.logger.debug('Setting up mobile navigation...')
 
-        this.setupHamburgerMenu();
-        this.setupMobileMenuDropdown();
-        this.setupBottomNavigation();
-        this.setupPullToRefresh();
-        this.setupSwipeGestures();
+        this.setupHamburgerMenu()
+        this.setupMobileMenuDropdown()
+        this.setupBottomNavigation()
+        this.setupPullToRefresh()
+        this.setupSwipeGestures()
     }
 
     /**
@@ -50,199 +50,201 @@ export class MobileNavigationManager {
      * This bypasses the setTimeout and DOMContentLoaded checks
      */
     setupForTest() {
-        this.setupMobileNavigationInternal();
+        this.setupMobileNavigationInternal()
     }
 
     /**
      * Setup hamburger menu for sidebar toggle
      */
     setupHamburgerMenu() {
-        const hamburger = document.getElementById('hamburger-menu');
-        const sidebar = document.querySelector('.sidebar');
-        const overlay = document.getElementById('sidebar-overlay');
+        const hamburger = document.getElementById('hamburger-menu')
+        const sidebar = document.querySelector('.sidebar')
+        const overlay = document.getElementById('sidebar-overlay')
 
         if (!hamburger || !sidebar || !overlay) {
-            this.logger.warn('Hamburger menu elements not found');
-            return;
+            this.logger.warn('Hamburger menu elements not found')
+            return
         }
 
         hamburger.addEventListener('click', () => {
-            const isOpen = sidebar.classList.contains('active');
-            sidebar.classList.toggle('active');
-            overlay.classList.toggle('active');
-            hamburger.classList.toggle('active');
-            hamburger.setAttribute('aria-expanded', !isOpen);
-        });
+            const isOpen = sidebar.classList.contains('active')
+            sidebar.classList.toggle('active')
+            overlay.classList.toggle('active')
+            hamburger.classList.toggle('active')
+            hamburger.setAttribute('aria-expanded', !isOpen)
+        })
 
         overlay.addEventListener('click', () => {
-            sidebar.classList.remove('active');
-            overlay.classList.remove('active');
-            hamburger.classList.remove('active');
-            hamburger.setAttribute('aria-expanded', 'false');
-        });
+            sidebar.classList.remove('active')
+            overlay.classList.remove('active')
+            hamburger.classList.remove('active')
+            hamburger.setAttribute('aria-expanded', 'false')
+        })
     }
 
     /**
      * Setup mobile menu dropdown in header
      */
     setupMobileMenuDropdown() {
-        const mobileMenuBtn = document.getElementById('btn-mobile-menu');
-        const mobileMenuDropdown = document.getElementById('mobile-menu-dropdown');
+        const mobileMenuBtn = document.getElementById('btn-mobile-menu')
+        const mobileMenuDropdown = document.getElementById('mobile-menu-dropdown')
 
         if (!mobileMenuBtn || !mobileMenuDropdown) {
-            this.logger.warn('Mobile menu dropdown elements not found');
-            return;
+            this.logger.warn('Mobile menu dropdown elements not found')
+            return
         }
 
         // Toggle mobile menu
         mobileMenuBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
+            e.preventDefault()
+            e.stopPropagation()
 
-            const isOpen = mobileMenuDropdown.style.display === 'block';
-            mobileMenuDropdown.style.display = isOpen ? 'none' : 'block';
-            mobileMenuBtn.setAttribute('aria-expanded', !isOpen);
-        });
+            const isOpen = mobileMenuDropdown.style.display === 'block'
+            mobileMenuDropdown.style.display = isOpen ? 'none' : 'block'
+            mobileMenuBtn.setAttribute('aria-expanded', !isOpen)
+        })
 
         // Close menu when clicking outside
         document.addEventListener('click', (e) => {
-            if (mobileMenuDropdown.style.display === 'block' &&
+            if (
+                mobileMenuDropdown.style.display === 'block' &&
                 !mobileMenuDropdown.contains(e.target) &&
-                !mobileMenuBtn.contains(e.target)) {
-                mobileMenuDropdown.style.display = 'none';
-                mobileMenuBtn.setAttribute('aria-expanded', 'false');
+                !mobileMenuBtn.contains(e.target)
+            ) {
+                mobileMenuDropdown.style.display = 'none'
+                mobileMenuBtn.setAttribute('aria-expanded', 'false')
             }
-        });
+        })
 
         // Handle menu item clicks
-        const menuItems = mobileMenuDropdown.querySelectorAll('.mobile-menu-item');
-        menuItems.forEach(item => {
+        const menuItems = mobileMenuDropdown.querySelectorAll('.mobile-menu-item')
+        menuItems.forEach((item) => {
             item.addEventListener('click', (e) => {
-                const action = e.currentTarget.dataset.action;
+                const action = e.currentTarget.dataset.action
 
                 // Close the menu
-                mobileMenuDropdown.style.display = 'none';
-                mobileMenuBtn.setAttribute('aria-expanded', 'false');
+                mobileMenuDropdown.style.display = 'none'
+                mobileMenuBtn.setAttribute('aria-expanded', 'false')
 
                 // Execute the corresponding action
                 switch (action) {
                     case 'calendar-view':
-                        this.app.showCalendar?.();
-                        break;
+                        this.app.showCalendar?.()
+                        break
                     case 'focus-mode':
-                        this.app.enterFocusMode?.();
-                        break;
+                        this.app.enterFocusMode?.()
+                        break
                     case 'new-project':
-                        this.app.openProjectModal?.();
-                        break;
+                        this.app.openProjectModal?.()
+                        break
                     case 'daily-review':
-                        this.app.showDailyReview?.();
-                        break;
+                        this.app.showDailyReview?.()
+                        break
                     case 'weekly-review':
-                        this.app.showWeeklyReview?.();
-                        break;
+                        this.app.showWeeklyReview?.()
+                        break
                     case 'dashboard':
-                        this.app.showDashboard?.();
-                        break;
+                        this.app.showDashboard?.()
+                        break
                     case 'dependencies':
-                        this.app.showDependencies?.();
-                        break;
+                        this.app.showDependencies?.()
+                        break
                     case 'heatmap':
-                        this.app.openHeatmapModal?.();
-                        break;
+                        this.app.openHeatmapModal?.()
+                        break
                     case 'suggestions':
-                        this.app.showSuggestions?.();
-                        break;
+                        this.app.showSuggestions?.()
+                        break
                     case 'undo':
-                        this.app.undo?.();
-                        break;
+                        this.app.undo?.()
+                        break
                     case 'redo':
-                        this.app.redo?.();
-                        break;
+                        this.app.redo?.()
+                        break
                 }
-            });
-        });
+            })
+        })
     }
 
     /**
      * Setup bottom navigation for mobile
      */
     setupBottomNavigation() {
-        const bottomNavItems = document.querySelectorAll('.bottom-nav-item[data-view]');
-        this.logger.debug(`Found bottom nav items: ${bottomNavItems.length}`);
+        const bottomNavItems = document.querySelectorAll('.bottom-nav-item[data-view]')
+        this.logger.debug(`Found bottom nav items: ${bottomNavItems.length}`)
 
-        const sidebar = document.querySelector('.sidebar');
-        const overlay = document.getElementById('sidebar-overlay');
-        const hamburger = document.getElementById('hamburger-menu');
+        const sidebar = document.querySelector('.sidebar')
+        const overlay = document.getElementById('sidebar-overlay')
+        const hamburger = document.getElementById('hamburger-menu')
 
         bottomNavItems.forEach((item, index) => {
-            this.logger.debug(`Setting up item: ${item.dataset.view}`);
+            this.logger.debug(`Setting up item: ${item.dataset.view}`)
 
             // Use click event with proper binding
             item.addEventListener('click', (e) => {
-                e.preventDefault();
-                const view = item.dataset.view;
-                this.logger.debug(`Clicked view: ${view}`);
+                e.preventDefault()
+                const view = item.dataset.view
+                this.logger.debug(`Clicked view: ${view}`)
 
                 // Call switchView with proper context
                 if (this.app.switchView && typeof this.app.switchView === 'function') {
-                    this.app.switchView(view);
+                    this.app.switchView(view)
                 } else {
-                    this.logger.error('switchView not available');
+                    this.logger.error('switchView not available')
                 }
 
                 // Update active state
-                bottomNavItems.forEach(nav => nav.classList.remove('active'));
-                item.classList.add('active');
+                bottomNavItems.forEach((nav) => nav.classList.remove('active'))
+                item.classList.add('active')
 
                 // Close sidebar if open
                 if (sidebar) {
-                    sidebar.classList.remove('active');
-                    if (overlay) overlay.classList.remove('active');
-                    if (hamburger) hamburger.classList.remove('active');
+                    sidebar.classList.remove('active')
+                    if (overlay) overlay.classList.remove('active')
+                    if (hamburger) hamburger.classList.remove('active')
                 }
-            });
+            })
 
             // Also add touchend for better mobile responsiveness
             item.addEventListener('touchend', (e) => {
-                e.preventDefault(); // Prevent mouse click event
-                const view = item.dataset.view;
-                this.logger.debug(`Touch ended on view: ${view}`);
+                e.preventDefault() // Prevent mouse click event
+                const view = item.dataset.view
+                this.logger.debug(`Touch ended on view: ${view}`)
 
                 if (this.app.switchView && typeof this.app.switchView === 'function') {
-                    this.app.switchView(view);
+                    this.app.switchView(view)
                 }
 
                 // Update active state
-                bottomNavItems.forEach(nav => nav.classList.remove('active'));
-                item.classList.add('active');
+                bottomNavItems.forEach((nav) => nav.classList.remove('active'))
+                item.classList.add('active')
 
                 // Close sidebar if open
                 if (sidebar) {
-                    sidebar.classList.remove('active');
-                    if (overlay) overlay.classList.remove('active');
-                    if (hamburger) hamburger.classList.remove('active');
+                    sidebar.classList.remove('active')
+                    if (overlay) overlay.classList.remove('active')
+                    if (hamburger) hamburger.classList.remove('active')
                 }
-            });
-        });
+            })
+        })
 
         // Templates Mobile Button
-        const btnTemplatesMobile = document.getElementById('btn-templates-mobile');
+        const btnTemplatesMobile = document.getElementById('btn-templates-mobile')
         if (btnTemplatesMobile) {
             btnTemplatesMobile.addEventListener('click', () => {
-                this.app.openTemplatesModal?.();
-            });
+                this.app.openTemplatesModal?.()
+            })
         }
 
         // Search Mobile Button
-        const btnSearchMobile = document.getElementById('btn-search-mobile');
+        const btnSearchMobile = document.getElementById('btn-search-mobile')
         if (btnSearchMobile) {
             btnSearchMobile.addEventListener('click', () => {
-                const searchInput = document.getElementById('global-search');
+                const searchInput = document.getElementById('global-search')
                 if (searchInput) {
-                    searchInput.focus();
+                    searchInput.focus()
                 }
-            });
+            })
         }
     }
 
@@ -250,68 +252,76 @@ export class MobileNavigationManager {
      * Setup pull to refresh functionality
      */
     setupPullToRefresh() {
-        let startY = 0;
-        let currentY = 0;
-        let isPulling = false;
-        const pullThreshold = 80;
-        const contentArea = document.querySelector('.content-area');
+        let startY = 0
+        let currentY = 0
+        let isPulling = false
+        const pullThreshold = 80
+        const contentArea = document.querySelector('.main-content')
 
         if (!contentArea) {
-            this.logger.warn('Content area not found for pull-to-refresh');
-            return;
+            this.logger.warn('Content area not found for pull-to-refresh')
+            return
         }
 
         // Add pull-to-refresh indicator
-        const indicator = document.createElement('div');
-        indicator.className = 'pull-to-refresh';
-        indicator.innerHTML = '<i class="fas fa-sync-alt"></i> <span>Pull to refresh</span>';
-        contentArea.style.position = 'relative';
-        contentArea.insertBefore(indicator, contentArea.firstChild);
+        const indicator = document.createElement('div')
+        indicator.className = 'pull-to-refresh'
+        indicator.innerHTML = '<i class="fas fa-sync-alt"></i> <span>Pull to refresh</span>'
+        contentArea.style.position = 'relative'
+        contentArea.insertBefore(indicator, contentArea.firstChild)
 
-        contentArea.addEventListener('touchstart', (e) => {
-            if (contentArea.scrollTop === 0) {
-                startY = e.touches[0].clientY;
-                isPulling = true;
-            }
-        }, { passive: true });
-
-        contentArea.addEventListener('touchmove', (e) => {
-            if (!isPulling) return;
-
-            currentY = e.touches[0].clientY;
-            const diff = currentY - startY;
-
-            if (diff > 0 && contentArea.scrollTop === 0) {
-                const pullDistance = Math.min(diff * 0.5, pullThreshold);
-                indicator.style.transform = `translateY(${pullDistance}px)`;
-
-                if (pullDistance >= pullThreshold) {
-                    indicator.classList.add('refreshing');
-                } else {
-                    indicator.classList.remove('refreshing');
+        contentArea.addEventListener(
+            'touchstart',
+            (e) => {
+                if (contentArea.scrollTop === 0) {
+                    startY = e.touches[0].clientY
+                    isPulling = true
                 }
-            }
-        }, { passive: true });
+            },
+            { passive: true }
+        )
+
+        contentArea.addEventListener(
+            'touchmove',
+            (e) => {
+                if (!isPulling) return
+
+                currentY = e.touches[0].clientY
+                const diff = currentY - startY
+
+                if (diff > 0 && contentArea.scrollTop === 0) {
+                    const pullDistance = Math.min(diff * 0.5, pullThreshold)
+                    indicator.style.transform = `translateY(${pullDistance}px)`
+
+                    if (pullDistance >= pullThreshold) {
+                        indicator.classList.add('refreshing')
+                    } else {
+                        indicator.classList.remove('refreshing')
+                    }
+                }
+            },
+            { passive: true }
+        )
 
         contentArea.addEventListener('touchend', async () => {
-            if (!isPulling) return;
+            if (!isPulling) return
 
-            const diff = currentY - startY;
-            indicator.style.transform = 'translateY(0)';
+            const diff = currentY - startY
+            indicator.style.transform = 'translateY(0)'
 
             if (diff >= pullThreshold * 2) {
                 // Trigger refresh
-                indicator.classList.add('refreshing');
-                await this.refreshTasks();
+                indicator.classList.add('refreshing')
+                await this.refreshTasks()
                 setTimeout(() => {
-                    indicator.classList.remove('refreshing');
-                }, 1000);
+                    indicator.classList.remove('refreshing')
+                }, 1000)
             }
 
-            isPulling = false;
-            startY = 0;
-            currentY = 0;
-        });
+            isPulling = false
+            startY = 0
+            currentY = 0
+        })
     }
 
     /**
@@ -320,72 +330,80 @@ export class MobileNavigationManager {
     setupSwipeGestures() {
         // Only enable swipe gestures on touch devices
         if (!('ontouchstart' in window)) {
-            this.logger.debug('Touch not available, skipping swipe gestures');
-            return;
+            this.logger.debug('Touch not available, skipping swipe gestures')
+            return
         }
 
-        const tasksContainer = document.querySelector('.content-area');
+        const tasksContainer = document.querySelector('.tasks-container')
         if (!tasksContainer) {
-            this.logger.warn('Tasks container not found for swipe gestures');
-            return;
+            this.logger.warn('Tasks container not found for swipe gestures')
+            return
         }
 
-        let startX = 0;
-        let currentX = 0;
-        let currentTaskElement = null;
-        let isSwipping = false;
+        let startX = 0
+        let currentX = 0
+        let currentTaskElement = null
+        let isSwipping = false
 
-        tasksContainer.addEventListener('touchstart', (e) => {
-            const taskItem = e.target.closest('.task-item');
-            if (!taskItem) return;
+        tasksContainer.addEventListener(
+            'touchstart',
+            (e) => {
+                const taskItem = e.target.closest('.task-item')
+                if (!taskItem) return
 
-            startX = e.touches[0].clientX;
-            currentTaskElement = taskItem;
-            isSwipping = true;
-        }, { passive: true });
+                startX = e.touches[0].clientX
+                currentTaskElement = taskItem
+                isSwipping = true
+            },
+            { passive: true }
+        )
 
-        tasksContainer.addEventListener('touchmove', (e) => {
-            if (!isSwipping || !currentTaskElement) return;
+        tasksContainer.addEventListener(
+            'touchmove',
+            (e) => {
+                if (!isSwipping || !currentTaskElement) return
 
-            currentX = e.touches[0].clientX;
-            const diff = currentX - startX;
-            const threshold = 50;
+                currentX = e.touches[0].clientX
+                const diff = currentX - startX
+                const threshold = 50
 
-            // Prevent scrolling while swiping
-            if (Math.abs(diff) > 10) {
-                e.preventDefault();
-            }
+                // Prevent scrolling while swiping
+                if (Math.abs(diff) > 10) {
+                    e.preventDefault()
+                }
 
-            if (Math.abs(diff) > threshold) {
-                currentTaskElement.style.transform = `translateX(${diff}px)`;
-            }
-        }, { passive: false });
+                if (Math.abs(diff) > threshold) {
+                    currentTaskElement.style.transform = `translateX(${diff}px)`
+                }
+            },
+            { passive: false }
+        )
 
         tasksContainer.addEventListener('touchend', (e) => {
-            if (!isSwipping || !currentTaskElement) return;
+            if (!isSwipping || !currentTaskElement) return
 
-            const diff = currentX - startX;
-            const threshold = 80;
-            const taskId = currentTaskElement.dataset.taskId;
+            const diff = currentX - startX
+            const threshold = 80
+            const taskId = currentTaskElement.dataset.taskId
 
             if (Math.abs(diff) > threshold) {
                 // Swipe completed - trigger action
                 if (diff > 0) {
                     // Swipe right - complete task
-                    this.app.toggleTaskComplete?.(taskId);
+                    this.app.toggleTaskComplete?.(taskId)
                 } else {
                     // Swipe left - delete/archive task
-                    this.app.archiveTask?.(taskId);
+                    this.app.archiveTask?.(taskId)
                 }
             }
 
             // Reset
-            currentTaskElement.style.transform = '';
-            currentTaskElement = null;
-            isSwipping = false;
-            startX = 0;
-            currentX = 0;
-        });
+            currentTaskElement.style.transform = ''
+            currentTaskElement = null
+            isSwipping = false
+            startX = 0
+            currentX = 0
+        })
     }
 
     /**
@@ -393,16 +411,16 @@ export class MobileNavigationManager {
      */
     async refreshTasks() {
         // Reload tasks from storage
-        const tasksData = this.app.storage.getTasks();
-        this.app.tasks = tasksData.map(data => {
+        const tasksData = this.app.storage.getTasks()
+        this.app.tasks = tasksData.map((data) => {
             // Import Task model if needed
-            const { Task } = this.app.models || {};
+            const { Task } = this.app.models || {}
             if (Task && typeof Task.fromJSON === 'function') {
-                return Task.fromJSON(data);
+                return Task.fromJSON(data)
             }
-            return data;
-        });
-        this.app.renderView?.();
-        this.app.updateCounts?.();
+            return data
+        })
+        this.app.renderView?.()
+        this.app.updateCounts?.()
     }
 }
