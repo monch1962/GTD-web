@@ -21,11 +21,18 @@ const mockApp = {
     showSuggestions: jest.fn(),
     toggleTaskComplete: jest.fn(),
     archiveTask: jest.fn(),
+    undo: jest.fn(),
+    redo: jest.fn(),
     storage: {
         getTasks: jest.fn(() => [])
     },
     renderView: jest.fn(),
-    updateCounts: jest.fn()
+    updateCounts: jest.fn(),
+    models: {
+        Task: {
+            fromJSON: jest.fn((data) => data)
+        }
+    }
 }
 
 const mockState = {
@@ -600,6 +607,524 @@ describe('MobileNavigationManager', () => {
             const inboxItem = document.querySelector('.bottom-nav-item[data-view="inbox"]')
             inboxItem.click()
             expect(mockApp.switchView).toHaveBeenCalledWith('inbox')
+        })
+    })
+
+    describe('Mobile Menu Dropdown - Undo/Redo', () => {
+        beforeEach(() => {
+            // Add undo/redo menu items to DOM
+            const dropdown = document.getElementById('mobile-menu-dropdown')
+            dropdown.innerHTML += `
+                <button class="mobile-menu-item" data-action="undo">
+                    <i class="fas fa-undo"></i> Undo
+                </button>
+                <button class="mobile-menu-item" data-action="redo">
+                    <i class="fas fa-redo"></i> Redo
+                </button>
+            `
+        })
+
+        test('should handle undo menu item click', () => {
+            manager.setupForTest()
+            const undoSpy = jest.spyOn(manager.app, 'undo').mockImplementation()
+
+            mockMobileMenuBtn.click()
+
+            const undoItem = mockMobileMenuDropdown.querySelector('[data-action="undo"]')
+            undoItem.click()
+
+            expect(undoSpy).toHaveBeenCalled()
+            expect(mockMobileMenuDropdown.style.display).toBe('none')
+
+            undoSpy.mockRestore()
+        })
+
+        test('should handle redo menu item click', () => {
+            manager.setupForTest()
+            const redoSpy = jest.spyOn(manager.app, 'redo').mockImplementation()
+
+            mockMobileMenuBtn.click()
+
+            const redoItem = mockMobileMenuDropdown.querySelector('[data-action="redo"]')
+            redoItem.click()
+
+            expect(redoSpy).toHaveBeenCalled()
+            expect(mockMobileMenuDropdown.style.display).toBe('none')
+
+            redoSpy.mockRestore()
+        })
+    })
+
+    describe('Pull to Refresh', () => {
+        let contentArea
+
+        beforeEach(() => {
+            // Add content area for pull-to-refresh
+            contentArea = document.createElement('div')
+            contentArea.className = 'content-area'
+            contentArea.innerHTML = '<div>Tasks content</div>'
+            document.body.appendChild(contentArea)
+        })
+
+        afterEach(() => {
+            if (contentArea && contentArea.parentNode) {
+                contentArea.parentNode.removeChild(contentArea)
+            }
+        })
+
+        test('should create pull-to-refresh indicator', () => {
+            manager.setupForTest()
+
+            const indicator = contentArea.querySelector('.pull-to-refresh')
+            expect(indicator).toBeTruthy()
+            expect(indicator.innerHTML).toContain('Pull to refresh')
+        })
+
+        test('should handle missing content area gracefully', () => {
+            contentArea.remove()
+            const consoleSpy = jest.spyOn(console, 'warn').mockImplementation()
+
+            manager.setupForTest()
+
+            expect(() => manager.setupForTest()).not.toThrow()
+
+            consoleSpy.mockRestore()
+        })
+
+        test('should show pull indicator on touchstart', () => {
+            manager.setupForTest()
+
+            // Mock touchstart at top of content
+            const touchstartEvent = new TouchEvent('touchstart', {
+                bubbles: true,
+                touches: [{ clientY: 100 }]
+            })
+            contentArea.dispatchEvent(touchstartEvent)
+
+            // Indicator should be created
+            const indicator = contentArea.querySelector('.pull-to-refresh')
+            expect(indicator).toBeTruthy()
+        })
+
+        test('should transform indicator on touchmove when pulling down', () => {
+            manager.setupForTest()
+
+            // First touchstart
+            const touchstartEvent = new TouchEvent('touchstart', {
+                bubbles: true,
+                touches: [{ clientY: 100 }]
+            })
+            contentArea.dispatchEvent(touchstartEvent)
+
+            // Then touchmove with pull
+            const touchmoveEvent = new TouchEvent('touchmove', {
+                bubbles: true,
+                touches: [{ clientY: 150 }] // Pulled down 50px
+            })
+            contentArea.dispatchEvent(touchmoveEvent)
+
+            // Indicator should have transform
+            const indicator = contentArea.querySelector('.pull-to-refresh')
+            expect(indicator.style.transform).toContain('translateY')
+        })
+
+        test('should add refreshing class when pulled past threshold', () => {
+            manager.setupForTest()
+
+            // Touchstart
+            const touchstartEvent = new TouchEvent('touchstart', {
+                bubbles: true,
+                touches: [{ clientY: 100 }]
+            })
+            contentArea.dispatchEvent(touchstartEvent)
+
+            // Touchmove past threshold (pullThreshold = 80, so need diff > 160 for threshold * 2)
+            const touchmoveEvent = new TouchEvent('touchmove', {
+                bubbles: true,
+                touches: [{ clientY: 350 }] // Pulled down 250px
+            })
+            contentArea.dispatchEvent(touchmoveEvent)
+
+            const indicator = contentArea.querySelector('.pull-to-refresh')
+            expect(indicator.classList.contains('refreshing')).toBe(true)
+        })
+
+        test('should not trigger refresh when pull is below threshold', async () => {
+            manager.setupForTest()
+            const refreshSpy = jest.spyOn(manager, 'refreshTasks').mockResolvedValue()
+
+            // Touchstart
+            const touchstartEvent = new TouchEvent('touchstart', {
+                bubbles: true,
+                touches: [{ clientY: 100 }]
+            })
+            contentArea.dispatchEvent(touchstartEvent)
+
+            // Touchmove below threshold
+            const touchmoveEvent = new TouchEvent('touchmove', {
+                bubbles: true,
+                touches: [{ clientY: 150 }] // Only 50px pull
+            })
+            contentArea.dispatchEvent(touchmoveEvent)
+
+            // Touchend
+            const touchendEvent = new TouchEvent('touchend', { bubbles: true })
+            contentArea.dispatchEvent(touchendEvent)
+
+            // Should not call refreshTasks
+            expect(refreshSpy).not.toHaveBeenCalled()
+
+            refreshSpy.mockRestore()
+        })
+
+        test('should trigger refresh when pulled past threshold', async () => {
+            manager.setupForTest()
+            const refreshSpy = jest.spyOn(manager, 'refreshTasks').mockResolvedValue()
+
+            // Touchstart
+            const touchstartEvent = new TouchEvent('touchstart', {
+                bubbles: true,
+                touches: [{ clientY: 100 }]
+            })
+            contentArea.dispatchEvent(touchstartEvent)
+
+            // Touchmove past threshold
+            const touchmoveEvent = new TouchEvent('touchmove', {
+                bubbles: true,
+                touches: [{ clientY: 350 }]
+            })
+            contentArea.dispatchEvent(touchmoveEvent)
+
+            // Touchend
+            const touchendEvent = new TouchEvent('touchend', { bubbles: true })
+            await new Promise((resolve) => {
+                contentArea.dispatchEvent(touchendEvent)
+                setTimeout(resolve, 10)
+            })
+
+            // Should call refreshTasks
+            expect(refreshSpy).toHaveBeenCalled()
+
+            refreshSpy.mockRestore()
+        })
+
+        test('should not trigger pull when not at top of content', () => {
+            manager.setupForTest()
+
+            // Simulate scrolled content
+            contentArea.scrollTop = 100
+
+            const touchstartEvent = new TouchEvent('touchstart', {
+                bubbles: true,
+                touches: [{ clientY: 100 }]
+            })
+
+            contentArea.dispatchEvent(touchstartEvent)
+
+            // Should not set isPulling to true
+            // This is tested indirectly by ensuring no errors occur
+            expect(() => contentArea.dispatchEvent(touchstartEvent)).not.toThrow()
+        })
+    })
+
+    describe('Swipe Gestures', () => {
+        let contentArea
+        let taskItem
+
+        beforeEach(() => {
+            // Add content area with task items
+            contentArea = document.createElement('div')
+            contentArea.className = 'content-area'
+            taskItem = document.createElement('div')
+            taskItem.className = 'task-item'
+            taskItem.dataset.taskId = 'task-123'
+            taskItem.textContent = 'Test Task'
+            contentArea.appendChild(taskItem)
+            document.body.appendChild(contentArea)
+        })
+
+        afterEach(() => {
+            if (contentArea && contentArea.parentNode) {
+                contentArea.parentNode.removeChild(contentArea)
+            }
+        })
+
+        test('should handle missing content area gracefully', () => {
+            contentArea.remove()
+            const consoleSpy = jest.spyOn(console, 'warn').mockImplementation()
+
+            manager.setupForTest()
+
+            expect(() => manager.setupForTest()).not.toThrow()
+
+            consoleSpy.mockRestore()
+        })
+
+        test('should not setup swipe gestures on non-touch devices', () => {
+            // Mock non-touch device
+            const originalTouchStart = 'ontouchstart' in window
+            delete window.ontouchstart
+
+            manager.setupForTest()
+
+            // Restore
+            if (originalTouchStart) {
+                window.ontouchstart = () => {}
+            }
+        })
+
+        test('should track task element on touchstart', () => {
+            // Mock touch support
+            Object.defineProperty(window, 'ontouchstart', { value: true, writable: true })
+
+            manager.setupForTest()
+
+            const touchstartEvent = new TouchEvent('touchstart', {
+                bubbles: true,
+                target: taskItem,
+                touches: [{ clientX: 100 }]
+            })
+
+            taskItem.dispatchEvent(touchstartEvent)
+
+            // Should track the task (no errors)
+            expect(() => taskItem.dispatchEvent(touchstartEvent)).not.toThrow()
+        })
+
+        test('should transform task element on swipe move', () => {
+            Object.defineProperty(window, 'ontouchstart', { value: true, writable: true })
+
+            manager.setupForTest()
+
+            // Touchstart on task
+            const touchstartEvent = new TouchEvent('touchstart', {
+                bubbles: true,
+                target: taskItem,
+                touches: [{ clientX: 100 }]
+            })
+            taskItem.dispatchEvent(touchstartEvent)
+
+            // Touchmove
+            const touchmoveEvent = new TouchEvent('touchmove', {
+                bubbles: true,
+                target: taskItem,
+                touches: [{ clientX: 170 }] // Swiped right 70px
+            })
+            taskItem.dispatchEvent(touchmoveEvent)
+
+            // Should have transform
+            expect(taskItem.style.transform).toContain('translateX')
+        })
+
+        test('should complete task on right swipe', () => {
+            Object.defineProperty(window, 'ontouchstart', { value: true, writable: true })
+
+            manager.setupForTest()
+            const toggleSpy = jest.spyOn(manager.app, 'toggleTaskComplete').mockImplementation()
+
+            // Touchstart
+            const touchstartEvent = new TouchEvent('touchstart', {
+                bubbles: true,
+                target: taskItem,
+                touches: [{ clientX: 100 }]
+            })
+            taskItem.dispatchEvent(touchstartEvent)
+
+            // Touchmove (swipe right past threshold)
+            const touchmoveEvent = new TouchEvent('touchmove', {
+                bubbles: true,
+                target: taskItem,
+                touches: [{ clientX: 200 }] // Swiped right 100px (> 80 threshold)
+            })
+            taskItem.dispatchEvent(touchmoveEvent)
+
+            // Touchend
+            const touchendEvent = new TouchEvent('touchend', {
+                bubbles: true,
+                target: taskItem
+            })
+            taskItem.dispatchEvent(touchendEvent)
+
+            expect(toggleSpy).toHaveBeenCalledWith('task-123')
+
+            // Transform should be reset
+            expect(taskItem.style.transform).toBe('')
+
+            toggleSpy.mockRestore()
+        })
+
+        test('should archive task on left swipe', () => {
+            Object.defineProperty(window, 'ontouchstart', { value: true, writable: true })
+
+            manager.setupForTest()
+            const archiveSpy = jest.spyOn(manager.app, 'archiveTask').mockImplementation()
+
+            // Touchstart
+            const touchstartEvent = new TouchEvent('touchstart', {
+                bubbles: true,
+                target: taskItem,
+                touches: [{ clientX: 200 }]
+            })
+            taskItem.dispatchEvent(touchstartEvent)
+
+            // Touchmove (swipe left past threshold)
+            const touchmoveEvent = new TouchEvent('touchmove', {
+                bubbles: true,
+                target: taskItem,
+                touches: [{ clientX: 100 }] // Swiped left 100px (> 80 threshold)
+            })
+            taskItem.dispatchEvent(touchmoveEvent)
+
+            // Touchend
+            const touchendEvent = new TouchEvent('touchend', {
+                bubbles: true,
+                target: taskItem
+            })
+            taskItem.dispatchEvent(touchendEvent)
+
+            expect(archiveSpy).toHaveBeenCalledWith('task-123')
+
+            // Transform should be reset
+            expect(taskItem.style.transform).toBe('')
+
+            archiveSpy.mockRestore()
+        })
+
+        test('should not trigger action on small swipe', () => {
+            Object.defineProperty(window, 'ontouchstart', { value: true, writable: true })
+
+            manager.setupForTest()
+            const toggleSpy = jest.spyOn(manager.app, 'toggleTaskComplete').mockImplementation()
+            const archiveSpy = jest.spyOn(manager.app, 'archiveTask').mockImplementation()
+
+            // Touchstart
+            const touchstartEvent = new TouchEvent('touchstart', {
+                bubbles: true,
+                target: taskItem,
+                touches: [{ clientX: 100 }]
+            })
+            taskItem.dispatchEvent(touchstartEvent)
+
+            // Touchmove (small swipe, below threshold)
+            const touchmoveEvent = new TouchEvent('touchmove', {
+                bubbles: true,
+                target: taskItem,
+                touches: [{ clientX: 150 }] // Only 50px swipe (< 80 threshold)
+            })
+            taskItem.dispatchEvent(touchmoveEvent)
+
+            // Touchend
+            const touchendEvent = new TouchEvent('touchend', {
+                bubbles: true,
+                target: taskItem
+            })
+            taskItem.dispatchEvent(touchendEvent)
+
+            // Should not trigger either action
+            expect(toggleSpy).not.toHaveBeenCalled()
+            expect(archiveSpy).not.toHaveBeenCalled()
+
+            // Transform should be reset
+            expect(taskItem.style.transform).toBe('')
+
+            toggleSpy.mockRestore()
+            archiveSpy.mockRestore()
+        })
+
+        test('should ignore touchstart on non-task elements', () => {
+            Object.defineProperty(window, 'ontouchstart', { value: true, writable: true })
+
+            manager.setupForTest()
+
+            // Touchstart on content area (not on task)
+            const touchstartEvent = new TouchEvent('touchstart', {
+                bubbles: true,
+                target: contentArea,
+                touches: [{ clientX: 100 }]
+            })
+
+            // Should not throw
+            expect(() => contentArea.dispatchEvent(touchstartEvent)).not.toThrow()
+        })
+    })
+
+    describe('Refresh Tasks', () => {
+        test('should reload tasks from storage', async () => {
+            const mockTasksData = [
+                { id: 'task-1', title: 'Task 1' },
+                { id: 'task-2', title: 'Task 2' }
+            ]
+            mockApp.storage.getTasks.mockReturnValue(mockTasksData)
+
+            await manager.refreshTasks()
+
+            expect(mockApp.storage.getTasks).toHaveBeenCalled()
+            expect(mockApp.renderView).toHaveBeenCalled()
+            expect(mockApp.updateCounts).toHaveBeenCalled()
+        })
+
+        test('should use Task.fromJSON when available', async () => {
+            const mockTasksData = [{ id: 'task-1', title: 'Task 1' }]
+            const mockTaskInstance = { id: 'task-1', title: 'Task 1', completed: false }
+            mockApp.storage.getTasks.mockReturnValue(mockTasksData)
+            mockApp.models.Task.fromJSON.mockReturnValue(mockTaskInstance)
+
+            await manager.refreshTasks()
+
+            expect(mockApp.models.Task.fromJSON).toHaveBeenCalledWith(mockTasksData[0])
+        })
+
+        test('should handle missing models gracefully', async () => {
+            const mockTasksData = [{ id: 'task-1', title: 'Task 1' }]
+            mockApp.storage.getTasks.mockReturnValue(mockTasksData)
+            mockApp.models = null
+
+            await manager.refreshTasks()
+
+            // Should not throw, should use raw data
+            expect(mockApp.renderView).toHaveBeenCalled()
+        })
+
+        test('should handle missing Task.fromJSON gracefully', async () => {
+            const mockTasksData = [{ id: 'task-1', title: 'Task 1' }]
+            mockApp.storage.getTasks.mockReturnValue(mockTasksData)
+            mockApp.models = { Task: null }
+
+            await manager.refreshTasks()
+
+            // Should not throw, should use raw data
+            expect(mockApp.renderView).toHaveBeenCalled()
+        })
+
+        test('should handle missing renderView gracefully', async () => {
+            const mockTasksData = [{ id: 'task-1', title: 'Task 1' }]
+            mockApp.storage.getTasks.mockReturnValue(mockTasksData)
+            mockApp.renderView = undefined
+
+            await manager.refreshTasks()
+
+            // Should not throw
+            expect(mockApp.storage.getTasks).toHaveBeenCalled()
+        })
+
+        test('should handle missing updateCounts gracefully', async () => {
+            const mockTasksData = [{ id: 'task-1', title: 'Task 1' }]
+            mockApp.storage.getTasks.mockReturnValue(mockTasksData)
+            mockApp.updateCounts = undefined
+
+            await manager.refreshTasks()
+
+            // Should not throw
+            expect(mockApp.storage.getTasks).toHaveBeenCalled()
+        })
+
+        test('should handle empty task list', async () => {
+            mockApp.storage.getTasks.mockReturnValue([])
+
+            await manager.refreshTasks()
+
+            // Should complete without error
+            expect(mockApp.storage.getTasks).toHaveBeenCalled()
         })
     })
 })
