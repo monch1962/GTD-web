@@ -140,6 +140,8 @@ class GTDApp {
 
     async init() {
         try {
+            console.log('GTD App: Initializing...');
+
             // Register service worker for PWA support
             if ('serviceWorker' in navigator) {
                 try {
@@ -151,12 +153,23 @@ class GTDApp {
             }
 
             // Initialize dark mode from preference
+            console.log('GTD App: Initializing dark mode...');
             this.initializeDarkMode();
 
+            console.log('GTD App: Initializing storage...');
             await this.initializeStorage();
+            console.log('GTD App: Storage userId =', this.storage.userId);
+
+            console.log('GTD App: Loading data...');
             await this.loadData();
+
+            console.log('GTD App: Setting up event listeners...');
             this.setupEventListeners();
+
+            console.log('GTD App: Displaying user ID...');
             this.displayUserId();
+
+            console.log('GTD App: Initializing custom contexts...');
             this.initializeCustomContexts();
 
             // Migrate blocked tasks to Waiting (one-time migration for existing data)
@@ -165,11 +178,15 @@ class GTDApp {
             // Check if any waiting tasks now have their dependencies met
             await this.checkWaitingTasksDependencies();
 
+            console.log('GTD App: Rendering initial view...');
             this.renderView();
             this.updateCounts();
             this.renderProjectsDropdown();
             this.updateContextFilter();
+
+            console.log('GTD App: Initialization complete!');
         } catch (error) {
+            console.error('GTD App: Initialization failed!', error);
             this.handleInitializationError(error);
         }
     }
@@ -179,9 +196,17 @@ class GTDApp {
     }
 
     displayUserId() {
+        console.log('displayUserId: Called');
+        console.log('displayUserId: ElementIds.userId =', ElementIds.userId);
         const userIdElement = document.getElementById(ElementIds.userId);
+        console.log('displayUserId: userIdElement =', userIdElement);
+        console.log('displayUserId: this.storage.userId =', this.storage.userId);
+
         if (userIdElement && this.storage.userId) {
             userIdElement.textContent = this.storage.userId.substr(0, 12) + '...';
+            console.log('displayUserId: Updated user ID in DOM');
+        } else {
+            console.warn('displayUserId: Failed - element:', userIdElement, 'userId:', this.storage.userId);
         }
     }
 
@@ -4028,9 +4053,15 @@ export { GTDApp, ErrorHandler };
 const errorHandler = new ErrorHandler();
 
 // Initialize app
+console.log('app.js: Creating GTDApp instance...');
 const app = new GTDApp();
+console.log('app.js: GTDApp instance created');
 window.app = app; // Expose to global scope for inline onclick handlers
-document.addEventListener('DOMContentLoaded', () => app.init());
+console.log('app.js: Waiting for DOMContentLoaded...');
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('app.js: DOMContentLoaded fired, calling app.init()...');
+    app.init();
+});
 
 // Add button to open project modal in projects view
 document.addEventListener('DOMContentLoaded', () => {
