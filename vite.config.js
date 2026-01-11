@@ -47,9 +47,23 @@ export default defineConfig({
 
     // Development server
     server: {
+        host: true, // Listen on all addresses (localhost, LAN, public)
         port: 8080,
         open: true,
-        strictPort: false
+        strictPort: false,
+        cors: true,
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers': '*'
+        }
+    },
+
+    // Preview server (production)
+    preview: {
+        host: true, // Listen on all addresses
+        port: 4173,
+        strictPort: true
     },
 
     // Module resolution
