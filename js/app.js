@@ -146,6 +146,13 @@ class GTDApp {
             }, 'error');
         }, 10000); // 10 second timeout
 
+        // Update diagnostic indicator
+        const indicator = document.getElementById('gtd-js-test');
+        if (indicator) {
+            indicator.innerHTML = '⚠️ App initializing...';
+            indicator.style.background = 'purple';
+        }
+
         try {
             console.log('GTD App: Initializing...');
 
@@ -266,6 +273,13 @@ class GTDApp {
             clearTimeout(initTimeout);
             this.updateDebugBanner('✓ GTD Ready!', { tasks: this.tasks.length }, 'success');
 
+            // Hide diagnostic indicator on success
+            if (indicator) {
+                indicator.innerHTML = '✓ GTD Ready!';
+                indicator.style.background = '#00cc00';
+                setTimeout(() => indicator.remove(), 2000);
+            }
+
             // Auto-remove success banner after 2 seconds
             setTimeout(() => {
                 const banner = document.getElementById('gtd-debug-banner');
@@ -274,6 +288,13 @@ class GTDApp {
         } catch (error) {
             clearTimeout(initTimeout);
             console.error('GTD App: Initialization failed!', error);
+
+            // Update indicator on error
+            if (indicator) {
+                indicator.innerHTML = `✗ ERROR: ${error.message}`;
+                indicator.style.background = '#ff4444';
+            }
+
             this.showDebugBanner('✗ CRITICAL ERROR', {
                 step: this._initStep,
                 error: error.message,
@@ -4190,12 +4211,29 @@ const errorHandler = new ErrorHandler();
 
 // Initialize app
 console.log('app.js: Creating GTDApp instance...');
+
+// Update diagnostic indicator
+const updateIndicator = (text, color = 'orange') => {
+    const indicator = document.getElementById('gtd-js-test');
+    if (indicator) {
+        indicator.innerHTML = `⚠️ ${text}`;
+        indicator.style.background = color;
+    }
+    console.log('DEBUG:', text);
+};
+
+updateIndicator('app.js loading...', 'orange');
+
 const app = new GTDApp();
 console.log('app.js: GTDApp instance created');
 window.app = app; // Expose to global scope for inline onclick handlers
+
+updateIndicator('app.js loaded, waiting for DOM...', 'blue');
 console.log('app.js: Waiting for DOMContentLoaded...');
+
 document.addEventListener('DOMContentLoaded', () => {
     console.log('app.js: DOMContentLoaded fired, calling app.init()...');
+    updateIndicator('app.js initializing...', 'purple');
     app.init();
 });
 

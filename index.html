@@ -11,6 +11,29 @@
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="manifest" href="manifest.json">
+    <script>
+        // IMMEDIATE DIAGNOSTIC - Runs as soon as HTML loads
+        (function() {
+            console.log('DEBUG: HTML loaded, script executing');
+            window._gtdDebug = {
+                htmlLoaded: true,
+                scriptTime: Date.now()
+            };
+
+            // Show immediate visual indicator
+            const indicator = document.createElement('div');
+            indicator.id = 'gtd-js-test';
+            indicator.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:orange;color:white;padding:5px;text-align:center;font-size:12px;z-index:9999999;';
+            indicator.innerHTML = '⚠️ JS Test: HTML loaded, waiting for modules...';
+            document.addEventListener('DOMContentLoaded', function() {
+                indicator.innerHTML = '⚠️ JS Test: DOM ready, waiting for app.js...';
+                window._gtdDebug.domReady = true;
+                console.log('DEBUG: DOM ready');
+            });
+            document.documentElement.appendChild(indicator);
+            console.log('DEBUG: Indicator added');
+        })();
+    </script>
 </head>
 <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
