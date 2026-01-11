@@ -142,6 +142,9 @@ class GTDApp {
         try {
             console.log('GTD App: Initializing...');
 
+            // Show initialization started
+            this.showDebugBanner('GTD App Loading...', { step: 'Initializing' });
+
             // Register service worker for PWA support
             if ('serviceWorker' in navigator) {
                 try {
@@ -159,15 +162,18 @@ class GTDApp {
             console.log('GTD App: Initializing storage...');
             await this.initializeStorage();
             console.log('GTD App: Storage userId =', this.storage.userId);
+            this.updateDebugBanner('Storage loaded', { userId: this.storage.userId });
 
             console.log('GTD App: Loading data...');
             await this.loadData();
+            this.updateDebugBanner('Data loaded', { tasks: this.tasks.length, projects: this.projects.length });
 
             console.log('GTD App: Setting up event listeners...');
             this.setupEventListeners();
 
             console.log('GTD App: Displaying user ID...');
             this.displayUserId();
+            this.updateDebugBanner('User ID displayed', { success: true });
 
             console.log('GTD App: Initializing custom contexts...');
             this.initializeCustomContexts();
@@ -185,10 +191,35 @@ class GTDApp {
             this.updateContextFilter();
 
             console.log('GTD App: Initialization complete!');
+            this.updateDebugBanner('✓ GTD Ready!', { tasks: this.tasks.length }, 'success');
+
+            // Auto-remove success banner after 2 seconds
+            setTimeout(() => {
+                const banner = document.getElementById('gtd-debug-banner');
+                if (banner) banner.remove();
+            }, 2000);
         } catch (error) {
             console.error('GTD App: Initialization failed!', error);
+            this.showDebugBanner('✗ INIT FAILED', { error: error.message, stack: error.stack?.substring(0, 200) });
             this.handleInitializationError(error);
         }
+    }
+
+    updateDebugBanner(title, details, type = 'info') {
+        let banner = document.getElementById('gtd-debug-banner');
+        if (!banner) {
+            banner = document.createElement('div');
+            banner.id = 'gtd-debug-banner';
+            banner.style.cssText = 'position:fixed;top:0;left:0;right:0;padding:15px;text-align:center;font-weight:bold;z-index:999999;font-size:16px;box-shadow:0 2px 10px rgba(0,0,0,0.3);transition:background 0.3s;';
+            document.body.appendChild(banner);
+        }
+
+        const bgColor = type === 'success' ? '#00cc00' : type === 'error' ? '#ff4444' : '#2196F3';
+        banner.style.background = bgColor;
+        banner.style.color = 'white';
+
+        const info = typeof details === 'object' ? JSON.stringify(details) : details;
+        banner.innerHTML = `<div>${title}</div><div style="margin-top:5px;font-size:12px;font-weight:normal;">${info}</div>`;
     }
 
     async initializeStorage() {
@@ -204,10 +235,37 @@ class GTDApp {
 
         if (userIdElement && this.storage.userId) {
             userIdElement.textContent = this.storage.userId.substr(0, 12) + '...';
+            userIdElement.style.color = 'var(--text-primary)';
             console.log('displayUserId: Updated user ID in DOM');
         } else {
             console.warn('displayUserId: Failed - element:', userIdElement, 'userId:', this.storage.userId);
+            // Show error directly in UI for mobile debugging
+            if (userIdElement) {
+                userIdElement.textContent = 'ERROR!';
+                userIdElement.style.color = 'red';
+                userIdElement.style.fontWeight = 'bold';
+            }
+            // Show visible error banner
+            this.showDebugBanner('displayUserId failed', { userId: this.storage?.userId, element: !!userIdElement });
         }
+    }
+
+    showDebugBanner(title, details) {
+        // Create a visible debug banner for mobile
+        const banner = document.createElement('div');
+        banner.id = 'gtd-debug-banner';
+        banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#ff4444;color:white;padding:15px;text-align:center;font-weight:bold;z-index:999999;font-size:16px;box-shadow:0 2px 10px rgba(0,0,0,0.3);';
+        banner.innerHTML = `<div>${title}</div>`;
+
+        const info = document.createElement('div');
+        info.style.cssText = 'margin-top:10px;font-size:12px;font-weight:normal;white-space:pre-wrap;text-align:left;';
+        info.textContent = JSON.stringify(details, null, 2);
+
+        banner.appendChild(info);
+        document.body.appendChild(banner);
+
+        // Auto-remove after 30 seconds
+        setTimeout(() => banner.remove(), 30000);
     }
 
     initializeCustomContexts() {
