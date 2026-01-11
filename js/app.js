@@ -41,21 +41,11 @@
  * ============================================================================
  */
 
-import { Task, Project, Reference, Template } from './models.js';
-import { Storage } from './storage.js';
+import { getDefaultContextIds, getAllContexts, getContextTaskCounts } from './config/defaultContexts.js';
 import { ElementIds, StorageKeys, TaskStatus, Views, RecurrenceLabels, ViewLabels, Weekday, WeekdayNames, NthWeekdayLabels } from './constants.js';
 import { getElement, setTextContent, escapeHtml, announce } from './dom-utils.js';
-import { TaskParser } from './nlp-parser.js';
-import { getDefaultContextIds, getAllContexts, getContextTaskCounts } from './config/defaultContexts.js';
-import { DarkModeManager } from './modules/ui/dark-mode.js';
-import { CalendarManager } from './modules/features/calendar.js';
+import { Task, Project, Reference, Template } from './models.js';
 import { ArchiveManager } from './modules/features/archive.js';
-import { ContextMenuManager } from './modules/ui/context-menu.js';
-import { WeeklyReviewManager } from './modules/features/weekly-review.js';
-import { DependenciesManager } from './modules/features/dependencies.js';
-import { TemplatesManager } from './modules/features/templates.js';
-import { MobileNavigationManager } from './modules/ui/mobile-navigation.js';
-import { DashboardManager } from './modules/features/dashboard.js';
 import { FocusPomodoroManager } from './modules/features/focus-pomodoro.js';
 import { DailyReviewManager } from './modules/features/daily-review.js';
 import { SmartSuggestionsManager } from './modules/features/smart-suggestions.js';
@@ -64,8 +54,8 @@ import { GlobalQuickCaptureManager } from './modules/features/global-quick-captu
 import { ProductivityHeatmapManager } from './modules/features/productivity-heatmap.js';
 import { UndoRedoManager } from './modules/features/undo-redo.js';
 import { BulkOperationsManager } from './modules/features/bulk-operations.js';
+import { CalendarManager } from './modules/features/calendar.js';
 import { TimeTrackingManager } from './modules/features/time-tracking.js';
-import { SubtasksManager } from './modules/features/subtasks.js';
 import { QuickCaptureWidgetManager } from './modules/features/quick-capture-widget.js';
 import { NewProjectButtonManager } from './modules/features/new-project-button.js';
 import { NavigationManager } from './modules/features/navigation.js';
@@ -73,10 +63,20 @@ import { SmartDateSuggestionsManager } from './modules/features/smart-date-sugge
 import { SearchManager } from './modules/features/search.js';
 import { TaskOperations } from './modules/features/task-operations.js';
 import { ContextFilterManager } from './modules/features/context-filter.js';
+import { DashboardManager } from './modules/features/dashboard.js';
 import { ProjectOperations } from './modules/features/project-operations.js';
-import { TaskModalManager } from './modules/features/task-modal.js';
 import { ProjectModalManager } from './modules/features/project-modal.js';
 import { DataExportImportManager } from './modules/features/data-export-import.js';
+import { DependenciesManager } from './modules/features/dependencies.js';
+import { SubtasksManager } from './modules/features/subtasks.js';
+import { TaskModalManager } from './modules/features/task-modal.js';
+import { TemplatesManager } from './modules/features/templates.js';
+import { WeeklyReviewManager } from './modules/features/weekly-review.js';
+import { ContextMenuManager } from './modules/ui/context-menu.js';
+import { DarkModeManager } from './modules/ui/dark-mode.js';
+import { MobileNavigationManager } from './modules/ui/mobile-navigation.js';
+import { TaskParser } from './nlp-parser.js';
+import { Storage } from './storage.js';
 
 class GTDApp {
     // =========================================================================
@@ -506,7 +506,7 @@ class GTDApp {
             }
         }
 
-        placeholder += " (Try: \"Call John @work tomorrow high energy\")";
+        placeholder += ' (Try: "Call John @work tomorrow high energy")';
         quickAddInput.placeholder = placeholder;
     }
 
@@ -937,7 +937,6 @@ class GTDApp {
     filterTasksBySearch(tasks) {
         return this.search.filterTasksBySearch(tasks);
     }
-
 
     // ==================== DASHBOARD FUNCTIONALITY (Delegated to DashboardManager module) ====================
 
@@ -1505,7 +1504,6 @@ class GTDApp {
         this.quickCaptureWidget.renderQuickCaptureContexts();
     }
 
-
     // ==================== FOCUS MODE (Delegated to FocusPomodoroManager module) ====================
 
     setupFocusMode() {
@@ -1603,7 +1601,7 @@ class GTDApp {
 
         const saveCustomTag = (context) => {
             const tags = getCustomContexts();
-            const allContexts = [...defaultContexts, ...contexts];
+            const allContexts = [...defaultContexts, ...tags];
 
             // Check for duplicates (case-insensitive)
             const isDuplicate = allContexts.some(existingTag =>
@@ -2216,10 +2214,10 @@ class GTDApp {
             } else {
                 // Dependencies met - show indicator
                 if (task.status === 'waiting') {
-                    parts.push(`<i class="fas fa-check-circle"></i> Dependencies met!`);
+                    parts.push('<i class="fas fa-check-circle"></i> Dependencies met!');
                 } else {
                     // For non-waiting tasks, just show that dependencies exist
-                    parts.push(`<i class="fas fa-check-circle"></i> Dependencies met`);
+                    parts.push('<i class="fas fa-check-circle"></i> Dependencies met');
                 }
             }
         }
@@ -2262,7 +2260,8 @@ class GTDApp {
                     ${task.projectId ? `<span class="task-project">${escapeHtml(this.getProjectTitle(task.projectId))}</span>` : ''}
                     ${!task.completed ? `<span class="priority-score" style="background: ${this.getPriorityScoreColor(this.calculatePriorityScore(task))};" title="Priority: ${this.getPriorityLabel(this.calculatePriorityScore(task))}">${this.calculatePriorityScore(task)}</span>` : ''}
                 </div>
-                ${task.subtasks && task.subtasks.length > 0 ? `
+                ${task.subtasks && task.subtasks.length > 0
+? `
                     <div class="task-subtasks" style="margin-top: var(--spacing-xs);">
                         <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 4px;">
                             <i class="fas fa-tasks"></i> ${task.subtasks.filter(s => s.completed).length}/${task.subtasks.length} subtasks
@@ -2274,7 +2273,8 @@ class GTDApp {
                         `).join('')}
                         ${task.subtasks.filter(s => !s.completed).length > 3 ? `<div style="font-size: 0.75rem; color: var(--text-secondary); padding-left: 12px;">+${task.subtasks.filter(s => !s.completed).length - 3} more</div>` : ''}
                     </div>
-                ` : ''}
+                `
+: ''}
             </div>
             <div class="task-actions">
                 ${this.activeTimers.has(task.id)
@@ -2573,7 +2573,7 @@ class GTDApp {
             toggleButton.className = 'btn btn-secondary';
             toggleButton.style.cssText = 'font-size: 0.85rem;';
             toggleButton.innerHTML = showingArchived
-                ? `<i class="fas fa-arrow-left"></i> Back to Active Projects`
+                ? '<i class="fas fa-arrow-left"></i> Back to Active Projects'
                 : `<i class="fas fa-archive"></i> Show Archived (${archivedCount})`;
 
             toggleButton.addEventListener('click', () => {
@@ -2674,7 +2674,8 @@ class GTDApp {
             ${project.description ? `<div class="project-description">${escapeHtml(project.description)}</div>` : ''}
 
             <!-- Progress Bar -->
-            ${totalTasks > 0 ? `
+            ${totalTasks > 0
+? `
                 <div class="project-progress">
                     <div class="progress-bar-container">
                         <div class="progress-bar" style="width: ${completionPercent}%"></div>
@@ -2684,16 +2685,20 @@ class GTDApp {
                         ${overdueCount > 0 ? `<span class="overdue-badge"><i class="fas fa-exclamation-circle"></i> ${overdueCount} overdue</span>` : ''}
                     </div>
                 </div>
-            ` : ''}
+            `
+: ''}
 
-            ${taskCount > 0 ? `
+            ${taskCount > 0
+? `
                 <div class="project-tasks">
                     ${tasksPreview}
                     ${taskCount > 3 ? `<div class="project-tasks-more">+${taskCount - 3} more tasks</div>` : ''}
                 </div>
-            ` : ''}
+            `
+: ''}
 
-            ${taskCount === 0 && project.status !== 'archived' ? `
+            ${taskCount === 0 && project.status !== 'archived'
+? `
                 <div class="project-empty-actions" style="padding: var(--spacing-sm); background: rgba(240, 173, 78, 0.1); border-radius: var(--border-radius); margin-top: var(--spacing-sm);">
                     <div style="display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm);">
                         <i class="fas fa-info-circle" style="color: #f0ad4e;"></i>
@@ -2708,9 +2713,11 @@ class GTDApp {
                         </button>
                     </div>
                 </div>
-            ` : ''}
+            `
+: ''}
 
-            ${project.status === 'archived' ? `
+            ${project.status === 'archived'
+? `
                 <div class="project-archived-badge" style="padding: var(--spacing-sm); background: rgba(127, 130, 140, 0.1); border-radius: var(--border-radius); margin-top: var(--spacing-sm);">
                     <div style="display: flex; align-items: center; justify-content: space-between;">
                         <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
@@ -2722,13 +2729,15 @@ class GTDApp {
                         </button>
                     </div>
                 </div>
-            ` : ''}
+            `
+: ''}
 
             <div class="project-meta">
                 <div class="project-tags">
                     ${project.contexts ? project.contexts.map(context => `<span class="task-context">${escapeHtml(context)}</span>`).join('') : ''}
                 </div>
-                ${totalTasks > 0 ? `
+                ${totalTasks > 0
+? `
                 <div class="project-actions">
                     <button class="btn-view-tasks" title="View tasks">
                         <i class="fas fa-list"></i>
@@ -2741,7 +2750,8 @@ class GTDApp {
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
-                ` : `
+                `
+: `
                 <div class="project-actions">
                     <button class="task-action-btn edit-project" title="Edit">
                         <i class="fas fa-edit"></i>
@@ -2914,10 +2924,6 @@ class GTDApp {
         return this.taskOperations.addTimeSpent(taskId, minutes);
     }
 
-    getTasksForProject(projectId) {
-        return this.taskOperations.getTasksForProject(projectId);
-    }
-
     getActiveTasks() {
         return this.taskOperations.getActiveTasks();
     }
@@ -3052,26 +3058,6 @@ class GTDApp {
 
     getSelectedWaitingForTasks() {
         return this.taskModal.getSelectedWaitingForTasks();
-    }
-
-    renderSubtasksInModal(subtasks) {
-        return this.taskModal.renderSubtasksInModal(subtasks);
-    }
-
-    addSubtask() {
-        return this.taskModal.addSubtask();
-    }
-
-    removeSubtask(index) {
-        return this.taskModal.removeSubtask(index);
-    }
-
-    toggleSubtaskCompletion(index) {
-        return this.taskModal.toggleSubtaskCompletion(index);
-    }
-
-    getSubtasksFromModal() {
-        return this.taskModal.getSubtasksFromModal();
     }
 
     escapeHtml(text) {
@@ -3403,7 +3389,9 @@ class GTDApp {
     populateRecurrenceInForm(recurrence) {
         // Reset all fields
         document.getElementById('task-recurrence-type').value = '';
-        document.querySelectorAll('.recurrence-day-checkbox').forEach(cb => cb.checked = false);
+        document.querySelectorAll('.recurrence-day-checkbox').forEach(cb => {
+            cb.checked = false;
+        });
         document.getElementById('recurrence-day-of-month').value = 1;
         document.getElementById('recurrence-nth').value = 1;
         document.getElementById('recurrence-weekday').value = 1;
@@ -3452,378 +3440,6 @@ class GTDApp {
                 document.getElementById('recurrence-year-day').value = day;
             }
         }
-    }
-
-    closeTaskModal() {
-        document.getElementById('task-modal').classList.remove('active');
-    }
-
-    renderWaitingForTasksList(currentTask) {
-        const container = document.getElementById('waiting-for-tasks-list');
-        const currentTaskId = currentTask ? currentTask.id : null;
-        const currentProjectId = currentTask ? currentTask.projectId : null;
-
-        // Get all incomplete tasks except the current one
-        // Show all tasks regardless of project to allow cross-project dependencies
-        let availableTasks = this.tasks.filter(t =>
-            !t.completed && t.id !== currentTaskId && t.status !== 'completed'
-        );
-
-        if (availableTasks.length === 0) {
-            container.innerHTML = '<p style="color: var(--text-secondary); font-size: 0.875rem;">No other tasks available</p>';
-            return;
-        }
-
-        container.innerHTML = '';
-
-        availableTasks.forEach(task => {
-            const wrapper = document.createElement('div');
-            wrapper.style.display = 'flex';
-            wrapper.style.alignItems = 'center';
-            wrapper.style.padding = '4px 0';
-            wrapper.style.borderBottom = '1px solid var(--bg-secondary)';
-
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.id = `dep-task-${task.id}`;
-            checkbox.value = task.id;
-            checkbox.style.width = '16px';
-            checkbox.style.height = '16px';
-            checkbox.style.marginRight = '8px';
-            checkbox.style.flexShrink = '0';
-
-            // Check if this task is already a dependency
-            if (currentTask && currentTask.waitingForTaskIds && currentTask.waitingForTaskIds.includes(task.id)) {
-                checkbox.checked = true;
-            }
-
-            const label = document.createElement('label');
-            label.htmlFor = `dep-task-${task.id}`;
-            label.textContent = task.title;
-            label.style.flex = '1';
-            label.style.fontSize = '0.875rem';
-            label.style.cursor = 'pointer';
-
-            wrapper.appendChild(checkbox);
-            wrapper.appendChild(label);
-
-            // Add status badge
-            const status = document.createElement('span');
-            status.textContent = task.status;
-            status.style.fontSize = '0.75rem';
-            status.style.padding = '2px 6px';
-            status.style.borderRadius = '4px';
-            status.style.marginLeft = '8px';
-            status.style.backgroundColor = 'var(--bg-secondary)';
-            status.style.color = 'var(--text-secondary)';
-            wrapper.appendChild(status);
-
-            // Add project badge if task belongs to a project
-            if (task.projectId) {
-                const project = this.projects.find(p => p.id === task.projectId);
-                if (project) {
-                    const projectBadge = document.createElement('span');
-                    projectBadge.textContent = project.title;
-                    projectBadge.style.fontSize = '0.75rem';
-                    projectBadge.style.padding = '2px 6px';
-                    projectBadge.style.borderRadius = '4px';
-                    projectBadge.style.marginLeft = '6px';
-                    projectBadge.style.backgroundColor = 'var(--accent-color)';
-                    projectBadge.style.color = 'white';
-                    projectBadge.style.fontWeight = '500';
-                    wrapper.appendChild(projectBadge);
-                }
-            }
-
-            container.appendChild(wrapper);
-        });
-    }
-
-    getSelectedWaitingForTasks() {
-        const selectedIds = [];
-        const checkboxes = document.querySelectorAll('#waiting-for-tasks-list input[type="checkbox"]:checked');
-        checkboxes.forEach(cb => {
-            selectedIds.push(cb.value);
-        });
-        return selectedIds;
-    }
-
-    async saveTaskFromForm() {
-        const taskId = document.getElementById('task-id').value;
-        const tagsValue = document.getElementById('task-contexts').value;
-        let tags = tagsValue ? tagsValue.split(',').map(t => t.trim()).filter(t => t) : [];
-
-        // Ensure all contexts start with @
-        tags = tags.map(context => this.normalizeContextName(context));
-
-        let status = document.getElementById('task-status').value;
-        const projectId = document.getElementById('task-project').value || null;
-
-        // GTD Rule: If task is being assigned to a project and is in Inbox,
-        // automatically move it to Next Actions
-        if (projectId && status === 'inbox') {
-            status = 'next';
-        }
-
-        // Get waiting for data
-        const waitingForDescription = document.getElementById('task-waiting-for-description').value || '';
-        let waitingForTaskIds = this.getSelectedWaitingForTasks();
-
-        // GTD Rule: If task has dependencies and is in Next or Someday, automatically move to Waiting
-        // This ensures blocked tasks are visible in the Waiting view
-        if (waitingForTaskIds.length > 0 && (status === 'next' || status === 'someday')) {
-            status = 'waiting';
-        }
-
-        const newType = document.getElementById('task-type').value;
-
-        // Save state for undo
-        if (taskId) {
-            this.saveState('Edit task');
-        } else {
-            this.saveState('Create task');
-        }
-
-        if (taskId) {
-            // Update existing item - check both tasks and projects arrays
-            const existingTask = this.tasks.find(t => t.id === taskId);
-            const existingProject = this.projects.find(p => p.id === taskId);
-            const existingItem = existingTask || existingProject;
-            const oldType = existingTask ? 'task' : (existingProject ? 'project' : null);
-
-            if (existingItem) {
-                // Check if type is changing
-                if (oldType !== newType) {
-                    // Type conversion: task <-> project
-                    if (newType === 'project' && oldType === 'task') {
-                        // Convert task to project
-                        const projectData = {
-                            id: taskId,
-                            title: document.getElementById('task-title').value,
-                            description: document.getElementById('task-description').value,
-                            status: status === 'inbox' ? 'active' : status,
-                            contexts: tags,
-                            position: existingItem.position || 0
-                        };
-
-                        // Remove from tasks array
-                        this.tasks = this.tasks.filter(t => t.id !== taskId);
-
-                        // Add to projects array
-                        const project = new Project(projectData);
-                        this.projects.push(project);
-
-                        await this.saveTasks();
-                        await this.saveProjects();
-                        this.closeTaskModal();
-                        this.renderView();
-                        this.updateCounts();
-                        this.updateContextFilter();
-                        this.renderProjectsDropdown();
-                        return;
-                    } else if (newType === 'task' && oldType === 'project') {
-                        // Convert project to task
-                        const taskData = {
-                            id: taskId,
-                            title: document.getElementById('task-title').value,
-                            description: document.getElementById('task-description').value,
-                            type: 'task',
-                            status: status === 'active' ? 'next' : status,
-                            energy: document.getElementById('task-energy').value,
-                            time: parseInt(document.getElementById('task-time').value) || 0,
-                            projectId: projectId,
-                            contexts: tags,
-                            dueDate: document.getElementById('task-due-date').value || null,
-                            deferDate: document.getElementById('task-defer-date').value || null,
-                            waitingForDescription: waitingForDescription,
-                            waitingForTaskIds: waitingForTaskIds,
-                            recurrence: this.buildRecurrenceFromForm(),
-                            recurrenceEndDate: document.getElementById('task-recurrence-end-date').value || null,
-                            notes: document.getElementById('task-notes').value || '',
-                            subtasks: this.getSubtasksFromModal()
-                        };
-
-                        // Remove from projects array
-                        this.projects = this.projects.filter(p => p.id !== taskId);
-
-                        // Add to tasks array
-                        const task = new Task(taskData);
-                        this.tasks.push(task);
-
-                        await this.saveTasks();
-                        await this.saveProjects();
-                        this.closeTaskModal();
-                        this.renderView();
-                        this.updateCounts();
-                        this.updateContextFilter();
-                        this.renderProjectsDropdown();
-                        return;
-                    }
-                }
-
-                // No type change or unsupported conversion - just update
-                if (existingTask) {
-                    // Track if project assignment changed
-                    const oldProjectId = existingTask.projectId;
-
-                    const taskData = {
-                        title: document.getElementById('task-title').value,
-                        description: document.getElementById('task-description').value,
-                        type: newType,
-                        status: status,
-                        energy: document.getElementById('task-energy').value,
-                        time: parseInt(document.getElementById('task-time').value) || 0,
-                        projectId: projectId,
-                        contexts: tags,
-                        dueDate: document.getElementById('task-due-date').value || null,
-                        deferDate: document.getElementById('task-defer-date').value || null,
-                        waitingForDescription: waitingForDescription,
-                        waitingForTaskIds: waitingForTaskIds,
-                        recurrence: this.buildRecurrenceFromForm(),
-                        recurrenceEndDate: document.getElementById('task-recurrence-end-date').value || null,
-                        notes: document.getElementById('task-notes').value || '',
-                        subtasks: this.getSubtasksFromModal()
-                    };
-                    Object.assign(existingTask, taskData);
-                    existingTask.updatedAt = new Date().toISOString();
-                    await this.saveTasks();
-
-                    // Update project dropdown if task was assigned to a different project
-                    if (oldProjectId !== projectId) {
-                        this.renderProjectsDropdown();
-                    }
-                } else if (existingProject) {
-                    const projectData = {
-                        title: document.getElementById('task-title').value,
-                        description: document.getElementById('task-description').value,
-                        status: status === 'inbox' ? 'active' : status,
-                        contexts: tags
-                    };
-                    Object.assign(existingProject, projectData);
-                    existingProject.updatedAt = new Date().toISOString();
-                    await this.saveProjects();
-                }
-            }
-        } else {
-            // Create new item
-            if (newType === 'project') {
-                // Creating a new project directly
-                const projectData = {
-                    title: document.getElementById('task-title').value,
-                    description: document.getElementById('task-description').value,
-                    status: status === 'inbox' ? 'active' : status,
-                    contexts: tags
-                };
-                const project = new Project(projectData);
-                this.projects.push(project);
-                await this.saveProjects();
-            } else {
-                // Creating a new task or reference
-                const taskData = {
-                    title: document.getElementById('task-title').value,
-                    description: document.getElementById('task-description').value,
-                    type: newType,
-                    status: status,
-                    energy: document.getElementById('task-energy').value,
-                    time: parseInt(document.getElementById('task-time').value) || 0,
-                    projectId: projectId,
-                    contexts: tags,
-                    dueDate: document.getElementById('task-due-date').value || null,
-                    deferDate: document.getElementById('task-defer-date').value || null,
-                    waitingForDescription: waitingForDescription,
-                    waitingForTaskIds: waitingForTaskIds,
-                    recurrence: document.getElementById('task-recurrence').value || '',
-                    recurrenceEndDate: document.getElementById('task-recurrence-end-date').value || null,
-                    notes: document.getElementById('task-notes').value || '',
-                    subtasks: this.getSubtasksFromModal()
-                };
-                const task = new Task(taskData);
-                this.tasks.push(task);
-                await this.saveTasks();
-
-                // Track usage for smart defaults
-                this.trackTaskUsage(task);
-            }
-        }
-
-        // If we created a new project or edited an existing one, save projects
-        if (newType === 'project' && !taskId) {
-            await this.saveProjects();
-        }
-
-        this.closeTaskModal();
-        this.renderView();
-        this.updateCounts();
-        this.updateContextFilter();
-
-        // Update project dropdown if:
-        // 1. Creating/editing a project, OR
-        // 2. Creating a new task with a project assignment
-        if (newType === 'project' || (newType === 'task' && projectId && !taskId)) {
-            this.renderProjectsDropdown();
-        }
-    }
-
-    openTaskModalWithData(formData, projectId = null) {
-        const modal = document.getElementById('task-modal');
-        const title = document.getElementById('modal-title');
-
-        title.textContent = 'Add Task';
-        document.getElementById('task-id').value = '';
-        document.getElementById('task-title').value = formData.title || '';
-        document.getElementById('task-description').value = formData.description || '';
-        document.getElementById('task-status').value = formData.status || 'inbox';
-        document.getElementById('task-energy').value = formData.energy || '';
-        document.getElementById('task-time').value = formData.time || '';
-        document.getElementById('task-contexts').value = formData.contexts || '';
-        document.getElementById('task-due-date').value = formData.dueDate || '';
-        document.getElementById('task-defer-date').value = formData.deferDate || '';
-
-        // Update project options
-        const projectSelect = document.getElementById('task-project');
-        projectSelect.innerHTML = '<option value="">No Project</option>';
-
-        // Add option to create new project
-        const createOption = document.createElement('option');
-        createOption.value = '__create_new__';
-        createOption.textContent = '+ Create new project...';
-        createOption.style.fontWeight = 'bold';
-        createOption.style.color = 'var(--primary-color)';
-        projectSelect.appendChild(createOption);
-
-        // Add existing projects
-        this.projects.forEach(project => {
-            const option = document.createElement('option');
-            option.value = project.id;
-            option.textContent = project.title;
-            projectSelect.appendChild(option);
-        });
-
-        // Select the newly created project
-        if (projectId) {
-            projectSelect.value = projectId;
-        }
-
-        // Handle create new project selection
-        projectSelect.addEventListener('change', (e) => {
-            if (e.target.value === '__create_new__') {
-                const formData = {
-                    title: document.getElementById('task-title').value,
-                    description: document.getElementById('task-description').value,
-                    status: document.getElementById('task-status').value,
-                    energy: document.getElementById('task-energy').value,
-                    time: document.getElementById('task-time').value,
-                    contexts: document.getElementById('task-contexts').value,
-                    dueDate: document.getElementById('task-due-date').value,
-                    deferDate: document.getElementById('task-defer-date').value
-                };
-
-                this.closeTaskModal();
-                this.openProjectModal(null, formData);
-            }
-        }, { once: true });
-
-        modal.classList.add('active');
     }
 
     async saveTasks() {
@@ -3933,11 +3549,6 @@ class GTDApp {
 
             dropdown.appendChild(item);
         });
-    }
-
-    getProjectTitle(projectId) {
-        const project = this.projects.find(p => p.id === projectId);
-        return project ? project.title : 'Unknown Project';
     }
 
     /**
@@ -4096,7 +3707,7 @@ function getDragAfterElement(container, y) {
         const box = child.getBoundingClientRect();
         const offset = y - box.top - box.height / 2;
         if (offset < 0 && offset > closest.offset) {
-            return { offset: offset, element: child };
+            return { offset, element: child };
         } else {
             return closest;
         }

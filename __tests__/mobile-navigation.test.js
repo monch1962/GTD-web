@@ -661,7 +661,7 @@ describe('MobileNavigationManager', () => {
         beforeEach(() => {
             // Add content area for pull-to-refresh
             contentArea = document.createElement('div')
-            contentArea.className = 'content-area'
+            contentArea.className = 'main-content'
             contentArea.innerHTML = '<div>Tasks content</div>'
             document.body.appendChild(contentArea)
         })
@@ -834,7 +834,7 @@ describe('MobileNavigationManager', () => {
         beforeEach(() => {
             // Add content area with task items
             contentArea = document.createElement('div')
-            contentArea.className = 'content-area'
+            contentArea.className = 'tasks-container'
             taskItem = document.createElement('div')
             taskItem.className = 'task-item'
             taskItem.dataset.taskId = 'task-123'
