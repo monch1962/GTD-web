@@ -139,13 +139,22 @@ class GTDApp {
     }
 
     async init() {
+        const initTimeout = setTimeout(() => {
+            this.showDebugBanner('✗ INIT TIMEOUT - Taking too long', {
+                step: this._initStep || 'unknown',
+                hint: 'Check console for errors'
+            }, 'error');
+        }, 10000); // 10 second timeout
+
         try {
             console.log('GTD App: Initializing...');
 
             // Show initialization started
             this.showDebugBanner('GTD App Loading...', { step: 'Initializing' });
+            this._initStep = 'Initializing';
 
             // Register service worker for PWA support
+            this._initStep = 'Service Worker';
             if ('serviceWorker' in navigator) {
                 try {
                     const registration = await navigator.serviceWorker.register('/service-worker.js');
@@ -156,41 +165,105 @@ class GTDApp {
             }
 
             // Initialize dark mode from preference
-            console.log('GTD App: Initializing dark mode...');
-            this.initializeDarkMode();
+            this._initStep = 'Dark Mode';
+            try {
+                console.log('GTD App: Initializing dark mode...');
+                this.initializeDarkMode();
+                this.updateDebugBanner('Dark Mode ✓', {});
+            } catch (e) {
+                console.error('Dark mode failed:', e);
+                this.updateDebugBanner('Dark Mode ✗ (continuing)', {});
+            }
 
-            console.log('GTD App: Initializing storage...');
-            await this.initializeStorage();
-            console.log('GTD App: Storage userId =', this.storage.userId);
-            this.updateDebugBanner('Storage loaded', { userId: this.storage.userId });
+            // Initialize storage
+            this._initStep = 'Storage';
+            try {
+                console.log('GTD App: Initializing storage...');
+                await this.initializeStorage();
+                console.log('GTD App: Storage userId =', this.storage.userId);
+                this.updateDebugBanner('Storage loaded', { userId: this.storage.userId?.substring(0, 12) || 'ERROR' });
+            } catch (e) {
+                console.error('Storage init failed:', e);
+                this.showDebugBanner('✗ Storage Failed', { error: e.message }, 'error');
+                clearTimeout(initTimeout);
+                return;
+            }
 
-            console.log('GTD App: Loading data...');
-            await this.loadData();
-            this.updateDebugBanner('Data loaded', { tasks: this.tasks.length, projects: this.projects.length });
+            // Load data
+            this._initStep = 'Load Data';
+            try {
+                console.log('GTD App: Loading data...');
+                await this.loadData();
+                this.updateDebugBanner('Data loaded', { tasks: this.tasks.length, projects: this.projects.length });
+            } catch (e) {
+                console.error('Load data failed:', e);
+                this.showDebugBanner('✗ Load Data Failed', { error: e.message }, 'error');
+                clearTimeout(initTimeout);
+                return;
+            }
 
-            console.log('GTD App: Setting up event listeners...');
-            this.setupEventListeners();
+            // Setup event listeners
+            this._initStep = 'Event Listeners';
+            try {
+                console.log('GTD App: Setting up event listeners...');
+                this.setupEventListeners();
+                this.updateDebugBanner('Event listeners ✓', {});
+            } catch (e) {
+                console.error('Setup event listeners failed:', e);
+                this.showDebugBanner('✗ Event Listeners Failed', { error: e.message }, 'error');
+                clearTimeout(initTimeout);
+                return;
+            }
 
-            console.log('GTD App: Displaying user ID...');
-            this.displayUserId();
-            this.updateDebugBanner('User ID displayed', { success: true });
+            // Display user ID
+            this._initStep = 'User ID';
+            try {
+                console.log('GTD App: Displaying user ID...');
+                this.displayUserId();
+                this.updateDebugBanner('User ID displayed', { success: true });
+            } catch (e) {
+                console.error('Display user ID failed:', e);
+                this.showDebugBanner('✗ User ID Failed', { error: e.message }, 'error');
+                clearTimeout(initTimeout);
+                return;
+            }
 
-            console.log('GTD App: Initializing custom contexts...');
-            this.initializeCustomContexts();
+            // Initialize custom contexts
+            this._initStep = 'Custom Contexts';
+            try {
+                console.log('GTD App: Initializing custom contexts...');
+                this.initializeCustomContexts();
+            } catch (e) {
+                console.error('Custom contexts failed:', e);
+            }
 
-            // Migrate blocked tasks to Waiting (one-time migration for existing data)
-            await this.migrateBlockedTasksToWaiting();
+            // Migrate blocked tasks
+            this._initStep = 'Migration';
+            try {
+                await this.migrateBlockedTasksToWaiting();
+                await this.checkWaitingTasksDependencies();
+            } catch (e) {
+                console.error('Migration failed:', e);
+            }
 
-            // Check if any waiting tasks now have their dependencies met
-            await this.checkWaitingTasksDependencies();
-
-            console.log('GTD App: Rendering initial view...');
-            this.renderView();
-            this.updateCounts();
-            this.renderProjectsDropdown();
-            this.updateContextFilter();
+            // Render view
+            this._initStep = 'Render';
+            try {
+                console.log('GTD App: Rendering initial view...');
+                this.renderView();
+                this.updateCounts();
+                this.renderProjectsDropdown();
+                this.updateContextFilter();
+            } catch (e) {
+                console.error('Render failed:', e);
+                this.showDebugBanner('✗ Render Failed', { error: e.message }, 'error');
+                clearTimeout(initTimeout);
+                return;
+            }
 
             console.log('GTD App: Initialization complete!');
+            this._initStep = 'Complete';
+            clearTimeout(initTimeout);
             this.updateDebugBanner('✓ GTD Ready!', { tasks: this.tasks.length }, 'success');
 
             // Auto-remove success banner after 2 seconds
@@ -199,8 +272,13 @@ class GTDApp {
                 if (banner) banner.remove();
             }, 2000);
         } catch (error) {
+            clearTimeout(initTimeout);
             console.error('GTD App: Initialization failed!', error);
-            this.showDebugBanner('✗ INIT FAILED', { error: error.message, stack: error.stack?.substring(0, 200) });
+            this.showDebugBanner('✗ CRITICAL ERROR', {
+                step: this._initStep,
+                error: error.message,
+                stack: error.stack?.substring(0, 300)
+            }, 'error');
             this.handleInitializationError(error);
         }
     }
