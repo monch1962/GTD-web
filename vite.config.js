@@ -76,6 +76,6 @@ export default defineConfig({
 
     // Optimize dependencies
     optimizeDeps: {
-        include: ['remote-storage']
+        // No external dependencies to optimize
     }
 })

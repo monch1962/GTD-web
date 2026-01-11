@@ -1,5 +1,5 @@
 /**
- * Storage Layer - Handles localStorage and remote-storage integration
+ * Storage Layer - Handles localStorage persistence
  */
 
 import { StorageConfig } from './constants.js';
@@ -7,23 +7,13 @@ import { StorageConfig } from './constants.js';
 export class Storage {
     constructor(userId = null) {
         this.userId = userId || this.getUserId();
-        this.remoteStorage = null;
-        this.syncEnabled = false; // Disabled for now
         this.listeners = new Map();
         this.QUOTA_WARNING_THRESHOLD = StorageConfig.QUOTA_WARNING_THRESHOLD;
     }
 
     async init() {
         // Initialize localStorage
-        console.log('Storage initialized with localStorage only');
-
-        // Remote storage (remote-storage.js) integration available but optional
-        // To enable cloud sync:
-        // 1. Install: npm install remote-storage
-        // 2. Import in app.js: import RemoteStorage from 'remote-storage';
-        // 3. Initialize: const remoteStorage = new RemoteStorage({ cache: false });
-        // 4. Connect: remoteStorage.access.sync('/gtd-data/' + this.getUserId());
-        // 5. Wire up sync events in init() method
+        console.log('Storage initialized with localStorage');
 
         return this;
     }

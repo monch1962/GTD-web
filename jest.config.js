@@ -28,5 +28,5 @@ export default {
     },
     verbose: true,
     testTimeout: 10000,
-    transformIgnorePatterns: ['node_modules/(?!(remote-storage)/)']
+    transformIgnorePatterns: ['node_modules/']
 }

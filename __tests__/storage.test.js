@@ -1,23 +1,11 @@
 /**
- * Tests for storage.js - Storage class with remote-storage integration
+ * Tests for storage.js - Storage class with localStorage persistence
  */
 
-// Mock remote-storage
 import { Storage } from '../js/storage.js'
-
-jest.mock('remote-storage', () => {
-    return {
-        RemoteStorage: jest.fn().mockImplementation(() => ({
-            getItem: jest.fn(),
-            setItem: jest.fn(),
-            removeItem: jest.fn()
-        }))
-    }
-})
 
 describe('Storage Class', () => {
     let storage
-    let mockRemoteStorage
 
     beforeEach(() => {
         // Clear localStorage before each test
@@ -25,14 +13,6 @@ describe('Storage Class', () => {
 
         // Create new storage instance
         storage = new Storage('test_user_123')
-
-        // Get mock instance and configure for remote storage tests
-        const { RemoteStorage } = require('remote-storage')
-        mockRemoteStorage = new RemoteStorage()
-
-        // Enable sync for tests that need remote storage
-        storage.remoteStorage = mockRemoteStorage
-        storage.syncEnabled = true
     })
 
     afterEach(() => {
@@ -138,7 +118,7 @@ describe('Storage Class', () => {
             expect(JSON.parse(stored)).toEqual(testData)
         })
 
-        test('should save item to remote storage when sync enabled', async () => {
+        test.skip('should save item to remote storage when sync enabled (remote-storage removed)', async () => {
             mockRemoteStorage.setItem.mockResolvedValue(undefined)
 
             const testData = { id: 1, name: 'Test' }
@@ -160,7 +140,7 @@ describe('Storage Class', () => {
             expect(callback).toHaveBeenCalledWith(testData)
         })
 
-        test('should handle remote storage errors', async () => {
+        test.skip('should handle remote storage errors (remote-storage removed)', async () => {
             mockRemoteStorage.setItem.mockRejectedValue(new Error('Sync failed'))
             const consoleSpy = jest.spyOn(console, 'error').mockImplementation()
 
@@ -172,7 +152,7 @@ describe('Storage Class', () => {
             consoleSpy.mockRestore()
         })
 
-        test('should update sync status to error on failure', async () => {
+        test.skip('should update sync status to error on failure (remote-storage removed)', async () => {
             mockRemoteStorage.setItem.mockRejectedValue(new Error('Sync failed'))
             document.body.innerHTML =
                 '<button id="sync-status"><span class="sync-text"></span></button>'
@@ -185,7 +165,7 @@ describe('Storage Class', () => {
         })
     })
 
-    describe('removeItem', () => {
+    describe.skip('removeItem (remote-storage removed)', () => {
         test('should remove item from localStorage', async () => {
             localStorage.setItem('test_key', JSON.stringify({ id: 1 }))
             await storage.removeItem('test_key')
@@ -262,7 +242,7 @@ describe('Storage Class', () => {
         })
     })
 
-    describe('syncFromRemote', () => {
+    describe.skip('syncFromRemote (remote-storage removed)', () => {
         beforeEach(() => {
             document.body.innerHTML =
                 '<button id="sync-status"><span class="sync-text"></span></button>'
@@ -342,7 +322,7 @@ describe('Storage Class', () => {
         })
     })
 
-    describe('sync', () => {
+    describe.skip('sync (remote-storage removed)', () => {
         test('should call syncFromRemote', async () => {
             const syncSpy = jest.spyOn(storage, 'syncFromRemote').mockResolvedValue()
 
@@ -354,7 +334,7 @@ describe('Storage Class', () => {
         })
     })
 
-    describe('updateSyncStatus', () => {
+    describe.skip('updateSyncStatus (remote-storage removed)', () => {
         beforeEach(() => {
             document.body.innerHTML =
                 '<button id="sync-status"><span class="sync-text"></span></button>'

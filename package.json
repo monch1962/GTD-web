@@ -1,7 +1,7 @@
 {
   "name": "gtd-web",
   "version": "1.1.0",
-  "description": "Getting Things Done web app with remote-storage sync",
+  "description": "Getting Things Done web app with local persistence",
   "main": "js/app.js",
   "scripts": {
     "dev": "vite",
@@ -40,9 +40,6 @@
     "*.{js,json,css,md}": [
       "prettier --write"
     ]
-  },
-  "dependencies": {
-    "remote-storage": "^1.0.7"
   },
   "devDependencies": {
     "@babel/core": "^7.28.5",

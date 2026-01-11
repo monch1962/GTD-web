@@ -1,7 +1,7 @@
 {
   "name": "GTD Web",
   "short_name": "GTD",
-  "description": "Getting Things Done web app with remote-storage sync",
+  "description": "Getting Things Done web app with local persistence",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
