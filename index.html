@@ -1600,26 +1600,55 @@
     </div>
 
     <script>
-        // Module loading error detection
-        window.addEventListener('error', function(e) {
-            const indicator = document.getElementById('gtd-js-test');
-            if (indicator && e.filename && e.filename.includes('main.js')) {
-                indicator.innerHTML = `✗ Module Error: ${e.message}`;
-                indicator.style.background = '#ff4444';
-            }
-        }, true);
+        // Browser and module detection
+        (function() {
+            const ua = navigator.userAgent;
+            const isMobile = /Mobile|Android|iPhone|iPad|iPod/i.test(ua);
+            const browserInfo = {
+                userAgent: ua.substring(0, 100),
+                isMobile: isMobile,
+                supportsModules: 'noModule' in document.createElement('script'),
+                url: window.location.href
+            };
 
-        // Check if modules loaded after 5 seconds
-        setTimeout(function() {
+            console.log('Browser Info:', browserInfo);
+
             const indicator = document.getElementById('gtd-js-test');
-            if (indicator && indicator.innerHTML.includes('waiting for app.js')) {
-                // Still waiting - modules haven't loaded
-                indicator.innerHTML = '✗ Module Timeout: app.js never loaded';
-                indicator.style.background = '#ff4444';
-                console.error('Module loading timeout - app.js never loaded');
+            if (indicator) {
+                indicator.innerHTML = `⚠️ ${browserInfo.isMobile ? 'Mobile' : 'Desktop'} - ${browserInfo.supportsModules ? 'Modules supported' : 'NO MODULE SUPPORT'} - Loading...`;
             }
-        }, 5000);
+
+            window._gtdDebug = window._gtdDebug || {};
+            window._gtdDebug.browser = browserInfo;
+
+            // Module loading error detection
+            window.addEventListener('error', function(e) {
+                const indicator = document.getElementById('gtd-js-test');
+                if (indicator && e.filename && e.filename.includes('main.js')) {
+                    indicator.innerHTML = `✗ Module Error: ${e.message}`;
+                    indicator.style.background = '#ff4444';
+                }
+            }, true);
+
+            // Check if modules loaded after 5 seconds
+            setTimeout(function() {
+                const indicator = document.getElementById('gtd-js-test');
+                if (indicator && indicator.innerHTML.includes('waiting for app.js')) {
+                    // Still waiting - modules haven't loaded
+                    const moduleSupport = browserInfo.supportsModules ? 'YES' : 'NO';
+                    indicator.innerHTML = `✗ Modules ${moduleSupport === 'NO' ? 'NOT SUPPORTED' : 'TIMEOUT'} - ${browserInfo.isMobile ? 'Mobile' : 'Desktop'} Browser`;
+                    indicator.style.background = '#ff4444';
+                    console.error('Module loading timeout - app.js never loaded');
+                    console.error('Browser info:', browserInfo);
+                }
+            }, 5000);
+        })();
     </script>
     <script type="module" src="/main.js"></script>
+    <script nomodule>
+        // Fallback for browsers that don't support ES6 modules
+        console.error('Browser does not support ES6 modules');
+        document.getElementById('gtd-js-test').innerHTML = '✗ Browser too old - ES6 modules not supported';
+    </script>
 </body>
 </html>
