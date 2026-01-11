@@ -1599,6 +1599,27 @@
         </div>
     </div>
 
+    <script>
+        // Module loading error detection
+        window.addEventListener('error', function(e) {
+            const indicator = document.getElementById('gtd-js-test');
+            if (indicator && e.filename && e.filename.includes('main.js')) {
+                indicator.innerHTML = `✗ Module Error: ${e.message}`;
+                indicator.style.background = '#ff4444';
+            }
+        }, true);
+
+        // Check if modules loaded after 5 seconds
+        setTimeout(function() {
+            const indicator = document.getElementById('gtd-js-test');
+            if (indicator && indicator.innerHTML.includes('waiting for app.js')) {
+                // Still waiting - modules haven't loaded
+                indicator.innerHTML = '✗ Module Timeout: app.js never loaded';
+                indicator.style.background = '#ff4444';
+                console.error('Module loading timeout - app.js never loaded');
+            }
+        }, 5000);
+    </script>
     <script type="module" src="/main.js"></script>
 </body>
 </html>
