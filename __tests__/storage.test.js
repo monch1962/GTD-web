@@ -439,8 +439,6 @@ describe('Storage Class', () => {
         test('should save tasks to storage', async () => {
             const tasks = [{ id: '1', title: 'Task 1' }]
 
-            mockRemoteStorage.setItem.mockResolvedValue(undefined)
-
             await storage.saveTasks(tasks)
 
             const stored = JSON.parse(localStorage.getItem('gtd_tasks'))
@@ -468,8 +466,6 @@ describe('Storage Class', () => {
     describe('saveProjects', () => {
         test('should save projects to storage', async () => {
             const projects = [{ id: '1', title: 'Project 1' }]
-
-            mockRemoteStorage.setItem.mockResolvedValue(undefined)
 
             await storage.saveProjects(projects)
 
@@ -501,8 +497,6 @@ describe('Storage Class', () => {
     describe('saveSettings', () => {
         test('should save settings to storage', async () => {
             const settings = { theme: 'dark' }
-
-            mockRemoteStorage.setItem.mockResolvedValue(undefined)
 
             await storage.saveSettings(settings)
 
@@ -539,8 +533,6 @@ describe('Storage Class', () => {
                 title: `Task ${i}`
             }))
 
-            mockRemoteStorage.setItem.mockResolvedValue(undefined)
-
             await storage.saveTasks(largeTasks)
 
             const stored = storage.getTasks()
@@ -554,8 +546,6 @@ describe('Storage Class', () => {
                 tags: ['tag with spaces', 'tag@symbol']
             }
 
-            mockRemoteStorage.setItem.mockResolvedValue(undefined)
-
             await storage.setItem('special', specialData)
 
             const retrieved = storage.getItem('special')
@@ -567,8 +557,6 @@ describe('Storage Class', () => {
                 title: 'Task with emoji 🎉 and unicode 中文',
                 tags: ['日本語', '한국어']
             }
-
-            mockRemoteStorage.setItem.mockResolvedValue(undefined)
 
             await storage.setItem('unicode', unicodeData)
 
