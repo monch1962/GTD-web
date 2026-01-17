@@ -154,9 +154,14 @@ async someAction(taskId) {
 }
 ```
 
-### Key Design Patterns
+## Design Patterns
 
-#### 1. Manager Pattern (Feature Modules)
+This codebase uses several established design patterns to maintain code quality,
+testability, and scalability.
+
+### 1. Manager Pattern (Feature Modules)
+
+**Purpose**: Encapsulate feature-specific logic and state management.
 
 All feature modules follow this consistent structure:
 
@@ -169,6 +174,7 @@ export class FeatureManager {
 
     setupFeature() {
         // Initialize event listeners and DOM elements
+        // Called once during app initialization
     }
 
     featureMethod() {
@@ -179,16 +185,27 @@ export class FeatureManager {
 }
 ```
 
-**Examples:**
+**Benefits**:
+
+- Clear separation of concerns
+- Easy to test (mock state and app dependencies)
+- Consistent structure across all features
+- Simple to add new features
+
+**Examples**:
 
 - `DarkModeManager` (97% test coverage)
 - `CalendarManager` (40 tests)
 - `ArchiveManager` (38 tests)
 - `ContextMenuManager` (46 tests)
 
-#### 2. Delegation Pattern
+**When to use**: Any new feature that needs UI, state interaction, or business
+logic.
 
-Main app.js delegates to specialized managers:
+### 2. Delegation Pattern
+
+**Purpose**: Main app.js delegates to specialized managers to avoid bloated
+controller.
 
 ```javascript
 // In app.js constructor
@@ -196,7 +213,7 @@ this.contextMenu = new ContextMenuManager(this.state, this);
 this.calendar = new CalendarManager(this.state, this);
 this.archive = new ArchiveManager(this.state, this);
 
-// Delegated methods
+// Delegated methods - thin wrappers that forward to managers
 setupContextMenu() {
     this.contextMenu.setupContextMenu();
 }
@@ -204,16 +221,618 @@ setupContextMenu() {
 showContextMenu(event, taskId) {
     this.contextMenu.showContextMenu(event, taskId);
 }
+
+// Delegation with optional chaining (defensive)
+this.app.someManager?.method?.();
 ```
 
-#### 3. Virtual Scrolling
+**Benefits**:
 
-Large task lists (50+ items) use virtual scrolling for performance:
+- Main app.js stays lean (delegates to 42 managers)
+- Each manager is independently testable
+- Easy to add/remove features
+- Clear ownership of functionality
 
-- Activates at 50+ tasks
-- Renders only visible items + buffer
-- Implemented in `js/modules/ui/virtual-scroll.js`
-- Managed by `TaskRenderer` class
+### 3. Centralized State Pattern (Singleton)
+
+**Purpose**: Single source of truth for all application state.
+
+**Location**: `js/modules/core/app-state.js`
+
+```javascript
+export class AppState {
+    constructor() {
+        // Core data
+        this.tasks = []
+        this.projects = []
+        this.templates = []
+
+        // View state
+        this.currentView = 'inbox'
+        this.currentProjectId = null
+
+        // Filters
+        this.filters = { context: '', energy: '', time: '' }
+        this.selectedContextFilters = new Set()
+
+        // UI state
+        this.selectedTaskId = null
+        this.bulkSelectionMode = false
+
+        // Undo/redo state
+        this.history = []
+        this.historyIndex = -1
+        this.maxHistorySize = 50
+    }
+
+    getState() {
+        // Returns plain object for persistence
+        return {
+            tasks: this.tasks.map((t) => t.toJSON()),
+            projects: this.projects.map((p) => p.toJSON())
+            // ... other state
+        }
+    }
+}
+```
+
+**Benefits**:
+
+- Single source of truth
+- Easy to debug (log state in one place)
+- Simple to persist
+- Predictable state updates
+
+**Usage pattern**:
+
+```javascript
+// Read state
+const tasks = this.state.tasks.filter((t) => !t.completed)
+
+// Update state (mutable)
+task.status = 'next'
+
+// Persist changes
+await this.app.saveTasks()
+```
+
+### 4. Repository Pattern (Storage Abstraction)
+
+**Purpose**: Abstract data persistence and provide clean API.
+
+**Location**: `js/storage.js` and `js/modules/core/storage-ops.js`
+
+```javascript
+export class Storage {
+    constructor(userId = null) {
+        this.userId = userId || this.getUserId()
+        this.listeners = new Map()
+    }
+
+    // CRUD operations
+    async loadTasks() {
+        const data = localStorage.getItem('gtd_tasks')
+        return data ? JSON.parse(data) : []
+    }
+
+    async saveTasks(tasks) {
+        localStorage.setItem('gtd_tasks', JSON.stringify(tasks))
+        this.notifyListeners('tasks')
+    }
+
+    // Event notification for reactive updates
+    addListener(event, callback) {
+        if (!this.listeners.has(event)) {
+            this.listeners.set(event, [])
+        }
+        this.listeners.get(event).push(callback)
+    }
+}
+```
+
+**Benefits**:
+
+- Swappable storage backend (localStorage → IndexedDB → remote)
+- Centralized error handling
+- Event listeners for reactive updates
+- Quota management
+
+### 5. Command Pattern (Undo/Redo)
+
+**Purpose**: Encapsulate actions as reversible commands.
+
+**Location**: `js/modules/features/undo-redo.js`
+
+```javascript
+// Saving state before changes
+this.app.saveState('Create task');
+
+// In UndoRedoManager
+saveState(action) {
+    // Remove any future history if we're not at the end
+    if (this.state.historyIndex < this.state.history.length - 1) {
+        this.state.history = this.state.history.slice(0, this.state.historyIndex + 1);
+    }
+
+    // Add current state to history
+    this.state.history.push({
+        action,
+        tasks: JSON.stringify(this.state.tasks),
+        projects: JSON.stringify(this.state.projects),
+        timestamp: Date.now()
+    });
+
+    // Limit history size
+    if (this.state.history.length > this.state.maxHistorySize) {
+        this.state.history.shift();
+    } else {
+        this.state.historyIndex++;
+    }
+
+    this.updateButtonStates();
+}
+
+// Undo restores previous state
+async undo() {
+    if (this.state.historyIndex > 0) {
+        this.state.historyIndex--;
+        await this._restoreState(this.state.history[this.state.historyIndex]);
+    }
+}
+```
+
+**Benefits**:
+
+- Full undo/redo history (up to 50 states)
+- Actions are reversible
+- Keyboard shortcuts (Ctrl+Z, Ctrl+Y)
+- Button state management
+
+### 6. Factory Pattern (Model Creation)
+
+**Purpose**: Create model instances with consistent serialization.
+
+**Location**: `js/models.js`
+
+```javascript
+export class Task {
+    constructor(data = {}) {
+        this.id = data.id || this.generateId()
+        this.title = data.title || ''
+        this.status = data.status || 'inbox'
+        // ... other properties
+    }
+
+    // Serialization
+    toJSON() {
+        return {
+            id: this.id,
+            title: this.title,
+            status: this.status
+            // ... all properties
+        }
+    }
+
+    // Deserialization (Factory method)
+    static fromJSON(json) {
+        const task = new Task(json)
+        // Restore Date objects
+        if (json.dueDate) task.dueDate = new Date(json.dueDate)
+        if (json.deferDate) task.deferDate = new Date(json.deferDate)
+        return task
+    }
+
+    // Business logic methods
+    isOverdue() {
+        if (!this.dueDate) return false
+        return new Date(this.dueDate) < new Date().setHours(0, 0, 0, 0)
+    }
+
+    areDependenciesMet(tasks) {
+        if (!this.waitingForTaskIds || this.waitingForTaskIds.length === 0) {
+            return true
+        }
+        return this.getPendingDependencies(tasks).length === 0
+    }
+}
+```
+
+**Benefits**:
+
+- Consistent object creation
+- Built-in serialization/deserialization
+- Business logic encapsulated with data
+- Easy to extend with new properties
+
+### 7. Observer Pattern (Event Listeners)
+
+**Purpose**: React to state changes and user interactions.
+
+```javascript
+// Setting up listeners
+setupFeature() {
+    // DOM event listeners
+    document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.key === 'z') {
+            this.undo();
+        }
+    });
+
+    // Custom event listeners
+    this.state.storage.addListener('tasks', () => {
+        this.renderView();
+    });
+}
+
+// Clean up
+destroy() {
+    document.removeEventListener('keydown', this.handleKeyDown);
+    this.state.storage.removeListener('tasks', this.renderListener);
+}
+```
+
+**Benefits**:
+
+- Reactive UI updates
+- Decoupled components
+- Easy to add/remove listeners
+
+### 8. Strategy Pattern (Sorting Strategies)
+
+**Purpose**: Encapsulate sorting algorithms.
+
+**Location**: `js/modules/views/task-renderer.js` (\_sortTasks method)
+
+```javascript
+_sortTasks(tasks) {
+    const sortOption = this.state.advancedSearchFilters.sort || 'updated';
+
+    return tasks.sort((a, b) => {
+        // First sort by starred status (universal rule)
+        if (a.starred !== b.starred) {
+            return a.starred ? -1 : 1;
+        }
+
+        // Then sort by position if set
+        if (a.position !== b.position) {
+            return a.position - b.position;
+        }
+
+        // Then apply selected sort strategy
+        switch (sortOption) {
+            case 'due':
+                return new Date(a.dueDate) - new Date(b.dueDate);
+            case 'created':
+                return new Date(b.createdAt) - new Date(a.createdAt);
+            case 'time':
+                return b.time - a.time;
+            case 'title':
+                return a.title.localeCompare(b.title);
+            case 'updated':
+            default:
+                return new Date(b.updatedAt) - new Date(a.updatedAt);
+        }
+    });
+}
+```
+
+**Benefits**:
+
+- Easy to add new sort options
+- Consistent sorting logic
+- Composable strategies (starred + position + custom)
+
+### 9. Virtual Scrolling Pattern
+
+**Purpose**: Efficiently render large lists (performance optimization).
+
+**Location**: `js/modules/ui/virtual-scroll.js`
+
+```javascript
+export class VirtualScrollManager {
+    constructor(container, options = {}) {
+        this.container = container
+        this.itemHeight = options.itemHeight || 100
+        this.bufferItems = options.bufferItems || 5
+        this.items = []
+    }
+
+    setItems(items, renderItem) {
+        this.items = items
+        this.renderItem = renderItem
+        this.render()
+    }
+
+    render() {
+        const { visibleStart, visibleEnd } = this._getVisibleRange()
+
+        // Render only visible items + buffer
+        const fragment = document.createDocumentFragment()
+        for (let i = visibleStart; i <= visibleEnd; i++) {
+            const element = this.renderItem(this.items[i], i)
+            fragment.appendChild(element)
+        }
+
+        this.container.innerHTML = ''
+        this.container.appendChild(fragment)
+
+        // Set container height to enable scrolling
+        this.container.style.height = `${this.items.length * this.itemHeight}px`
+    }
+
+    _getVisibleRange() {
+        const scrollTop = this.container.scrollTop
+        const containerHeight = this.container.clientHeight
+
+        const startIndex = Math.floor(scrollTop / this.itemHeight)
+        const endIndex = Math.ceil(
+            (scrollTop + containerHeight) / this.itemHeight
+        )
+
+        return {
+            visibleStart: Math.max(0, startIndex - this.bufferItems),
+            visibleEnd: Math.min(
+                this.items.length - 1,
+                endIndex + this.bufferItems
+            )
+        }
+    }
+}
+```
+
+**Benefits**:
+
+- Renders 50+ items efficiently
+- Smooth scrolling performance
+- Automatic activation (threshold: 50 items)
+- Memory efficient
+
+### 10. Optional Chaining Pattern (Defensive Programming)
+
+**Purpose**: Safe method calls on potentially undefined objects.
+
+```javascript
+// Defensive calls - no errors if app or method doesn't exist
+this.app.showNotification?.('Task created', 'success')
+this.app.renderView?.()
+this.app.saveTasks?.()
+
+// More defensive chaining
+this.app.someManager?.method?.()
+
+// Safe property access
+const projectId = this.app.state?.currentProjectId || null
+```
+
+**Benefits**:
+
+- No runtime errors from undefined methods
+- Easy to add optional features
+- Clean code (no if statements everywhere)
+- Flexible architecture
+
+**When to use**: Calling methods on app or managers that may not exist in all
+contexts.
+
+### 11. Composition Pattern (Task Composition)
+
+**Purpose**: Build complex tasks from smaller components.
+
+```javascript
+// Task can contain subtasks
+class Task {
+    constructor(data = {}) {
+        this.subtasks = data.subtasks || [];
+        this.waitingForTaskIds = data.waitingForTaskIds || [];
+    }
+
+    addSubtask(title) {
+        this.subtasks.push({
+            id: this.generateId(),
+            title,
+            completed: false
+        });
+    }
+
+    getProgress() {
+        if (this.subtasks.length === 0) return 1.0;
+        const completed = this.subtasks.filter(s => s.completed).length;
+        return completed / this.subtasks.length;
+    }
+}
+
+// Task can depend on other tasks
+areDependenciesMet(tasks) {
+    if (!this.waitingForTaskIds || this.waitingForTaskIds.length === 0) {
+        return true;
+    }
+    return this.getPendingDependencies(tasks).length === 0;
+}
+```
+
+**Benefits**:
+
+- Hierarchical task structure
+- Reusable components
+- Natural domain modeling
+
+### 12. Lazy Loading Pattern
+
+**Purpose**: Load resources only when needed.
+
+```javascript
+// Modals are created only when opened
+showTaskModal(task = null) {
+    // Lazy-load modal DOM
+    if (!document.getElementById('task-modal')) {
+        this._createTaskModal();
+    }
+
+    // Show modal
+    document.getElementById('task-modal').classList.add('active');
+}
+
+// Virtual scrolling activates only for large lists
+if (filteredTasks.length >= 50) {
+    this._renderWithVirtualScroll(container, filteredTasks);
+} else {
+    this._renderRegular(container, filteredTasks);
+}
+```
+
+**Benefits**:
+
+- Faster initial page load
+- Lower memory usage
+- Better performance
+
+### 13. Module Pattern (ES6 Modules)
+
+**Purpose**: Encapsulation and dependency management.
+
+```javascript
+// state.js - Encapsulated state
+export class AppState {
+    constructor() {
+        this.tasks = []
+    }
+}
+
+// task-operations.js - Imports only what it needs
+import { AppState } from '../core/app-state.js'
+
+export class TaskOperations {
+    constructor(state, app) {
+        this.state = state // Injected dependency
+        this.app = app
+    }
+}
+
+// app.js - Composition root
+import { AppState } from './modules/core/app-state.js'
+import { TaskOperations } from './modules/features/task-operations.js'
+
+export class App {
+    constructor() {
+        this.state = new AppState()
+        this.taskOps = new TaskOperations(this.state, this)
+    }
+}
+```
+
+**Benefits**:
+
+- Clear dependencies
+- No global namespace pollution
+- Tree-shaking support
+- Explicit imports/exports
+
+### 14. Template Method Pattern
+
+**Purpose**: Define skeleton of algorithm, let subclasses override steps.
+
+```javascript
+// Base rendering pattern
+class Renderer {
+    render(items) {
+        this.beforeRender(items)
+        const elements = items.map((item) => this.renderItem(item))
+        this.afterRender(elements)
+        return elements
+    }
+
+    renderItem(item) {
+        throw new Error('Subclass must implement renderItem')
+    }
+
+    beforeRender(items) {
+        /* Hook */
+    }
+    afterRender(elements) {
+        /* Hook */
+    }
+}
+
+class TaskRenderer extends Renderer {
+    renderItem(task) {
+        // Task-specific rendering
+        return createTaskElement(task)
+    }
+
+    afterRender(elements) {
+        // Attach task-specific listeners
+        elements.forEach((el) => this.attachTaskListeners(el))
+    }
+}
+```
+
+**Benefits**:
+
+- Consistent rendering flow
+- Hooks for customization
+- Code reuse
+
+### Anti-Patterns to Avoid
+
+❌ **Don't modify state without persisting**:
+
+```javascript
+// WRONG
+task.status = 'next'
+
+// RIGHT
+task.status = 'next'
+await this.app.saveTasks()
+```
+
+❌ **Don't access DOM directly from state**:
+
+```javascript
+// WRONG
+this.state.tasks.push(task)
+document.getElementById('task-list').appendChild(taskElement)
+
+// RIGHT
+this.state.tasks.push(task)
+await this.app.saveTasks()
+this.app.renderView()
+```
+
+❌ **Don't create circular dependencies**:
+
+```javascript
+// WRONG - manager.js imports app, app imports manager
+import { App } from './app.js'
+
+// RIGHT - Both receive state and app as constructor params
+export class Manager {
+    constructor(state, app) {
+        this.state = state
+        this.app = app
+    }
+}
+```
+
+## Pattern Selection Guide
+
+| Need                 | Pattern             | Example                          |
+| -------------------- | ------------------- | -------------------------------- |
+| New feature          | Manager Pattern     | `new FeatureManager(state, app)` |
+| Undo capability      | Command Pattern     | `this.app.saveState('action')`   |
+| Data persistence     | Repository Pattern  | `this.app.saveTasks()`           |
+| Large list rendering | Virtual Scrolling   | Activates at 50+ items           |
+| Multiple behaviors   | Strategy Pattern    | Sorting, filtering               |
+| Safe method calls    | Optional Chaining   | `this.app.method?.()`            |
+| Component assembly   | Composition Pattern | Task with subtasks               |
+| State management     | Centralized State   | `this.state.tasks`               |
+| Decoupling           | Delegation Pattern  | `this.manager.handle()`          |
+| Object creation      | Factory Pattern     | `Task.fromJSON(json)`            |
+
+---
+
+**Key Takeaway**: These patterns work together to create a maintainable,
+testable, and scalable codebase. Follow the established patterns when adding new
+features.
 
 ## Important Conventions
 
