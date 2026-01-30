@@ -502,4 +502,13 @@ export class Storage {
 
         await this.saveArchivedTasks([...archive, ...archiveEntries])
     }
+
+    /**
+     * Remove task from archive
+     */
+    async removeFromArchive(taskId: string): Promise<void> {
+        const archive = this.getArchivedTasks()
+        const filteredArchive = archive.filter((entry) => entry.task.id !== taskId)
+        await this.saveArchivedTasks(filteredArchive)
+    }
 }

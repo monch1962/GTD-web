@@ -1,0 +1,9 @@
+// Mock constants for testing
+export const ElementIds = {}
+export const StorageConfig = {}
+export const TaskStatus = {}
+export const ProjectStatus = {}
+export const TaskType = {}
+export const DEFAULT_CONTEXTS = []
+export const DEFAULT_ENERGY_LEVELS = []
+export const DEFAULT_TIME_ESTIMATES = []

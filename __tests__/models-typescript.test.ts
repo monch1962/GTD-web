@@ -16,7 +16,7 @@ import {
     RecurrencePattern,
     ProjectData,
     ReferenceData
-} from '../js-proxy/models'
+} from '../js/models'
 
 describe('Task Model - TypeScript', () => {
     describe('Constructor and Type Safety', () => {

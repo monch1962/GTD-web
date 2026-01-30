@@ -122,7 +122,7 @@ export function getAllContexts(tasks: any[] = []): Set<string> {
     })
 
     // Combine default and custom contexts
-    return new Set([...defaultContextIds, ...customContexts])
+    return new Set([...defaultContextIds, ...Array.from(customContexts)])
 }
 
 /**

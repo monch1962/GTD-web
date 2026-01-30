@@ -3,18 +3,19 @@ console.log('DEBUG: main.js loading...')
 
 // Update diagnostic indicator
 const updateMainJsIndicator = (msg) => {
-    const indicator = document.getElementById('gtd-js-test');
+    const indicator = document.getElementById('gtd-js-test')
     if (indicator) {
-        indicator.innerHTML = `⚠️ ${msg}`;
-        indicator.style.background = 'cyan';
-        console.log('DEBUG:', msg);
+        indicator.innerHTML = `⚠️ ${msg}`
+        indicator.style.background = 'cyan'
+        console.log('DEBUG:', msg)
     }
-};
+}
 
-updateMainJsIndicator('main.js loaded, importing app.js...');
+updateMainJsIndicator('main.js loaded, importing TypeScript app...')
 
-import './js/app.js'
+// Import TypeScript app wrapper (which imports the original app.js)
+import './js/app-ts.ts'
 import './css/styles.css'
 
 console.log('DEBUG: main.js imports complete')
-updateMainJsIndicator('main.js: importing CSS...');
+updateMainJsIndicator('main.js: importing CSS...')

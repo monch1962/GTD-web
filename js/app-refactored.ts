@@ -3,7 +3,10 @@
  * Main application orchestrator - delegates to specialized modules
  */
 
-import { Storage, ElementIds, TaskParser, escapeHtml } from './constants'
+import { ElementIds } from './constants'
+import { Storage } from './storage'
+import { TaskParser } from './nlp-parser'
+import { escapeHtml } from './dom-utils'
 import { Task, Project, Reference, Template } from './models'
 
 // Core modules
@@ -29,10 +32,10 @@ import { TaskOperations } from './modules/features/task-operations'
 import { TemplatesManager } from './modules/features/templates'
 
 // UI modules
-import { BulkSelectionManager } from './modules/ui/bulk-selection'
+import { BulkSelection } from './modules/ui/bulk-selection'
 import { ContextMenuManager } from './modules/ui/context-menu'
 import { DarkModeManager } from './modules/ui/dark-mode'
-import { KeyboardNavigationManager } from './modules/ui/keyboard-nav'
+import { KeyboardNavigation } from './modules/ui/keyboard-nav'
 import { NotificationManager } from './modules/ui/notifications'
 import { UndoRedoManager } from './modules/ui/undo-redo'
 
@@ -56,8 +59,8 @@ class GTDApp {
     dashboardManager: DashboardManager
     focusPomodoro: FocusPomodoroManager
     dependenciesManager: DependenciesManager
-    bulkSelection: BulkSelectionManager
-    keyboardNav: KeyboardNavigationManager
+    bulkSelection: BulkSelection
+    keyboardNav: KeyboardNavigation
     contextMenu: ContextMenuManager
     darkMode: DarkModeManager
     notifications: NotificationManager
@@ -69,6 +72,17 @@ class GTDApp {
     currentProjectId: string | null
     selectedTaskIds: Set<string>
     filters: { context: string; energy: string; time: string }
+    advancedSearchFilters: any
+    savedSearches: any
+    selectedContextFilters: Set<string>
+    selectedTaskId: string | null
+    bulkSelectionMode: boolean
+    usageStats: any
+    defaultContexts: string[]
+    focusTaskId: string | null
+    calendarDate: Date
+    history: any[]
+    historyIndex: number
     searchQuery: string
     constructor() {
         // Initialize state
@@ -98,8 +112,8 @@ class GTDApp {
         this.dependenciesManager = new DependenciesManager(this.state, this)
 
         // UI managers
-        this.bulkSelection = new BulkSelectionManager(this.state, this)
-        this.keyboardNav = new KeyboardNavigationManager(this.state, this)
+        this.bulkSelection = new BulkSelection(this.state, this)
+        this.keyboardNav = new KeyboardNavigation(this.state, this)
         this.contextMenu = new ContextMenuManager(this.state, this)
         this.darkMode = new DarkModeManager()
         this.notifications = new NotificationManager()
@@ -113,18 +127,18 @@ class GTDApp {
         this.currentProjectId = this.state.currentProjectId
         this.filters = this.state.filters
         this.searchQuery = this.state.searchQuery
-        this.advancedSearchFilters = this.state.advancedSearchFilters
-        this.savedSearches = this.state.savedSearches
-        this.selectedContextFilters = this.state.selectedContextFilters
-        this.selectedTaskId = this.keyboardNav.selectedTaskId
-        this.bulkSelectionMode = this.bulkSelection.bulkSelectionMode
-        this.selectedTaskIds = this.bulkSelection.selectedTaskIds
-        this.usageStats = this.state.usageStats
-        this.defaultContexts = this.state.defaultContexts
-        this.focusTaskId = this.focusPomodoro.focusTaskId
-        this.calendarDate = this.calendarManager.calendarDate
-        this.history = this.undoRedo.history
-        this.historyIndex = this.undoRedo.historyIndex
+        this.advancedSearchFilters = this.state.advancedSearchFilters || {}
+        this.savedSearches = this.state.savedSearches || []
+        this.selectedContextFilters = this.state.selectedContextFilters || new Set<string>()
+        this.selectedTaskId = null
+        this.bulkSelectionMode = false
+        this.selectedTaskIds = new Set<string>()
+        this.usageStats = this.state.usageStats || {}
+        this.defaultContexts = this.state.defaultContexts || []
+        this.focusTaskId = null
+        this.calendarDate = new Date()
+        this.history = []
+        this.historyIndex = -1
     }
 
     async init() {
@@ -170,8 +184,9 @@ class GTDApp {
 
     displayUserId() {
         const userIdElement = document.getElementById(ElementIds.userId)
-        if (userIdElement && this.storage.userId) {
-            userIdElement.textContent = this.storage.userId.substr(0, 12) + '...'
+        if (userIdElement) {
+            const userId = this.storage.getUserId()
+            userIdElement.textContent = userId.substr(0, 12) + '...'
         }
     }
 
@@ -206,8 +221,6 @@ class GTDApp {
 
     setupEventListeners() {
         // Setup all module event listeners
-        this.taskOperations.setup()
-        this.projectOperations.setup()
         this.contextFilter.setup()
         this.searchManager.setupSearch()
         this.templatesManager.setupTemplates()
@@ -299,7 +312,7 @@ class GTDApp {
     }
 
     async handleQuickAdd() {
-        const input = document.getElementById('quick-add-input')
+        const input = document.getElementById('quick-add-input') as HTMLInputElement | null
         if (!input) return
 
         const title = input.value.trim()
@@ -317,8 +330,8 @@ class GTDApp {
         return this.taskOperations.deleteTask(taskId)
     }
 
-    async archiveTask(taskId) {
-        return this.taskOperations.archiveTask(taskId)
+    async archiveTask(taskId: string) {
+        return this.archiveManager.archiveTask(taskId)
     }
 
     async duplicateTask(taskId) {
@@ -358,19 +371,31 @@ class GTDApp {
     }
 
     closeProjectModal() {
-        this.taskModal.closeProjectModal()
         const modal = document.getElementById('project-modal')
         if (modal) modal.classList.remove('active')
     }
 
     async saveProjectFromForm() {
-        const projectId = document.getElementById('project-id').value
-        const title = document.getElementById('project-title').value
-        const description = document.getElementById('project-description').value
-        const status = document.getElementById('project-status').value
-        const contextsValue = document.getElementById('project-contexts').value
+        const projectIdElement = document.getElementById('project-id') as HTMLInputElement | null
+        const titleElement = document.getElementById('project-title') as HTMLInputElement | null
+        const descriptionElement = document.getElementById(
+            'project-description'
+        ) as HTMLInputElement | null
+        const statusElement = document.getElementById('project-status') as HTMLSelectElement | null
+        const contextsElement = document.getElementById(
+            'project-contexts'
+        ) as HTMLInputElement | null
 
-        let contexts = []
+        if (!titleElement) return
+
+        const projectId = projectIdElement?.value || ''
+        const title = titleElement.value
+        const description = descriptionElement?.value || ''
+        const status =
+            (statusElement?.value as 'active' | 'someday' | 'completed' | 'archived') || 'active'
+        const contextsValue = contextsElement?.value || ''
+
+        let contexts: string[] = []
         if (contextsValue) {
             contexts = contextsValue
                 .split(',')
@@ -482,8 +507,8 @@ class GTDApp {
 
     // ==================== NOTIFICATIONS ====================
 
-    showNotification(message, type, duration) {
-        this.notifications.showNotification(message, type, duration)
+    showNotification(message: string, type: string = '', duration: number = 2000) {
+        this.notifications.showNotification(message, type as any, duration)
     }
 
     showToast(message) {

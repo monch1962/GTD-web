@@ -142,6 +142,41 @@ export class NotificationManager {
     }
 
     /**
+     * Show toast notification (alias for showNotification)
+     */
+    showToast(message: string, type: string = 'info', duration?: number): void {
+        this.showNotification(message, type as any, duration)
+    }
+
+    /**
+     * Convenience method for success notifications
+     */
+    success(message: string, duration?: number): void {
+        this.showNotification(message, 'success', duration)
+    }
+
+    /**
+     * Convenience method for error notifications
+     */
+    error(message: string, duration?: number): void {
+        this.showNotification(message, 'error', duration)
+    }
+
+    /**
+     * Convenience method for warning notifications
+     */
+    warning(message: string, duration?: number): void {
+        this.showNotification(message, 'warning', duration)
+    }
+
+    /**
+     * Convenience method for info notifications
+     */
+    info(message: string, duration?: number): void {
+        this.showNotification(message, 'info', duration)
+    }
+
+    /**
      * Dismiss a specific toast
      * @param toast - Toast element to dismiss
      */
