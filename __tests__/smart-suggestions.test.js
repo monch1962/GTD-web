@@ -3,7 +3,7 @@
  */
 
 import { Task, Project, Template } from '../js/models'
-import { SmartSuggestionsManager } from '../js/modules/features/smart-suggestions.js'
+import { SmartSuggestionsManager } from '../js/modules/features/smart-suggestions.ts'
 
 // Make Task and Project available globally
 global.Task = Task
@@ -675,9 +675,9 @@ describe('SmartSuggestionsManager - renderSuggestions()', () => {
         // Remove DOM elements that renderSuggestions expects
         document.body.innerHTML = '<div id="suggestions-modal"></div>'
 
-        // Should throw an error when required DOM elements are missing
-        // This is expected behavior - renderSuggestions needs these elements
-        expect(() => manager.renderSuggestions()).toThrow()
+        // Should handle missing elements gracefully (return early)
+        // This is the expected behavior - renderSuggestions checks for null elements
+        expect(() => manager.renderSuggestions()).not.toThrow()
     })
 })
 

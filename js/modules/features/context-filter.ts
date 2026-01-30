@@ -3,8 +3,8 @@
  * Handles context-based filtering of tasks and projects
  */
 
-import { getAllContexts, getContextTaskCounts } from '../../config/defaultContexts.js'
-import { Task, Project } from "../../models"
+import { getAllContexts, getContextTaskCounts } from '../../config/defaultContexts.ts'
+import { Task, Project } from '../../models'
 
 /**
  * App interface for type safety
@@ -99,7 +99,7 @@ export class ContextFilterManager {
         }
 
         // Get task counts per context
-        const contextTaskCounts = getContextTaskCounts(this.state.tasks)
+        const contextTaskCounts = getContextTaskCounts(this.state.tasks) as Record<string, number>
 
         // Create checkbox for each context (sorted)
         Array.from(allContexts)

@@ -50,6 +50,7 @@ export interface TaskData {
     starred?: boolean
     notes?: string
     subtasks?: Subtask[]
+    url?: string // For reference-type tasks
     createdAt?: string
     updatedAt?: string
 }
@@ -82,6 +83,7 @@ export class Task {
     starred: boolean
     notes: string
     subtasks: Subtask[]
+    url: string // For reference-type tasks
     createdAt: string
     updatedAt: string
 
@@ -109,6 +111,7 @@ export class Task {
         this.starred = data.starred || false
         this.notes = data.notes || ''
         this.subtasks = data.subtasks || []
+        this.url = data.url || ''
         this.createdAt = data.createdAt || new Date().toISOString()
         this.updatedAt = data.updatedAt || new Date().toISOString()
     }
@@ -142,6 +145,7 @@ export class Task {
             starred: this.starred,
             notes: this.notes,
             subtasks: this.subtasks,
+            url: this.url,
             createdAt: this.createdAt,
             updatedAt: this.updatedAt
         }
@@ -357,7 +361,8 @@ export class Task {
             case 'weekly':
                 if (daysOfWeek && Array.isArray(daysOfWeek) && daysOfWeek.length > 0) {
                     // Find the next occurrence of any of the specified days
-                    const currentDayOfWeek = nextDate.getDay() || 7 // Convert to 1-7 (Monday-Sunday)
+                    // Note: currentDayOfWeek is calculated but not used in this implementation
+                    // const currentDayOfWeek = nextDate.getDay() || 7 // Convert to 1-7 (Monday-Sunday)
                     let daysUntilNext: number | null = null
 
                     // Check each upcoming day to find the first matching day
@@ -488,7 +493,7 @@ export class Task {
 // Project Class (separate from Task in current implementation)
 // ============================================================================
 
-export type ProjectStatus = 'active' | 'someday' | 'completed'
+export type ProjectStatus = 'active' | 'someday' | 'completed' | 'archived'
 
 export interface ProjectData {
     id?: string

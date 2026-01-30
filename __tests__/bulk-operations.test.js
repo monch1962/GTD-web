@@ -3,7 +3,7 @@
  */
 
 import { GTDApp } from '../js/app.js'
-import { BulkOperationsManager } from '../js/modules/features/bulk-operations.js'
+import { BulkOperationsManager } from '../js/modules/features/bulk-operations.ts'
 
 describe('BulkOperationsManager - Initialization', () => {
     let manager

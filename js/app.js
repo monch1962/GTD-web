@@ -41,56 +41,49 @@
  * ============================================================================
  */
 
-import {
-    getDefaultContextIds,
-    getAllContexts,
-    getContextTaskCounts
-} from './config/defaultContexts.js'
+import { getDefaultContextIds } from './config/defaultContexts.ts'
 import {
     ElementIds,
-    StorageKeys,
-    TaskStatus,
-    Views,
     RecurrenceLabels,
     ViewLabels,
     Weekday,
     WeekdayNames,
     NthWeekdayLabels
-} from './constants.js'
-import { getElement, setTextContent, escapeHtml, announce } from './dom-utils.js'
+} from './constants.ts'
+import { escapeHtml, announce } from './dom-utils.ts'
 import { Task, Project, Reference, Template } from './models'
-import { ArchiveManager } from './modules/features/archive.js'
-import { BulkOperationsManager } from './modules/features/bulk-operations.js'
+import { ArchiveManager } from './modules/features/archive.ts'
+import { BulkOperationsManager } from './modules/features/bulk-operations.ts'
 import { CalendarManager } from './modules/features/calendar.ts'
 import { ContextFilterManager } from './modules/features/context-filter.ts'
-import { DailyReviewManager } from './modules/features/daily-review.js'
-import { DashboardManager } from './modules/features/dashboard.js'
+import { DailyReviewManager } from './modules/features/daily-review.ts'
+import { DashboardManager } from './modules/features/dashboard.ts'
 import { DataExportImportManager } from './modules/features/data-export-import.ts'
-import { DependenciesManager } from './modules/features/dependencies.js'
-import { FocusPomodoroManager } from './modules/features/focus-pomodoro.js'
+import { DependenciesManager } from './modules/features/dependencies.ts'
+import { FocusPomodoroManager } from './modules/features/focus-pomodoro.ts'
 import { GlobalQuickCaptureManager } from './modules/features/global-quick-capture.ts'
 import { NavigationManager } from './modules/features/navigation.ts'
 import { NewProjectButtonManager } from './modules/features/new-project-button.ts'
 import { PriorityScoringManager } from './modules/features/priority-scoring.ts'
-import { ProductivityHeatmapManager } from './modules/features/productivity-heatmap.js'
-import { ProjectModalManager } from './modules/features/project-modal.js'
+import { ProductivityHeatmapManager } from './modules/features/productivity-heatmap.ts'
+import { ProjectModalManager } from './modules/features/project-modal.ts'
 import { ProjectOperations } from './modules/features/project-operations.ts'
 import { QuickCaptureWidgetManager } from './modules/features/quick-capture-widget.ts'
-import { SearchManager } from './modules/features/search.js'
-import { SmartDateSuggestionsManager } from './modules/features/smart-date-suggestions.js'
-import { SmartSuggestionsManager } from './modules/features/smart-suggestions.js'
+import { SearchManager } from './modules/features/search.ts'
+import { SmartDateSuggestionsManager } from './modules/features/smart-date-suggestions.ts'
+import { SmartSuggestionsManager } from './modules/features/smart-suggestions.ts'
 import { SubtasksManager } from './modules/features/subtasks.ts'
-import { TaskModalManager } from './modules/features/task-modal.js'
+import { TaskModalManager } from './modules/features/task-modal.ts'
 import { TaskOperations } from './modules/features/task-operations.ts'
-import { TemplatesManager } from './modules/features/templates.js'
+import { TemplatesManager } from './modules/features/templates.ts'
 import { TimeTrackingManager } from './modules/features/time-tracking.ts'
 import { UndoRedoManager } from './modules/features/undo-redo.ts'
-import { WeeklyReviewManager } from './modules/features/weekly-review.js'
-import { ContextMenuManager } from './modules/ui/context-menu.js'
-import { DarkModeManager } from './modules/ui/dark-mode.js'
-import { MobileNavigationManager } from './modules/ui/mobile-navigation.js'
-import { TaskParser } from './nlp-parser.js'
-import { Storage } from './storage.js'
+import { WeeklyReviewManager } from './modules/features/weekly-review.ts'
+import { ContextMenuManager } from './modules/ui/context-menu.ts'
+import { DarkModeManager } from './modules/ui/dark-mode.ts'
+import { MobileNavigationManager } from './modules/ui/mobile-navigation.ts'
+import { TaskParser } from './nlp-parser.ts'
+import { Storage } from './storage.ts'
 
 class GTDApp {
     // =========================================================================
@@ -2193,7 +2186,7 @@ class GTDApp {
         })
     }
 
-    createTaskElement(task, index) {
+    createTaskElement(task, _index) {
         const div = document.createElement('div')
         div.className = 'task-item'
         div.draggable = true
@@ -3428,7 +3421,7 @@ class GTDApp {
             const details = []
             if (recurrence.type === 'weekly' && recurrence.daysOfWeek) {
                 const dayNames = recurrence.daysOfWeek.map((day) => {
-                    const weekday = Object.values(Weekday).find((w) => Weekday[w] === day)
+                    const _weekday = Object.values(Weekday).find((w) => Weekday[w] === day)
                     return WeekdayNames[day] || day
                 })
                 details.push(`(${dayNames.join(', ')})`)
@@ -3786,10 +3779,10 @@ class GTDApp {
         if (!confirmed) return
 
         // Count affected items
-        const affectedTasks = this.tasks.filter(
+        const _affectedTasks = this.tasks.filter(
             (task) => task.contexts && task.contexts.includes(tagName)
         )
-        const affectedProjects = this.projects.filter(
+        const _affectedProjects = this.projects.filter(
             (project) => project.contexts && project.contexts.includes(tagName)
         )
 
@@ -3979,7 +3972,7 @@ class ErrorHandler {
 export { GTDApp, ErrorHandler }
 
 // Initialize error handler
-const errorHandler = new ErrorHandler()
+const _errorHandler = new ErrorHandler()
 
 // Initialize app
 console.log('app.js: Creating GTDApp instance...')

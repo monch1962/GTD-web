@@ -3,7 +3,7 @@
  */
 
 import { GTDApp } from '../js/app.js'
-import { SearchManager } from '../js/modules/features/search.js'
+import { SearchManager } from '../js/modules/features/search.ts'
 
 // Helper function to add options to select elements
 function addOption(select, value, text) {

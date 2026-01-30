@@ -1,48 +1,36 @@
 /**
- * Storage Layer - Handles localStorage persistence - TypeScript Version
+ * Storage Layer - Handles localStorage persistence
  */
 
 import { StorageConfig } from './constants.ts'
-import { Task, Project } from './models'
 
-// ============================================================================
-// Type Definitions
-// ============================================================================
-
-export interface StorageListener {
-    (value: any): void
+interface StorageInfo {
+    used: number
+    total: number
+    percentage: number
+    available: number
+    nearQuota: boolean
 }
 
-export interface RemoteStorage {
-    setItem(key: string, value: string): Promise<void>
-    getItem(key: string): Promise<string | null>
-    removeItem(key: string): Promise<void>
-}
-
-export interface ArchiveEntry {
-    task: Task // Task JSON data
+interface ArchiveEntry {
+    task: any
     archivedAt: string
     originalStatus: string
     originalProjectId: string | null
 }
 
-export interface SyncStatus {
-    status: 'syncing' | 'synced' | 'error'
-    lastSync?: string
-    error?: string
+interface RemoteStorage {
+    getItem(key: string): Promise<any>
+    setItem(key: string, value: any): Promise<void>
+    removeItem(key: string): Promise<void>
 }
 
-// ============================================================================
-// Storage Class
-// ============================================================================
-
 export class Storage {
-    userId: string | null
-    listeners: Map<string, StorageListener[]>
-    QUOTA_WARNING_THRESHOLD: number
-    remoteStorage?: RemoteStorage
-    syncEnabled: boolean = false
-    syncStatus: SyncStatus = { status: 'synced' }
+    private userId: string | null
+    private listeners: Map<string, Array<(value: any) => void>>
+    private QUOTA_WARNING_THRESHOLD: number
+    private remoteStorage?: RemoteStorage
+    private syncEnabled: boolean = false
 
     constructor(userId: string | null = null) {
         this.userId = userId || this.getUserId()
@@ -53,6 +41,7 @@ export class Storage {
     async init(): Promise<this> {
         // Initialize localStorage
         console.log('Storage initialized with localStorage')
+
         return this
     }
 
@@ -75,13 +64,7 @@ export class Storage {
      * Check available localStorage space
      * @returns Space info with used, total, percentage, and available bytes
      */
-    getStorageInfo(): {
-        used: number
-        total: number
-        percentage: number
-        available: number
-        nearQuota: boolean
-    } {
+    getStorageInfo(): StorageInfo {
         let total = 0
         let used = 0
 
@@ -156,12 +139,12 @@ export class Storage {
     /**
      * Get item from localStorage with error handling
      */
-    getItem<T = any>(key: string): T | null {
+    getItem(key: string): any {
         try {
             const data = localStorage.getItem(key)
             if (data) {
                 try {
-                    return JSON.parse(data) as T
+                    return JSON.parse(data)
                 } catch (e) {
                     console.error(`Error parsing ${key} from localStorage:`, e)
                     // Remove corrupted data
@@ -179,7 +162,7 @@ export class Storage {
     /**
      * Set item in localStorage with quota management and error handling
      */
-    async setItem<T = any>(key: string, value: T): Promise<boolean> {
+    async setItem(key: string, value: any): Promise<boolean> {
         const data = JSON.stringify(value)
         const dataSize = new Blob([data]).size
 
@@ -319,29 +302,27 @@ export class Storage {
 
             // Get tasks from remote storage
             const remoteTasks = await this.remoteStorage.getItem('gtd_tasks')
-            const localTasks = this.getItem<any[]>('gtd_tasks')
+            const localTasks = this.getItem('gtd_tasks')
 
             // Use the most recently updated data
             if (remoteTasks && localTasks) {
-                const remoteTasksParsed = JSON.parse(remoteTasks)
-                const tasks = this.mergeData(localTasks, remoteTasksParsed, 'updatedAt')
+                const tasks = this.mergeData(localTasks, remoteTasks, 'updatedAt')
                 // Save directly to localStorage to avoid sync loop
                 localStorage.setItem('gtd_tasks', JSON.stringify(tasks))
             } else if (remoteTasks && !localTasks) {
-                localStorage.setItem('gtd_tasks', remoteTasks)
+                localStorage.setItem('gtd_tasks', JSON.stringify(remoteTasks))
             }
 
             // Get projects from remote storage
             const remoteProjects = await this.remoteStorage.getItem('gtd_projects')
-            const localProjects = this.getItem<any[]>('gtd_projects')
+            const localProjects = this.getItem('gtd_projects')
 
             if (remoteProjects && localProjects) {
-                const remoteProjectsParsed = JSON.parse(remoteProjects)
-                const projects = this.mergeData(localProjects, remoteProjectsParsed, 'updatedAt')
+                const projects = this.mergeData(localProjects, remoteProjects, 'updatedAt')
                 // Save directly to localStorage to avoid sync loop
                 localStorage.setItem('gtd_projects', JSON.stringify(projects))
             } else if (remoteProjects && !localProjects) {
-                localStorage.setItem('gtd_projects', remoteProjects)
+                localStorage.setItem('gtd_projects', JSON.stringify(remoteProjects))
             }
 
             this.updateSyncStatus('synced')
@@ -354,12 +335,8 @@ export class Storage {
     /**
      * Merge local and remote data based on timestamp
      */
-    mergeData<T extends { id: string; [key: string]: any }>(
-        local: T[],
-        remote: T[],
-        timestampField: string
-    ): T[] {
-        const merged = new Map<string, T>()
+    mergeData(local: any[], remote: any[], timestampField: string): any[] {
+        const merged = new Map()
 
         // Add all local items
         local.forEach((item) => {
@@ -417,7 +394,7 @@ export class Storage {
     /**
      * Subscribe to data changes
      */
-    subscribe(key: string, callback: StorageListener): void {
+    subscribe(key: string, callback: (value: any) => void): void {
         if (!this.listeners.has(key)) {
             this.listeners.set(key, [])
         }
@@ -434,35 +411,31 @@ export class Storage {
         }
     }
 
-    // ============================================================================
-    // Task-specific methods
-    // ============================================================================
-
     /**
      * Get all tasks
      */
-    getTasks(): Task[] {
-        return this.getItem<Task[]>('gtd_tasks') || []
+    getTasks(): any[] {
+        return this.getItem('gtd_tasks') || []
     }
 
     /**
      * Save all tasks
      */
-    async saveTasks(tasks: Task[]): Promise<void> {
+    async saveTasks(tasks: any[]): Promise<void> {
         await this.setItem('gtd_tasks', tasks)
     }
 
     /**
      * Get all projects
      */
-    getProjects(): Project[] {
-        return this.getItem<Project[]>('gtd_projects') || []
+    getProjects(): any[] {
+        return this.getItem('gtd_projects') || []
     }
 
     /**
      * Save all projects
      */
-    async saveProjects(projects: Project[]): Promise<void> {
+    async saveProjects(projects: any[]): Promise<void> {
         await this.setItem('gtd_projects', projects)
     }
 
@@ -489,7 +462,7 @@ export class Storage {
      * Get all templates
      */
     getTemplates(): any[] {
-        return this.getItem<any[]>('gtd_templates') || []
+        return this.getItem('gtd_templates') || []
     }
 
     /**
@@ -503,7 +476,7 @@ export class Storage {
      * Get archived tasks
      */
     getArchivedTasks(): ArchiveEntry[] {
-        return this.getItem<ArchiveEntry[]>('gtd_archive') || []
+        return this.getItem('gtd_archive') || []
     }
 
     /**
@@ -520,7 +493,7 @@ export class Storage {
         const archive = this.getArchivedTasks()
         const archivedAt = new Date().toISOString()
 
-        const archiveEntries: ArchiveEntry[] = tasksToArchive.map((task) => ({
+        const archiveEntries = tasksToArchive.map((task) => ({
             task: task.toJSON ? task.toJSON() : task,
             archivedAt,
             originalStatus: task.status,

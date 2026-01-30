@@ -187,8 +187,8 @@ export class UndoRedoManager {
      * Update undo/redo button states
      */
     updateUndoRedoButtons(): void {
-        const undoBtn = document.getElementById('btn-undo')
-        const redoBtn = document.getElementById('btn-redo')
+        const undoBtn = document.getElementById('btn-undo') as HTMLButtonElement | null
+        const redoBtn = document.getElementById('btn-redo') as HTMLButtonElement | null
 
         if (undoBtn) {
             undoBtn.disabled = this.state.historyIndex <= 0

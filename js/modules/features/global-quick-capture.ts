@@ -15,7 +15,7 @@
  */
 
 import { Task } from '../../models'
-import { escapeHtml } from '../../dom-utils.js'
+import { escapeHtml } from '../../dom-utils.ts'
 import type { Template } from '../../models'
 
 interface State {

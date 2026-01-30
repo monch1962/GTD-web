@@ -4,7 +4,7 @@
  */
 
 // Mock dom-utils before importing
-import { DashboardManager } from '../js/modules/features/dashboard.js'
+import { DashboardManager } from '../js/modules/features/dashboard.ts'
 
 jest.mock('../js/dom-utils.js', () => ({
     escapeHtml: (str) => str,

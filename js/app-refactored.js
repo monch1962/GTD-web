@@ -3,53 +3,38 @@
  * Main application orchestrator - delegates to specialized modules
  */
 
+import { Storage, ElementIds, TaskParser, escapeHtml } from './constants.ts'
 import { Task, Project, Reference, Template } from './models'
-import { Storage } from './storage.js'
-import {
-    ElementIds,
-    StorageKeys,
-    TaskStatus,
-    Views,
-    RecurrenceLabels,
-    ViewLabels,
-    Weekday,
-    WeekdayNames,
-    NthWeekdayLabels
-} from './constants.js'
-import { getElement, setTextContent, escapeHtml, announce } from './dom-utils.js'
-import { TaskParser } from './nlp-parser.js'
-import { getDefaultContextIds } from './config/defaultContexts.js'
 
 // Core modules
-import { AppState } from './modules/core/app-state.js'
-import { StorageOperations } from './modules/core/storage-ops.js'
+import { AppState } from './modules/core/app-state.ts'
+import { StorageOperations } from './modules/core/storage-ops.ts'
 
 // View modules
-import { ViewManager } from './modules/views/view-manager.js'
-import { TaskRenderer } from './modules/views/task-renderer.js'
-import { ProjectRenderer } from './modules/views/project-renderer.js'
 
 // Feature modules
-import { TaskOperations } from './modules/features/task-operations.js'
-import { ProjectOperations } from './modules/features/project-operations.js'
-import { TaskModalManager } from './modules/features/task-modal.js'
-import { ContextFilterManager } from './modules/features/context-filter.js'
-import { SearchManager } from './modules/features/search.js'
-import { TemplatesManager } from './modules/features/templates.js'
-import { ArchiveManager } from './modules/features/archive.js'
-import { CalendarManager } from './modules/features/calendar.js'
-import { DashboardManager } from './modules/features/dashboard.js'
-import { FocusPomodoroManager } from './modules/features/focus-pomodoro.js'
-import { DependenciesManager } from './modules/features/dependencies.js'
+import { ArchiveManager } from './modules/features/archive.ts'
+import { CalendarManager } from './modules/features/calendar.ts'
+import { ContextFilterManager } from './modules/features/context-filter.ts'
+import { DashboardManager } from './modules/features/dashboard.ts'
+import { DependenciesManager } from './modules/features/dependencies.ts'
+import { FocusPomodoroManager } from './modules/features/focus-pomodoro.ts'
+import { ProjectOperations } from './modules/features/project-operations.ts'
+import { SearchManager } from './modules/features/search.ts'
+import { TaskModalManager } from './modules/features/task-modal.ts'
+import { TaskOperations } from './modules/features/task-operations.ts'
+import { TemplatesManager } from './modules/features/templates.ts'
 
 // UI modules
-import { VirtualScrollManager } from './modules/ui/virtual-scroll.js'
-import { BulkSelectionManager } from './modules/ui/bulk-selection.js'
-import { KeyboardNavigationManager } from './modules/ui/keyboard-nav.js'
-import { ContextMenuManager } from './modules/ui/context-menu.js'
-import { DarkModeManager } from './modules/ui/dark-mode.js'
-import { NotificationManager } from './modules/ui/notifications.js'
-import { UndoRedoManager } from './modules/ui/undo-redo.js'
+import { BulkSelectionManager } from './modules/ui/bulk-selection.ts'
+import { ContextMenuManager } from './modules/ui/context-menu.ts'
+import { DarkModeManager } from './modules/ui/dark-mode.ts'
+import { KeyboardNavigationManager } from './modules/ui/keyboard-nav.ts'
+import { NotificationManager } from './modules/ui/notifications.ts'
+import { UndoRedoManager } from './modules/ui/undo-redo.ts'
+import { ProjectRenderer } from './modules/views/project-renderer.ts'
+import { TaskRenderer } from './modules/views/task-renderer.ts'
+import { ViewManager } from './modules/views/view-manager.ts'
 
 class GTDApp {
     constructor() {
@@ -381,10 +366,10 @@ class GTDApp {
         } else {
             // Create new project
             const projectData = {
-                title: title,
-                description: description,
-                status: status,
-                contexts: contexts
+                title,
+                description,
+                status,
+                contexts
             }
 
             const project = new Project(projectData)
@@ -825,8 +810,9 @@ class GTDApp {
     buildCompletionData(startDate, endDate) {
         const data = {}
         const currentDate = new Date(startDate)
+        const endTime = new Date(endDate).getTime()
 
-        while (currentDate <= endDate) {
+        while (currentDate.getTime() <= endTime) {
             const dateKey = currentDate.toISOString().split('T')[0]
             data[dateKey] = 0
             currentDate.setDate(currentDate.getDate() + 1)
@@ -900,6 +886,7 @@ class GTDApp {
                 if (date.getMonth() !== currentMonth) {
                     currentMonth = date.getMonth()
                     // Add month label
+                    html += `<div class="month-label">${months[currentMonth]}</div>`
                 }
 
                 let level = 0
@@ -1020,6 +1007,6 @@ const app = new GTDApp()
 document.addEventListener('DOMContentLoaded', () => app.init())
 
 // Export for testing
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { GTDApp }
+if (typeof globalThis.module !== 'undefined' && globalThis.module.exports) {
+    globalThis.module.exports = { GTDApp }
 }

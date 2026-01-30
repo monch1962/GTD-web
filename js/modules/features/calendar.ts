@@ -3,8 +3,8 @@
  * Handles calendar view for task visualization
  */
 
-import { escapeHtml } from '../../dom-utils.js'
-import type { Task } from '../../models.js'
+import { escapeHtml } from '../../dom-utils.ts'
+import type { Task } from '../../models.ts'
 
 interface State {
     tasks: Task[]
@@ -115,7 +115,7 @@ export class CalendarManager {
         this.state.tasks
             .filter((t) => !t.completed && t.dueDate)
             .forEach((task) => {
-                const dueDate = new Date(task.dueDate)
+                const dueDate = new Date(task.dueDate!)
                 if (dueDate.getFullYear() === year && dueDate.getMonth() === month) {
                     const day = dueDate.getDate()
                     if (!tasksByDate[day]) tasksByDate[day] = []

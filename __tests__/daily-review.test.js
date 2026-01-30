@@ -4,7 +4,7 @@
  */
 
 // Mock dom-utils before importing
-import { DailyReviewManager } from '../js/modules/features/daily-review.js'
+import { DailyReviewManager } from '../js/modules/features/daily-review.ts'
 
 jest.mock('../js/dom-utils.js', () => ({
     escapeHtml: (str) => str,

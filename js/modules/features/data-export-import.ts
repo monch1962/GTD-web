@@ -10,7 +10,7 @@
 
 import { Task } from '../../models'
 import { Project } from '../../models'
-import { createLogger } from '../utils/logger.js'
+import { createLogger } from '../utils/logger.ts'
 
 interface State {
     tasks: Task[]

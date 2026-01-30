@@ -3,7 +3,7 @@
  */
 
 import { GTDApp } from '../js/app.js'
-import { SmartDateSuggestionsManager } from '../js/modules/features/smart-date-suggestions.js'
+import { SmartDateSuggestionsManager } from '../js/modules/features/smart-date-suggestions.ts'
 
 describe('SmartDateSuggestionsManager - Natural Language Date Parsing', () => {
     let manager

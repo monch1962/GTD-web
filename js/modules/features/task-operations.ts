@@ -17,7 +17,7 @@
  */
 
 import { Task, TaskData, TaskStatus } from '../../models'
-import { createLogger } from '../utils/logger.js'
+import { createLogger } from '../utils/logger.ts'
 
 // Define interfaces for state and app dependencies
 interface AppState {

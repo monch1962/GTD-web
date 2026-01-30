@@ -3,7 +3,7 @@
  */
 
 import { Task, Project, Template } from '../js/models'
-import { TaskModalManager } from '../js/modules/features/task-modal.js'
+import { TaskModalManager } from '../js/modules/features/task-modal.ts'
 
 describe('TaskModalManager - Initialization', () => {
     let manager

@@ -3,7 +3,7 @@
  */
 
 import { Task, Project, Template } from '../js/models'
-import { ProductivityHeatmapManager } from '../js/modules/features/productivity-heatmap.js'
+import { ProductivityHeatmapManager } from '../js/modules/features/productivity-heatmap.ts'
 
 // Make Task available globally
 global.Task = Task
