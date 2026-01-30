@@ -3,7 +3,7 @@
  */
 
 import { GTDApp } from '../js/app.js'
-import { GlobalQuickCaptureManager } from '../js/modules/features/global-quick-capture.js'
+import { GlobalQuickCaptureManager } from '../js/modules/features/global-quick-capture.ts'
 
 describe('GlobalQuickCaptureManager - Initialization', () => {
     let manager

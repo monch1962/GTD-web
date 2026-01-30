@@ -4,7 +4,7 @@
 
 import { GTDApp } from '../js/app.js'
 import { Project } from '../js/models'
-import { ProjectOperations } from '../js/modules/features/project-operations.js'
+import { ProjectOperations } from '../js/modules/features/project-operations.ts'
 
 describe('ProjectOperations - Initialization', () => {
     let manager

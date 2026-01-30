@@ -3,7 +3,7 @@
  */
 
 import { Task, Project, Template } from '../js/models'
-import { DataExportImportManager } from '../js/modules/features/data-export-import.js'
+import { DataExportImportManager } from '../js/modules/features/data-export-import.ts'
 
 // Make Task and Project available globally for the DataExportImportManager
 global.Task = Task
