@@ -2,7 +2,7 @@
  * Comprehensive Tests for Navigation Manager
  */
 
-import { Task, Project, Template } from '../js/models'
+import { Task, Project, Template } from '../js/models.ts'
 import { NavigationManager } from '../js/modules/features/navigation.ts'
 
 describe('NavigationManager - Initialization', () => {

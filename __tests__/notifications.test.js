@@ -2,11 +2,11 @@
  * Tests for notifications.js - NotificationManager class
  */
 
-import { announce } from '../js/dom-utils.js'
-import { NotificationManager } from '../js/modules/ui/notifications.js'
+import { announce } from '../js/dom-utils.ts'
+import { NotificationManager } from '../js/modules/ui/notifications.ts'
 
 // Mock the announce function
-jest.mock('../js/dom-utils.js', () => ({
+jest.mock('../js-proxy/dom-utils.js', () => ({
     announce: jest.fn()
 }))
 

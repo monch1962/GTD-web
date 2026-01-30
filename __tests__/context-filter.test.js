@@ -2,7 +2,7 @@
  * Comprehensive Tests for Context Filter Feature
  */
 
-import { GTDApp } from '../js/app.js'
+import { GTDApp } from '../js/app.ts'
 import { ContextFilterManager } from '../js/modules/features/context-filter.ts'
 
 describe('ContextFilterManager - Initialization', () => {

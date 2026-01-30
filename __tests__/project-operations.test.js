@@ -2,8 +2,8 @@
  * Comprehensive Tests for Project Operations Feature
  */
 
-import { GTDApp } from '../js/app.js'
-import { Project } from '../js/models'
+import { GTDApp } from '../js/app.ts'
+import { Project } from '../js/models.ts'
 import { ProjectOperations } from '../js/modules/features/project-operations.ts'
 
 describe('ProjectOperations - Initialization', () => {

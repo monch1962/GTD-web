@@ -2,7 +2,7 @@
  * Comprehensive Tests for Undo/Redo Manager
  */
 
-import { Task, Project, Template } from '../js/models'
+import { Task, Project, Template } from '../js/models.ts'
 import { UndoRedoManager } from '../js/modules/features/undo-redo.ts'
 
 describe('UndoRedoManager - Initialization', () => {

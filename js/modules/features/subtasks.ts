@@ -13,7 +13,7 @@
  * - Extracting subtasks from the modal UI
  */
 
-import { escapeHtml } from '../../dom-utils.ts'
+import { escapeHtml } from '../../dom-utils'
 
 /**
  * App interface for type safety

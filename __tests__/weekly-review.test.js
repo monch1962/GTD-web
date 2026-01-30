@@ -3,8 +3,8 @@
  * Tests all Weekly Review functionality before modularization
  */
 
-import { GTDApp } from '../js/app.js'
-import { Task, Project, Template } from '../js/models'
+import { GTDApp } from '../js/app.ts'
+import { Task, Project, Template } from '../js/models.ts'
 
 describe('Weekly Review Feature - Comprehensive Tests', () => {
     let app

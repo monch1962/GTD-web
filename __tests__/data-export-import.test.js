@@ -2,7 +2,7 @@
  * Comprehensive Tests for Data Export/Import Feature
  */
 
-import { Task, Project, Template } from '../js/models'
+import { Task, Project, Template } from '../js/models.ts'
 import { DataExportImportManager } from '../js/modules/features/data-export-import.ts'
 
 // Make Task and Project available globally for the DataExportImportManager

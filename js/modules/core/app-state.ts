@@ -3,10 +3,10 @@
  * Provides a single source of truth for all application state
  */
 
-import { createLogger } from '../utils/logger.ts'
-import { Task } from '../../models.ts'
-import { Project } from '../../models.ts'
-import { Template } from '../../models.ts'
+import { createLogger } from '../utils/logger'
+import { Task } from '../../models'
+import { Project } from '../../models'
+import { Template } from '../../models'
 
 export class AppState {
     // Core data
@@ -187,11 +187,14 @@ export class AppState {
     setState(updates: Partial<AppState>) {
         for (const key in updates) {
             if (Object.prototype.hasOwnProperty.call(updates, key)) {
-                ;(this as any)[key] = updates[key as keyof AppState]
+                // Check if property exists on AppState type
+                if (key in this) {
+                    ;(this as any)[key] = updates[key as keyof AppState]
+                } else {
+                    this.logger.warn(`Attempted to set unknown state property: ${key}`)
+                }
             }
         }
-    }
-        })
     }
 
     /**

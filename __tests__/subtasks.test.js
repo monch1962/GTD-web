@@ -2,7 +2,7 @@
  * Comprehensive Tests for Subtasks Feature
  */
 
-import { GTDApp } from '../js/app.js'
+import { GTDApp } from '../js/app.ts'
 import { SubtasksManager } from '../js/modules/features/subtasks.ts'
 
 describe('SubtasksManager - Initialization', () => {

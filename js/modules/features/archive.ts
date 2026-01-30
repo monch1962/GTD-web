@@ -5,7 +5,7 @@
 
 import { Task, Project } from '../../models'
 import { ArchiveEntry } from '../../storage'
-import { escapeHtml } from '../../dom-utils.ts'
+import { escapeHtml } from '../../dom-utils'
 
 // Define interfaces for state and app dependencies
 interface AppState {

@@ -11,7 +11,7 @@
 
 import fs from 'fs'
 import path from 'path'
-import { defaultContexts, getContextIds, isDefaultContext } from '../js/config/defaultContexts.js'
+import { defaultContexts, getContextIds, isDefaultContext } from '../js/config/defaultContexts.ts'
 
 describe.skip('Default Contexts DRY Compliance', () => {
     test('should have all default contexts defined in config', () => {
@@ -153,7 +153,7 @@ describe.skip('Default Contexts DRY Compliance', () => {
         const jsPath = path.join(__dirname, '..')
 
         // Files that should NOT contain hardcoded context definitions
-        const protectedFiles = ['js/app.js', 'js/constants.js']
+        const protectedFiles = ['js/app.js', 'js-proxy/constants.js']
 
         protectedFiles.forEach((file) => {
             const filePath = path.join(jsPath, file)

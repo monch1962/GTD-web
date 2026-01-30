@@ -4,7 +4,7 @@
  */
 
 // Import default contexts from config
-import { getDefaultContextIds } from './config/defaultContexts.ts'
+import { getDefaultContextIds } from './config/defaultContexts'
 
 // ============================================================================
 // Type Definitions

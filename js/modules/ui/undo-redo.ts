@@ -3,8 +3,8 @@
  * Manages history and provides undo/redo functionality
  */
 
-import { Task } from '../../models.ts'
-import { Project } from '../../models.ts'
+import { Task } from '../../models'
+import { Project } from '../../models'
 
 interface HistoryEntry {
     action: string
@@ -211,14 +211,10 @@ export class UndoRedoManager {
 
         if (undoBtn) {
             undoBtn.disabled = !canUndo
-            undoBtn.title = canUndo ? `Undo: ${this.history[this.historyIndex]?.action || 'previous action'}` : 'Nothing to undo'
+            undoBtn.title = canUndo
+                ? `Undo: ${this.history[this.historyIndex]?.action || 'previous action'}`
+                : 'Nothing to undo'
         }
-
-        if (redoBtn) {
-            redoBtn.disabled = !canRedo
-            redoBtn.title = canRedo ? `Redo: ${this.history[this.historyIndex + 1]?.action || 'next action'}` : 'Nothing to redo'
-        }
-    }
 
         if (redoBtn) {
             redoBtn.disabled = !canRedo

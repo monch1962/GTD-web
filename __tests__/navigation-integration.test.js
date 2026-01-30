@@ -4,9 +4,9 @@
  */
 
 // Mock all the dependencies
-import { GTDApp } from '../js/app.js'
+import { GTDApp } from '../js/app.ts'
 
-jest.mock('../js/dom-utils.js', () => ({
+jest.mock('../js-proxy/dom-utils.js', () => ({
     escapeHtml: (str) => str,
     getElement: (id) => null,
     setTextContent: (el, text) => {
@@ -16,7 +16,7 @@ jest.mock('../js/dom-utils.js', () => ({
 }))
 
 // Mock all manager modules
-jest.mock('../js/modules/ui/dark-mode.js', () => ({
+jest.mock('../js-proxy/modules/ui/dark-mode.js', () => ({
     DarkModeManager: jest.fn().mockImplementation(() => ({
         initializeDarkMode: jest.fn(),
         setupDarkMode: jest.fn(),
@@ -25,7 +25,7 @@ jest.mock('../js/modules/ui/dark-mode.js', () => ({
     }))
 }))
 
-jest.mock('../js/modules/features/calendar.ts', () => ({
+jest.mock('../js-proxy/modules/features/calendar.js', () => ({
     CalendarManager: jest.fn().mockImplementation(() => ({
         setupCalendarView: jest.fn(),
         showCalendar: jest.fn(),
@@ -37,7 +37,7 @@ jest.mock('../js/modules/features/calendar.ts', () => ({
     }))
 }))
 
-jest.mock('../js/modules/features/weekly-review.js', () => ({
+jest.mock('../js-proxy/modules/features/weekly-review.js', () => ({
     WeeklyReviewManager: jest.fn().mockImplementation(() => ({
         setupWeeklyReview: jest.fn(),
         showWeeklyReview: jest.fn(),
@@ -46,7 +46,7 @@ jest.mock('../js/modules/features/weekly-review.js', () => ({
     }))
 }))
 
-jest.mock('../js/modules/features/dashboard.js', () => ({
+jest.mock('../js-proxy/modules/features/dashboard.js', () => ({
     DashboardManager: jest.fn().mockImplementation(() => ({
         setupDashboard: jest.fn(),
         showDashboard: jest.fn(),
@@ -55,7 +55,7 @@ jest.mock('../js/modules/features/dashboard.js', () => ({
     }))
 }))
 
-jest.mock('../js/modules/features/archive.js', () => ({
+jest.mock('../js-proxy/modules/features/archive.js', () => ({
     ArchiveManager: jest.fn().mockImplementation(() => ({
         setupArchive: jest.fn(),
         openArchiveModal: jest.fn(),
@@ -70,7 +70,7 @@ jest.mock('../js/modules/features/archive.js', () => ({
     }))
 }))
 
-jest.mock('../js/modules/ui/context-menu.js', () => ({
+jest.mock('../js-proxy/modules/ui/context-menu.js', () => ({
     ContextMenuManager: jest.fn().mockImplementation(() => ({
         setupContextMenu: jest.fn(),
         showContextMenu: jest.fn(),
@@ -80,7 +80,7 @@ jest.mock('../js/modules/ui/context-menu.js', () => ({
     }))
 }))
 
-jest.mock('../js/modules/features/dependencies.js', () => ({
+jest.mock('../js-proxy/modules/features/dependencies.js', () => ({
     DependenciesManager: jest.fn().mockImplementation(() => ({
         setupDependenciesVisualization: jest.fn(),
         populateDepsProjectFilter: jest.fn(),
@@ -90,7 +90,7 @@ jest.mock('../js/modules/features/dependencies.js', () => ({
     }))
 }))
 
-jest.mock('../js/modules/features/templates.js', () => ({
+jest.mock('../js-proxy/modules/features/templates.js', () => ({
     TemplatesManager: jest.fn().mockImplementation(() => ({
         setupTemplates: jest.fn(),
         openTemplatesModal: jest.fn(),
@@ -109,7 +109,7 @@ jest.mock('../js/modules/features/templates.js', () => ({
     }))
 }))
 
-jest.mock('../js/modules/ui/mobile-navigation.js', () => ({
+jest.mock('../js-proxy/modules/ui/mobile-navigation.js', () => ({
     MobileNavigationManager: jest.fn().mockImplementation(() => ({
         setupMobileNavigation: jest.fn(),
         setupHamburgerMenu: jest.fn(),
@@ -121,7 +121,7 @@ jest.mock('../js/modules/ui/mobile-navigation.js', () => ({
     }))
 }))
 
-jest.mock('../js/storage.js', () => ({
+jest.mock('../js-proxy/storage.js', () => ({
     Storage: jest.fn().mockImplementation(() => ({
         loadState: jest.fn().mockReturnValue({}),
         saveState: jest.fn(),

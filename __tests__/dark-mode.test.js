@@ -3,7 +3,7 @@
  * Tests all Dark Mode functionality before modularization
  */
 
-import { GTDApp } from '../js/app.js'
+import { GTDApp } from '../js/app.ts'
 
 describe('Dark Mode Feature - Comprehensive Tests', () => {
     let app

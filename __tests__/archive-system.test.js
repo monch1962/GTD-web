@@ -4,7 +4,7 @@
  */
 
 import { GTDApp } from '../js/app.js'
-import { Task } from '../js/models'
+import { Task } from '../js/models.ts'
 
 describe('Archive System Feature - Comprehensive Tests', () => {
     let app
@@ -27,10 +27,10 @@ describe('Archive System Feature - Comprehensive Tests', () => {
             document.body.appendChild(archiveModal)
         }
 
-        archiveList = document.getElementById('archive-list')
+        archiveList = document.getElementById('archive-content')
         if (!archiveList) {
             archiveList = document.createElement('div')
-            archiveList.id = 'archive-list'
+            archiveList.id = 'archive-content'
             archiveModal.appendChild(archiveList)
         }
 
@@ -236,7 +236,8 @@ describe('Archive System Feature - Comprehensive Tests', () => {
 
     describe('renderArchive()', () => {
         test('should show empty state when no archived tasks', () => {
-            app.renderArchive()
+            // The archive manager is accessed through app.archive
+            app.archive.renderArchive()
 
             expect(archiveList.innerHTML).toContain('No archived tasks')
             expect(archiveCount.textContent).toBe('0')

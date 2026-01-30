@@ -2,7 +2,7 @@
  * Tests for bulk-selection.js - BulkSelection class
  */
 
-import { BulkSelection } from '../js/modules/ui/bulk-selection.js'
+import { BulkSelection } from '../js/modules/ui/bulk-selection.ts'
 
 describe('BulkSelection', () => {
     let bulkSelection

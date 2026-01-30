@@ -2,7 +2,7 @@
  * Comprehensive Tests for Search Feature
  */
 
-import { GTDApp } from '../js/app.js'
+import { GTDApp } from '../js/app.ts'
 import { SearchManager } from '../js/modules/features/search.ts'
 
 // Helper function to add options to select elements

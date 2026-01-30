@@ -17,7 +17,7 @@
  */
 
 import { Template, TemplateData, TemplateCategory, Task } from '../../models'
-import { escapeHtml } from '../../dom-utils.ts'
+import { escapeHtml } from '../../dom-utils'
 
 // Define interfaces for state and app dependencies
 interface AppState {

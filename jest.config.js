@@ -1,15 +1,8 @@
 export default {
     testEnvironment: 'jsdom',
     transform: {
-        '^.+\\.(js|jsx|ts|tsx)$': [
-            'babel-jest',
-            {
-                presets: [
-                    ['@babel/preset-env', { targets: { node: 'current' } }],
-                    '@babel/preset-typescript'
-                ]
-            }
-        ]
+        '^.+\\.(ts|tsx)$': 'ts-jest',
+        '^.+\\.(js|jsx)$': 'babel-jest'
     },
     moduleNameMapper: {
         '^(\\.{1,2}/.*)\\.(js|jsx|ts|tsx)$': '$1',
@@ -27,7 +20,7 @@ export default {
     collectCoverageFrom: [
         'js/**/*.(js|ts)',
         '!js/app.js', // Skip app.js as it's mostly DOM manipulation
-        '!js/app-refactored.js',
+        '!js/app-refactored.ts',
         '!**/node_modules/**'
     ],
     coverageThreshold: {

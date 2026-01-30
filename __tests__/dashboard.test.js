@@ -6,7 +6,7 @@
 // Mock dom-utils before importing
 import { DashboardManager } from '../js/modules/features/dashboard.ts'
 
-jest.mock('../js/dom-utils.js', () => ({
+jest.mock('../js-proxy/dom-utils.js', () => ({
     escapeHtml: (str) => str,
     getElement: (id) => null,
     setTextContent: (el, text) => {

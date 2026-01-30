@@ -3,8 +3,8 @@
  * Renders only visible items + buffer for optimal performance
  */
 
-import { VirtualScrollConfig } from '../../constants.ts'
-import { createLogger } from '../utils/logger.ts'
+import { VirtualScrollConfig } from '../../constants'
+import { createLogger } from '../utils/logger'
 
 interface VirtualScrollOptions {
     itemHeight?: number

@@ -3,8 +3,8 @@
  * Handles project list rendering and project element creation
  */
 
-import { escapeHtml } from '../../dom-utils.ts'
-import { Project } from '../../models.ts'
+import { escapeHtml } from '../../dom-utils'
+import { Project } from '../../models'
 
 // Define types for the app interface
 interface AppDependencies {

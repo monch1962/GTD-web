@@ -14,8 +14,8 @@
  */
 
 import { Task, Project } from '../../models'
-import { escapeHtml } from '../../dom-utils.ts'
-import { getAllContexts } from '../../config/defaultContexts.ts'
+import { escapeHtml } from '../../dom-utils'
+import { getAllContexts } from '../../config/defaultContexts'
 
 // Define interfaces for state and app dependencies
 interface AppState {

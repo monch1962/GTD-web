@@ -3,9 +3,9 @@
  * Tests critical functionality to prevent regressions
  */
 
-import { GTDApp } from '../js/app.js'
-import { Task, Project, Template } from '../js/models'
-import { Storage } from '../js/storage.js'
+import { GTDApp } from '../js/app.ts'
+import { Task, Project, Template } from '../js/models.ts'
+import { Storage } from '../js/storage.ts'
 
 // Import after mocks are set up
 

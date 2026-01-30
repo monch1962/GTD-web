@@ -2,7 +2,7 @@
  * Comprehensive Tests for Global Quick Capture Feature
  */
 
-import { GTDApp } from '../js/app.js'
+import { GTDApp } from '../js/app.ts'
 import { GlobalQuickCaptureManager } from '../js/modules/features/global-quick-capture.ts'
 
 describe('GlobalQuickCaptureManager - Initialization', () => {

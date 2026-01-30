@@ -8,7 +8,7 @@
  * - Performance tracking
  *
  * @example
- * import { Logger } from './modules/utils/logger.ts';
+ * import { Logger } from './modules/utils/logger';
  * const logger = new Logger('MyModule');
  * logger.debug('Detailed debug info');
  * logger.info('User action completed');
@@ -55,8 +55,14 @@ export class Logger {
 
         // Auto-detect environment
         if (options.minLevel === undefined) {
-            this.minLevel =
-                window.location.hostname === 'localhost' ? LogLevel.DEBUG : LogLevel.INFO
+            // Check if we're in a browser environment
+            const isBrowser = typeof window !== 'undefined'
+            if (isBrowser && window.location && window.location.hostname === 'localhost') {
+                this.minLevel = LogLevel.DEBUG
+            } else {
+                // Default to INFO for Node.js/SSR/production environments
+                this.minLevel = LogLevel.INFO
+            }
         }
     }
 

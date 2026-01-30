@@ -15,7 +15,7 @@ import {
     headerButtons,
     getMobileHiddenButtonIds,
     getButtonIds
-} from '../js/config/headerButtons.js'
+} from '../js/config/headerButtons.ts'
 
 describe.skip('Header Buttons DRY Compliance', () => {
     test('should have all header buttons defined in config', () => {

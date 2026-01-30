@@ -3,9 +3,9 @@
  * Reusable HTML template generators to reduce code duplication
  */
 
-import { escapeHtml } from './dom-utils.ts'
-import { PriorityThresholds, PriorityColors, PriorityLabels } from './constants.ts'
-import { Task } from './models.ts'
+import { escapeHtml } from './dom-utils'
+import { PriorityThresholds, PriorityColors, PriorityLabels } from './constants'
+import { Task } from './models'
 
 interface TaskTemplateOptions {
     isBulkSelectMode?: boolean

@@ -2,10 +2,10 @@
  * Tests for virtual-scroll.js - VirtualScrollManager class
  */
 
-import { VirtualScrollManager } from '../js/modules/ui/virtual-scroll.js'
+import { VirtualScrollManager } from '../js/modules/ui/virtual-scroll.ts'
 
 // Mock dependencies
-jest.mock('../js/constants.js', () => ({
+jest.mock('../js-proxy/constants.js', () => ({
     VirtualScrollConfig: {
         ITEM_HEIGHT: 50,
         BUFFER_ITEMS: 3,
@@ -14,7 +14,7 @@ jest.mock('../js/constants.js', () => ({
     }
 }))
 
-jest.mock('../js/modules/utils/logger.js', () => ({
+jest.mock('../js-proxy/modules/utils/logger.js', () => ({
     createLogger: jest.fn(() => ({
         debug: jest.fn(),
         info: jest.fn(),

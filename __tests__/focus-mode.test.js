@@ -6,7 +6,7 @@
 // Mock dom-utils before importing
 import { FocusPomodoroManager } from '../js/modules/features/focus-pomodoro.ts'
 
-jest.mock('../js/dom-utils.ts', () => ({
+jest.mock('../js-proxy/dom-utils.js', () => ({
     escapeHtml: (str) => str,
     getElement: (id) => null,
     setTextContent: (el, text) => {

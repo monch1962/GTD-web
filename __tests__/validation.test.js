@@ -2,7 +2,7 @@
  * Comprehensive Tests for Validation Utilities
  */
 
-import { DEFAULT_CONTEXTS } from '../js/constants.js'
+import { DEFAULT_CONTEXTS } from '../js/constants.ts'
 import {
     validateContextName,
     validateTaskTitle,
@@ -12,7 +12,7 @@ import {
     isValidTimeEstimate,
     isValidTaskStatus,
     isValidProjectStatus
-} from '../js/validation.js'
+} from '../js/validation.ts'
 
 describe('Validation Utilities', () => {
     describe('validateContextName()', () => {

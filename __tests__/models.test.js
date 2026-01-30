@@ -1,8 +1,8 @@
 /**
- * Tests for models.ts - Task, Project, and Reference classes
+ * Tests for models.js - Task, Project, and Reference classes
  */
 
-import { Task, Project, Reference, Template } from '../js/models'
+import { Task, Project, Reference, Template } from '../js/models.ts'
 
 describe('Task Model', () => {
     describe('Constructor', () => {

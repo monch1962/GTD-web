@@ -3,7 +3,7 @@
  * Helper functions for validating task and project data
  */
 
-import { DEFAULT_CONTEXTS } from './constants.ts'
+import { DEFAULT_CONTEXTS } from './constants'
 
 /**
  * Validation result interface

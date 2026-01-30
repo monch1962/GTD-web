@@ -2,7 +2,7 @@
  * Storage Layer - Handles localStorage persistence
  */
 
-import { StorageConfig } from './constants.ts'
+import { StorageConfig } from './constants'
 
 interface StorageInfo {
     used: number

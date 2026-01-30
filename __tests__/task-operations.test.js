@@ -2,7 +2,7 @@
  * Comprehensive Tests for Task Operations
  */
 
-import { Task, Project, Template } from '../js/models'
+import { Task, Project, Template } from '../js/models.ts'
 import { TaskOperations } from '../js/modules/features/task-operations.ts'
 
 describe('TaskOperations', () => {

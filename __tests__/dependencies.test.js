@@ -3,8 +3,8 @@
  * Tests all Dependencies Visualization functionality before modularization
  */
 
-import { GTDApp } from '../js/app.js'
-import { Task, Project } from '../js/models'
+import { GTDApp } from '../js/app.ts'
+import { Task, Project } from '../js/models.ts'
 
 describe('Dependencies Visualization Feature - Comprehensive Tests', () => {
     let app

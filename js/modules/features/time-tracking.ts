@@ -12,7 +12,7 @@
  * - Visual feedback for active timer state
  */
 
-import { createLogger } from '../utils/logger.ts'
+import { createLogger } from '../utils/logger'
 import { Task } from "../../models"
 
 /**

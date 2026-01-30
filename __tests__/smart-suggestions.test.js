@@ -2,7 +2,7 @@
  * Comprehensive Tests for Smart Suggestions Manager
  */
 
-import { Task, Project, Template } from '../js/models'
+import { Task, Project, Template } from '../js/models.ts'
 import { SmartSuggestionsManager } from '../js/modules/features/smart-suggestions.ts'
 
 // Make Task and Project available globally

@@ -2,7 +2,7 @@
  * Tests for keyboard-nav.js - KeyboardNavigation class
  */
 
-import { KeyboardNavigation } from '../js/modules/ui/keyboard-nav.js'
+import { KeyboardNavigation } from '../js/modules/ui/keyboard-nav.ts'
 
 describe('KeyboardNavigation', () => {
     let keyboardNav

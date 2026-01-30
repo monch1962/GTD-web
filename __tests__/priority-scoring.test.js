@@ -2,7 +2,7 @@
  * Comprehensive Tests for Priority Scoring Feature
  */
 
-import { GTDApp } from '../js/app.js'
+import { GTDApp } from '../js/app.ts'
 import { PriorityScoringManager } from '../js/modules/features/priority-scoring.ts'
 
 describe('PriorityScoringManager - Score Calculation', () => {

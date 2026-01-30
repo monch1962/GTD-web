@@ -15,7 +15,7 @@
  * keyboardNav.selectTask('task-123');
  */
 
-import { Task } from '../../models.ts'
+import { Task } from '../../models'
 
 // Define types for the app interface
 interface AppDependencies {

@@ -2,7 +2,7 @@
  * Comprehensive Tests for Task Modal Feature
  */
 
-import { Task, Project, Template } from '../js/models'
+import { Task, Project, Template } from '../js/models.ts'
 import { TaskModalManager } from '../js/modules/features/task-modal.ts'
 
 describe('TaskModalManager - Initialization', () => {

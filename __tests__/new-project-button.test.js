@@ -2,7 +2,7 @@
  * Comprehensive Tests for New Project Button Feature
  */
 
-import { GTDApp } from '../js/app.js'
+import { GTDApp } from '../js/app.ts'
 import { NewProjectButtonManager } from '../js/modules/features/new-project-button.ts'
 
 describe('NewProjectButtonManager - Basic Functionality', () => {

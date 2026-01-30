@@ -3,7 +3,7 @@
  * Handles bulk operations on multiple tasks
  */
 
-import { Task } from '../../models.ts'
+import { Task } from '../../models'
 
 // Define types for the app interface
 interface AppDependencies {

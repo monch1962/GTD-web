@@ -3,7 +3,7 @@
  * Comprehensive tests for mobile navigation functionality
  */
 
-import { MobileNavigationManager } from '../js/modules/ui/mobile-navigation.js'
+import { MobileNavigationManager } from '../js/modules/ui/mobile-navigation.ts'
 
 // Mock dependencies with all required methods
 const mockApp = {

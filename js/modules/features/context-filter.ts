@@ -3,7 +3,7 @@
  * Handles context-based filtering of tasks and projects
  */
 
-import { getAllContexts, getContextTaskCounts } from '../../config/defaultContexts.ts'
+import { getAllContexts, getContextTaskCounts } from '../../config/defaultContexts'
 import { Task, Project } from '../../models'
 
 /**

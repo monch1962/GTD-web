@@ -2,7 +2,7 @@
  * Comprehensive Tests for Smart Date Suggestions Feature
  */
 
-import { GTDApp } from '../js/app.js'
+import { GTDApp } from '../js/app.ts'
 import { SmartDateSuggestionsManager } from '../js/modules/features/smart-date-suggestions.ts'
 
 describe('SmartDateSuggestionsManager - Natural Language Date Parsing', () => {

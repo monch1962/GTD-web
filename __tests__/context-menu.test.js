@@ -3,8 +3,8 @@
  * Tests all Context Menu functionality before modularization
  */
 
-import { GTDApp } from '../js/app.js'
-import { Task, Project, Template } from '../js/models'
+import { GTDApp } from '../js/app.ts'
+import { Task, Project, Template } from '../js/models.ts'
 
 describe('Context Menu Feature - Comprehensive Tests', () => {
     let app

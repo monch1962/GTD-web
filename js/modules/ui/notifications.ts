@@ -3,7 +3,7 @@
  * Handles toast notifications and user feedback
  */
 
-import { announce } from '../../dom-utils.ts'
+import { announce } from '../../dom-utils'
 
 type NotificationType = 'success' | 'error' | 'info' | 'warning'
 

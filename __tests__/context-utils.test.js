@@ -9,7 +9,7 @@ import {
     getAllContexts,
     getContextTaskCounts,
     getContextIds
-} from '../js/config/defaultContexts.js'
+} from '../js/config/defaultContexts.ts'
 
 describe('Context Utilities', () => {
     describe('getAllContexts function', () => {

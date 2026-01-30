@@ -8,7 +8,7 @@
  * - Swipe gestures for tasks
  */
 
-import { createLogger } from '../utils/logger.ts'
+import { createLogger } from '../utils/logger'
 import { Task } from '../../models'
 
 // Define interfaces for state and app dependencies

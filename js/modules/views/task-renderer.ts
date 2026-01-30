@@ -3,11 +3,11 @@
  * Handles task list rendering and individual task element creation
  */
 
-import { VirtualScrollConfig } from '../../constants.ts'
-import { escapeHtml } from '../../dom-utils.ts'
-import { VirtualScrollManager } from '../ui/virtual-scroll.ts'
-import { createLogger } from '../utils/logger.ts'
-import { Task } from '../../models.ts'
+import { VirtualScrollConfig } from '../../constants'
+import { escapeHtml } from '../../dom-utils'
+import { VirtualScrollManager } from '../ui/virtual-scroll'
+import { createLogger } from '../utils/logger'
+import { Task } from '../../models'
 
 // Define types for the app interface
 interface AppDependencies {

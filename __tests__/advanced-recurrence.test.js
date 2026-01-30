@@ -18,7 +18,7 @@ describe.skip('Advanced Recurrence', () => {
     const appJsPath = path.resolve(process.cwd(), 'js', 'app.js')
     const appJsContent = fs.readFileSync(appJsPath, 'utf-8')
 
-    const constantsPath = path.resolve(process.cwd(), 'js', 'constants.js')
+    const constantsPath = path.resolve(process.cwd(), 'js', 'constants.ts')
     const constantsContent = fs.readFileSync(constantsPath, 'utf-8')
 
     test('should have weekday constants defined', () => {

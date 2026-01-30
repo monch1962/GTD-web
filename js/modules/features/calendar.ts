@@ -3,8 +3,8 @@
  * Handles calendar view for task visualization
  */
 
-import { escapeHtml } from '../../dom-utils.ts'
-import type { Task } from '../../models.ts'
+import { escapeHtml } from '../../dom-utils'
+import type { Task } from '../../models'
 
 interface State {
     tasks: Task[]

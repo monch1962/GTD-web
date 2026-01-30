@@ -2,7 +2,7 @@
  * Comprehensive Tests for Bulk Operations Feature
  */
 
-import { GTDApp } from '../js/app.js'
+import { GTDApp } from '../js/app.ts'
 import { BulkOperationsManager } from '../js/modules/features/bulk-operations.ts'
 
 describe('BulkOperationsManager - Initialization', () => {

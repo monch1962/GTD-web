@@ -2,8 +2,8 @@
  * Comprehensive Tests for AppState (Centralized State Management)
  */
 
-import { Task, Project, Template } from '../js/models'
-import { AppState } from '../js/modules/core/app-state.js'
+import { Task, Project, Template } from '../js/models.ts'
+import { AppState } from '../js/modules/core/app-state.ts'
 
 describe('AppState', () => {
     let appState

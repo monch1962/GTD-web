@@ -51,7 +51,7 @@ import {
     NthWeekdayLabels
 } from './constants.ts'
 import { escapeHtml, announce } from './dom-utils.ts'
-import { Task, Project, Reference, Template } from './models'
+import { Task, Project, Template } from './models'
 import { ArchiveManager } from './modules/features/archive.ts'
 import { BulkOperationsManager } from './modules/features/bulk-operations.ts'
 import { CalendarManager } from './modules/features/calendar.ts'

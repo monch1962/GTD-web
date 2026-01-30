@@ -3,8 +3,8 @@
  * Tests all Templates System functionality before modularization
  */
 
-import { GTDApp } from '../js/app.js'
-import { Task, Template } from '../js/models'
+import { GTDApp } from '../js/app.ts'
+import { Task, Template } from '../js/models.ts'
 
 describe('Templates System Feature - Comprehensive Tests', () => {
     let app

@@ -2,10 +2,10 @@
  * View manager - orchestrates view switching and rendering
  */
 
-import { ViewLabels } from '../../constants.ts'
-import { escapeHtml } from '../../dom-utils.ts'
-import { TaskRenderer } from './task-renderer.ts'
-import { ProjectRenderer } from './project-renderer.ts'
+import { ViewLabels } from '../../constants'
+import { escapeHtml } from '../../dom-utils'
+import { TaskRenderer } from './task-renderer'
+import { ProjectRenderer } from './project-renderer'
 import type { Task, Project, Template } from '../../models'
 
 interface AppState {

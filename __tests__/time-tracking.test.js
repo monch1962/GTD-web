@@ -2,7 +2,7 @@
  * Comprehensive Tests for Time Tracking Feature
  */
 
-import { GTDApp } from '../js/app.js'
+import { GTDApp } from '../js/app.ts'
 import { TimeTrackingManager } from '../js/modules/features/time-tracking.ts'
 
 describe('TimeTrackingManager - Initialization', () => {
