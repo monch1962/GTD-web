@@ -22,7 +22,7 @@
  * - Age of task (0-7 points)
  */
 
-import { Task, Project } from "../../models"
+import { Task, Project } from '../../models'
 
 /**
  * App interface for type safety
@@ -43,7 +43,7 @@ export class PriorityScoringManager {
     private state: State
     private app: App
 
-    constructor(state: State, app: App) {
+    constructor (state: State, app: App) {
         this.state = state
         this.app = app
     }
@@ -57,7 +57,7 @@ export class PriorityScoringManager {
      * @param {Task} task - Task to score
      * @returns {number} Priority score from 0-100
      */
-    calculatePriorityScore(task: Task): number {
+    calculatePriorityScore (task: Task): number {
         if (!task || task.completed) return 0
 
         let score = 50 // Base score
@@ -171,7 +171,7 @@ export class PriorityScoringManager {
      * @param {number} score - Priority score (0-100)
      * @returns {string} CSS color value
      */
-    getPriorityScoreColor(score: number): string {
+    getPriorityScoreColor (score: number): string {
         if (score >= 80) return 'var(--danger-color)' // High priority - red
         if (score >= 60) return '#f39c12' // Medium-high - orange
         if (score >= 40) return 'var(--warning-color)' // Medium - yellow
@@ -184,7 +184,7 @@ export class PriorityScoringManager {
      * @param {number} score - Priority score (0-100)
      * @returns {string} Priority label
      */
-    getPriorityLabel(score: number): string {
+    getPriorityLabel (score: number): string {
         if (score >= 80) return 'Urgent'
         if (score >= 60) return 'High'
         if (score >= 40) return 'Medium'
@@ -201,7 +201,7 @@ export class PriorityScoringManager {
      * @param {Task} task - Task to check
      * @returns {number|null} Days until due, or null if no due date
      */
-    private getDaysUntilDue(task: Task): number | null {
+    private getDaysUntilDue (task: Task): number | null {
         if (!task.dueDate) return null
 
         // Parse date string as local time (not UTC) to avoid timezone issues
