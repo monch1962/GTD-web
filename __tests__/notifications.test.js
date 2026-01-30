@@ -6,7 +6,7 @@ import { announce } from '../js/dom-utils.ts'
 import { NotificationManager } from '../js/modules/ui/notifications.ts'
 
 // Mock the announce function
-jest.mock('../js-proxy/dom-utils.js', () => ({
+jest.mock('../js/dom-utils.js', () => ({
     announce: jest.fn()
 }))
 

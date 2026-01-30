@@ -6,7 +6,7 @@
 // Mock dom-utils before importing
 import { DailyReviewManager } from '../js/modules/features/daily-review.ts'
 
-jest.mock('../js-proxy/dom-utils.js', () => ({
+jest.mock('../js/dom-utils.js', () => ({
     escapeHtml: (str) => str,
     getElement: (id) => null,
     setTextContent: (el, text) => {
