@@ -268,6 +268,19 @@ export function sanitizeHTML(html, allowedTags = ['b', 'i', 'em', 'strong', 'spa
         })
     })
 
+    // Filter to only allowed tags
+    const elements = div.querySelectorAll('*')
+    elements.forEach((el) => {
+        if (!allowedTags.includes(el.tagName.toLowerCase())) {
+            // Replace disallowed tag with its content
+            const parent = el.parentNode
+            while (el.firstChild) {
+                parent.insertBefore(el.firstChild, el)
+            }
+            parent.removeChild(el)
+        }
+    })
+
     return div.innerHTML
 }
 

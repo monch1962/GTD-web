@@ -3,7 +3,7 @@
  */
 
 import { GTDApp } from '../js/app.js'
-import { ContextFilterManager } from '../js/modules/features/context-filter.js'
+import { ContextFilterManager } from '../js/modules/features/context-filter.ts'
 
 describe('ContextFilterManager - Initialization', () => {
     let manager

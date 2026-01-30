@@ -15,7 +15,7 @@
  * await projectOps.archiveProject('project-123');
  */
 
-import { Project } from '../../models.js';
+import { Project } from "../../models";
 
 export class ProjectOperations {
     /**

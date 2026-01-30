@@ -2,7 +2,7 @@
  * Comprehensive Tests for Quick Capture Widget Manager
  */
 
-import { QuickCaptureWidgetManager } from '../js/modules/features/quick-capture-widget.js'
+import { QuickCaptureWidgetManager } from '../js/modules/features/quick-capture-widget.ts'
 
 describe('QuickCaptureWidgetManager - Initialization', () => {
     let manager

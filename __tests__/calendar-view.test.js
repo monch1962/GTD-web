@@ -4,7 +4,7 @@
  */
 
 import { GTDApp } from '../js/app.js'
-import { Task } from '../js/models.js'
+import { Task, Project, Template } from '../js/models'
 
 describe('Calendar View Feature - Comprehensive Tests', () => {
     let app

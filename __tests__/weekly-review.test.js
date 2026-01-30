@@ -4,7 +4,7 @@
  */
 
 import { GTDApp } from '../js/app.js'
-import { Task, Project } from '../js/models.js'
+import { Task, Project, Template } from '../js/models'
 
 describe('Weekly Review Feature - Comprehensive Tests', () => {
     let app

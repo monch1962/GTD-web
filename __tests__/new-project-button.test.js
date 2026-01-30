@@ -3,7 +3,7 @@
  */
 
 import { GTDApp } from '../js/app.js'
-import { NewProjectButtonManager } from '../js/modules/features/new-project-button.js'
+import { NewProjectButtonManager } from '../js/modules/features/new-project-button.ts'
 
 describe('NewProjectButtonManager - Basic Functionality', () => {
     let manager

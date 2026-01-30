@@ -3,7 +3,7 @@
  */
 
 import { GTDApp } from '../js/app.js'
-import { PriorityScoringManager } from '../js/modules/features/priority-scoring.js'
+import { PriorityScoringManager } from '../js/modules/features/priority-scoring.ts'
 
 describe('PriorityScoringManager - Score Calculation', () => {
     let manager

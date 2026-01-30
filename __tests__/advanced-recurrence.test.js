@@ -12,7 +12,7 @@ import fs from 'fs'
 import path from 'path'
 
 describe.skip('Advanced Recurrence', () => {
-    const modelsPath = path.resolve(process.cwd(), 'js', 'models.js')
+    const modelsPath = path.resolve(process.cwd(), 'js', 'models.ts')
     const modelsContent = fs.readFileSync(modelsPath, 'utf-8')
 
     const appJsPath = path.resolve(process.cwd(), 'js', 'app.js')

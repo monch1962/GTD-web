@@ -2,7 +2,7 @@
  * Tests for storage-ops.js - StorageOperations class
  */
 
-import { Task, Project, Template } from '../js/models.js'
+import { Task, Project, Template } from '../js/models'
 import { AppState } from '../js/modules/core/app-state.js'
 import { StorageOperations } from '../js/modules/core/storage-ops.js'
 import { Storage } from '../js/storage.js'

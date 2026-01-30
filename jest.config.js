@@ -1,12 +1,23 @@
 export default {
     testEnvironment: 'jsdom',
     transform: {
-        '^.+\\.js$': 'babel-jest'
+        '^.+\\.(js|jsx|ts|tsx)$': [
+            'babel-jest',
+            {
+                presets: [
+                    ['@babel/preset-env', { targets: { node: 'current' } }],
+                    '@babel/preset-typescript'
+                ]
+            }
+        ]
     },
     moduleNameMapper: {
-        '^(\\.{1,2}/.*)\\.js$': '$1'
+        '^(\\.{1,2}/.*)\\.(js|jsx|ts|tsx)$': '$1',
+        '^@/(.*)$': '<rootDir>/js/$1',
+        '^@modules/(.*)$': '<rootDir>/js/modules/$1',
+        '^@tests/(.*)$': '<rootDir>/__tests__/$1'
     },
-    testMatch: ['**/__tests__/**/*.js', '**/?(*.)+(spec|test).js'],
+    testMatch: ['**/__tests__/**/*.(js|jsx|ts|tsx)', '**/?(*.)+(spec|test).(js|jsx|ts|tsx)'],
     testPathIgnorePatterns: [
         '/tests-e2e/',
         '/tests/journeys/',
@@ -14,8 +25,9 @@ export default {
         '/test-results/'
     ],
     collectCoverageFrom: [
-        'js/**/*.js',
+        'js/**/*.(js|ts)',
         '!js/app.js', // Skip app.js as it's mostly DOM manipulation
+        '!js/app-refactored.js',
         '!**/node_modules/**'
     ],
     coverageThreshold: {

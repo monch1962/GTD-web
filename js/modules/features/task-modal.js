@@ -18,8 +18,8 @@
  * taskModal.openTaskModal(null, 'project-123'); // Open with default project
  */
 
-import { Task } from '../../models.js';
-import { Project } from '../../models.js';
+import { Task } from "../../models";
+import { Project } from "../../models";
 
 // Constants for recurrence labels
 const RecurrenceLabels = {

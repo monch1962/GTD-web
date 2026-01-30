@@ -2,7 +2,7 @@
  * Comprehensive Tests for Productivity Heatmap Manager
  */
 
-import { Task } from '../js/models.js'
+import { Task, Project, Template } from '../js/models'
 import { ProductivityHeatmapManager } from '../js/modules/features/productivity-heatmap.js'
 
 // Make Task available globally

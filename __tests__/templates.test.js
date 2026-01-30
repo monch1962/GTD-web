@@ -4,7 +4,7 @@
  */
 
 import { GTDApp } from '../js/app.js'
-import { Task, Template } from '../js/models.js'
+import { Task, Template } from '../js/models'
 
 describe('Templates System Feature - Comprehensive Tests', () => {
     let app
@@ -1020,7 +1020,7 @@ describe('Templates System Feature - Comprehensive Tests', () => {
             const template = new Template({
                 id: 'tmpl-1',
                 title: 'Template <script>alert("xss")</script>',
-                description: 'Test & Description "with quotes"'
+                description: 'Test & Description "with quotes'
             })
             app.templates.push(template)
 

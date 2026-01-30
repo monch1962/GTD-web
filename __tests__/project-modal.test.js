@@ -2,7 +2,7 @@
  * Comprehensive Tests for Project Modal Feature
  */
 
-import { Project } from '../js/models.js'
+import { Task, Project, Template } from '../js/models'
 import { ProjectModalManager } from '../js/modules/features/project-modal.js'
 
 describe('ProjectModalManager - Initialization', () => {

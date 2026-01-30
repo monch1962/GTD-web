@@ -3,7 +3,7 @@
  */
 
 import { GTDApp } from '../js/app.js'
-import { TimeTrackingManager } from '../js/modules/features/time-tracking.js'
+import { TimeTrackingManager } from '../js/modules/features/time-tracking.ts'
 
 describe('TimeTrackingManager - Initialization', () => {
     let manager

@@ -3,7 +3,7 @@
  * Handles loading and saving data to storage
  */
 
-import { Task, Project, Template } from '../../models.js';
+import { Task, Project, Template } from "../../models";
 
 export class StorageOperations {
     constructor(storage, state) {

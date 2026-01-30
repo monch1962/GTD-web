@@ -3,7 +3,7 @@
  */
 
 import { GTDApp } from '../js/app.js'
-import { SubtasksManager } from '../js/modules/features/subtasks.js'
+import { SubtasksManager } from '../js/modules/features/subtasks.ts'
 
 describe('SubtasksManager - Initialization', () => {
     let manager

@@ -3,7 +3,7 @@
  */
 
 import { GTDApp } from '../js/app.js'
-import { Project } from '../js/models.js'
+import { Project } from '../js/models'
 import { ProjectOperations } from '../js/modules/features/project-operations.js'
 
 describe('ProjectOperations - Initialization', () => {

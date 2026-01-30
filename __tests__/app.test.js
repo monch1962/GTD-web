@@ -4,7 +4,7 @@
  */
 
 import { GTDApp } from '../js/app.js'
-import { Task, Project } from '../js/models.js'
+import { Task, Project, Template } from '../js/models'
 import { Storage } from '../js/storage.js'
 
 // Import after mocks are set up

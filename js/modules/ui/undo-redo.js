@@ -3,8 +3,8 @@
  * Manages history and provides undo/redo functionality
  */
 
-import { Task } from '../../models.js';
-import { Project } from '../../models.js';
+import { Task } from "../../models";
+import { Project } from "../../models";
 
 export class UndoRedoManager {
     constructor(state, app) {

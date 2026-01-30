@@ -350,7 +350,7 @@ describe('FocusPomodoroManager', () => {
             expect(task.timeSpent).toBe(15)
             expect(mockApp.saveTasks).toHaveBeenCalled()
             expect(mockApp.showNotification).toHaveBeenCalledWith(
-                'Tracked 5 minutes on "Focus Task"'
+                'Tracked 5 minutes on "Focus Task'
             )
         })
 

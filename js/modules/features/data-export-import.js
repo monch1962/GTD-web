@@ -8,8 +8,8 @@
  * await dataExportImport.exportData();
  */
 
-import { Task } from '../../models.js';
-import { Project } from '../../models.js';
+import { Task } from "../../models";
+import { Project } from "../../models";
 import { createLogger } from '../utils/logger.js';
 
 export class DataExportImportManager {

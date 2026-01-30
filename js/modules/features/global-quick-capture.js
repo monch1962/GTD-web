@@ -14,7 +14,7 @@
  * - Escape key and click-outside-to-close behavior
  */
 
-import { Task } from '../../models.js';
+import { Task } from "../../models";
 import { escapeHtml } from '../../dom-utils.js';
 
 export class GlobalQuickCaptureManager {

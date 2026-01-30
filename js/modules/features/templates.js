@@ -3,7 +3,7 @@
  * Handles task/project templates for repetitive tasks
  */
 
-import { Template } from '../../models.js';
+import { Template } from "../../models";
 import { escapeHtml } from '../../dom-utils.js';
 
 export class TemplatesManager {

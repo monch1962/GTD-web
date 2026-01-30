@@ -16,7 +16,7 @@
  * await taskOps.toggleTaskComplete('task-123');
  */
 
-import { Task } from '../../models.js';
+import { Task } from "../../models";
 import { createLogger } from '../utils/logger.js';
 
 export class TaskOperations {

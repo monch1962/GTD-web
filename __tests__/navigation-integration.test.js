@@ -25,7 +25,7 @@ jest.mock('../js/modules/ui/dark-mode.js', () => ({
     }))
 }))
 
-jest.mock('../js/modules/features/calendar.js', () => ({
+jest.mock('../js/modules/features/calendar.ts', () => ({
     CalendarManager: jest.fn().mockImplementation(() => ({
         setupCalendarView: jest.fn(),
         showCalendar: jest.fn(),
