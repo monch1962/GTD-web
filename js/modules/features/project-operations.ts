@@ -42,7 +42,7 @@ export class ProjectOperations {
      * @param state - Application state object
      * @param app - Application instance
      */
-    constructor(state: State, app: App) {
+    constructor (state: State, app: App) {
         this.state = state
         this.app = app
     }
@@ -52,7 +52,7 @@ export class ProjectOperations {
      * @param projectData - Project data
      * @returns Created project
      */
-    createProject(projectData: Record<string, any>): Project {
+    createProject (projectData: Record<string, any>): Project {
         const project = new Project(projectData)
         this.state.projects.push(project)
         return project
@@ -62,7 +62,7 @@ export class ProjectOperations {
      * Delete a project
      * @param projectId - Project ID to delete
      */
-    async deleteProject(projectId: string): Promise<void> {
+    async deleteProject (projectId: string): Promise<void> {
         if (!confirm('Are you sure you want to delete this project? Tasks will not be deleted.')) {
             return
         }
@@ -92,7 +92,7 @@ export class ProjectOperations {
      * Archive a project
      * @param projectId - Project ID to archive
      */
-    async archiveProject(projectId: string): Promise<void> {
+    async archiveProject (projectId: string): Promise<void> {
         const project = this.state.projects.find((p) => p.id === projectId)
         if (!project) return
 
@@ -124,7 +124,7 @@ export class ProjectOperations {
      * Restore an archived project
      * @param projectId - Project ID to restore
      */
-    async restoreProject(projectId: string): Promise<void> {
+    async restoreProject (projectId: string): Promise<void> {
         const project = this.state.projects.find((p) => p.id === projectId)
         if (!project) return
 
@@ -147,7 +147,7 @@ export class ProjectOperations {
     /**
      * Update project positions after drag-and-drop reordering
      */
-    async updateProjectPositions(): Promise<void> {
+    async updateProjectPositions (): Promise<void> {
         const container = document.querySelector('.projects-container')
         if (!container) return
 
@@ -175,7 +175,7 @@ export class ProjectOperations {
      * @param projectId - Project ID
      * @returns Project object or null
      */
-    getProjectById(projectId: string): Project | null {
+    getProjectById (projectId: string): Project | null {
         return this.state.projects.find((p) => p.id === projectId) || null
     }
 
@@ -183,7 +183,7 @@ export class ProjectOperations {
      * Get active projects
      * @returns Array of active projects
      */
-    getActiveProjects(): Project[] {
+    getActiveProjects (): Project[] {
         return this.state.projects.filter((p) => p.status === 'active')
     }
 
@@ -191,7 +191,7 @@ export class ProjectOperations {
      * Get archived projects
      * @returns Array of archived projects
      */
-    getArchivedProjects(): Project[] {
+    getArchivedProjects (): Project[] {
         return this.state.projects.filter((p) => p.status === ('archived' as any))
     }
 
@@ -200,7 +200,7 @@ export class ProjectOperations {
      * @param status - Project status
      * @returns Array of projects
      */
-    getProjectsByStatus(status: string): Project[] {
+    getProjectsByStatus (status: string): Project[] {
         return this.state.projects.filter((p) => p.status === status)
     }
 
@@ -209,7 +209,7 @@ export class ProjectOperations {
      * @param projectId - Project ID
      * @returns Array of tasks
      */
-    getTasksForProject(projectId: string): Task[] {
+    getTasksForProject (projectId: string): Task[] {
         return this.state.tasks.filter((t) => t.projectId === projectId)
     }
 
@@ -218,7 +218,7 @@ export class ProjectOperations {
      * @param projectId - Project ID
      * @returns Array of incomplete tasks
      */
-    getIncompleteTasksForProject(projectId: string): Task[] {
+    getIncompleteTasksForProject (projectId: string): Task[] {
         return this.state.tasks.filter((t) => t.projectId === projectId && !t.completed)
     }
 
@@ -227,7 +227,7 @@ export class ProjectOperations {
      * @param projectId - Project ID
      * @returns Array of completed tasks
      */
-    getCompletedTasksForProject(projectId: string): Task[] {
+    getCompletedTasksForProject (projectId: string): Task[] {
         return this.state.tasks.filter((t) => t.projectId === projectId && t.completed)
     }
 
@@ -236,7 +236,7 @@ export class ProjectOperations {
      * @param projectId - Project ID
      * @returns Completion percentage (0-100)
      */
-    getProjectCompletion(projectId: string): number {
+    getProjectCompletion (projectId: string): number {
         const tasks = this.getTasksForProject(projectId)
         if (tasks.length === 0) return 0
 
@@ -249,7 +249,7 @@ export class ProjectOperations {
      * @param projectId - Project ID
      * @returns Project statistics
      */
-    getProjectStats(projectId: string): {
+    getProjectStats (projectId: string): {
         total: number
         completed: number
         incomplete: number
@@ -276,7 +276,7 @@ export class ProjectOperations {
      * @param projectId - Project ID
      * @param updates - Properties to update
      */
-    async updateProject(projectId: string, updates: Record<string, any>): Promise<void> {
+    async updateProject (projectId: string, updates: Record<string, any>): Promise<void> {
         const project = this.getProjectById(projectId)
         if (!project) return
 
@@ -301,7 +301,7 @@ export class ProjectOperations {
      * @param query - Search query
      * @returns Matching projects
      */
-    searchProjects(query: string): Project[] {
+    searchProjects (query: string): Project[] {
         const lowerQuery = query.toLowerCase()
         return this.state.projects.filter(
             (p) =>

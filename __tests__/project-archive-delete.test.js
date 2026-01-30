@@ -17,16 +17,16 @@ describe.skip('Empty Project Archive and Delete', () => {
 
     test('should have archiveProject method', () => {
         expect(appJsContent).toContain('archiveProject(')
-        expect(appJsContent).toContain("project.status = 'archived'")
+        expect(appJsContent).toContain('project.status = \'archived\'')
     })
 
     test('should have restoreProject method', () => {
         expect(appJsContent).toContain('restoreProject(')
-        expect(appJsContent).toContain("project.status = 'active'")
+        expect(appJsContent).toContain('project.status = \'active\'')
     })
 
     test('should filter out archived projects from normal view', () => {
-        expect(appJsContent).toContain("project.status !== 'archived'")
+        expect(appJsContent).toContain('project.status !== \'archived\'')
         expect(appJsContent).toContain('showingArchivedProjects')
     })
 
@@ -46,7 +46,7 @@ describe.skip('Empty Project Archive and Delete', () => {
         const constantsPath = path.resolve(process.cwd(), 'js', 'constants.js')
         const constantsContent = fs.readFileSync(constantsPath, 'utf-8')
 
-        expect(constantsContent).toContain("ARCHIVED: 'archived'")
+        expect(constantsContent).toContain('ARCHIVED: \'archived\'')
     })
 
     test('should toggle between active and archived projects', () => {
@@ -57,7 +57,7 @@ describe.skip('Empty Project Archive and Delete', () => {
 
     test('should reset showingArchivedProjects when switching views', () => {
         expect(appJsContent).toMatch(/switchView.*showingArchivedProjects/s)
-        expect(appJsContent).toContain("view !== 'projects'")
+        expect(appJsContent).toContain('view !== \'projects\'')
     })
 
     test('should have archive option in project modal', () => {

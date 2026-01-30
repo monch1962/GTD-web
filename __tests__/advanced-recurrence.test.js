@@ -29,15 +29,15 @@ describe.skip('Advanced Recurrence', () => {
 
     test('should have weekday names defined', () => {
         expect(constantsContent).toContain('WeekdayNames')
-        expect(constantsContent).toContain("1: 'Monday'")
-        expect(constantsContent).toContain("7: 'Sunday'")
+        expect(constantsContent).toContain('1: \'Monday\'')
+        expect(constantsContent).toContain('7: \'Sunday\'')
     })
 
     test('should have nth weekday labels defined', () => {
         expect(constantsContent).toContain('NthWeekdayLabels')
-        expect(constantsContent).toContain("1: '1st'")
-        expect(constantsContent).toContain("3: '3rd'")
-        expect(constantsContent).toContain("5: '5th'")
+        expect(constantsContent).toContain('1: \'1st\'')
+        expect(constantsContent).toContain('3: \'3rd\'')
+        expect(constantsContent).toContain('5: \'5th\'')
     })
 
     test('Task model should support both old and new recurrence formats', () => {
@@ -48,8 +48,8 @@ describe.skip('Advanced Recurrence', () => {
 
     test('isRecurring should handle both formats', () => {
         expect(modelsContent).toContain('isRecurring()')
-        expect(modelsContent).toContain("typeof this.recurrence === 'string'")
-        expect(modelsContent).toContain("typeof this.recurrence === 'object'")
+        expect(modelsContent).toContain('typeof this.recurrence === \'string\'')
+        expect(modelsContent).toContain('typeof this.recurrence === \'object\'')
     })
 
     test('should have getRecurrenceType method', () => {

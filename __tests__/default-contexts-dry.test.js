@@ -122,7 +122,7 @@ describe.skip('Default Contexts DRY Compliance', () => {
         expect(constantsContent).toContain('getDefaultContextIds()')
 
         // Should NOT have hardcoded array
-        expect(constantsContent).not.toContain("['@home'")
+        expect(constantsContent).not.toContain('[\'@home\'')
     })
 
     test('app.js should import from config', () => {

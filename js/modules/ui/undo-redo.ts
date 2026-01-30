@@ -3,8 +3,7 @@
  * Manages history and provides undo/redo functionality
  */
 
-import { Task } from '../../models'
-import { Project } from '../../models'
+import { Task, Project } from '../../models'
 
 interface HistoryEntry {
     action: string
@@ -39,7 +38,7 @@ export class UndoRedoManager {
     private historyIndex: number
     private maxHistorySize: number
 
-    constructor(state: AppState, app: AppDependencies) {
+    constructor (state: AppState, app: AppDependencies) {
         this.state = state
         this.app = app
         this.history = []
@@ -50,7 +49,7 @@ export class UndoRedoManager {
     /**
      * Setup undo/redo event listeners
      */
-    setupUndoRedo(): void {
+    setupUndoRedo (): void {
         // Keyboard shortcuts
         document.addEventListener('keydown', (e: KeyboardEvent) => {
             // Ignore if user is typing in an input or textarea
@@ -90,7 +89,7 @@ export class UndoRedoManager {
      * Save current state to history
      * @param action - Description of the action being saved
      */
-    saveState(action: string): void {
+    saveState (action: string): void {
         // If we're not at the end of history, truncate future history
         if (this.historyIndex < this.history.length - 1) {
             this.history = this.history.slice(0, this.historyIndex + 1)
@@ -125,7 +124,7 @@ export class UndoRedoManager {
     /**
      * Undo last action
      */
-    undo(): void {
+    undo (): void {
         if (this.historyIndex < 0) {
             this.app.showNotification?.('Nothing to undo', 'info')
             return
@@ -166,7 +165,7 @@ export class UndoRedoManager {
     /**
      * Redo last undone action
      */
-    redo(): void {
+    redo (): void {
         if (this.historyIndex >= this.history.length - 1) {
             this.app.showNotification?.('Nothing to redo', 'info')
             return
@@ -202,7 +201,7 @@ export class UndoRedoManager {
     /**
      * Update undo/redo button states
      */
-    updateUndoRedoButtons(): void {
+    updateUndoRedoButtons (): void {
         const undoBtn = document.getElementById('btn-undo') as HTMLButtonElement | null
         const redoBtn = document.getElementById('btn-redo') as HTMLButtonElement | null
 
@@ -230,7 +229,7 @@ export class UndoRedoManager {
      * @param obj - Object to copy
      * @returns Deep copy of the object
      */
-    private _deepCopy<T>(obj: T): T {
+    private _deepCopy<T> (obj: T): T {
         if (obj === null || typeof obj !== 'object') {
             return obj
         }
@@ -255,7 +254,7 @@ export class UndoRedoManager {
     /**
      * Clear all history
      */
-    clearHistory(): void {
+    clearHistory (): void {
         this.history = []
         this.historyIndex = -1
         this.updateUndoRedoButtons()
@@ -266,7 +265,7 @@ export class UndoRedoManager {
      * @param index - History index
      * @returns History entry or null
      */
-    getHistoryEntry(index: number): HistoryEntry | null {
+    getHistoryEntry (index: number): HistoryEntry | null {
         return this.history[index] || null
     }
 }

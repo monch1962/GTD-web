@@ -13,7 +13,7 @@
  */
 
 import { createLogger } from '../utils/logger'
-import { Task } from "../../models"
+import { Task } from '../../models'
 
 /**
  * App interface for type safety
@@ -46,7 +46,7 @@ export class TimeTrackingManager {
     private app: App
     private logger: Logger
 
-    constructor(state: State, app: App) {
+    constructor (state: State, app: App) {
         this.state = state
         this.app = app
         this.logger = createLogger('TimeTracking')
@@ -64,7 +64,7 @@ export class TimeTrackingManager {
     /**
      * Setup time tracking feature
      */
-    setupTimeTracking(): void {
+    setupTimeTracking (): void {
         // Time tracking is handled per-task in the task element creation
         // This method is for global time tracking setup
         this.logger.debug('Time tracking initialized')
@@ -78,7 +78,7 @@ export class TimeTrackingManager {
      * Start timer for a specific task
      * @param {string} taskId - Task ID to start timer for
      */
-    startTaskTimer(taskId: string): void {
+    startTaskTimer (taskId: string): void {
         const task = this.state.tasks.find((t) => t.id === taskId)
         if (!task) return
 
@@ -115,7 +115,7 @@ export class TimeTrackingManager {
     /**
      * Stop the currently running timer
      */
-    async stopTaskTimer(): Promise<void> {
+    async stopTaskTimer (): Promise<void> {
         if (!this.state.timerInterval || !this.state.currentTimerTask) return
 
         clearInterval(this.state.timerInterval)

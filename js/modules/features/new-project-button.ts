@@ -10,7 +10,7 @@
  * - Opens task modal with project type pre-selected
  */
 
-import { Task } from "../../models"
+import { Task } from '../../models'
 
 /**
  * App interface for type safety
@@ -34,7 +34,7 @@ export class NewProjectButtonManager {
     private state: State
     private app: App
 
-    constructor(state: State, app: App) {
+    constructor (state: State, app: App) {
         this.state = state
         this.app = app
     }
@@ -46,7 +46,7 @@ export class NewProjectButtonManager {
     /**
      * Setup the new project button
      */
-    setupNewProjectButton(): void {
+    setupNewProjectButton (): void {
         const newProjectBtn = document.getElementById('btn-new-project')
         if (newProjectBtn) {
             newProjectBtn.addEventListener('click', () => {

@@ -33,7 +33,7 @@ export class ProjectRenderer {
     private state: AppState
     private app: AppDependencies
 
-    constructor(state: AppState, app: AppDependencies) {
+    constructor (state: AppState, app: AppDependencies) {
         this.state = state
         this.app = app
     }
@@ -42,7 +42,7 @@ export class ProjectRenderer {
      * Render projects to container
      * @param container - Container element
      */
-    renderProjects(container: HTMLElement): void {
+    renderProjects (container: HTMLElement): void {
         let filteredProjects = this.state.projects
 
         // Check if we're showing archived projects
@@ -103,7 +103,7 @@ export class ProjectRenderer {
      * @param project - Project object
      * @returns Project card element
      */
-    createProjectCard(project: Project): HTMLElement {
+    createProjectCard (project: Project): HTMLElement {
         const card = document.createElement('div')
         card.className = 'project-card'
         card.dataset.projectId = project.id
@@ -120,8 +120,8 @@ export class ProjectRenderer {
         const contextTags =
             project.contexts && project.contexts.length > 0
                 ? project.contexts
-                      .map((ctx) => `<span class="project-context">${escapeHtml(ctx)}</span>`)
-                      .join('')
+                    .map((ctx) => `<span class="project-context">${escapeHtml(ctx)}</span>`)
+                    .join('')
                 : ''
 
         card.innerHTML = `
@@ -146,8 +146,8 @@ export class ProjectRenderer {
                     <i class="fas fa-edit"></i>
                 </button>
                 <button class="project-action-btn ${
-                    project.status === 'archived' ? 'unarchive' : 'archive'
-                }" title="${project.status === 'archived' ? 'Unarchive' : 'Archive'} project">
+    project.status === 'archived' ? 'unarchive' : 'archive'
+}" title="${project.status === 'archived' ? 'Unarchive' : 'Archive'} project">
                     <i class="fas fa-${project.status === 'archived' ? 'box-open' : 'archive'}"></i>
                 </button>
                 <button class="project-action-btn delete" title="Delete project">
@@ -168,7 +168,7 @@ export class ProjectRenderer {
      * @param card - Project card element
      * @param project - Project object
      */
-    private _attachProjectCardListeners(card: HTMLElement, project: Project): void {
+    private _attachProjectCardListeners (card: HTMLElement, project: Project): void {
         // View button - show project tasks
         const viewBtn = card.querySelector('.project-action-btn.view')
         if (viewBtn) {
@@ -232,7 +232,7 @@ export class ProjectRenderer {
      * @private
      * @param project - Project object
      */
-    private _viewProjectTasks(project: Project): void {
+    private _viewProjectTasks (project: Project): void {
         // Save state for undo
         this.app.saveState?.('View project tasks')
 
@@ -257,7 +257,7 @@ export class ProjectRenderer {
      * @param showingArchived - Whether archived projects are currently shown
      * @param archivedCount - Number of archived projects
      */
-    private _renderArchiveHeader(
+    private _renderArchiveHeader (
         container: HTMLElement,
         showingArchived: boolean,
         archivedCount: number
@@ -298,7 +298,7 @@ export class ProjectRenderer {
      * Toggle archived projects visibility
      * @private
      */
-    private _toggleArchivedProjects(): void {
+    private _toggleArchivedProjects (): void {
         // Save state for undo
         this.app.saveState?.('Toggle archived projects')
 
@@ -320,7 +320,7 @@ export class ProjectRenderer {
      * @param message - Empty state message
      * @returns HTML string
      */
-    private _renderEmptyState(message: string): string {
+    private _renderEmptyState (message: string): string {
         return `<div class="empty-state">
             <i class="fas fa-inbox fa-3x"></i>
             <p>${message}</p>
@@ -330,7 +330,7 @@ export class ProjectRenderer {
     /**
      * Clean up
      */
-    destroy(): void {
+    destroy (): void {
         // Nothing to clean up currently
     }
 }

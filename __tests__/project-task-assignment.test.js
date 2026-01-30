@@ -21,7 +21,7 @@ describe.skip('Project Task Assignment', () => {
         expect(appJsContent).toContain('projectId: this.currentProjectId')
 
         // Verify the status logic for project view
-        expect(appJsContent).toContain("this.currentProjectId ? 'next'")
+        expect(appJsContent).toContain('this.currentProjectId ? \'next\'')
     })
 
     test('quickAddTask should set status to next when in project view', () => {

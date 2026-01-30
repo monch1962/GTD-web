@@ -65,7 +65,7 @@ export class TaskOperations {
      * @param state - Application state object
      * @param app - Application instance
      */
-    constructor(state: AppState, app: AppDependencies) {
+    constructor (state: AppState, app: AppDependencies) {
         this.state = state
         this.app = app
         this.logger = createLogger('TaskOperations')
@@ -75,7 +75,7 @@ export class TaskOperations {
      * Quick add a task from title
      * @param title - Task title (may contain NLP)
      */
-    async quickAddTask(title: string): Promise<void> {
+    async quickAddTask (title: string): Promise<void> {
         // Save state for undo
         this.app.saveState?.('Add task')
 
@@ -86,8 +86,8 @@ export class TaskOperations {
         const status = this.state.currentProjectId
             ? 'next'
             : this.state.currentView === 'all'
-              ? 'inbox'
-              : this.state.currentView
+                ? 'inbox'
+                : this.state.currentView
 
         const task = new Task({
             title: parsed.title || title,
@@ -116,7 +116,7 @@ export class TaskOperations {
      * Duplicate a task
      * @param taskId - Task ID to duplicate
      */
-    async duplicateTask(taskId: string): Promise<void> {
+    async duplicateTask (taskId: string): Promise<void> {
         // Save state for undo
         this.app.saveState?.('Duplicate task')
 
@@ -142,7 +142,7 @@ export class TaskOperations {
      * Toggle task completion status
      * @param taskId - Task ID
      */
-    async toggleTaskComplete(taskId: string): Promise<void> {
+    async toggleTaskComplete (taskId: string): Promise<void> {
         // Save state for undo
         this.app.saveState?.('Toggle task completion')
 
@@ -176,7 +176,7 @@ export class TaskOperations {
      * Delete a task
      * @param taskId - Task ID to delete
      */
-    async deleteTask(taskId: string): Promise<void> {
+    async deleteTask (taskId: string): Promise<void> {
         if (!confirm('Are you sure you want to delete this task?')) return
 
         // Save state for undo
@@ -194,7 +194,7 @@ export class TaskOperations {
      * One-time migration for existing data
      * @returns Number of tasks migrated
      */
-    async migrateBlockedTasksToWaiting(): Promise<number> {
+    async migrateBlockedTasksToWaiting (): Promise<number> {
         let movedCount = 0
 
         // Check all tasks in Next or Someday that have unmet dependencies
@@ -227,7 +227,7 @@ export class TaskOperations {
      * Check waiting tasks and move to Next if dependencies are met
      * @returns Number of tasks moved
      */
-    async checkWaitingTasksDependencies(): Promise<number> {
+    async checkWaitingTasksDependencies (): Promise<number> {
         let movedCount = 0
 
         // Check all waiting tasks
@@ -277,7 +277,7 @@ export class TaskOperations {
     /**
      * Update task positions after drag-and-drop reordering
      */
-    async updateTaskPositions(): Promise<void> {
+    async updateTaskPositions (): Promise<void> {
         const container = document.getElementById('tasks-container')
         if (!container) return
 
@@ -301,7 +301,7 @@ export class TaskOperations {
      * @param taskId - Task ID
      * @returns Task object or null
      */
-    getTaskById(taskId: string): Task | null {
+    getTaskById (taskId: string): Task | null {
         return this.state.tasks.find((t) => t.id === taskId) || null
     }
 
@@ -310,7 +310,7 @@ export class TaskOperations {
      * @param taskId - Task ID
      * @param updates - Properties to update
      */
-    async updateTask(taskId: string, updates: Partial<TaskData>): Promise<void> {
+    async updateTask (taskId: string, updates: Partial<TaskData>): Promise<void> {
         const task = this.getTaskById(taskId)
         if (!task) return
 
@@ -334,7 +334,7 @@ export class TaskOperations {
      * @param taskId - Task ID
      * @param projectId - Project ID (null to unassign)
      */
-    async assignTaskToProject(taskId: string, projectId: string | null): Promise<void> {
+    async assignTaskToProject (taskId: string, projectId: string | null): Promise<void> {
         const task = this.getTaskById(taskId)
         if (!task) return
 
@@ -354,7 +354,7 @@ export class TaskOperations {
      * @param taskId - Task ID
      * @param minutes - Minutes to add
      */
-    async addTimeSpent(taskId: string, minutes: number): Promise<void> {
+    async addTimeSpent (taskId: string, minutes: number): Promise<void> {
         const task = this.getTaskById(taskId)
         if (!task) return
 
@@ -368,7 +368,7 @@ export class TaskOperations {
      * @param projectId - Project ID
      * @returns Array of tasks
      */
-    getTasksForProject(projectId: string): Task[] {
+    getTasksForProject (projectId: string): Task[] {
         return this.state.tasks.filter((t) => t.projectId === projectId)
     }
 
@@ -376,7 +376,7 @@ export class TaskOperations {
      * Get active tasks (not completed)
      * @returns Array of active tasks
      */
-    getActiveTasks(): Task[] {
+    getActiveTasks (): Task[] {
         return this.state.tasks.filter((t) => !t.completed)
     }
 
@@ -384,7 +384,7 @@ export class TaskOperations {
      * Get completed tasks
      * @returns Array of completed tasks
      */
-    getCompletedTasks(): Task[] {
+    getCompletedTasks (): Task[] {
         return this.state.tasks.filter((t) => t.completed)
     }
 
@@ -393,7 +393,7 @@ export class TaskOperations {
      * @param query - Search query
      * @returns Matching tasks
      */
-    searchTasks(query: string): Task[] {
+    searchTasks (query: string): Task[] {
         const lowerQuery = query.toLowerCase()
         return this.state.tasks.filter(
             (t) =>

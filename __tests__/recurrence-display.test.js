@@ -36,7 +36,7 @@ describe.skip('Recurrence Display', () => {
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Should handle string recurrence
-            expect(appContent).toContain("typeof recurrence === 'string'")
+            expect(appContent).toContain('typeof recurrence === \'string\'')
             expect(appContent).toContain('RecurrenceLabels[recurrence]')
         })
 
@@ -45,7 +45,7 @@ describe.skip('Recurrence Display', () => {
             const appContent = fs.readFileSync(appPath, 'utf-8')
 
             // Should handle object recurrence
-            expect(appContent).toContain("typeof recurrence === 'object'")
+            expect(appContent).toContain('typeof recurrence === \'object\'')
             expect(appContent).toContain('recurrence.type')
         })
 
@@ -112,7 +112,7 @@ describe.skip('Recurrence Display', () => {
 
             // The function should always return a string, never an object
             // Check that we're handling object format properly
-            expect(funcBody).toContain("typeof recurrence === 'object'")
+            expect(funcBody).toContain('typeof recurrence === \'object\'')
 
             // Check that we extract the type from objects
             expect(funcBody).toContain('recurrence.type')
@@ -212,8 +212,8 @@ describe.skip('Recurrence Display', () => {
 
             // Should have getRecurrenceLabel method
             expect(appContent).toContain('getRecurrenceLabel(recurrence)')
-            expect(appContent).toContain("if (typeof recurrence === 'string')")
-            expect(appContent).toContain("if (typeof recurrence === 'object'")
+            expect(appContent).toContain('if (typeof recurrence === \'string\')')
+            expect(appContent).toContain('if (typeof recurrence === \'object\'')
         })
 
         test('getRecurrenceLabel should be called in display code', () => {

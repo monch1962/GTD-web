@@ -63,8 +63,8 @@ describe.skip('Project Task Count Updates', () => {
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i]
             if (
-                line.includes("newType === 'project'") &&
-                line.includes("newType === 'task'") &&
+                line.includes('newType === \'project\'') &&
+                line.includes('newType === \'task\'') &&
                 line.includes('projectId')
             ) {
                 foundCondition = true

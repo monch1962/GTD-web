@@ -49,7 +49,7 @@ export class TemplatesManager {
     private state: AppState
     private app: AppDependencies
 
-    constructor(state: AppState, app: AppDependencies) {
+    constructor (state: AppState, app: AppDependencies) {
         this.state = state
         this.app = app
     }
@@ -57,7 +57,7 @@ export class TemplatesManager {
     /**
      * Setup templates functionality
      */
-    setupTemplates(): void {
+    setupTemplates (): void {
         // Templates button in sidebar
         const templatesBtn = document.getElementById('templates-button')
         if (templatesBtn) {
@@ -106,7 +106,7 @@ export class TemplatesManager {
     /**
      * Open templates list modal
      */
-    openTemplatesModal(): void {
+    openTemplatesModal (): void {
         // First, make sure the edit modal is closed
         this.closeTemplateEditModal()
 
@@ -120,7 +120,7 @@ export class TemplatesManager {
     /**
      * Close templates list modal
      */
-    closeTemplatesModal(): void {
+    closeTemplatesModal (): void {
         const modal = document.getElementById('templates-modal')
         if (modal) {
             modal.classList.remove('active')
@@ -130,7 +130,7 @@ export class TemplatesManager {
     /**
      * Open template edit modal
      */
-    openTemplateEditModal(templateId: string | null = null): void {
+    openTemplateEditModal (templateId: string | null = null): void {
         // First, make sure the templates list modal is closed
         this.closeTemplatesModal()
 
@@ -189,7 +189,7 @@ export class TemplatesManager {
     /**
      * Close template edit modal
      */
-    closeTemplateEditModal(): void {
+    closeTemplateEditModal (): void {
         const modal = document.getElementById('template-edit-modal')
         if (modal) {
             modal.classList.remove('active')
@@ -199,7 +199,7 @@ export class TemplatesManager {
     /**
      * Handle template form submission
      */
-    async handleTemplateFormSubmit(e: Event): Promise<void> {
+    async handleTemplateFormSubmit (e: Event): Promise<void> {
         e.preventDefault()
 
         const idInput = document.getElementById('template-id') as HTMLInputElement
@@ -250,7 +250,7 @@ export class TemplatesManager {
     /**
      * Delete a template
      */
-    async deleteTemplate(templateId: string): Promise<void> {
+    async deleteTemplate (templateId: string): Promise<void> {
         if (!confirm('Are you sure you want to delete this template?')) return
 
         this.app.saveState?.('Delete template')
@@ -264,7 +264,7 @@ export class TemplatesManager {
     /**
      * Save task as a template
      */
-    saveTaskAsTemplate(taskId: string): void {
+    saveTaskAsTemplate (taskId: string): void {
         const task = this.state.tasks.find((t) => t.id === taskId)
         if (!task) return
 
@@ -289,7 +289,7 @@ export class TemplatesManager {
     /**
      * Open template edit modal with pre-filled data
      */
-    openTemplateEditModalWithData(templateData: TemplateData): void {
+    openTemplateEditModalWithData (templateData: TemplateData): void {
         // First, make sure the templates list modal is closed
         this.closeTemplatesModal()
 
@@ -330,7 +330,7 @@ export class TemplatesManager {
     /**
      * Create task from template
      */
-    async createTaskFromTemplate(templateId: string): Promise<void> {
+    async createTaskFromTemplate (templateId: string): Promise<void> {
         const template = this.state.templates.find((t) => t.id === templateId)
         if (!template) return
 
@@ -346,7 +346,7 @@ export class TemplatesManager {
     /**
      * Render templates list grouped by category
      */
-    renderTemplatesList(): void {
+    renderTemplatesList (): void {
         const container = document.getElementById('templates-list')
         if (!container) return
 
@@ -429,14 +429,14 @@ export class TemplatesManager {
     /**
      * Edit template
      */
-    editTemplate(templateId: string): void {
+    editTemplate (templateId: string): void {
         this.openTemplateEditModal(templateId)
     }
 
     /**
      * Render template contexts selection
      */
-    renderTemplateContexts(selectedContexts: string[] = []): void {
+    renderTemplateContexts (selectedContexts: string[] = []): void {
         const container = document.getElementById('template-contexts-container')
         if (!container) return
 
@@ -464,7 +464,7 @@ export class TemplatesManager {
     /**
      * Get selected template contexts
      */
-    getSelectedTemplateContexts(): string[] {
+    getSelectedTemplateContexts (): string[] {
         const container = document.getElementById('template-contexts-container')
         if (!container) return []
 
@@ -475,7 +475,7 @@ export class TemplatesManager {
     /**
      * Render template subtasks
      */
-    renderTemplateSubtasks(subtasks: Array<{ title: string; completed: boolean }> = []): void {
+    renderTemplateSubtasks (subtasks: Array<{ title: string; completed: boolean }> = []): void {
         const container = document.getElementById('template-subtasks-container')
         if (!container) return
 
@@ -496,7 +496,7 @@ export class TemplatesManager {
     /**
      * Add a subtask to template
      */
-    addTemplateSubtask(): void {
+    addTemplateSubtask (): void {
         const container = document.getElementById('template-subtasks-container')
         if (!container) return
 
@@ -519,7 +519,7 @@ export class TemplatesManager {
     /**
      * Remove a subtask from template
      */
-    removeTemplateSubtask(index: number): void {
+    removeTemplateSubtask (index: number): void {
         const container = document.getElementById('template-subtasks-container')
         if (!container) return
 
@@ -538,7 +538,7 @@ export class TemplatesManager {
     /**
      * Get template subtasks from form
      */
-    getTemplateSubtasks(): Array<{ title: string; completed: boolean }> {
+    getTemplateSubtasks (): Array<{ title: string; completed: boolean }> {
         const container = document.getElementById('template-subtasks-container')
         if (!container) return []
 
@@ -553,7 +553,7 @@ export class TemplatesManager {
      * Get custom contexts from localStorage
      * @returns Array of custom context names
      */
-    getCustomContexts(): string[] {
+    getCustomContexts (): string[] {
         const tags = localStorage.getItem('gtd_custom_contexts')
         return tags ? JSON.parse(tags) : []
     }
@@ -563,7 +563,7 @@ export class TemplatesManager {
      * @param category - Category to filter by
      * @returns Array of templates
      */
-    getTemplatesByCategory(category: TemplateCategory): Template[] {
+    getTemplatesByCategory (category: TemplateCategory): Template[] {
         return this.state.templates.filter((t) => t.category === category)
     }
 
@@ -572,7 +572,7 @@ export class TemplatesManager {
      * @param query - Search query
      * @returns Array of matching templates
      */
-    searchTemplates(query: string): Template[] {
+    searchTemplates (query: string): Template[] {
         const lowerQuery = query.toLowerCase()
         return this.state.templates.filter(
             (t) =>

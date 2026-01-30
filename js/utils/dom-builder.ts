@@ -20,7 +20,7 @@ interface CreateElementOptions {
  * @param options - Element options
  * @returns Created element
  */
-export function createElement(tag: string, options: CreateElementOptions = {}): HTMLElement {
+export function createElement (tag: string, options: CreateElementOptions = {}): HTMLElement {
     const element = document.createElement(tag)
 
     // Set text content (safe, escaped)
@@ -79,7 +79,7 @@ export function createElement(tag: string, options: CreateElementOptions = {}): 
  * @param content - Safe content (text or trusted HTML)
  * @param isHTML - Whether content is HTML (default: false)
  */
-export function setElementContent(
+export function setElementContent (
     element: HTMLElement,
     content: string,
     isHTML: boolean = false
@@ -98,7 +98,7 @@ export function setElementContent(
  * @param selected - Whether option is selected
  * @returns Option element
  */
-export function createOption(
+export function createOption (
     value: string,
     text: string,
     selected: boolean = false
@@ -116,7 +116,7 @@ export function createOption(
  * @param values - Values to interpolate
  * @returns Safe HTML string
  */
-export function buildSafeTemplate(strings: TemplateStringsArray, ...values: any[]): string {
+export function buildSafeTemplate (strings: TemplateStringsArray, ...values: any[]): string {
     let result = ''
     for (let i = 0; i < strings.length; i++) {
         result += strings[i]
@@ -135,7 +135,7 @@ export function buildSafeTemplate(strings: TemplateStringsArray, ...values: any[
  * @param target - Target attribute
  * @returns Link element
  */
-export function createLink(
+export function createLink (
     href: string,
     text: string,
     target: string = '_blank'
@@ -155,7 +155,7 @@ export function createLink(
  * @param type - Button type
  * @returns Button element
  */
-export function createButton(
+export function createButton (
     text: string,
     onClick: EventListener,
     type: 'button' | 'submit' | 'reset' = 'button'
@@ -173,7 +173,7 @@ export function createButton(
  * @param color - Badge color class
  * @returns Badge element
  */
-export function createBadge(text: string, color: string = 'badge-secondary'): HTMLElement {
+export function createBadge (text: string, color: string = 'badge-secondary'): HTMLElement {
     const badge = document.createElement('span')
     badge.className = `badge ${color}`
     badge.textContent = text
@@ -184,7 +184,7 @@ export function createBadge(text: string, color: string = 'badge-secondary'): HT
  * Clear all child elements
  * @param element - Element to clear
  */
-export function clearElement(element: HTMLElement): void {
+export function clearElement (element: HTMLElement): void {
     while (element.firstChild) {
         element.removeChild(element.firstChild)
     }
@@ -195,7 +195,7 @@ export function clearElement(element: HTMLElement): void {
  * @param html - HTML to check
  * @returns Whether HTML is unsafe
  */
-export function isUnsafeHTML(html: string): boolean {
+export function isUnsafeHTML (html: string): boolean {
     const unsafePatterns = [/<script\b/i, /javascript:/i, /on\w+\s*=/i, /data:/i, /vbscript:/i]
 
     return unsafePatterns.some((pattern) => pattern.test(html))
@@ -206,7 +206,7 @@ export function isUnsafeHTML(html: string): boolean {
  * @param html - HTML to sanitize
  * @returns Sanitized HTML
  */
-export function sanitizeHTML(html: string): string {
+export function sanitizeHTML (html: string): string {
     if (isUnsafeHTML(html)) {
         console.warn('DOMBuilder: Unsafe HTML detected, removing unsafe content')
         // Remove script tags and event handlers
@@ -227,7 +227,7 @@ export function sanitizeHTML(html: string): string {
  * @param text - Text to escape
  * @returns Escaped text
  */
-function escapeHtml(text: string): string {
+function escapeHtml (text: string): string {
     const div = document.createElement('div')
     div.textContent = text
     return div.innerHTML
@@ -239,7 +239,7 @@ function escapeHtml(text: string): string {
  * @param items - Items to render
  * @param renderItem - Function to render single item (must return safe DOM)
  */
-export function renderList<T>(
+export function renderList<T> (
     container: HTMLElement,
     items: T[],
     renderItem: (item: T, index: number) => HTMLElement

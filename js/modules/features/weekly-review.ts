@@ -44,7 +44,7 @@ export class WeeklyReviewManager {
     private state: AppState
     private app: AppDependencies
 
-    constructor(state: AppState, app: AppDependencies) {
+    constructor (state: AppState, app: AppDependencies) {
         this.state = state
         this.app = app
     }
@@ -52,7 +52,7 @@ export class WeeklyReviewManager {
     /**
      * Setup weekly review functionality
      */
-    setupWeeklyReview(): void {
+    setupWeeklyReview (): void {
         const weeklyReviewBtn = document.getElementById('btn-weekly-review')
         const closeWeeklyReviewBtn = document.getElementById('close-weekly-review-modal')
 
@@ -72,7 +72,7 @@ export class WeeklyReviewManager {
     /**
      * Show weekly review modal
      */
-    showWeeklyReview(): void {
+    showWeeklyReview (): void {
         const modal = document.getElementById('weekly-review-modal')
         if (!modal) return
 
@@ -83,7 +83,7 @@ export class WeeklyReviewManager {
     /**
      * Close weekly review modal
      */
-    closeWeeklyReview(): void {
+    closeWeeklyReview (): void {
         const modal = document.getElementById('weekly-review-modal')
         if (modal) modal.style.display = 'none'
     }
@@ -91,7 +91,7 @@ export class WeeklyReviewManager {
     /**
      * Render weekly review content
      */
-    renderWeeklyReview(): void {
+    renderWeeklyReview (): void {
         const weeklyReviewContent = document.getElementById('weekly-review-content')
         if (!weeklyReviewContent) return
 
@@ -178,75 +178,75 @@ export class WeeklyReviewManager {
                 </div>
 
                 ${
-                    overdueTasks.length > 0
-                        ? `
+    overdueTasks.length > 0
+        ? `
                 <div style="background: #fef5e7; padding: var(--spacing-md); border-radius: var(--radius-md); border-left: 4px solid var(--warning-color); margin-bottom: var(--spacing-md);">
                     <h4 style="margin: 0 0 var(--spacing-sm) 0; color: var(--warning-color);">
                         <i class="fas fa-exclamation-triangle"></i> ${overdueTasks.length} Overdue Tasks
                     </h4>
                     <div style="max-height: 200px; overflow-y: auto;">
                         ${overdueTasks
-                            .slice(0, 10)
-                            .map(
-                                (task) => `
+        .slice(0, 10)
+        .map(
+            (task) => `
                             <div style="padding: 4px 0; border-bottom: 1px solid rgba(0,0,0,0.1);">
                                 <strong>${escapeHtml(task.title)}</strong>
                                 ${task.dueDate ? `<span style="color: var(--danger-color); font-size: 0.85rem;"> Due: ${task.dueDate}</span>` : ''}
                             </div>
                         `
-                            )
-                            .join('')}
+        )
+        .join('')}
                     </div>
                 </div>
                 `
-                        : ''
-                }
+        : ''
+}
 
                 ${
-                    dueThisWeek.length > 0
-                        ? `
+    dueThisWeek.length > 0
+        ? `
                 <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: var(--spacing-md);">
                     <h4 style="margin: 0 0 var(--spacing-sm) 0;">
                         <i class="fas fa-calendar-day"></i> ${dueThisWeek.length} Tasks Due This Week
                     </h4>
                     <div style="max-height: 200px; overflow-y: auto;">
                         ${dueThisWeek
-                            .map(
-                                (task) => `
+        .map(
+            (task) => `
                             <div style="padding: 4px 0; border-bottom: 1px solid var(--border-color);">
                                 <strong>${escapeHtml(task.title)}</strong>
                                 ${task.dueDate ? `<span style="color: var(--text-secondary); font-size: 0.85rem;"> Due: ${task.dueDate}</span>` : ''}
                             </div>
                         `
-                            )
-                            .join('')}
+        )
+        .join('')}
                     </div>
                 </div>
                 `
-                        : ''
-                }
+        : ''
+}
 
                 ${
-                    staleProjects.length > 0
-                        ? `
+    staleProjects.length > 0
+        ? `
                 <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: var(--spacing-md);">
                     <h4 style="margin: 0 0 var(--spacing-sm) 0; color: var(--text-secondary);">
                         <i class="fas fa-pause-circle"></i> ${staleProjects.length} Stalled Projects (consider activating or completing)
                     </h4>
                     ${staleProjects
-                        .map(
-                            (project) => `
+        .map(
+            (project) => `
                         <div style="padding: 8px; background: var(--bg-secondary); border-radius: var(--radius-sm); margin-top: var(--spacing-xs);">
                             <strong>${escapeHtml(project.title)}</strong>
                             <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 4px 0;">${this.state.tasks.filter((t) => t.projectId === project.id && !t.completed).length} tasks remaining</p>
                         </div>
                     `
-                        )
-                        .join('')}
+        )
+        .join('')}
                 </div>
                 `
-                        : ''
-                }
+        : ''
+}
 
                 <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
                     <h4 style="margin: 0 0 var(--spacing-sm) 0;">
@@ -271,7 +271,7 @@ export class WeeklyReviewManager {
     /**
      * Cleanup empty projects
      */
-    async cleanupEmptyProjects(): Promise<void> {
+    async cleanupEmptyProjects (): Promise<void> {
         const emptyProjects = this.state.projects.filter((p) => {
             const projectTasks = this.state.tasks.filter((t) => t.projectId === p.id)
             return projectTasks.length === 0
@@ -294,7 +294,7 @@ export class WeeklyReviewManager {
     /**
      * Cleanup old completed tasks
      */
-    async cleanupOldCompletedTasks(): Promise<void> {
+    async cleanupOldCompletedTasks (): Promise<void> {
         const ninetyDaysAgo = new Date()
         ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
 
@@ -307,8 +307,7 @@ export class WeeklyReviewManager {
             return
         }
 
-        if (!confirm(`Archive ${oldCompletedTasks.length} tasks completed more than 90 days ago?`))
-            return
+        if (!confirm(`Archive ${oldCompletedTasks.length} tasks completed more than 90 days ago?`)) { return }
 
         // Create an export of these tasks before deleting
         const archiveData = {
@@ -340,7 +339,7 @@ export class WeeklyReviewManager {
     /**
      * Mark stale projects as Someday
      */
-    async markStaleProjectsSomeday(): Promise<void> {
+    async markStaleProjectsSomeday (): Promise<void> {
         const staleProjects = this.state.projects.filter((p) => {
             if (p.status !== 'active') return false
             const projectTasks = this.state.tasks.filter(

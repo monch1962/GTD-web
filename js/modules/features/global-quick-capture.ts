@@ -37,7 +37,7 @@ export class GlobalQuickCaptureManager {
     private state: State
     private app: App
 
-    constructor(state: State, app: App) {
+    constructor (state: State, app: App) {
         this.state = state
         this.app = app
     }
@@ -49,7 +49,7 @@ export class GlobalQuickCaptureManager {
     /**
      * Setup the global quick capture feature
      */
-    setupGlobalQuickCapture(): void {
+    setupGlobalQuickCapture (): void {
         // Global hotkey listener (Alt+N)
         document.addEventListener('keydown', (e) => {
             if (e.altKey && e.key === 'n') {
@@ -110,7 +110,7 @@ export class GlobalQuickCaptureManager {
     /**
      * Open the global quick capture overlay
      */
-    openGlobalQuickCapture(): void {
+    openGlobalQuickCapture (): void {
         const overlay = document.getElementById('global-quick-capture-overlay')
         if (overlay) {
             overlay.style.display = 'flex'
@@ -130,7 +130,7 @@ export class GlobalQuickCaptureManager {
     /**
      * Close the global quick capture overlay
      */
-    closeGlobalQuickCapture(): void {
+    closeGlobalQuickCapture (): void {
         const overlay = document.getElementById('global-quick-capture-overlay')
         if (overlay) {
             overlay.style.display = 'none'
@@ -141,7 +141,7 @@ export class GlobalQuickCaptureManager {
      * Handle quick capture input and create task
      * @param input - User input text
      */
-    handleGlobalQuickCapture(input: string): void {
+    handleGlobalQuickCapture (input: string): void {
         // Parse the input with enhanced NLP
         const taskData = this.parseQuickCaptureInput(input)
 
@@ -164,7 +164,7 @@ export class GlobalQuickCaptureManager {
     /**
      * Toggle quick capture templates visibility
      */
-    toggleQuickCaptureTemplates(): void {
+    toggleQuickCaptureTemplates (): void {
         const templatesDiv = document.getElementById('global-quick-capture-templates')
         const listDiv = document.getElementById('global-quick-capture-templates-list')
 
@@ -183,7 +183,7 @@ export class GlobalQuickCaptureManager {
      * Select a template and create task from it
      * @param templateId - ID of template to use
      */
-    selectTemplateForQuickCapture(templateId: string): void {
+    selectTemplateForQuickCapture (templateId: string): void {
         const template = this.state.templates.find((t) => t.id === templateId)
         if (!template) return
 
@@ -209,7 +209,7 @@ export class GlobalQuickCaptureManager {
      * @param input - Raw user input
      * @returns Parsed task data
      */
-    private parseQuickCaptureInput(input: string): Record<string, any> {
+    private parseQuickCaptureInput (input: string): Record<string, any> {
         const taskData: Record<string, any> = {
             title: input,
             status: 'inbox'
@@ -272,7 +272,7 @@ export class GlobalQuickCaptureManager {
      * Render quick capture templates list
      * @param container - Container element
      */
-    private renderQuickCaptureTemplates(container: HTMLElement): void {
+    private renderQuickCaptureTemplates (container: HTMLElement): void {
         if (this.state.templates.length === 0) {
             container.innerHTML =
                 '<p style="color: var(--text-secondary);">No templates available. Create some in the Templates modal!</p>'

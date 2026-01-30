@@ -38,7 +38,7 @@ export class DashboardManager {
     private state: AppState
     private app: AppDependencies
 
-    constructor(state: AppState, app: AppDependencies) {
+    constructor (state: AppState, app: AppDependencies) {
         this.state = state
         this.app = app
     }
@@ -46,7 +46,7 @@ export class DashboardManager {
     /**
      * Setup dashboard functionality
      */
-    setupDashboard(): void {
+    setupDashboard (): void {
         const dashboardBtn = document.getElementById('btn-dashboard')
         const closeDashboardBtn = document.getElementById('close-dashboard-modal')
 
@@ -66,7 +66,7 @@ export class DashboardManager {
     /**
      * Show dashboard modal
      */
-    showDashboard(): void {
+    showDashboard (): void {
         const modal = document.getElementById('dashboard-modal')
         if (!modal) return
         ;(modal as HTMLElement).style.display = 'block'
@@ -76,7 +76,7 @@ export class DashboardManager {
     /**
      * Close dashboard modal
      */
-    closeDashboard(): void {
+    closeDashboard (): void {
         const modal = document.getElementById('dashboard-modal')
         if (modal) (modal as HTMLElement).style.display = 'none'
     }
@@ -84,7 +84,7 @@ export class DashboardManager {
     /**
      * Render dashboard with all analytics
      */
-    renderDashboard(): void {
+    renderDashboard (): void {
         const dashboardContent = document.getElementById('dashboard-content')
         if (!dashboardContent) return
 
@@ -196,16 +196,16 @@ export class DashboardManager {
                 </div>
 
                 ${
-                    tasksWithTime.length > 0
-                        ? `
+    tasksWithTime.length > 0
+        ? `
                 <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
                     <h3 style="margin: 0 0 var(--spacing-sm) 0; font-size: 1rem; color: var(--text-secondary);">Estimation Accuracy</h3>
                     <div style="font-size: 2.5rem; font-weight: bold; color: var(--info-color);">${avgAccuracy}%</div>
                     <div style="font-size: 0.85rem; color: var(--text-secondary);">Based on ${tasksWithTime.length} completed tasks</div>
                 </div>
                 `
-                        : ''
-                }
+        : ''
+}
             </div>
 
             <!-- Productivity Trends -->
@@ -252,14 +252,14 @@ export class DashboardManager {
                 <h3 style="margin-bottom: var(--spacing-md);">Context Usage</h3>
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--spacing-sm);">
                     ${Object.entries(contextUsage)
-                        .sort((a, b) => b[1] - a[1])
-                        .map(([context, count]) => {
-                            const completion = contextCompletion[context]
-                            const completionRate =
+        .sort((a, b) => b[1] - a[1])
+        .map(([context, count]) => {
+            const completion = contextCompletion[context]
+            const completionRate =
                                 completion.total > 0
                                     ? Math.round((completion.completed / completion.total) * 100)
                                     : 0
-                            return `
+            return `
                                 <div style="background: var(--bg-primary); padding: var(--spacing-sm); border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
                                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                                         <strong>${escapeHtml(context)}</strong>
@@ -271,8 +271,8 @@ export class DashboardManager {
                                     <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px;">${completionRate}% complete</div>
                                 </div>
                             `
-                        })
-                        .join('')}
+        })
+        .join('')}
                 </div>
             </div>
 
@@ -281,21 +281,21 @@ export class DashboardManager {
                 <h3 style="margin-bottom: var(--spacing-md);">Energy Level Performance</h3>
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-md);">
                     ${['high', 'medium', 'low']
-                        .map((energy) => {
-                            const stats = energyStats[energy as keyof EnergyStats]
-                            const rate =
+        .map((energy) => {
+            const stats = energyStats[energy as keyof EnergyStats]
+            const rate =
                                 stats.total > 0
                                     ? Math.round((stats.completed / stats.total) * 100)
                                     : 0
-                            return `
+            return `
                             <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: var(--radius-md); border: 1px solid var(--border-color); text-align: center;">
                                 <div style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color); margin-bottom: var(--spacing-xs);">${energy.charAt(0).toUpperCase() + energy.slice(1)}</div>
                                 <div style="font-size: 0.9rem; margin-bottom: var(--spacing-xs);">${stats.completed}/${stats.total} completed</div>
                                 <div style="font-size: 2rem; font-weight: bold; color: ${rate >= 70 ? 'var(--success-color)' : rate >= 40 ? 'var(--warning-color)' : 'var(--danger-color)'};">${rate}%</div>
                             </div>
                         `
-                        })
-                        .join('')}
+        })
+        .join('')}
                 </div>
             </div>
 
@@ -327,8 +327,8 @@ export class DashboardManager {
             </div>
 
             ${
-                stalledProjects.length > 0
-                    ? `
+    stalledProjects.length > 0
+        ? `
             <!-- Stalled Projects -->
             <div>
                 <h3 style="margin-bottom: var(--spacing-md); color: var(--warning-color);">
@@ -336,30 +336,30 @@ export class DashboardManager {
                 </h3>
                 <div style="display: grid; gap: var(--spacing-sm);">
                     ${stalledProjects
-                        .map((project) => {
-                            const projectTasks = this.state.tasks.filter(
-                                (t) => t.projectId === project.id && !t.completed
-                            )
-                            return `
+        .map((project) => {
+            const projectTasks = this.state.tasks.filter(
+                (t) => t.projectId === project.id && !t.completed
+            )
+            return `
                             <div style="background: var(--bg-primary); padding: var(--spacing-sm); border-radius: var(--radius-sm); border-left: 3px solid var(--warning-color);">
                                 <strong>${escapeHtml(project.title)}</strong>
                                 <div style="font-size: 0.85rem; color: var(--text-secondary);">${projectTasks.length} pending tasks</div>
                             </div>
                         `
-                        })
-                        .join('')}
+        })
+        .join('')}
                 </div>
             </div>
             `
-                    : ''
-            }
+        : ''
+}
         `
     }
 
     /**
      * Format total time tracked
      */
-    formatTotalTime(): string {
+    formatTotalTime (): string {
         const totalMinutes = this.state.tasks.reduce((sum, task) => sum + (task.timeSpent || 0), 0)
 
         if (totalMinutes === 0) return '0m'
@@ -376,7 +376,7 @@ export class DashboardManager {
     /**
      * Get average time per task
      */
-    getAverageTimePerTask(): number {
+    getAverageTimePerTask (): number {
         const tasksWithTime = this.state.tasks.filter((t) => t.timeSpent && t.timeSpent > 0)
         if (tasksWithTime.length === 0) return 0
 
@@ -387,7 +387,7 @@ export class DashboardManager {
     /**
      * Render time tracking by context
      */
-    renderTimeByContext(): string {
+    renderTimeByContext (): string {
         const timeByContext: Record<string, number> = {}
 
         this.state.tasks.forEach((task) => {
@@ -410,9 +410,9 @@ export class DashboardManager {
                 <h4 style="margin-bottom: var(--spacing-sm); font-size: 1rem;">Time by Context</h4>
                 <div style="display: flex; flex-direction: column; gap: var(--spacing-xs);">
                     ${entries
-                        .map(([context, minutes]) => {
-                            const percentage = (minutes / maxTime) * 100
-                            return `
+        .map(([context, minutes]) => {
+            const percentage = (minutes / maxTime) * 100
+            return `
                             <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
                                 <div style="width: 100px; font-size: 0.85rem;">${escapeHtml(context)}</div>
                                 <div style="flex: 1; height: 20px; background: var(--bg-secondary); border-radius: 4px; overflow: hidden; position: relative;">
@@ -421,8 +421,8 @@ export class DashboardManager {
                                 </div>
                             </div>
                         `
-                        })
-                        .join('')}
+        })
+        .join('')}
                 </div>
             </div>
         `
@@ -431,7 +431,7 @@ export class DashboardManager {
     /**
      * Render time tracking by project
      */
-    renderTimeByProject(): string {
+    renderTimeByProject (): string {
         const timeByProject: Record<string, number> = {}
 
         this.state.tasks.forEach((task) => {
@@ -454,9 +454,9 @@ export class DashboardManager {
                 <h4 style="margin-bottom: var(--spacing-sm); font-size: 1rem;">Time by Project</h4>
                 <div style="display: flex; flex-direction: column; gap: var(--spacing-xs);">
                     ${entries
-                        .map(([project, minutes]) => {
-                            const percentage = (minutes / maxTime) * 100
-                            return `
+        .map(([project, minutes]) => {
+            const percentage = (minutes / maxTime) * 100
+            return `
                             <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
                                 <div style="width: 150px; font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(project)}</div>
                                 <div style="flex: 1; height: 20px; background: var(--bg-secondary); border-radius: 4px; overflow: hidden; position: relative;">
@@ -465,8 +465,8 @@ export class DashboardManager {
                                 </div>
                             </div>
                         `
-                        })
-                        .join('')}
+        })
+        .join('')}
                 </div>
             </div>
         `
@@ -475,7 +475,7 @@ export class DashboardManager {
     /**
      * Render last 7 days chart
      */
-    renderLast7DaysChart(): string {
+    renderLast7DaysChart (): string {
         const days: Date[] = []
         const today = new Date()
         today.setHours(0, 0, 0, 0)
@@ -524,7 +524,7 @@ export class DashboardManager {
     /**
      * Get last 7 days average
      */
-    getLast7DaysAverage(): string {
+    getLast7DaysAverage (): string {
         const today = new Date()
         today.setHours(0, 0, 0, 0)
 
@@ -549,7 +549,7 @@ export class DashboardManager {
     /**
      * Get average task lifecycle in days
      */
-    getAverageTaskLifecycle(): number {
+    getAverageTaskLifecycle (): number {
         const completedTasks = this.state.tasks.filter(
             (t) => t.completed && t.createdAt && t.completedAt
         )
@@ -569,7 +569,7 @@ export class DashboardManager {
     /**
      * Get insight about task lifecycle
      */
-    getLifecycleInsight(): string {
+    getLifecycleInsight (): string {
         const avg = this.getAverageTaskLifecycle()
 
         if (avg === 0) return ''
@@ -600,7 +600,7 @@ export class DashboardManager {
     /**
      * Get velocity trend
      */
-    getVelocityTrend(): VelocityTrend {
+    getVelocityTrend (): VelocityTrend {
         const today = new Date()
         today.setHours(0, 0, 0, 0)
 
@@ -683,7 +683,7 @@ export class DashboardManager {
     /**
      * Get velocity insight
      */
-    getVelocityInsight(): string {
+    getVelocityInsight (): string {
         const today = new Date()
         today.setHours(0, 0, 0, 0)
 
@@ -704,7 +704,7 @@ export class DashboardManager {
         }
 
         if (thisWeekCompleted >= 20) {
-            return "🔥 Outstanding productivity! You're on fire!"
+            return '🔥 Outstanding productivity! You\'re on fire!'
         } else if (thisWeekCompleted >= 10) {
             return '💪 Strong week! Keep up the great work.'
         } else if (thisWeekCompleted >= 5) {

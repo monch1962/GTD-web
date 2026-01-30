@@ -6,7 +6,7 @@ import { GTDApp } from '../js/app.ts'
 import { SearchManager } from '../js/modules/features/search.ts'
 
 // Helper function to add options to select elements
-function addOption(select, value, text) {
+function addOption (select, value, text) {
     const option = document.createElement('option')
     option.value = value
     option.textContent = text

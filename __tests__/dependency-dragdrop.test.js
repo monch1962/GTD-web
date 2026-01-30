@@ -33,7 +33,7 @@ describe.skip('Dependency Drag and Drop', () => {
     })
 
     test('should set dependency-target class during drag in project view', () => {
-        expect(appJsContent).toContain("div.classList.add('dependency-target')")
+        expect(appJsContent).toContain('div.classList.add(\'dependency-target\')')
         expect(appJsContent).toContain('this.currentProjectId')
 
         // Verify it's only set when in project view
@@ -78,7 +78,7 @@ describe.skip('Dependency Drag and Drop', () => {
 
     test('should use link dropEffect in project view', () => {
         // Check that dropEffect is set to 'link' when in project view
-        expect(appJsContent).toContain("e.dataTransfer.dropEffect = 'link'")
+        expect(appJsContent).toContain('e.dataTransfer.dropEffect = \'link\'')
 
         // Verify it's within the currentProjectId check
         const lines = appJsContent.split('\n')
@@ -90,7 +90,7 @@ describe.skip('Dependency Drag and Drop', () => {
                 foundProjectViewCheck = true
                 // Look ahead for link dropEffect
                 for (let j = i; j < Math.min(i + 10, lines.length); j++) {
-                    if (lines[j].includes("dropEffect = 'link'")) {
+                    if (lines[j].includes('dropEffect = \'link\'')) {
                         foundLinkDropEffect = true
                         break
                     }
@@ -104,7 +104,7 @@ describe.skip('Dependency Drag and Drop', () => {
     })
 
     test('should remove dependency-target class on dragleave', () => {
-        expect(appJsContent).toContain("div.classList.remove('dependency-target')")
+        expect(appJsContent).toContain('div.classList.remove(\'dependency-target\')')
         expect(appJsContent).toContain('dragleave')
     })
 
@@ -116,7 +116,7 @@ describe.skip('Dependency Drag and Drop', () => {
             if (lines[i].includes('drop') && lines[i].includes('addEventListener')) {
                 // Look for class removal in the drop handler
                 for (let j = i; j < Math.min(i + 20, lines.length); j++) {
-                    if (lines[j].includes("classList.remove('dependency-target')")) {
+                    if (lines[j].includes('classList.remove(\'dependency-target\')')) {
                         foundRemoveInDrop = true
                         break
                     }

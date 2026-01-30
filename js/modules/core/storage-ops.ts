@@ -16,29 +16,30 @@ export class StorageOperations {
     private _storage: Storage
     private state: AppState
 
-    constructor(storage: Storage, state: AppState) {
+    constructor (storage: Storage, state: AppState) {
         this._storage = storage
         this.state = state
     }
 
-    get storage(): Storage {
+    get storage (): Storage {
         return this._storage
     }
-    set storage(value: Storage) {
+
+    set storage (value: Storage) {
         this._storage = value
     }
 
     /**
      * Initialize storage
      */
-    async initializeStorage(): Promise<void> {
+    async initializeStorage (): Promise<void> {
         await this._storage.init()
     }
 
     /**
      * Load all data from storage
      */
-    async loadData(): Promise<void> {
+    async loadData (): Promise<void> {
         // Load tasks
         const tasksData = this.storage.getTasks()
         this.state.tasks = tasksData.map((data) => Task.fromJSON(data))
@@ -55,7 +56,7 @@ export class StorageOperations {
     /**
      * Save tasks to storage
      */
-    async saveTasks(): Promise<void> {
+    async saveTasks (): Promise<void> {
         const tasksData = this.state.tasks.map((t) => t.toJSON())
         await this.storage.saveTasks(tasksData)
     }
@@ -63,7 +64,7 @@ export class StorageOperations {
     /**
      * Save projects to storage
      */
-    async saveProjects(): Promise<void> {
+    async saveProjects (): Promise<void> {
         const projectsData = this.state.projects.map((p) => p.toJSON())
         await this.storage.saveProjects(projectsData)
     }
@@ -71,7 +72,7 @@ export class StorageOperations {
     /**
      * Save templates to storage
      */
-    async saveTemplates(): Promise<void> {
+    async saveTemplates (): Promise<void> {
         const templatesData = this.state.templates.map((t) => t.toJSON())
         await this.storage.saveTemplates(templatesData)
     }
@@ -79,7 +80,7 @@ export class StorageOperations {
     /**
      * Save all data to storage
      */
-    async saveAll(): Promise<void> {
+    async saveAll (): Promise<void> {
         await Promise.all([this.saveTasks(), this.saveProjects(), this.saveTemplates()])
     }
 }

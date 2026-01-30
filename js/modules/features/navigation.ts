@@ -12,7 +12,7 @@
  * - Project title lookup
  */
 
-import { Task, Project } from "../../models"
+import { Task, Project } from '../../models'
 
 /**
  * App interface for type safety
@@ -36,7 +36,7 @@ export class NavigationManager {
     private state: State
     private app: App
 
-    constructor(state: State, app: App) {
+    constructor (state: State, app: App) {
         this.state = state
         this.app = app
     }
@@ -49,7 +49,7 @@ export class NavigationManager {
      * Get time-based greeting
      * @returns {string} - Morning, Afternoon, or Evening
      */
-    getGreeting(): string {
+    getGreeting (): string {
         const hour = new Date().getHours()
         if (hour < 12) return 'Morning'
         if (hour < 17) return 'Afternoon'
@@ -60,7 +60,7 @@ export class NavigationManager {
      * Get personalized greeting message with task statistics
      * @returns {string} - Personalized greeting message
      */
-    getGreetingMessage(): string {
+    getGreetingMessage (): string {
         const greeting = this.getGreeting()
         const totalTasks = this.state.tasks.filter((t) => !t.completed).length
         const completedToday = this.state.tasks.filter(
@@ -83,7 +83,7 @@ export class NavigationManager {
      * Navigate to a specific view
      * @param {string} view - View to switch to
      */
-    navigateTo(view: string): void {
+    navigateTo (view: string): void {
         this.state.currentView = view
         this.state.currentProjectId = null
         this.app.renderView?.()
@@ -95,7 +95,7 @@ export class NavigationManager {
      * @param {string} projectId - Project ID
      * @returns {string} - Project title or 'Unknown Project'
      */
-    getProjectTitle(projectId: string): string {
+    getProjectTitle (projectId: string): string {
         const project = this.state.projects.find((p) => p.id === projectId)
         return project ? project.title : 'Unknown Project'
     }

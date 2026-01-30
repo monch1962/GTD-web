@@ -76,7 +76,7 @@ class GTDApp implements AppState, AppDependencies {
     // =========================================================================
     // CONSTRUCTOR
     // =========================================================================
-    constructor() {
+    constructor () {
         this.storage = new Storage()
         this.tasks = []
         this.projects = []
@@ -127,7 +127,7 @@ class GTDApp implements AppState, AppDependencies {
     /**
      * Initialize the application
      */
-    async init(): Promise<void> {
+    async init (): Promise<void> {
         try {
             console.log('DEBUG: app.ts loading...')
 
@@ -164,7 +164,7 @@ class GTDApp implements AppState, AppDependencies {
     /**
      * Display user ID in UI
      */
-    displayUserId(): void {
+    displayUserId (): void {
         const userIdElement = document.getElementById(ElementIds.userId)
         if (userIdElement && this.storage.userId) {
             userIdElement.textContent = this.storage.userId.substr(0, 12) + '...'
@@ -174,7 +174,7 @@ class GTDApp implements AppState, AppDependencies {
     /**
      * Initialize custom contexts from localStorage
      */
-    initializeCustomContexts(): void {
+    initializeCustomContexts (): void {
         const customContexts = localStorage.getItem('gtd_custom_contexts')
         if (customContexts) {
             try {
@@ -191,7 +191,7 @@ class GTDApp implements AppState, AppDependencies {
     /**
      * Handle initialization error
      */
-    handleInitializationError(error: Error): void {
+    handleInitializationError (error: Error): void {
         console.error('Failed to initialize application:', error)
         const container = document.getElementById('app-container')
         if (container) {
@@ -209,27 +209,27 @@ class GTDApp implements AppState, AppDependencies {
     // STUB METHODS - To be implemented
     // =========================================================================
 
-    async loadData(): Promise<void> {
+    async loadData (): Promise<void> {
         // To be implemented
         console.log('loadData: Stub method')
     }
 
-    setupEventListeners(): void {
+    setupEventListeners (): void {
         // To be implemented
         console.log('setupEventListeners: Stub method')
     }
 
-    renderView(): void {
+    renderView (): void {
         // To be implemented
         console.log('renderView: Stub method')
     }
 
-    updateCounts(): void {
+    updateCounts (): void {
         // To be implemented
         console.log('updateCounts: Stub method')
     }
 
-    renderProjectsDropdown(): void {
+    renderProjectsDropdown (): void {
         // To be implemented
         console.log('renderProjectsDropdown: Stub method')
     }
@@ -238,27 +238,27 @@ class GTDApp implements AppState, AppDependencies {
     // CORE METHODS REQUIRED BY MODULES
     // =========================================================================
 
-    async saveTasks(): Promise<void> {
+    async saveTasks (): Promise<void> {
         // To be implemented
         console.log('saveTasks: Stub method')
     }
 
-    async saveProjects(): Promise<void> {
+    async saveProjects (): Promise<void> {
         // To be implemented
         console.log('saveProjects: Stub method')
     }
 
-    async saveTemplates(): Promise<void> {
+    async saveTemplates (): Promise<void> {
         // To be implemented
         console.log('saveTemplates: Stub method')
     }
 
-    saveState(description: string): void {
+    saveState (description: string): void {
         // To be implemented
         console.log('saveState: Stub method -', description)
     }
 
-    showNotification(title: string, type: 'success' | 'error' | 'warning' | 'info' = 'info'): void {
+    showNotification (title: string, type: 'success' | 'error' | 'warning' | 'info' = 'info'): void {
         // To be implemented
         console.log(`showNotification: ${type} - ${title}`)
     }

@@ -90,12 +90,12 @@ export interface GTDAppInterface {
 }
 
 // Export a function to get the app instance
-export function getApp(): GTDAppInterface {
+export function getApp (): GTDAppInterface {
     return window.app
 }
 
 // Initialize the app
-export async function initApp(): Promise<void> {
+export async function initApp (): Promise<void> {
     // The original app.js already initializes itself
     // This is just a TypeScript wrapper
     console.log('TypeScript app wrapper initialized')

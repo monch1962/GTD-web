@@ -16,7 +16,7 @@ export interface ValidationResult {
 /**
  * Validates if a context name is valid
  */
-export function validateContextName(
+export function validateContextName (
     name: string,
     existingContexts: string[] = []
 ): ValidationResult {
@@ -56,7 +56,7 @@ export function validateContextName(
 /**
  * Validates if a task title is valid
  */
-export function validateTaskTitle(title: string): ValidationResult {
+export function validateTaskTitle (title: string): ValidationResult {
     if (!title || title.trim().length === 0) {
         return { isValid: false, error: 'Task title cannot be empty' }
     }
@@ -71,7 +71,7 @@ export function validateTaskTitle(title: string): ValidationResult {
 /**
  * Validates if a project title is valid
  */
-export function validateProjectTitle(title: string): ValidationResult {
+export function validateProjectTitle (title: string): ValidationResult {
     if (!title || title.trim().length === 0) {
         return { isValid: false, error: 'Project title cannot be empty' }
     }
@@ -86,7 +86,7 @@ export function validateProjectTitle(title: string): ValidationResult {
 /**
  * Validates if a date string is valid
  */
-export function isValidDate(dateString: string): boolean {
+export function isValidDate (dateString: string): boolean {
     if (!dateString) return true // Empty is valid (optional field)
 
     const date = new Date(dateString)
@@ -96,7 +96,7 @@ export function isValidDate(dateString: string): boolean {
 /**
  * Validates if energy level is valid
  */
-export function isValidEnergyLevel(energy: string): boolean {
+export function isValidEnergyLevel (energy: string): boolean {
     const validLevels = ['', 'high', 'medium', 'low']
     return validLevels.includes(energy)
 }
@@ -104,14 +104,14 @@ export function isValidEnergyLevel(energy: string): boolean {
 /**
  * Validates if time estimate is valid
  */
-export function isValidTimeEstimate(time: number): boolean {
+export function isValidTimeEstimate (time: number): boolean {
     return time >= 0 && time <= 480 // Max 8 hours
 }
 
 /**
  * Validates if task status is valid
  */
-export function isValidTaskStatus(status: string): boolean {
+export function isValidTaskStatus (status: string): boolean {
     const validStatuses = ['inbox', 'next', 'waiting', 'someday', 'completed']
     return validStatuses.includes(status)
 }
@@ -119,7 +119,7 @@ export function isValidTaskStatus(status: string): boolean {
 /**
  * Validates if project status is valid
  */
-export function isValidProjectStatus(status: string): boolean {
+export function isValidProjectStatus (status: string): boolean {
     const validStatuses = ['active', 'someday', 'completed']
     return validStatuses.includes(status)
 }

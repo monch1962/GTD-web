@@ -34,7 +34,7 @@ export class SmartDateSuggestionsManager {
     private _unusedState: AppState
     private _unusedApp: AppDependencies
 
-    constructor(state: AppState, app: AppDependencies) {
+    constructor (state: AppState, app: AppDependencies) {
         this._unusedState = state // Required by pattern, not used in this module
         this._unusedApp = app // Required by pattern, not used in this module
     }
@@ -46,7 +46,7 @@ export class SmartDateSuggestionsManager {
     /**
      * Setup smart date suggestions for date inputs
      */
-    setupSmartDateSuggestions(): void {
+    setupSmartDateSuggestions (): void {
         const dueDateInput = document.getElementById('task-due-date') as HTMLInputElement | null
         const deferDateInput = document.getElementById('task-defer-date') as HTMLInputElement | null
 
@@ -63,7 +63,7 @@ export class SmartDateSuggestionsManager {
      * Setup date input suggestions for a specific input element
      * @param input - Date input element
      */
-    setupDateInputSuggestions(input: HTMLInputElement): void {
+    setupDateInputSuggestions (input: HTMLInputElement): void {
         // Create suggestion dropdown
         const suggestionsDiv = document.createElement('div')
         suggestionsDiv.className = 'date-suggestions'
@@ -138,7 +138,7 @@ export class SmartDateSuggestionsManager {
      * @param input - User input string
      * @returns - Array of date suggestion objects
      */
-    parseNaturalDate(input: string): DateSuggestion[] {
+    parseNaturalDate (input: string): DateSuggestion[] {
         const suggestions: DateSuggestion[] = []
         const now = new Date()
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())

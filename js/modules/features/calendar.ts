@@ -26,7 +26,7 @@ export class CalendarManager {
     private state: State
     private app: App
 
-    constructor(state: State, app: App) {
+    constructor (state: State, app: App) {
         this.state = state
         this.app = app
 
@@ -35,14 +35,14 @@ export class CalendarManager {
     }
 
     // Getter for calendarDate - uses app's calendarDate
-    get calendarDate(): Date {
+    get calendarDate (): Date {
         return this.app.calendarDate
     }
 
     /**
      * Setup calendar view functionality
      */
-    setupCalendarView(): void {
+    setupCalendarView (): void {
         const calendarBtn = document.getElementById('btn-calendar-view')
         const closeCalendarBtn = document.getElementById('close-calendar-modal')
 
@@ -62,7 +62,7 @@ export class CalendarManager {
     /**
      * Show calendar modal
      */
-    showCalendar(): void {
+    showCalendar (): void {
         const modal = document.getElementById('calendar-modal')
         if (!modal) return
 
@@ -73,7 +73,7 @@ export class CalendarManager {
     /**
      * Close calendar modal
      */
-    closeCalendar(): void {
+    closeCalendar (): void {
         const modal = document.getElementById('calendar-modal')
         if (modal) modal.style.display = 'none'
     }
@@ -81,7 +81,7 @@ export class CalendarManager {
     /**
      * Render calendar view
      */
-    renderCalendar(): void {
+    renderCalendar (): void {
         const calendarContent = document.getElementById('calendar-content')
         if (!calendarContent) return
 
@@ -170,13 +170,13 @@ export class CalendarManager {
                     <div style="font-weight: ${isToday ? 'bold' : 'normal'}; color: ${isWeekend ? 'var(--text-secondary)' : 'var(--text-primary)'}; margin-bottom: 4px;">${day}</div>
                     <div style="font-size: 0.75rem;">
                         ${dateTasks
-                            .slice(0, 3)
-                            .map(
-                                (task) => `
+        .slice(0, 3)
+        .map(
+            (task) => `
                             <div style="background: var(--accent-color); color: white; padding: 2px 4px; margin-bottom: 2px; border-radius: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${escapeHtml(task.title)}">${escapeHtml(task.title)}</div>
                         `
-                            )
-                            .join('')}
+        )
+        .join('')}
                         ${dateTasks.length > 3 ? `<div style="color: var(--text-secondary); font-size: 0.7rem;">+${dateTasks.length - 3} more</div>` : ''}
                     </div>
                 </div>
@@ -201,7 +201,7 @@ export class CalendarManager {
      * Navigate between months
      * @param direction - Direction to navigate (-1 for previous, 1 for next)
      */
-    navigateCalendar(direction: number): void {
+    navigateCalendar (direction: number): void {
         this.calendarDate.setMonth(this.calendarDate.getMonth() + direction)
         this.renderCalendar()
     }
@@ -212,7 +212,7 @@ export class CalendarManager {
      * @param month - Month (0-11)
      * @returns HTML string of tasks
      */
-    getTasksForMonth(year: number, month: number): string {
+    getTasksForMonth (year: number, month: number): string {
         const tasksDue = this.state.tasks.filter((t) => {
             if (!t.dueDate || t.completed) return false
             const dueDate = new Date(t.dueDate)
@@ -249,7 +249,7 @@ export class CalendarManager {
      * @param month - Month (0-11)
      * @param day - Day of month
      */
-    showTasksForDate(year: number, month: number, day: number): void {
+    showTasksForDate (year: number, month: number, day: number): void {
         const tasks = this.state.tasks.filter((t) => {
             if (!t.dueDate) return false
             const dueDate = new Date(t.dueDate)
@@ -276,7 +276,7 @@ export class CalendarManager {
      * Get current calendar date
      * @returns Current calendar date
      */
-    getCalendarDate(): Date {
+    getCalendarDate (): Date {
         return new Date(this.calendarDate)
     }
 
@@ -284,7 +284,7 @@ export class CalendarManager {
      * Set calendar date
      * @param date - Date to set
      */
-    setCalendarDate(date: Date): void {
+    setCalendarDate (date: Date): void {
         this.app.calendarDate = new Date(date)
         this.renderCalendar()
     }
@@ -292,7 +292,7 @@ export class CalendarManager {
     /**
      * Go to today in calendar
      */
-    goToToday(): void {
+    goToToday (): void {
         this.app.calendarDate = new Date()
         this.renderCalendar()
     }

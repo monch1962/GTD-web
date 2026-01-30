@@ -49,7 +49,7 @@ export class DependenciesManager {
     private app: AppDependencies
     public depsCurrentView: 'graph' | 'chains' | 'critical'
 
-    constructor(state: AppState, app: AppDependencies) {
+    constructor (state: AppState, app: AppDependencies) {
         this.state = state
         this.app = app
         this.depsCurrentView = 'graph'
@@ -58,7 +58,7 @@ export class DependenciesManager {
     /**
      * Setup dependencies visualization
      */
-    setupDependenciesVisualization(): void {
+    setupDependenciesVisualization (): void {
         // Button to open dependencies modal
         const depsBtn = document.getElementById('btn-dependencies')
         if (depsBtn) {
@@ -117,7 +117,7 @@ export class DependenciesManager {
     /**
      * Populate dependencies project filter
      */
-    populateDepsProjectFilter(): void {
+    populateDepsProjectFilter (): void {
         const projectFilter = document.getElementById('deps-filter-project')
         if (!projectFilter) return
 
@@ -138,7 +138,7 @@ export class DependenciesManager {
     /**
      * Open dependencies modal
      */
-    openDependenciesModal(): void {
+    openDependenciesModal (): void {
         const modal = document.getElementById('dependencies-modal')
         if (modal) {
             this.populateDepsProjectFilter()
@@ -150,7 +150,7 @@ export class DependenciesManager {
     /**
      * Close dependencies modal
      */
-    closeDependenciesModal(): void {
+    closeDependenciesModal (): void {
         const modal = document.getElementById('dependencies-modal')
         if (modal) {
             modal.classList.remove('active')
@@ -160,7 +160,7 @@ export class DependenciesManager {
     /**
      * Update dependencies view buttons
      */
-    updateDepsViewButtons(): void {
+    updateDepsViewButtons (): void {
         const buttons = {
             graph: document.getElementById('deps-view-graph'),
             chains: document.getElementById('deps-view-chains'),
@@ -184,7 +184,7 @@ export class DependenciesManager {
     /**
      * Render dependencies view
      */
-    renderDependenciesView(): void {
+    renderDependenciesView (): void {
         const projectFilter = document.getElementById('deps-filter-project') as HTMLSelectElement
         const projectId = projectFilter ? projectFilter.value : ''
         const tasks = this.getDependenciesTasks(projectId)
@@ -197,22 +197,22 @@ export class DependenciesManager {
         if (!container) return
 
         switch (this.depsCurrentView) {
-            case 'graph':
-                this.renderDependencyGraph(tasks, container)
-                break
-            case 'chains':
-                this.renderDependencyChains(tasks, container)
-                break
-            case 'critical':
-                this.renderCriticalPath(tasks, container)
-                break
+        case 'graph':
+            this.renderDependencyGraph(tasks, container)
+            break
+        case 'chains':
+            this.renderDependencyChains(tasks, container)
+            break
+        case 'critical':
+            this.renderCriticalPath(tasks, container)
+            break
         }
     }
 
     /**
      * Get tasks with dependencies
      */
-    getDependenciesTasks(projectId: string): Task[] {
+    getDependenciesTasks (projectId: string): Task[] {
         let tasks = this.state.tasks.filter((t) => !t.completed)
 
         if (projectId) {
@@ -225,7 +225,7 @@ export class DependenciesManager {
     /**
      * Update dependencies statistics
      */
-    updateDepsStats(tasks: Task[]): void {
+    updateDepsStats (tasks: Task[]): void {
         const totalTasks = tasks.length
         const withDeps = tasks.filter(
             (t) => t.waitingForTaskIds && t.waitingForTaskIds.length > 0
@@ -249,7 +249,7 @@ export class DependenciesManager {
     /**
      * Render dependency graph view
      */
-    renderDependencyGraph(tasks: Task[], container: HTMLElement): void {
+    renderDependencyGraph (tasks: Task[], container: HTMLElement): void {
         const tasksWithDeps = tasks.filter(
             (t) => t.waitingForTaskIds && t.waitingForTaskIds.length > 0
         )
@@ -309,7 +309,7 @@ export class DependenciesManager {
     /**
      * Calculate node positions for dependency graph
      */
-    calculateNodePositions(tasks: Task[]): Record<string, NodePosition> {
+    calculateNodePositions (tasks: Task[]): Record<string, NodePosition> {
         const positions: Record<string, NodePosition> = {}
         const levels: Record<string, number> = {}
         const levelGroups: Record<number, Task[]> = {}
@@ -355,7 +355,7 @@ export class DependenciesManager {
     /**
      * Calculate task level in dependency hierarchy
      */
-    calculateTaskLevel(task: Task, allTasks: Task[]): number {
+    calculateTaskLevel (task: Task, allTasks: Task[]): number {
         if (!task.waitingForTaskIds || task.waitingForTaskIds.length === 0) {
             return 0
         }
@@ -375,7 +375,7 @@ export class DependenciesManager {
     /**
      * Render dependency connection lines
      */
-    renderDependencyLines(
+    renderDependencyLines (
         tasks: Task[],
         positions: Record<string, NodePosition>,
         container: HTMLElement | null
@@ -425,7 +425,7 @@ export class DependenciesManager {
     /**
      * Render dependency chains view
      */
-    renderDependencyChains(tasks: Task[], container: HTMLElement): void {
+    renderDependencyChains (tasks: Task[], container: HTMLElement): void {
         const chains = this.buildDependencyChains(tasks)
 
         if (chains.length === 0) {
@@ -449,7 +449,7 @@ export class DependenciesManager {
     /**
      * Build dependency chains
      */
-    buildDependencyChains(tasks: Task[]): Task[][] {
+    buildDependencyChains (tasks: Task[]): Task[][] {
         const visited = new Set<string>()
         const chains: Task[][] = []
 
@@ -495,7 +495,7 @@ export class DependenciesManager {
     /**
      * Render a single dependency chain
      */
-    renderChain(chain: Task[]): string {
+    renderChain (chain: Task[]): string {
         const firstUncompleted = chain.findIndex((t) => !t.completed)
 
         return `
@@ -508,12 +508,12 @@ export class DependenciesManager {
                 </div>
                 <div class="dependency-chain-items">
                     ${chain
-                        .map((task, index) => {
-                            let itemClass = 'dependency-chain-item'
-                            if (task.completed) itemClass += ' completed'
-                            else if (index === firstUncompleted) itemClass += ' current'
+        .map((task, index) => {
+            let itemClass = 'dependency-chain-item'
+            if (task.completed) itemClass += ' completed'
+            else if (index === firstUncompleted) itemClass += ' current'
 
-                            return `
+            return `
                             <div class="${itemClass}" onclick="app.openTaskModal?.(app.tasks.find(t => t.id === '${task.id}'))">
                                 <div style="font-weight: 600; margin-bottom: 4px;">
                                     ${index + 1}. ${escapeHtml(task.title)}
@@ -524,8 +524,8 @@ export class DependenciesManager {
                             </div>
                             ${index < chain.length - 1 ? '<div class="dependency-chain-arrow">→</div>' : ''}
                         `
-                        })
-                        .join('')}
+        })
+        .join('')}
                 </div>
             </div>
         `
@@ -534,7 +534,7 @@ export class DependenciesManager {
     /**
      * Render critical path view
      */
-    renderCriticalPath(tasks: Task[], container: HTMLElement): void {
+    renderCriticalPath (tasks: Task[], container: HTMLElement): void {
         const criticalPath = this.calculateCriticalPath(tasks)
 
         if (criticalPath.length === 0) {
@@ -556,8 +556,8 @@ export class DependenciesManager {
                 </div>
                 <div class="critical-path-timeline">
                     ${criticalPath
-                        .map(
-                            (task, index) => `
+        .map(
+            (task, index) => `
                         <div class="critical-path-item ${task.completed ? 'completed' : ''}" style="position: relative;">
                             ${index < criticalPath.length - 1 ? '<div class="critical-path-connector"></div>' : ''}
                             <div class="critical-path-item-title">${escapeHtml(task.title)}</div>
@@ -566,8 +566,8 @@ export class DependenciesManager {
                             </div>
                         </div>
                     `
-                        )
-                        .join('')}
+        )
+        .join('')}
                 </div>
             </div>
         `
@@ -576,7 +576,7 @@ export class DependenciesManager {
     /**
      * Calculate critical path using longest path algorithm
      */
-    calculateCriticalPath(tasks: Task[]): Task[] {
+    calculateCriticalPath (tasks: Task[]): Task[] {
         // Build dependency graph
         const graph: Record<string, Task[]> = {}
         const inDegree: Record<string, number> = {}
@@ -639,7 +639,7 @@ export class DependenciesManager {
      * Get current dependencies view
      * @returns Current view mode
      */
-    getCurrentView(): 'graph' | 'chains' | 'critical' {
+    getCurrentView (): 'graph' | 'chains' | 'critical' {
         return this.depsCurrentView
     }
 
@@ -647,7 +647,7 @@ export class DependenciesManager {
      * Set dependencies view
      * @param view - View to set
      */
-    setCurrentView(view: 'graph' | 'chains' | 'critical'): void {
+    setCurrentView (view: 'graph' | 'chains' | 'critical'): void {
         this.depsCurrentView = view
         this.updateDepsViewButtons()
         this.renderDependenciesView()
@@ -658,7 +658,7 @@ export class DependenciesManager {
      * @param projectId - Optional project filter
      * @returns Dependencies statistics
      */
-    getDependencyStats(projectId: string | null = null): DependencyStats {
+    getDependencyStats (projectId: string | null = null): DependencyStats {
         const tasks = this.getDependenciesTasks(projectId || '')
         const totalTasks = tasks.length
         const withDeps = tasks.filter(

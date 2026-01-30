@@ -84,7 +84,7 @@ class GTDApp {
     history: any[]
     historyIndex: number
     searchQuery: string
-    constructor() {
+    constructor () {
         // Initialize state
         this.state = new AppState()
 
@@ -141,7 +141,7 @@ class GTDApp {
         this.historyIndex = -1
     }
 
-    async init() {
+    async init () {
         try {
             // Register service worker for PWA support
             if ('serviceWorker' in navigator) {
@@ -178,11 +178,11 @@ class GTDApp {
         }
     }
 
-    async initializeStorage() {
+    async initializeStorage () {
         return this.storageOps.initializeStorage()
     }
 
-    displayUserId() {
+    displayUserId () {
         const userIdElement = document.getElementById(ElementIds.userId)
         if (userIdElement) {
             const userId = this.storage.getUserId()
@@ -190,7 +190,7 @@ class GTDApp {
         }
     }
 
-    initializeCustomContexts() {
+    initializeCustomContexts () {
         const customContexts = localStorage.getItem('gtd_custom_contexts')
         if (customContexts) {
             try {
@@ -205,7 +205,7 @@ class GTDApp {
         }
     }
 
-    handleInitializationError(error) {
+    handleInitializationError (error) {
         console.error('Failed to initialize application:', error)
         const container = document.getElementById('app-container')
         if (container) {
@@ -219,7 +219,7 @@ class GTDApp {
         }
     }
 
-    setupEventListeners() {
+    setupEventListeners () {
         // Setup all module event listeners
         this.contextFilter.setup()
         this.searchManager.setupSearch()
@@ -281,7 +281,7 @@ class GTDApp {
         }
     }
 
-    setupModalCloseButtons(modalId, buttonIds, closeHandler) {
+    setupModalCloseButtons (modalId, buttonIds, closeHandler) {
         const modal = document.getElementById(modalId)
         if (!modal) return
 
@@ -295,23 +295,23 @@ class GTDApp {
 
     // ==================== VIEW MANAGEMENT ====================
 
-    switchView(view) {
+    switchView (view) {
         this.viewManager.switchView(view)
         // Update legacy property
         this.currentView = this.state.currentView
     }
 
-    renderView() {
+    renderView () {
         this.viewManager.renderView()
     }
 
     // ==================== TASK OPERATIONS ====================
 
-    async quickAddTask(title) {
+    async quickAddTask (title) {
         return this.taskOperations.quickAddTask(title)
     }
 
-    async handleQuickAdd() {
+    async handleQuickAdd () {
         const input = document.getElementById('quick-add-input') as HTMLInputElement | null
         if (!input) return
 
@@ -322,47 +322,47 @@ class GTDApp {
         input.value = ''
     }
 
-    async toggleTaskComplete(taskId) {
+    async toggleTaskComplete (taskId) {
         return this.taskOperations.toggleTaskComplete(taskId)
     }
 
-    async deleteTask(taskId) {
+    async deleteTask (taskId) {
         return this.taskOperations.deleteTask(taskId)
     }
 
-    async archiveTask(taskId: string) {
+    async archiveTask (taskId: string) {
         return this.archiveManager.archiveTask(taskId)
     }
 
-    async duplicateTask(taskId) {
+    async duplicateTask (taskId) {
         return this.taskOperations.duplicateTask(taskId)
     }
 
     // ==================== PROJECT OPERATIONS ====================
 
-    async deleteProject(projectId) {
+    async deleteProject (projectId) {
         return this.projectOperations.deleteProject(projectId)
     }
 
-    async archiveProject(projectId) {
+    async archiveProject (projectId) {
         return this.projectOperations.archiveProject(projectId)
     }
 
-    async restoreProject(projectId) {
+    async restoreProject (projectId) {
         return this.projectOperations.restoreProject(projectId)
     }
 
     // ==================== MODAL MANAGEMENT ====================
 
-    openTaskModal(task, defaultProjectId, defaultData) {
+    openTaskModal (task, defaultProjectId, defaultData) {
         this.taskModal.openTaskModal(task, defaultProjectId, defaultData)
     }
 
-    closeTaskModal() {
+    closeTaskModal () {
         this.taskModal.closeTaskModal()
     }
 
-    openProjectModal(project, pendingTaskData) {
+    openProjectModal (project, pendingTaskData) {
         // Project modal is handled through task-modal.js
         // The task modal supports both 'task' and 'project' types
         // Projects are created/edited using the same modal with type='project'
@@ -370,12 +370,12 @@ class GTDApp {
         this.taskModal.openTaskModal(project, null, { type: 'project' })
     }
 
-    closeProjectModal() {
+    closeProjectModal () {
         const modal = document.getElementById('project-modal')
         if (modal) modal.classList.remove('active')
     }
 
-    async saveProjectFromForm() {
+    async saveProjectFromForm () {
         const projectIdElement = document.getElementById('project-id') as HTMLInputElement | null
         const titleElement = document.getElementById('project-title') as HTMLInputElement | null
         const descriptionElement = document.getElementById(
@@ -448,107 +448,107 @@ class GTDApp {
 
     // ==================== SEARCH & FILTERING ====================
 
-    filterTasksBySearch(tasks) {
+    filterTasksBySearch (tasks) {
         return this.searchManager.filterTasksBySearch(tasks)
     }
 
     // ==================== SUBTASKS ====================
 
-    renderSubtasksInModal(subtasks) {
+    renderSubtasksInModal (subtasks) {
         this.taskModal.renderSubtasksInModal(subtasks)
     }
 
-    addSubtask() {
+    addSubtask () {
         this.taskModal.addSubtask()
     }
 
-    removeSubtask(index) {
+    removeSubtask (index) {
         this.taskModal.removeSubtask(index)
     }
 
-    toggleSubtaskCompletion(index) {
+    toggleSubtaskCompletion (index) {
         this.taskModal.toggleSubtaskCompletion(index)
     }
 
-    getSubtasksFromModal() {
+    getSubtasksFromModal () {
         return this.taskModal.getSubtasksFromModal()
     }
 
-    toggleSubtaskFromFocus(taskId, subtaskIndex) {
+    toggleSubtaskFromFocus (taskId, subtaskIndex) {
         return this.focusPomodoro.toggleSubtaskFromFocus(taskId, subtaskIndex)
     }
 
     // ==================== CONTEXT FILTER ====================
 
-    updateContextFilter() {
+    updateContextFilter () {
         this.contextFilter.updateContextFilter()
     }
 
-    clearContextFilters() {
+    clearContextFilters () {
         this.contextFilter.clearContextFilters()
     }
 
     // ==================== UNDO/REDO ====================
 
-    saveState(action) {
+    saveState (action) {
         this.undoRedo.saveState(action)
         // Update legacy properties
         this.history = this.undoRedo.history
         this.historyIndex = this.undoRedo.historyIndex
     }
 
-    undo() {
+    undo () {
         return this.undoRedo.undo()
     }
 
-    redo() {
+    redo () {
         return this.undoRedo.redo()
     }
 
     // ==================== NOTIFICATIONS ====================
 
-    showNotification(message: string, type: string = '', duration: number = 2000) {
+    showNotification (message: string, type: string = '', duration: number = 2000) {
         this.notifications.showNotification(message, type as any, duration)
     }
 
-    showToast(message) {
+    showToast (message) {
         this.notifications.showToast(message)
     }
 
     // ==================== FOCUS MODE ====================
 
-    enterFocusMode(taskId) {
+    enterFocusMode (taskId) {
         this.focusPomodoro.enterFocusMode(taskId)
         // Update legacy property
         this.focusTaskId = this.focusPomodoro.focusTaskId
     }
 
-    exitFocusMode() {
+    exitFocusMode () {
         return this.focusPomodoro.exitFocusMode()
     }
 
-    completeTaskAndExitFocus(taskId) {
+    completeTaskAndExitFocus (taskId) {
         return this.focusPomodoro.completeTaskAndExitFocus(taskId)
     }
 
-    editTaskFromFocus(taskId) {
+    editTaskFromFocus (taskId) {
         return this.focusPomodoro.editTaskFromFocus(taskId)
     }
 
     // ==================== TASK & PROJECT HELPERS ====================
 
-    normalizeContextName(context) {
+    normalizeContextName (context) {
         return context.startsWith('@') ? context : `@${context}`
     }
 
-    getProjectTitle(projectId) {
+    getProjectTitle (projectId) {
         const project = this.state.projects.find((p) => p.id === projectId)
         return project ? project.title : ''
     }
 
     // ==================== COUNTS & DROPDOWNS ====================
 
-    updateCounts() {
+    updateCounts () {
         const counts = {
             inbox: this.state.tasks.filter((t) => t.status === 'inbox').length,
             next: this.state.tasks.filter((t) => t.status === 'next').length,
@@ -569,7 +569,7 @@ class GTDApp {
         }
     }
 
-    renderProjectsDropdown() {
+    renderProjectsDropdown () {
         const dropdowns = document.querySelectorAll('.project-dropdown')
         const currentValue = {}
 
@@ -602,7 +602,7 @@ class GTDApp {
 
     // ==================== MIGRATION & MAINTENANCE ====================
 
-    async migrateBlockedTasksToWaiting() {
+    async migrateBlockedTasksToWaiting () {
         const hasMigrated = localStorage.getItem('gtd_migrated_blocked_to_waiting')
         if (hasMigrated === 'true') return
 
@@ -619,7 +619,7 @@ class GTDApp {
         localStorage.setItem('gtd_migrated_blocked_to_waiting', 'true')
     }
 
-    async checkWaitingTasksDependencies() {
+    async checkWaitingTasksDependencies () {
         const waitingTasks = this.state.tasks.filter(
             (t) => t.status === 'waiting' && t.waitingForTaskIds && t.waitingForTaskIds.length > 0
         )
@@ -640,39 +640,39 @@ class GTDApp {
 
     // ==================== DATA PERSISTENCE ====================
 
-    async saveTasks() {
+    async saveTasks () {
         return this.storageOps.saveTasks()
     }
 
-    async saveProjects() {
+    async saveProjects () {
         return this.storageOps.saveProjects()
     }
 
-    async saveTemplates() {
+    async saveTemplates () {
         return this.storageOps.saveTemplates()
     }
 
     // ==================== USAGE TRACKING ====================
 
-    loadUsageStats() {
+    loadUsageStats () {
         return this.state.loadUsageStats()
     }
 
-    saveUsageStats() {
+    saveUsageStats () {
         this.state.saveUsageStats()
     }
 
-    trackTaskUsage(task) {
+    trackTaskUsage (task) {
         this.state.trackTaskUsage(task)
     }
 
-    getSmartSuggestions(options) {
+    getSmartSuggestions (options) {
         return this.state.getSmartSuggestions(this.state.tasks, options)
     }
 
     // ==================== NAVIGATION ====================
 
-    updateNavigation() {
+    updateNavigation () {
         const navItems = document.querySelectorAll('.nav-item')
         const currentView = this.state.currentView
 
@@ -688,120 +688,120 @@ class GTDApp {
 
     // ==================== RECURRING TASKS ====================
 
-    getRecurrenceLabel(recurrence) {
+    getRecurrenceLabel (recurrence) {
         return this.taskModal.getRecurrenceLabel(recurrence)
     }
 
     // ==================== WAITING FOR TASKS ====================
 
-    renderWaitingForTasksList(currentTask) {
+    renderWaitingForTasksList (currentTask) {
         this.taskModal.renderWaitingForTasksList(currentTask)
     }
 
-    getSelectedWaitingForTasks() {
+    getSelectedWaitingForTasks () {
         return this.taskModal.getSelectedWaitingForTasks()
     }
 
     // ==================== TEMPLATES ====================
 
-    saveTaskAsTemplate(taskId) {
+    saveTaskAsTemplate (taskId) {
         this.templatesManager.saveTaskAsTemplate(taskId)
     }
 
-    createTaskFromTemplate(templateId) {
+    createTaskFromTemplate (templateId) {
         this.templatesManager.createTaskFromTemplate(templateId)
     }
 
-    editTemplate(templateId) {
+    editTemplate (templateId) {
         this.templatesManager.editTemplate(templateId)
     }
 
-    deleteTemplate(templateId) {
+    deleteTemplate (templateId) {
         this.templatesManager.deleteTemplate(templateId)
     }
 
     // ==================== CALENDAR ====================
 
-    showCalendar() {
+    showCalendar () {
         this.calendarManager.showCalendar()
     }
 
-    closeCalendar() {
+    closeCalendar () {
         this.calendarManager.closeCalendar()
     }
 
-    navigateCalendar(direction) {
+    navigateCalendar (direction) {
         this.calendarManager.navigateCalendar(direction)
     }
 
-    showTasksForDate(year, month, day) {
+    showTasksForDate (year, month, day) {
         this.calendarManager.showTasksForDate(year, month, day)
     }
 
     // ==================== DASHBOARD ====================
 
-    showDashboard() {
+    showDashboard () {
         this.dashboardManager.showDashboard()
     }
 
-    closeDashboard() {
+    closeDashboard () {
         this.dashboardManager.closeDashboard()
     }
 
     // ==================== ARCHIVE ====================
 
-    openArchiveModal() {
+    openArchiveModal () {
         this.archiveManager.openArchiveModal()
     }
 
-    closeArchiveModal() {
+    closeArchiveModal () {
         this.archiveManager.closeArchiveModal()
     }
 
-    restoreFromArchive(archiveId) {
+    restoreFromArchive (archiveId) {
         return this.archiveManager.restoreFromArchive(archiveId)
     }
 
-    deleteFromArchive(archiveId) {
+    deleteFromArchive (archiveId) {
         return this.archiveManager.deleteFromArchive(archiveId)
     }
 
     // ==================== DEPENDENCIES ====================
 
-    openDependenciesModal() {
+    openDependenciesModal () {
         this.dependenciesManager.openDependenciesModal()
     }
 
-    closeDependenciesModal() {
+    closeDependenciesModal () {
         this.dependenciesManager.closeDependenciesModal()
     }
 
     // ==================== BULK OPERATIONS ====================
 
-    toggleBulkSelectionMode() {
+    toggleBulkSelectionMode () {
         this.bulkSelection.toggleBulkSelectionMode()
         // Update legacy properties
         this.bulkSelectionMode = this.bulkSelection.bulkSelectionMode
         this.selectedTaskIds = this.bulkSelection.selectedTaskIds
     }
 
-    async bulkCompleteTasks() {
+    async bulkCompleteTasks () {
         await this.bulkSelection.bulkCompleteTasks()
     }
 
-    async bulkDeleteTasks() {
+    async bulkDeleteTasks () {
         await this.bulkSelection.bulkDeleteTasks()
     }
 
-    async bulkSetDueDate(date) {
+    async bulkSetDueDate (date) {
         await this.bulkSelection.bulkSetDueDate(date)
     }
 
-    async bulkSetProject(projectId) {
+    async bulkSetProject (projectId) {
         await this.bulkSelection.bulkSetProject(projectId)
     }
 
-    exitBulkSelectionMode() {
+    exitBulkSelectionMode () {
         this.bulkSelection.exitBulkSelectionMode()
         // Update legacy properties
         this.bulkSelectionMode = this.bulkSelection.bulkSelectionMode
@@ -810,7 +810,7 @@ class GTDApp {
 
     // ==================== KEYBOARD NAVIGATION ====================
 
-    selectTask(taskId) {
+    selectTask (taskId) {
         this.keyboardNav.selectTask(taskId)
         // Update legacy property
         this.selectedTaskId = this.keyboardNav.selectedTaskId
@@ -818,7 +818,7 @@ class GTDApp {
 
     // ==================== PRODUCTIVITY HEATMAP ====================
 
-    setupProductivityHeatmap() {
+    setupProductivityHeatmap () {
         const heatmapBtn = document.getElementById('btn-heatmap')
         if (heatmapBtn) {
             heatmapBtn.addEventListener('click', () => this.openHeatmapModal())
@@ -830,7 +830,7 @@ class GTDApp {
         }
     }
 
-    openHeatmapModal() {
+    openHeatmapModal () {
         const modal = document.getElementById('heatmap-modal')
         if (modal) {
             modal.classList.add('active')
@@ -838,14 +838,14 @@ class GTDApp {
         }
     }
 
-    closeHeatmapModal() {
+    closeHeatmapModal () {
         const modal = document.getElementById('heatmap-modal')
         if (modal) {
             modal.classList.remove('active')
         }
     }
 
-    renderProductivityHeatmap() {
+    renderProductivityHeatmap () {
         const container = document.getElementById('heatmap-container')
         if (!container) return
 
@@ -865,7 +865,7 @@ class GTDApp {
         this.renderHeatmapGrid(completionData, days, container)
     }
 
-    buildCompletionData(startDate, endDate) {
+    buildCompletionData (startDate, endDate) {
         const data = {}
         const currentDate = new Date(startDate)
         const endTime = new Date(endDate).getTime()
@@ -889,7 +889,7 @@ class GTDApp {
         return data
     }
 
-    updateHeatmapStats(completionData) {
+    updateHeatmapStats (completionData) {
         const totalDays = Object.keys(completionData).length
         const activeDays = Object.values(completionData).filter((count) => count > 0).length
         const totalTasks = Object.values(completionData).reduce((sum, count) => sum + count, 0)
@@ -906,7 +906,7 @@ class GTDApp {
         if (avgTasksEl) avgTasksEl.textContent = avgTasksPerDay
     }
 
-    renderHeatmapGrid(completionData, days, container) {
+    renderHeatmapGrid (completionData, days, container) {
         const weeks = Math.ceil(days / 7)
         const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
         const months = [
@@ -973,7 +973,7 @@ class GTDApp {
 
     // ==================== GANTT CHART ====================
 
-    openGanttChart(project) {
+    openGanttChart (project) {
         const modal = document.getElementById('gantt-modal')
         const title = document.getElementById('gantt-modal-title')
         title.textContent = `${project.title} - Gantt Chart`
@@ -982,11 +982,11 @@ class GTDApp {
         this.renderGanttChart(project)
     }
 
-    closeGanttModal() {
+    closeGanttModal () {
         document.getElementById('gantt-modal').classList.remove('active')
     }
 
-    renderGanttChart(project) {
+    renderGanttChart (project) {
         const container = document.getElementById('gantt-chart')
         if (!container) return
 

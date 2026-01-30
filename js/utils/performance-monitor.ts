@@ -21,7 +21,7 @@ export class PerformanceMonitor {
     private observers: Set<PerformanceObserver>
     private isEnabled: boolean
 
-    constructor() {
+    constructor () {
         this.metrics = new Map()
         this.observers = new Set()
         this.isEnabled =
@@ -33,7 +33,7 @@ export class PerformanceMonitor {
      * @param operationName - Name of the operation to measure
      * @returns Operation ID
      */
-    startMeasure(operationName: string): string | null {
+    startMeasure (operationName: string): string | null {
         if (!this.isEnabled) return null
 
         const operationId = `${operationName}_${Date.now()}`
@@ -54,7 +54,7 @@ export class PerformanceMonitor {
      * @param operationId - Operation ID from startMeasure
      * @returns Duration in milliseconds
      */
-    endMeasure(operationId: string): number {
+    endMeasure (operationId: string): number {
         if (!this.isEnabled || !this.metrics.has(operationId)) return 0
 
         const metric = this.metrics.get(operationId)!
@@ -80,7 +80,7 @@ export class PerformanceMonitor {
      * @param operation - Async function to measure
      * @returns Result of the operation
      */
-    async measureAsync<T>(operationName: string, operation: () => Promise<T>): Promise<T> {
+    async measureAsync<T> (operationName: string, operation: () => Promise<T>): Promise<T> {
         const operationId = this.startMeasure(operationName)
         if (!operationId) return operation()
 
@@ -100,7 +100,7 @@ export class PerformanceMonitor {
      * @param operation - Function to measure
      * @returns Result of the operation
      */
-    measureSync<T>(operationName: string, operation: () => T): T {
+    measureSync<T> (operationName: string, operation: () => T): T {
         const operationId = this.startMeasure(operationName)
         if (!operationId) return operation()
 
@@ -118,7 +118,7 @@ export class PerformanceMonitor {
      * Add an observer for performance metrics
      * @param observer - Callback function
      */
-    addObserver(observer: PerformanceObserver): void {
+    addObserver (observer: PerformanceObserver): void {
         this.observers.add(observer)
     }
 
@@ -126,14 +126,14 @@ export class PerformanceMonitor {
      * Remove an observer
      * @param observer - Callback function to remove
      */
-    removeObserver(observer: PerformanceObserver): void {
+    removeObserver (observer: PerformanceObserver): void {
         this.observers.delete(observer)
     }
 
     /**
      * Notify all observers of a new metric
      */
-    private notifyObservers(metric: PerformanceMetric): void {
+    private notifyObservers (metric: PerformanceMetric): void {
         this.observers.forEach((observer) => {
             try {
                 observer(metric)
@@ -147,7 +147,7 @@ export class PerformanceMonitor {
      * Get all recorded metrics
      * @returns Array of metrics
      */
-    getMetrics(): PerformanceMetric[] {
+    getMetrics (): PerformanceMetric[] {
         return Array.from(this.metrics.values())
     }
 
@@ -156,7 +156,7 @@ export class PerformanceMonitor {
      * @param operationName - Name of the operation
      * @returns Array of metrics for that operation
      */
-    getMetricsForOperation(operationName: string): PerformanceMetric[] {
+    getMetricsForOperation (operationName: string): PerformanceMetric[] {
         return this.getMetrics().filter((metric) => metric.name === operationName)
     }
 
@@ -165,7 +165,7 @@ export class PerformanceMonitor {
      * @param operationName - Name of the operation
      * @returns Average duration in milliseconds
      */
-    getAverageDuration(operationName: string): number {
+    getAverageDuration (operationName: string): number {
         const metrics = this.getMetricsForOperation(operationName)
         if (metrics.length === 0) return 0
 
@@ -177,7 +177,7 @@ export class PerformanceMonitor {
      * Get slowest operation
      * @returns Slowest metric or null
      */
-    getSlowestOperation(): PerformanceMetric | null {
+    getSlowestOperation (): PerformanceMetric | null {
         const metrics = this.getMetrics()
         if (metrics.length === 0) return null
 
@@ -191,7 +191,7 @@ export class PerformanceMonitor {
     /**
      * Clear all metrics
      */
-    clearMetrics(): void {
+    clearMetrics (): void {
         this.metrics.clear()
     }
 
@@ -199,7 +199,7 @@ export class PerformanceMonitor {
      * Generate performance report
      * @returns Performance report object
      */
-    generateReport(): Record<string, any> {
+    generateReport (): Record<string, any> {
         const metrics = this.getMetrics()
         const operations = new Set(metrics.map((m) => m.name))
 
@@ -240,7 +240,7 @@ export class PerformanceMonitor {
      * Enable or disable monitoring
      * @param enabled - Whether monitoring is enabled
      */
-    setEnabled(enabled: boolean): void {
+    setEnabled (enabled: boolean): void {
         this.isEnabled = enabled
     }
 
@@ -248,7 +248,7 @@ export class PerformanceMonitor {
      * Check if monitoring is enabled
      * @returns Whether monitoring is enabled
      */
-    isMonitoringEnabled(): boolean {
+    isMonitoringEnabled (): boolean {
         return this.isEnabled
     }
 }

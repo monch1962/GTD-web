@@ -40,7 +40,7 @@ export class SearchManager {
     private state: AppState
     private app: AppDependencies
 
-    constructor(state: AppState, app: AppDependencies) {
+    constructor (state: AppState, app: AppDependencies) {
         this.state = state
         this.app = app
 
@@ -67,7 +67,7 @@ export class SearchManager {
     /**
      * Setup search functionality
      */
-    setupSearch(): void {
+    setupSearch (): void {
         const searchInput = document.getElementById('global-search') as HTMLInputElement | null
         const clearSearchBtn = document.getElementById('clear-search') as HTMLButtonElement | null
         const advancedSearchPanel = document.getElementById(
@@ -120,8 +120,7 @@ export class SearchManager {
         ;[searchContext, searchEnergy, searchStatus, searchDue].forEach((filter) => {
             if (filter) {
                 filter.addEventListener('change', () => {
-                    if (searchContext)
-                        this.state.advancedSearchFilters!.context = searchContext.value
+                    if (searchContext) { this.state.advancedSearchFilters!.context = searchContext.value }
                     if (searchEnergy) this.state.advancedSearchFilters!.energy = searchEnergy.value
                     if (searchStatus) this.state.advancedSearchFilters!.status = searchStatus.value
                     if (searchDue) this.state.advancedSearchFilters!.due = searchDue.value
@@ -182,7 +181,7 @@ export class SearchManager {
     /**
      * Populate search contexts dropdown
      */
-    populateSearchContexts(selectElement: HTMLSelectElement | null): void {
+    populateSearchContexts (selectElement: HTMLSelectElement | null): void {
         if (!selectElement) return
 
         // Get all unique contexts
@@ -212,7 +211,7 @@ export class SearchManager {
     /**
      * Clear all search filters
      */
-    clearSearch(): void {
+    clearSearch (): void {
         this.state.searchQuery = ''
         this.state.advancedSearchFilters = {
             context: '',
@@ -248,7 +247,7 @@ export class SearchManager {
     /**
      * Clear advanced search filters only
      */
-    clearAdvancedSearch(): void {
+    clearAdvancedSearch (): void {
         this.state.advancedSearchFilters = {
             context: '',
             energy: '',
@@ -275,7 +274,7 @@ export class SearchManager {
     /**
      * Save current search as a saved search
      */
-    saveCurrentSearch(): void {
+    saveCurrentSearch (): void {
         const name = prompt('Name this search:')
         if (!name) return
 
@@ -297,7 +296,7 @@ export class SearchManager {
     /**
      * Load a saved search
      */
-    loadSavedSearch(searchId: string): void {
+    loadSavedSearch (searchId: string): void {
         const search = this.state.savedSearches!.find((s) => s.id === searchId)
         if (!search) return
 
@@ -336,7 +335,7 @@ export class SearchManager {
     /**
      * Delete a saved search
      */
-    deleteSavedSearch(searchId: string): void {
+    deleteSavedSearch (searchId: string): void {
         this.state.savedSearches = this.state.savedSearches!.filter((s) => s.id !== searchId)
         localStorage.setItem('gtd_saved_searches', JSON.stringify(this.state.savedSearches))
         this.renderSavedSearches()
@@ -355,7 +354,7 @@ export class SearchManager {
     /**
      * Update saved searches dropdown
      */
-    renderSavedSearches(): void {
+    renderSavedSearches (): void {
         const savedSearchesSelect = document.getElementById(
             'saved-searches'
         ) as HTMLSelectElement | null
@@ -388,7 +387,7 @@ export class SearchManager {
      * @param tasks - Tasks to filter
      * @returns Filtered tasks
      */
-    filterTasksBySearch(tasks: Task[]): Task[] {
+    filterTasksBySearch (tasks: Task[]): Task[] {
         if (
             !this.state.searchQuery &&
             !this.state.advancedSearchFilters!.context &&
@@ -445,34 +444,34 @@ export class SearchManager {
                 today.setHours(0, 0, 0, 0)
 
                 switch (this.state.advancedSearchFilters!.due) {
-                    case 'overdue': {
-                        if (!task.isOverdue()) return false
-                        break
-                    }
-                    case 'today': {
-                        if (!task.isDueToday()) return false
-                        break
-                    }
-                    case 'week': {
-                        if (!task.dueDate) return false
-                        const dueDate = new Date(task.dueDate)
-                        const weekFromNow = new Date(today)
-                        weekFromNow.setDate(weekFromNow.getDate() + 7)
-                        if (dueDate < today || dueDate > weekFromNow) return false
-                        break
-                    }
-                    case 'month': {
-                        if (!task.dueDate) return false
-                        const monthFromNow = new Date(today)
-                        monthFromNow.setMonth(monthFromNow.getMonth() + 1)
-                        const dueDateMonth = new Date(task.dueDate)
-                        if (dueDateMonth < today || dueDateMonth > monthFromNow) return false
-                        break
-                    }
-                    case 'nodate': {
-                        if (task.dueDate) return false
-                        break
-                    }
+                case 'overdue': {
+                    if (!task.isOverdue()) return false
+                    break
+                }
+                case 'today': {
+                    if (!task.isDueToday()) return false
+                    break
+                }
+                case 'week': {
+                    if (!task.dueDate) return false
+                    const dueDate = new Date(task.dueDate)
+                    const weekFromNow = new Date(today)
+                    weekFromNow.setDate(weekFromNow.getDate() + 7)
+                    if (dueDate < today || dueDate > weekFromNow) return false
+                    break
+                }
+                case 'month': {
+                    if (!task.dueDate) return false
+                    const monthFromNow = new Date(today)
+                    monthFromNow.setMonth(monthFromNow.getMonth() + 1)
+                    const dueDateMonth = new Date(task.dueDate)
+                    if (dueDateMonth < today || dueDateMonth > monthFromNow) return false
+                    break
+                }
+                case 'nodate': {
+                    if (task.dueDate) return false
+                    break
+                }
                 }
             }
 
@@ -484,7 +483,7 @@ export class SearchManager {
      * Get current search query
      * @returns Search query string
      */
-    getSearchQuery(): string {
+    getSearchQuery (): string {
         return this.state.searchQuery || ''
     }
 
@@ -492,7 +491,7 @@ export class SearchManager {
      * Get advanced search filters
      * @returns Advanced search filters object
      */
-    getAdvancedFilters(): AdvancedSearchFilters {
+    getAdvancedFilters (): AdvancedSearchFilters {
         return { ...this.state.advancedSearchFilters! }
     }
 
@@ -500,7 +499,7 @@ export class SearchManager {
      * Get all saved searches
      * @returns Array of saved searches
      */
-    getSavedSearches(): SavedSearch[] {
+    getSavedSearches (): SavedSearch[] {
         return [...(this.state.savedSearches || [])]
     }
 
@@ -508,7 +507,7 @@ export class SearchManager {
      * Check if search is active
      * @returns True if search is active
      */
-    isSearchActive(): boolean {
+    isSearchActive (): boolean {
         return (
             !!this.state.searchQuery ||
             !!this.state.advancedSearchFilters!.context ||

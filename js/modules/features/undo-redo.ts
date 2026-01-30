@@ -52,7 +52,7 @@ export class UndoRedoManager {
     private state: State
     private app: App
 
-    constructor(state: State, app: App) {
+    constructor (state: State, app: App) {
         this.state = state
         this.app = app
 
@@ -69,7 +69,7 @@ export class UndoRedoManager {
     /**
      * Setup the undo/redo system
      */
-    setupUndoRedo(): void {
+    setupUndoRedo (): void {
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             // Ctrl+Z for undo
@@ -106,10 +106,10 @@ export class UndoRedoManager {
      * Save current state to history
      * @param {string} action - Description of the action
      */
-    saveState(action: string): void {
+    saveState (action: string): void {
         // Save current state to history
         const state: HistoryState = {
-            action: action,
+            action,
             tasks: JSON.parse(JSON.stringify(this.state.tasks.map((t) => t.toJSON()))),
             projects: JSON.parse(JSON.stringify(this.state.projects.map((p) => p.toJSON()))),
             timestamp: new Date().toISOString()
@@ -134,7 +134,7 @@ export class UndoRedoManager {
     /**
      * Undo to previous state
      */
-    async undo(): Promise<void> {
+    async undo (): Promise<void> {
         if (this.state.historyIndex <= 0) return
 
         this.state.historyIndex--
@@ -158,7 +158,7 @@ export class UndoRedoManager {
     /**
      * Redo to next state
      */
-    async redo(): Promise<void> {
+    async redo (): Promise<void> {
         if (this.state.historyIndex >= this.state.history.length - 1) return
 
         this.state.historyIndex++
@@ -186,7 +186,7 @@ export class UndoRedoManager {
     /**
      * Update undo/redo button states
      */
-    updateUndoRedoButtons(): void {
+    updateUndoRedoButtons (): void {
         const undoBtn = document.getElementById('btn-undo') as HTMLButtonElement | null
         const redoBtn = document.getElementById('btn-redo') as HTMLButtonElement | null
 

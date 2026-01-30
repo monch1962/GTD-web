@@ -15,7 +15,7 @@ const mockLocalStorage = {
     setItem: jest.fn(),
     removeItem: jest.fn(),
     clear: jest.fn(),
-    get length() {
+    get length () {
         return 0
     },
     key: jest.fn()

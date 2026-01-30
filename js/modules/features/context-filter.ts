@@ -29,7 +29,7 @@ export class ContextFilterManager {
     private app: App
     private clearContextFiltersHandler: (() => void) | null
 
-    constructor(state: State, app: App) {
+    constructor (state: State, app: App) {
         this.state = state
         this.app = app
         this.clearContextFiltersHandler = null
@@ -38,7 +38,7 @@ export class ContextFilterManager {
     /**
      * Update context filter dropdown
      */
-    updateContextFilter(): void {
+    updateContextFilter (): void {
         const contextFilter = document.getElementById('context-filter')
 
         // Build set of all contexts from tasks and projects
@@ -77,7 +77,7 @@ export class ContextFilterManager {
     /**
      * Update sidebar context filters
      */
-    updateSidebarContextFilters(): void {
+    updateSidebarContextFilters (): void {
         const container = document.getElementById('context-filters')
         if (!container) return
 
@@ -125,7 +125,7 @@ export class ContextFilterManager {
      * Create a context filter checkbox element
      * @private
      */
-    private _createContextFilterElement(
+    private _createContextFilterElement (
         context: string,
         contextTaskCounts: Record<string, number>
     ): HTMLElement {
@@ -177,7 +177,7 @@ export class ContextFilterManager {
      * @param {string} context - Context to toggle
      * @param {boolean} isChecked - Whether context should be filtered
      */
-    toggleContextFilter(context: string, isChecked: boolean): void {
+    toggleContextFilter (context: string, isChecked: boolean): void {
         if (isChecked) {
             this.state.selectedContextFilters.add(context)
         } else {
@@ -197,7 +197,7 @@ export class ContextFilterManager {
     /**
      * Clear all context filters
      */
-    clearContextFilters(): void {
+    clearContextFilters (): void {
         this.state.selectedContextFilters = new Set<string>()
         this.app.renderView?.()
         this.updateSidebarContextFilters()
@@ -208,7 +208,7 @@ export class ContextFilterManager {
      * Get currently selected contexts
      * @returns {Array} Array of selected contexts
      */
-    getSelectedContexts(): string[] {
+    getSelectedContexts (): string[] {
         return Array.from(this.state.selectedContextFilters)
     }
 
@@ -217,7 +217,7 @@ export class ContextFilterManager {
      * @param {string} context - Context to check
      * @returns {boolean}
      */
-    isContextSelected(context: string): boolean {
+    isContextSelected (context: string): boolean {
         return this.state.selectedContextFilters.has(context)
     }
 
@@ -225,7 +225,7 @@ export class ContextFilterManager {
      * Get all unique contexts from tasks and projects
      * @returns {Set} Set of unique contexts
      */
-    getAllContexts(): Set<string> {
+    getAllContexts (): Set<string> {
         const contexts = new Set<string>()
 
         this.state.tasks.forEach((task) => {
@@ -248,14 +248,14 @@ export class ContextFilterManager {
      * @param {string} context - Context name
      * @returns {string} Normalized context name
      */
-    normalizeContextName(context: string): string {
+    normalizeContextName (context: string): string {
         return context.startsWith('@') ? context : `@${context}`
     }
 
     /**
      * Setup context filter event listeners
      */
-    setup(): void {
+    setup (): void {
         // Context filter is initialized during updateContextFilter
         // No additional setup needed
     }

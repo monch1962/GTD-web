@@ -38,7 +38,7 @@ export class AppError extends Error {
     timestamp: string
     userMessage: string
 
-    constructor(
+    constructor (
         message: string,
         category: ErrorCategoryType = ErrorCategory.UNKNOWN,
         severity: ErrorSeverityType = ErrorSeverity.MEDIUM,
@@ -56,7 +56,7 @@ export class AppError extends Error {
     /**
      * Get user-friendly error message
      */
-    getUserMessage(): string {
+    getUserMessage (): string {
         const messages: Record<ErrorCategoryType, string> = {
             [ErrorCategory.STORAGE]: 'Storage error occurred. Your data may not be saved.',
             [ErrorCategory.NETWORK]: 'Network error. Please check your connection.',
@@ -72,7 +72,7 @@ export class AppError extends Error {
     /**
      * Convert to plain object for serialization
      */
-    toJSON(): Record<string, any> {
+    toJSON (): Record<string, any> {
         return {
             name: this.name,
             message: this.message,
@@ -108,7 +108,7 @@ export class ErrorHandler {
     private options: ErrorHandlerOptions
     private notificationCallback?: (title: string, message: string, type: string) => void
 
-    constructor(options: Partial<ErrorHandlerOptions> = {}) {
+    constructor (options: Partial<ErrorHandlerOptions> = {}) {
         this.errors = []
         this.options = {
             maxErrors: 100,
@@ -122,7 +122,7 @@ export class ErrorHandler {
     /**
      * Set notification callback for showing user notifications
      */
-    setNotificationCallback(
+    setNotificationCallback (
         callback: (title: string, message: string, type: string) => void
     ): void {
         this.notificationCallback = callback
@@ -131,7 +131,7 @@ export class ErrorHandler {
     /**
      * Handle an error
      */
-    handle(error: Error | AppError, context: Record<string, any> = {}): boolean {
+    handle (error: Error | AppError, context: Record<string, any> = {}): boolean {
         const appError = error instanceof AppError ? error : this.wrapError(error)
         const report: ErrorReport = {
             error: appError,
@@ -167,7 +167,7 @@ export class ErrorHandler {
     /**
      * Wrap a standard Error in AppError
      */
-    private wrapError(error: Error): AppError {
+    private wrapError (error: Error): AppError {
         let category: ErrorCategoryType = ErrorCategory.UNKNOWN
         let severity: ErrorSeverityType = ErrorSeverity.MEDIUM
 
@@ -193,7 +193,7 @@ export class ErrorHandler {
     /**
      * Log error to console with appropriate level
      */
-    private logToConsole(error: AppError, context: Record<string, any>): void {
+    private logToConsole (error: AppError, context: Record<string, any>): void {
         const logLevels: Record<ErrorSeverityType, 'log' | 'warn' | 'error'> = {
             [ErrorSeverity.LOW]: 'log',
             [ErrorSeverity.MEDIUM]: 'warn',
@@ -219,7 +219,7 @@ export class ErrorHandler {
     /**
      * Show user notification
      */
-    private showNotification(error: AppError): void {
+    private showNotification (error: AppError): void {
         if (!this.notificationCallback) return
 
         const notificationTypes: Record<ErrorSeverityType, string> = {
@@ -236,21 +236,21 @@ export class ErrorHandler {
     /**
      * Attempt to recover from error
      */
-    private attemptRecovery(error: AppError, context: Record<string, any>): boolean {
+    private attemptRecovery (error: AppError, context: Record<string, any>): boolean {
         switch (error.category) {
-            case ErrorCategory.STORAGE:
-                return this.recoverFromStorageError(error, context)
-            case ErrorCategory.NETWORK:
-                return this.recoverFromNetworkError(error, context)
-            default:
-                return false
+        case ErrorCategory.STORAGE:
+            return this.recoverFromStorageError(error, context)
+        case ErrorCategory.NETWORK:
+            return this.recoverFromNetworkError(error, context)
+        default:
+            return false
         }
     }
 
     /**
      * Recover from storage errors
      */
-    private recoverFromStorageError(error: AppError, context: Record<string, any>): boolean {
+    private recoverFromStorageError (error: AppError, context: Record<string, any>): boolean {
         // Clear localStorage if quota exceeded
         if (error.message.includes('quota') || error.message.includes('full')) {
             try {
@@ -280,7 +280,7 @@ export class ErrorHandler {
     /**
      * Recover from network errors
      */
-    private recoverFromNetworkError(_error: AppError, context: Record<string, any>): boolean {
+    private recoverFromNetworkError (_error: AppError, context: Record<string, any>): boolean {
         // Network errors typically can't be auto-recovered
         // but we can retry the operation
         if (context.retryCount && context.retryCount < 3) {
@@ -294,21 +294,21 @@ export class ErrorHandler {
     /**
      * Get error history
      */
-    getErrorHistory(): ErrorReport[] {
+    getErrorHistory (): ErrorReport[] {
         return [...this.errors]
     }
 
     /**
      * Clear error history
      */
-    clearErrorHistory(): void {
+    clearErrorHistory (): void {
         this.errors = []
     }
 
     /**
      * Get error statistics
      */
-    getErrorStats(): Record<string, any> {
+    getErrorStats (): Record<string, any> {
         const stats: Record<string, any> = {
             total: this.errors.length,
             recovered: this.errors.filter((e) => e.recovered).length,
@@ -340,7 +340,7 @@ export const errorHandler = new ErrorHandler()
 /**
  * Setup global error handling for uncaught errors
  */
-export function setupGlobalErrorHandling(): void {
+export function setupGlobalErrorHandling (): void {
     // Handle uncaught errors
     window.addEventListener('error', (event) => {
         const error = new AppError(event.message, ErrorCategory.RUNTIME, ErrorSeverity.HIGH, {

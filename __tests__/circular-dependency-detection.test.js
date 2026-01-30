@@ -29,7 +29,7 @@ describe.skip('Circular Dependency Detection', () => {
         expect(appJsContent).toContain('visited.has')
     })
 
-    test("should check if dependent task is in prerequisite's dependency chain", () => {
+    test('should check if dependent task is in prerequisite\'s dependency chain', () => {
         // Verify the logic: searches forward from prerequisite to see if dependent is found
         expect(appJsContent).toContain('currentId === dependentTaskId')
         expect(appJsContent).toMatch(/waitingForTaskIds.*includes\(currentId\)/)

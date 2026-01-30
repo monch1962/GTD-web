@@ -42,7 +42,7 @@ export class VirtualScrollManager {
     private handleResize: () => void
     private debouncedUpdate: () => void
 
-    constructor(container: HTMLElement, options: VirtualScrollOptions = {}) {
+    constructor (container: HTMLElement, options: VirtualScrollOptions = {}) {
         this.container = container
         this.itemHeight = options.itemHeight || VirtualScrollConfig.ITEM_HEIGHT
         this.bufferItems = options.bufferItems || VirtualScrollConfig.BUFFER_ITEMS
@@ -81,7 +81,7 @@ export class VirtualScrollManager {
      * Initialize virtual scroll structure
      * @private
      */
-    private _init(): void {
+    private _init (): void {
         // Clear container
         this.container.innerHTML = ''
 
@@ -107,7 +107,7 @@ export class VirtualScrollManager {
      * @private
      * @returns Spacer element
      */
-    private _createSpacer(): HTMLElement {
+    private _createSpacer (): HTMLElement {
         const spacer = document.createElement('div')
         spacer.className = 'virtual-scroll-spacer'
         return spacer
@@ -118,7 +118,7 @@ export class VirtualScrollManager {
      * @private
      * @returns Viewport element
      */
-    private _createViewport(): HTMLElement {
+    private _createViewport (): HTMLElement {
         const viewport = document.createElement('div')
         viewport.className = 'virtual-scroll-viewport'
         return viewport
@@ -129,7 +129,7 @@ export class VirtualScrollManager {
      * @param items - Array of items
      * @param renderFn - Optional render function
      */
-    setItems(items: any[], renderFn?: (item: any, index: number) => HTMLElement): void {
+    setItems (items: any[], renderFn?: (item: any, index: number) => HTMLElement): void {
         this.items = items
         this.totalItems = items.length
         this.totalHeight = this.totalItems * this.itemHeight
@@ -149,7 +149,7 @@ export class VirtualScrollManager {
      * Update spacer heights
      * @private
      */
-    private _updateSpacers(): void {
+    private _updateSpacers (): void {
         if (!this.spacerTop || !this.spacerBottom) return
 
         // Top spacer represents items before visible range
@@ -163,7 +163,7 @@ export class VirtualScrollManager {
      * Update visible items based on scroll position
      * @private
      */
-    private _updateVisibleItems(): void {
+    private _updateVisibleItems (): void {
         if (!this.viewport || !this.spacerTop || !this.spacerBottom) return
 
         // Calculate visible range
@@ -213,7 +213,7 @@ export class VirtualScrollManager {
      * Handle scroll event
      * @private
      */
-    private _onScroll(): void {
+    private _onScroll (): void {
         this.scrollTop = this.container.scrollTop
         this.debouncedUpdate()
     }
@@ -222,7 +222,7 @@ export class VirtualScrollManager {
      * Handle resize event
      * @private
      */
-    private _onResize(): void {
+    private _onResize (): void {
         this.viewportHeight = this.container.clientHeight
         this._updateVisibleItems()
     }
@@ -231,7 +231,7 @@ export class VirtualScrollManager {
      * Scroll to specific item
      * @param index - Item index to scroll to
      */
-    scrollToItem(index: number): void {
+    scrollToItem (index: number): void {
         if (index < 0 || index >= this.totalItems) return
 
         const targetScrollTop = index * this.itemHeight
@@ -245,7 +245,7 @@ export class VirtualScrollManager {
      * Get visible item indices
      * @returns Array of visible item indices
      */
-    getVisibleIndices(): number[] {
+    getVisibleIndices (): number[] {
         const startIndex = Math.max(
             0,
             Math.floor(this.scrollTop / this.itemHeight) - this.bufferItems
@@ -267,7 +267,7 @@ export class VirtualScrollManager {
      * @param y - Y position relative to container
      * @returns Item index or -1 if not found
      */
-    getItemAtPosition(y: number): number {
+    getItemAtPosition (y: number): number {
         const absoluteY = this.scrollTop + y
         return Math.floor(absoluteY / this.itemHeight)
     }
@@ -279,7 +279,7 @@ export class VirtualScrollManager {
      * @param delay - Debounce delay in ms
      * @returns Debounced function
      */
-    private _debounce(func: Function, delay: number): () => void {
+    private _debounce (func: Function, delay: number): () => void {
         let timeoutId: ReturnType<typeof setTimeout>
         return function (this: any, ...args: any[]) {
             clearTimeout(timeoutId)
@@ -290,7 +290,7 @@ export class VirtualScrollManager {
     /**
      * Cleanup event listeners and DOM
      */
-    destroy(): void {
+    destroy (): void {
         this.container.removeEventListener('scroll', this.handleScroll)
         window.removeEventListener('resize', this.handleResize)
         this.container.innerHTML = ''

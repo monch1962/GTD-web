@@ -8,8 +8,7 @@
  * await dataExportImport.exportData();
  */
 
-import { Task } from '../../models'
-import { Project } from '../../models'
+import { Task, Project } from '../../models'
 import { createLogger } from '../utils/logger'
 
 interface State {
@@ -48,7 +47,7 @@ export class DataExportImportManager {
      * @param state - Application state object
      * @param app - Application instance with utility methods
      */
-    constructor(state: State, app: App) {
+    constructor (state: State, app: App) {
         this.state = state
         this.app = app
         this.logger = createLogger('DataExportImport')
@@ -61,7 +60,7 @@ export class DataExportImportManager {
      * @example
      * manager.setupDataExportImport();
      */
-    setupDataExportImport(): void {
+    setupDataExportImport (): void {
         const exportBtn = document.getElementById('btn-export')
         const importBtn = document.getElementById('btn-import')
         const fileInput = document.getElementById('import-file-input')
@@ -96,7 +95,7 @@ export class DataExportImportManager {
      * manager.exportData();
      * // Downloads file: gtd-backup-2025-01-09-14-30-15.json
      */
-    exportData(): void {
+    exportData (): void {
         try {
             const exportData = {
                 version: '1.0',
@@ -154,7 +153,7 @@ export class DataExportImportManager {
      * const file = fileInput.files[0];
      * await manager.importData(file);
      */
-    async importData(file: File): Promise<void> {
+    async importData (file: File): Promise<void> {
         try {
             // Confirm import with user
             const confirmMsg =
@@ -225,7 +224,7 @@ export class DataExportImportManager {
                 } catch (parseError) {
                     this.logger.error('Failed to parse import file:', parseError)
                     this.app.showError?.(
-                        "Failed to parse import file. Please make sure it's a valid GTD backup file."
+                        'Failed to parse import file. Please make sure it\'s a valid GTD backup file.'
                     )
                 }
             }

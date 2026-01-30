@@ -31,7 +31,7 @@ export class QuickCaptureWidgetManager {
     private state: State
     private app: App
 
-    constructor(state: State, app: App) {
+    constructor (state: State, app: App) {
         this.state = state
         this.app = app
     }
@@ -43,7 +43,7 @@ export class QuickCaptureWidgetManager {
     /**
      * Setup the quick capture widget
      */
-    setupQuickCapture(): void {
+    setupQuickCapture (): void {
         const toggleBtn = document.getElementById('quick-capture-toggle')
         const panel = document.getElementById('quick-capture-panel')
         const input = document.getElementById('quick-capture-input')
@@ -95,7 +95,7 @@ export class QuickCaptureWidgetManager {
     /**
      * Render context buttons in the quick capture panel
      */
-    renderQuickCaptureContexts(): void {
+    renderQuickCaptureContexts (): void {
         const container = document.getElementById('quick-capture-contexts')
         const input = document.getElementById('quick-capture-input')
 

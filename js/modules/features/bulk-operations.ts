@@ -37,7 +37,7 @@ export class BulkOperationsManager {
     private state: AppState
     private app: AppDependencies
 
-    constructor(state: AppState, app: AppDependencies) {
+    constructor (state: AppState, app: AppDependencies) {
         this.state = state
         this.app = app
 
@@ -53,7 +53,7 @@ export class BulkOperationsManager {
     /**
      * Setup bulk selection feature
      */
-    setupBulkSelection(): void {
+    setupBulkSelection (): void {
         const bulkSelectBtn = document.getElementById('btn-bulk-select')
         // @ts-ignore - used in other methods
         const bulkActionsBar = document.getElementById('bulk-actions-bar')
@@ -150,7 +150,7 @@ export class BulkOperationsManager {
     /**
      * Update bulk select button visibility based on task count
      */
-    updateBulkSelectButtonVisibility(): void {
+    updateBulkSelectButtonVisibility (): void {
         const bulkSelectBtn = document.getElementById('btn-bulk-select')
         const tasks = document.querySelectorAll('.task-item')
         if (bulkSelectBtn) {
@@ -161,15 +161,14 @@ export class BulkOperationsManager {
     /**
      * Toggle bulk selection mode
      */
-    toggleBulkSelectionMode(): void {
+    toggleBulkSelectionMode (): void {
         this.state.bulkSelectionMode = !this.state.bulkSelectionMode
         const bulkActionsBar = document.getElementById('bulk-actions-bar')
         const bulkSelectBtn = document.getElementById('btn-bulk-select')
 
         if (this.state.bulkSelectionMode) {
             if (bulkActionsBar) bulkActionsBar.style.display = 'flex'
-            if (bulkSelectBtn)
-                bulkSelectBtn.innerHTML = '<i class="fas fa-times"></i> Exit Selection'
+            if (bulkSelectBtn) { bulkSelectBtn.innerHTML = '<i class="fas fa-times"></i> Exit Selection' }
             this.app.renderView?.() // Re-render to show bulk checkboxes
         } else {
             this.exitBulkSelectionMode()
@@ -179,7 +178,7 @@ export class BulkOperationsManager {
     /**
      * Exit bulk selection mode
      */
-    exitBulkSelectionMode(): void {
+    exitBulkSelectionMode (): void {
         this.state.bulkSelectionMode = false
         this.state.selectedTaskIds.clear()
         const bulkActionsBar = document.getElementById('bulk-actions-bar')
@@ -199,7 +198,7 @@ export class BulkOperationsManager {
      * Toggle task selection in bulk mode
      * @param taskId - Task ID to toggle
      */
-    toggleBulkTaskSelection(taskId: string): void {
+    toggleBulkTaskSelection (taskId: string): void {
         if (this.state.selectedTaskIds.has(taskId)) {
             this.state.selectedTaskIds.delete(taskId)
         } else {
@@ -211,7 +210,7 @@ export class BulkOperationsManager {
     /**
      * Update selected count display and button states
      */
-    updateBulkSelectedCount(): void {
+    updateBulkSelectedCount (): void {
         const bulkSelectedCount = document.getElementById('bulk-selected-count')
         const bulkCompleteBtn = document.getElementById('btn-bulk-complete')
 
@@ -228,7 +227,7 @@ export class BulkOperationsManager {
     /**
      * Complete all selected tasks
      */
-    async bulkCompleteTasks(): Promise<void> {
+    async bulkCompleteTasks (): Promise<void> {
         if (this.state.selectedTaskIds.size === 0) return
 
         const completedCount = this.state.selectedTaskIds.size
@@ -252,7 +251,7 @@ export class BulkOperationsManager {
     /**
      * Select all visible tasks
      */
-    bulkSelectAllVisible(): void {
+    bulkSelectAllVisible (): void {
         const visibleTasks = document.querySelectorAll('.task-item')
         visibleTasks.forEach((taskElement) => {
             const taskId = (taskElement as HTMLElement).dataset.taskId
@@ -269,7 +268,7 @@ export class BulkOperationsManager {
     /**
      * Set status for all selected tasks
      */
-    async bulkSetStatus(): Promise<void> {
+    async bulkSetStatus (): Promise<void> {
         if (this.state.selectedTaskIds.size === 0) return
 
         const status = prompt('Enter status (inbox, next, waiting, someday):')
@@ -298,7 +297,7 @@ export class BulkOperationsManager {
     /**
      * Set energy level for all selected tasks
      */
-    async bulkSetEnergy(): Promise<void> {
+    async bulkSetEnergy (): Promise<void> {
         if (this.state.selectedTaskIds.size === 0) return
 
         const energy = prompt('Enter energy level (high, medium, low, or leave empty for none):')
@@ -326,7 +325,7 @@ export class BulkOperationsManager {
     /**
      * Move all selected tasks to a project
      */
-    async bulkSetProject(): Promise<void> {
+    async bulkSetProject (): Promise<void> {
         if (this.state.selectedTaskIds.size === 0) return
 
         // Simple prompt - could be enhanced with a custom modal
@@ -359,7 +358,7 @@ export class BulkOperationsManager {
     /**
      * Add context to all selected tasks
      */
-    async bulkAddContext(): Promise<void> {
+    async bulkAddContext (): Promise<void> {
         if (this.state.selectedTaskIds.size === 0) return
 
         const context = prompt('Enter context name (will be prefixed with @):')
@@ -390,7 +389,7 @@ export class BulkOperationsManager {
     /**
      * Set due date for all selected tasks
      */
-    async bulkSetDueDate(): Promise<void> {
+    async bulkSetDueDate (): Promise<void> {
         if (this.state.selectedTaskIds.size === 0) return
 
         const date = prompt('Enter due date (YYYY-MM-DD) or relative (today, tomorrow, in 3 days):')
@@ -437,7 +436,7 @@ export class BulkOperationsManager {
     /**
      * Delete all selected tasks
      */
-    async bulkDeleteTasks(): Promise<void> {
+    async bulkDeleteTasks (): Promise<void> {
         if (this.state.selectedTaskIds.size === 0) return
 
         const deletedCount = this.state.selectedTaskIds.size

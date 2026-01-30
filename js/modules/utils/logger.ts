@@ -48,7 +48,7 @@ export class Logger {
      * @param options.minLevel - Minimum log level to output (default: INFO)
      * @param options.enabled - Whether logging is enabled (default: true)
      */
-    constructor(module: string, options: LoggerOptions = {}) {
+    constructor (module: string, options: LoggerOptions = {}) {
         this.module = module
         this.minLevel = options.minLevel !== undefined ? options.minLevel : LogLevel.INFO
         this.enabled = options.enabled !== undefined ? options.enabled : true
@@ -72,7 +72,7 @@ export class Logger {
      * @param level - Log level to check
      * @returns True if should log
      */
-    private _shouldLog(level: LogLevelType): boolean {
+    private _shouldLog (level: LogLevelType): boolean {
         return this.enabled && level <= this.minLevel
     }
 
@@ -83,7 +83,7 @@ export class Logger {
      * @param message - Log message
      * @returns Formatted message
      */
-    private _format(level: string, message: string): string {
+    private _format (level: string, message: string): string {
         const timestamp = new Date().toISOString().split('T')[1].split('.')[0]
         return `[${timestamp}] [${this.module}] ${level}: ${message}`
     }
@@ -92,7 +92,7 @@ export class Logger {
      * Log debug message (detailed diagnostics)
      * @param args - Arguments to log
      */
-    debug(...args: any[]): void {
+    debug (...args: any[]): void {
         if (this._shouldLog(LogLevel.DEBUG)) {
             console.log(this._format('DEBUG', args[0]), ...args.slice(1))
         }
@@ -102,7 +102,7 @@ export class Logger {
      * Log info message (general information)
      * @param args - Arguments to log
      */
-    info(...args: any[]): void {
+    info (...args: any[]): void {
         if (this._shouldLog(LogLevel.INFO)) {
             console.log(this._format('INFO', args[0]), ...args.slice(1))
         }
@@ -112,7 +112,7 @@ export class Logger {
      * Log warning message (unexpected but recoverable)
      * @param args - Arguments to log
      */
-    warn(...args: any[]): void {
+    warn (...args: any[]): void {
         if (this._shouldLog(LogLevel.WARN)) {
             console.warn(this._format('WARN', args[0]), ...args.slice(1))
         }
@@ -122,7 +122,7 @@ export class Logger {
      * Log error message (critical issues)
      * @param args - Arguments to log
      */
-    error(...args: any[]): void {
+    error (...args: any[]): void {
         if (this._shouldLog(LogLevel.ERROR)) {
             console.error(this._format('ERROR', args[0]), ...args.slice(1))
         }
@@ -138,7 +138,7 @@ export class Logger {
      * // ... do work ...
      * endTimer();
      */
-    time(label: string): () => void {
+    time (label: string): () => void {
         if (!this._shouldLog(LogLevel.DEBUG)) {
             return () => {}
         }
@@ -161,7 +161,7 @@ export const LoggerConfig = {
      * Set global minimum log level
      * @param level - Minimum log level
      */
-    setMinLevel(level: LogLevelType): void {
+    setMinLevel (level: LogLevelType): void {
         ;(globalThis as any).__GTD_LOG_LEVEL__ = level
     },
 
@@ -169,7 +169,7 @@ export const LoggerConfig = {
      * Enable/disable all logging
      * @param enabled - Whether logging is enabled
      */
-    setEnabled(enabled: boolean): void {
+    setEnabled (enabled: boolean): void {
         ;(globalThis as any).__GTD_LOGGING_ENABLED__ = enabled
     }
 }
@@ -184,7 +184,7 @@ export const LoggerConfig = {
  * const logger = createLogger('MyModule');
  * logger.info('Something happened');
  */
-export function createLogger(module: string, options: LoggerOptions = {}): Logger {
+export function createLogger (module: string, options: LoggerOptions = {}): Logger {
     return new Logger(module, options)
 }
 

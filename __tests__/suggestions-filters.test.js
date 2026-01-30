@@ -25,9 +25,9 @@ describe.skip('Suggestions Modal Filters', () => {
             const funcBody = funcMatch[0]
 
             // Should get references to all filter selects
-            expect(funcBody).toContain("getElementById('suggestion-context')")
-            expect(funcBody).toContain("getElementById('suggestion-time')")
-            expect(funcBody).toContain("getElementById('suggestion-energy')")
+            expect(funcBody).toContain('getElementById(\'suggestion-context\')')
+            expect(funcBody).toContain('getElementById(\'suggestion-time\')')
+            expect(funcBody).toContain('getElementById(\'suggestion-energy\')')
 
             // Should add event listeners to all filters
             expect(funcBody).toContain('contextSelect.addEventListener')
@@ -35,7 +35,7 @@ describe.skip('Suggestions Modal Filters', () => {
             expect(funcBody).toContain('energySelect.addEventListener')
 
             // Should listen for 'change' events
-            expect(funcBody).toContain("'change'")
+            expect(funcBody).toContain('\'change\'')
         })
 
         test('should auto-update suggestions when filters change', () => {
@@ -71,7 +71,7 @@ describe.skip('Suggestions Modal Filters', () => {
             const funcBody = funcMatch[0]
 
             // Should have refresh button
-            expect(funcBody).toContain("getElementById('refresh-suggestions')")
+            expect(funcBody).toContain('getElementById(\'refresh-suggestions\')')
 
             // Refresh button should also trigger update
             expect(funcBody).toContain('refreshBtn.addEventListener')
@@ -90,9 +90,9 @@ describe.skip('Suggestions Modal Filters', () => {
             const funcBody = funcMatch[0]
 
             // Should get values from all three filters
-            expect(funcBody).toContain("getElementById('suggestion-context').value")
-            expect(funcBody).toContain("getElementById('suggestion-time').value")
-            expect(funcBody).toContain("getElementById('suggestion-energy').value")
+            expect(funcBody).toContain('getElementById(\'suggestion-context\').value')
+            expect(funcBody).toContain('getElementById(\'suggestion-time\').value')
+            expect(funcBody).toContain('getElementById(\'suggestion-energy\').value')
         })
 
         test('should pass filter values to getSmartSuggestions', () => {
@@ -244,7 +244,7 @@ describe.skip('Suggestions Modal Filters', () => {
             const funcBody = funcMatch[0]
 
             // Should have change event listeners
-            expect(funcBody).toContain("'change'")
+            expect(funcBody).toContain('\'change\'')
 
             // Number of change listeners should be >= number of filters
             const changeListeners = (funcBody.match(/'change'/g) || []).length

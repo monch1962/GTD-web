@@ -97,7 +97,7 @@ export class TaskModalManager {
      * @param {Function} app.updateCounts - Update task counts
      * @param {Function} app.updateContextFilter - Update context filter UI
      */
-    constructor(state: AppState, app: AppInterface) {
+    constructor (state: AppState, app: AppInterface) {
         this.state = state
         this.app = app
         this.pendingTaskData = null
@@ -109,7 +109,7 @@ export class TaskModalManager {
      * @param {string} defaultProjectId - Default project ID
      * @param {Object} defaultData - Default data for form fields
      */
-    openTaskModal(
+    openTaskModal (
         task: Task | null = null,
         defaultProjectId: string | null = null,
         defaultData: any = {}
@@ -310,7 +310,7 @@ export class TaskModalManager {
     /**
      * Close task modal
      */
-    closeTaskModal() {
+    closeTaskModal () {
         const modal = document.getElementById('task-modal')
         if (modal) {
             modal.classList.remove('active')
@@ -321,7 +321,7 @@ export class TaskModalManager {
      * Populate recurrence form fields
      * @param {string|object} recurrence - Recurrence configuration
      */
-    populateRecurrenceInForm(recurrence: string | RecurrencePattern | any) {
+    populateRecurrenceInForm (recurrence: string | RecurrencePattern | any) {
         // Reset all fields
         ;(document.getElementById('task-recurrence-type') as HTMLSelectElement).value = ''
         document.querySelectorAll('.recurrence-day-checkbox').forEach((cb: Element) => {
@@ -403,7 +403,7 @@ export class TaskModalManager {
      * Build recurrence object from form fields
      * @returns {string|object} Recurrence configuration
      */
-    buildRecurrenceFromForm(): string | RecurrencePattern {
+    buildRecurrenceFromForm (): string | RecurrencePattern {
         const recurrenceType = (
             document.getElementById('task-recurrence-type') as HTMLSelectElement
         ).value
@@ -486,7 +486,7 @@ export class TaskModalManager {
      * @param {string|object} recurrence - Recurrence value
      * @returns {string} Human-readable recurrence label
      */
-    getRecurrenceLabel(recurrence: string | RecurrencePattern | any): string {
+    getRecurrenceLabel (recurrence: string | RecurrencePattern | any): string {
         if (!recurrence) {
             return ''
         }
@@ -529,7 +529,7 @@ export class TaskModalManager {
      * Render subtasks in modal
      * @param {Array} subtasks - Array of subtasks
      */
-    renderSubtasksInModal(subtasks: Array<{ title: string; completed: boolean }>) {
+    renderSubtasksInModal (subtasks: Array<{ title: string; completed: boolean }>) {
         const container = document.getElementById('subtasks-container')
         if (!container) return
 
@@ -557,7 +557,7 @@ export class TaskModalManager {
     /**
      * Add a subtask
      */
-    addSubtask() {
+    addSubtask () {
         const input = document.getElementById('new-subtask-input') as HTMLInputElement
         const title = input.value.trim()
 
@@ -566,7 +566,7 @@ export class TaskModalManager {
         const currentSubtasks = this.getSubtasksFromModal()
 
         currentSubtasks.push({
-            title: title,
+            title,
             completed: false
         })
 
@@ -578,7 +578,7 @@ export class TaskModalManager {
      * Remove a subtask
      * @param {number} index - Subtask index
      */
-    removeSubtask(index: number) {
+    removeSubtask (index: number) {
         const currentSubtasks = this.getSubtasksFromModal()
         currentSubtasks.splice(index, 1)
         this.renderSubtasksInModal(currentSubtasks)
@@ -588,7 +588,7 @@ export class TaskModalManager {
      * Toggle subtask completion
      * @param {number} index - Subtask index
      */
-    toggleSubtaskCompletion(index: number) {
+    toggleSubtaskCompletion (index: number) {
         const currentSubtasks = this.getSubtasksFromModal()
         if (currentSubtasks[index]) {
             currentSubtasks[index].completed = !currentSubtasks[index].completed
@@ -600,7 +600,7 @@ export class TaskModalManager {
      * Get subtasks from modal
      * @returns {Array} Array of subtasks
      */
-    getSubtasksFromModal(): Array<{ title: string; completed: boolean }> {
+    getSubtasksFromModal (): Array<{ title: string; completed: boolean }> {
         const container = document.getElementById('subtasks-container')
         if (!container) return []
 
@@ -626,12 +626,12 @@ export class TaskModalManager {
      * Render waiting for tasks list (dependencies)
      * @param {Task} currentTask - Current task being edited
      */
-    renderWaitingForTasksList(currentTask: Task | null) {
+    renderWaitingForTasksList (currentTask: Task | null) {
         const container = document.getElementById('waiting-for-tasks-list')
         const currentTaskId = currentTask ? currentTask.id : null
 
         // Get all incomplete tasks except the current one
-        let availableTasks = this.state.tasks.filter(
+        const availableTasks = this.state.tasks.filter(
             (t) => !t.completed && t.id !== currentTaskId && t.status !== 'completed'
         )
 
@@ -717,7 +717,7 @@ export class TaskModalManager {
      * Get selected waiting for tasks (dependencies)
      * @returns {Array} Array of task IDs
      */
-    getSelectedWaitingForTasks(): string[] {
+    getSelectedWaitingForTasks (): string[] {
         const selectedIds: string[] = []
         const checkboxes = document.querySelectorAll(
             '#waiting-for-tasks-list input[type="checkbox"]:checked'
@@ -731,14 +731,14 @@ export class TaskModalManager {
     /**
      * Save task from form data
      */
-    async saveTaskFromForm() {
+    async saveTaskFromForm () {
         const taskId = (document.getElementById('task-id') as HTMLInputElement).value
         const tagsValue = (document.getElementById('task-contexts') as HTMLInputElement).value
         let tags = tagsValue
             ? tagsValue
-                  .split(',')
-                  .map((t) => t.trim())
-                  .filter((t) => t)
+                .split(',')
+                .map((t) => t.trim())
+                .filter((t) => t)
             : []
 
         // Ensure all contexts start with @
@@ -763,7 +763,7 @@ export class TaskModalManager {
         const waitingForDescription =
             (document.getElementById('task-waiting-for-description') as HTMLInputElement).value ||
             ''
-        let waitingForTaskIds = this.getSelectedWaitingForTasks()
+        const waitingForTaskIds = this.getSelectedWaitingForTasks()
 
         // GTD Rule: If task has dependencies and is in Next or Someday, automatically move to Waiting
         // This ensures blocked tasks are visible in the Waiting view
@@ -836,7 +836,7 @@ export class TaskModalManager {
                                 parseInt(
                                     (document.getElementById('task-time') as HTMLInputElement).value
                                 ) || 0,
-                            projectId: projectId,
+                            projectId,
                             contexts: tags,
                             dueDate:
                                 (document.getElementById('task-due-date') as HTMLInputElement)
@@ -844,8 +844,8 @@ export class TaskModalManager {
                             deferDate:
                                 (document.getElementById('task-defer-date') as HTMLInputElement)
                                     .value || null,
-                            waitingForDescription: waitingForDescription,
-                            waitingForTaskIds: waitingForTaskIds,
+                            waitingForDescription,
+                            waitingForTaskIds,
                             recurrence: this.buildRecurrenceFromForm(),
                             recurrenceEndDate:
                                 (
@@ -888,14 +888,14 @@ export class TaskModalManager {
                             document.getElementById('task-description') as HTMLTextAreaElement
                         ).value,
                         type: newType,
-                        status: status,
+                        status,
                         energy: (document.getElementById('task-energy') as HTMLSelectElement)
                             .value as any,
                         time:
                             parseInt(
                                 (document.getElementById('task-time') as HTMLInputElement).value
                             ) || 0,
-                        projectId: projectId,
+                        projectId,
                         contexts: tags,
                         dueDate:
                             (document.getElementById('task-due-date') as HTMLInputElement).value ||
@@ -903,8 +903,8 @@ export class TaskModalManager {
                         deferDate:
                             (document.getElementById('task-defer-date') as HTMLInputElement)
                                 .value || null,
-                        waitingForDescription: waitingForDescription,
-                        waitingForTaskIds: waitingForTaskIds,
+                        waitingForDescription,
+                        waitingForTaskIds,
                         recurrence: this.buildRecurrenceFromForm(),
                         recurrenceEndDate:
                             (
@@ -962,14 +962,14 @@ export class TaskModalManager {
                         document.getElementById('task-description') as HTMLTextAreaElement
                     ).value,
                     type: newType,
-                    status: status,
+                    status,
                     energy: (document.getElementById('task-energy') as HTMLSelectElement)
                         .value as any,
                     time:
                         parseInt(
                             (document.getElementById('task-time') as HTMLInputElement).value
                         ) || 0,
-                    projectId: projectId,
+                    projectId,
                     contexts: tags,
                     dueDate:
                         (document.getElementById('task-due-date') as HTMLInputElement).value ||
@@ -977,8 +977,8 @@ export class TaskModalManager {
                     deferDate:
                         (document.getElementById('task-defer-date') as HTMLInputElement).value ||
                         null,
-                    waitingForDescription: waitingForDescription,
-                    waitingForTaskIds: waitingForTaskIds,
+                    waitingForDescription,
+                    waitingForTaskIds,
                     recurrence: this.buildRecurrenceFromForm(),
                     recurrenceEndDate:
                         (document.getElementById('task-recurrence-end-date') as HTMLInputElement)
@@ -1017,7 +1017,7 @@ export class TaskModalManager {
     /**
      * Utility: Escape HTML
      */
-    escapeHtml(text: string): string {
+    escapeHtml (text: string): string {
         const div = document.createElement('div')
         div.textContent = text
         return div.innerHTML

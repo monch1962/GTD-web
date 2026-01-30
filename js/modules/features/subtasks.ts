@@ -41,7 +41,7 @@ export class SubtasksManager {
     private state: State
     private app: App
 
-    constructor(state: State, app: App) {
+    constructor (state: State, app: App) {
         this.state = state
         this.app = app
     }
@@ -54,7 +54,7 @@ export class SubtasksManager {
      * Render subtasks in the task modal
      * @param {Array} subtasks - Array of subtask objects
      */
-    renderSubtasksInModal(subtasks: Subtask[]): void {
+    renderSubtasksInModal (subtasks: Subtask[]): void {
         const container = document.getElementById('subtasks-container')
         if (!container) return
 
@@ -82,7 +82,7 @@ export class SubtasksManager {
     /**
      * Add a new subtask from the input field
      */
-    addSubtask(): void {
+    addSubtask (): void {
         const input = document.getElementById('new-subtask-input') as HTMLInputElement
         const title = input.value.trim()
 
@@ -91,7 +91,7 @@ export class SubtasksManager {
         const currentSubtasks = this.getSubtasksFromModal()
 
         currentSubtasks.push({
-            title: title,
+            title,
             completed: false
         })
 
@@ -103,7 +103,7 @@ export class SubtasksManager {
      * Remove a subtask by index
      * @param {number} index - Index of subtask to remove
      */
-    removeSubtask(index: number): void {
+    removeSubtask (index: number): void {
         const currentSubtasks = this.getSubtasksFromModal()
         currentSubtasks.splice(index, 1)
         this.renderSubtasksInModal(currentSubtasks)
@@ -113,7 +113,7 @@ export class SubtasksManager {
      * Toggle the completion status of a subtask
      * @param {number} index - Index of subtask to toggle
      */
-    toggleSubtaskCompletion(index: number): void {
+    toggleSubtaskCompletion (index: number): void {
         const currentSubtasks = this.getSubtasksFromModal()
         if (currentSubtasks[index]) {
             currentSubtasks[index].completed = !currentSubtasks[index].completed
@@ -125,7 +125,7 @@ export class SubtasksManager {
      * Extract subtasks from the modal UI
      * @returns {Array} Array of subtask objects
      */
-    getSubtasksFromModal(): Subtask[] {
+    getSubtasksFromModal (): Subtask[] {
         const container = document.getElementById('subtasks-container')
         if (!container) return []
 

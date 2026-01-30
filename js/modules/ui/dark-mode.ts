@@ -6,14 +6,14 @@
 export class DarkModeManager {
     private storageKey: string = 'gtd_dark_mode'
 
-    constructor() {
+    constructor () {
         // No initialization needed beyond property assignment
     }
 
     /**
      * Initialize dark mode from saved or system preference
      */
-    initializeDarkMode(): void {
+    initializeDarkMode (): void {
         // Check for saved preference or system preference
         const savedMode = localStorage.getItem(this.storageKey)
         const systemPrefersDark =
@@ -30,7 +30,7 @@ export class DarkModeManager {
     /**
      * Setup dark mode event listeners
      */
-    setupDarkMode(): void {
+    setupDarkMode (): void {
         const darkModeBtn = document.getElementById('btn-dark-mode') as HTMLButtonElement | null
         if (!darkModeBtn) return
 
@@ -58,7 +58,7 @@ export class DarkModeManager {
     /**
      * Toggle dark mode on/off
      */
-    toggleDarkMode(): void {
+    toggleDarkMode (): void {
         document.body.classList.toggle('dark-mode')
         const isDarkMode = document.body.classList.contains('dark-mode')
         localStorage.setItem(this.storageKey, String(isDarkMode))
@@ -69,7 +69,7 @@ export class DarkModeManager {
      * Set dark mode explicitly
      * @param enabled - Whether dark mode should be enabled
      */
-    setDarkMode(enabled: boolean): void {
+    setDarkMode (enabled: boolean): void {
         if (enabled) {
             document.body.classList.add('dark-mode')
         } else {
@@ -82,7 +82,7 @@ export class DarkModeManager {
     /**
      * Update dark mode button icon
      */
-    updateDarkModeButton(): void {
+    updateDarkModeButton (): void {
         const darkModeBtn = document.getElementById('btn-dark-mode') as HTMLButtonElement | null
         if (!darkModeBtn) return
 
@@ -96,7 +96,7 @@ export class DarkModeManager {
      * Check if dark mode is currently enabled
      * @returns boolean indicating if dark mode is enabled
      */
-    isDarkMode(): boolean {
+    isDarkMode (): boolean {
         return document.body.classList.contains('dark-mode')
     }
 
@@ -104,14 +104,14 @@ export class DarkModeManager {
      * Get current dark mode preference
      * @returns 'true', 'false', or null (auto)
      */
-    getPreference(): string | null {
+    getPreference (): string | null {
         return localStorage.getItem(this.storageKey)
     }
 
     /**
      * Clear saved preference (revert to auto)
      */
-    clearPreference(): void {
+    clearPreference (): void {
         localStorage.removeItem(this.storageKey)
         // Re-initialize with system preference
         this.initializeDarkMode()

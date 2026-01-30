@@ -32,7 +32,7 @@ export class TaskParser {
     private priorityPattern: RegExp
     private datePatterns: DatePatterns
 
-    constructor() {
+    constructor () {
         // Context pattern: @word or just "word" (common contexts)
         this.contextPattern =
             /@(\w+)|\b(home|work|personal|computer|phone|office|errands|shopping|calls|email)\b/gi
@@ -69,7 +69,7 @@ export class TaskParser {
      * @param input - Raw user input
      * @returns Parsed task data
      */
-    parse(input: string): ParsedTaskData {
+    parse (input: string): ParsedTaskData {
         const result: ParsedTaskData = {
             title: input,
             contexts: [],
@@ -122,7 +122,7 @@ export class TaskParser {
     /**
      * Extract contexts from input
      */
-    extractContexts(input: string): string[] {
+    extractContexts (input: string): string[] {
         const contexts: string[] = []
         const matches = input.match(this.contextPattern)
 
@@ -143,7 +143,7 @@ export class TaskParser {
     /**
      * Extract energy level from input
      */
-    extractEnergy(input: string): string {
+    extractEnergy (input: string): string {
         const match = input.match(this.energyPattern)
         if (match) {
             const energy = match[1].toLowerCase()
@@ -155,7 +155,7 @@ export class TaskParser {
     /**
      * Extract time estimate from input
      */
-    extractTime(input: string): number {
+    extractTime (input: string): number {
         const match = input.match(this.timePattern)
         if (match) {
             const amount = parseInt(match[1])
@@ -172,7 +172,7 @@ export class TaskParser {
     /**
      * Extract recurrence from input
      */
-    extractRecurrence(input: string): string {
+    extractRecurrence (input: string): string {
         const match = input.match(this.recurrencePattern)
         if (match) {
             const recurrence = match[1].toLowerCase()
@@ -188,14 +188,14 @@ export class TaskParser {
     /**
      * Extract priority/urgency flag
      */
-    extractPriority(input: string): boolean {
+    extractPriority (input: string): boolean {
         return this.priorityPattern.test(input)
     }
 
     /**
      * Extract due date from input
      */
-    extractDueDate(input: string): string | null {
+    extractDueDate (input: string): string | null {
         // Today
         if (this.datePatterns.today.test(input)) {
             return this.formatDate(new Date())
@@ -264,7 +264,7 @@ export class TaskParser {
     /**
      * Get the next occurrence of a weekday
      */
-    getNextWeekday(weekday: string, daysOffset: number): string {
+    getNextWeekday (weekday: string, daysOffset: number): string {
         const weekdays: Record<string, number> = {
             monday: 1,
             tuesday: 2,
@@ -292,7 +292,7 @@ export class TaskParser {
     /**
      * Remove parsed contexts from title
      */
-    removeFromTitle(title: string, contexts: string[], pattern: RegExp): string {
+    removeFromTitle (title: string, contexts: string[], pattern: RegExp): string {
         let cleanTitle = title
         contexts.forEach((context) => {
             // Remove with or without @
@@ -305,7 +305,7 @@ export class TaskParser {
     /**
      * Remove pattern match from title
      */
-    removeFromTitleByPattern(title: string, pattern: RegExp, textToRemove: string): string {
+    removeFromTitleByPattern (title: string, pattern: RegExp, textToRemove: string): string {
         if (!textToRemove && !pattern) return title
         return title.replace(pattern, '').trim()
     }
@@ -313,7 +313,7 @@ export class TaskParser {
     /**
      * Remove date strings from title
      */
-    titleWithoutDates(title: string): string {
+    titleWithoutDates (title: string): string {
         let cleanTitle = title
 
         // Remove all date patterns
@@ -327,7 +327,7 @@ export class TaskParser {
     /**
      * Clean up the final title
      */
-    cleanTitle(title: string): string {
+    cleanTitle (title: string): string {
         return title
             .replace(/\s+/g, ' ') // Collapse multiple spaces
             .replace(/@+/g, '@') // Collapse multiple @ symbols
@@ -339,7 +339,7 @@ export class TaskParser {
     /**
      * Format date as YYYY-MM-DD
      */
-    formatDate(date: Date): string {
+    formatDate (date: Date): string {
         const year = date.getFullYear()
         const month = String(date.getMonth() + 1).padStart(2, '0')
         const day = String(date.getDate()).padStart(2, '0')
@@ -349,7 +349,7 @@ export class TaskParser {
     /**
      * Get parsing examples for help text
      */
-    static getExamples(): string[] {
+    static getExamples (): string[] {
         return [
             'Call John @work tomorrow high energy',
             'Team meeting @computer weekly recurring',
