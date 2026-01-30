@@ -3,7 +3,7 @@
  */
 
 import { Task, Project, Template } from '../js/models'
-import { TaskOperations } from '../js/modules/features/task-operations.js'
+import { TaskOperations } from '../js/modules/features/task-operations.ts'
 
 describe('TaskOperations', () => {
     let taskOps
