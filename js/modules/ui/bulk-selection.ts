@@ -34,7 +34,7 @@ export class BulkSelection {
     private app: AppDependencies
     private selectedTaskIds: Set<string>
 
-    constructor(state: AppState, app: AppDependencies) {
+    constructor (state: AppState, app: AppDependencies) {
         this.state = state
         this.app = app
         this.selectedTaskIds = new Set()
@@ -43,7 +43,7 @@ export class BulkSelection {
     /**
      * Setup bulk selection event listeners
      */
-    setupBulkSelection(): void {
+    setupBulkSelection (): void {
         const bulkSelectBtn = document.getElementById('btn-bulk-select')
         const bulkCompleteBtn = document.getElementById('btn-bulk-complete')
         const bulkSelectAllBtn = document.getElementById('btn-bulk-select-all')
@@ -132,7 +132,7 @@ export class BulkSelection {
     /**
      * Update bulk select button visibility
      */
-    updateBulkSelectButtonVisibility(): void {
+    updateBulkSelectButtonVisibility (): void {
         const bulkSelectBtn = document.getElementById('btn-bulk-select')
         if (!bulkSelectBtn) return
 
@@ -143,7 +143,7 @@ export class BulkSelection {
     /**
      * Toggle bulk selection mode
      */
-    toggleBulkSelectionMode(): void {
+    toggleBulkSelectionMode (): void {
         this.state.bulkSelectionMode = !this.state.bulkSelectionMode
 
         if (this.state.bulkSelectionMode) {
@@ -160,7 +160,7 @@ export class BulkSelection {
      * Enter bulk selection mode
      * @private
      */
-    private enterBulkSelectionMode(): void {
+    private enterBulkSelectionMode (): void {
         // Clear any existing selection
         this.selectedTaskIds.clear()
         this.state.selectedTaskIds = this.selectedTaskIds
@@ -186,7 +186,7 @@ export class BulkSelection {
      * Exit bulk selection mode
      * @private
      */
-    private exitBulkSelectionMode(): void {
+    private exitBulkSelectionMode (): void {
         // Clear selection
         this.selectedTaskIds.clear()
         this.state.selectedTaskIds = this.selectedTaskIds
@@ -212,7 +212,7 @@ export class BulkSelection {
      * Update task selection UI
      * @private
      */
-    private _updateTaskSelectionUI(): void {
+    private _updateTaskSelectionUI (): void {
         const taskItems = document.querySelectorAll('.task-item')
         taskItems.forEach((item) => {
             const taskId = item.getAttribute('data-task-id')
@@ -228,7 +228,7 @@ export class BulkSelection {
      * Toggle task selection
      * @param taskId - Task ID to toggle
      */
-    toggleTaskSelection(taskId: string): void {
+    toggleTaskSelection (taskId: string): void {
         if (this.selectedTaskIds.has(taskId)) {
             this.selectedTaskIds.delete(taskId)
         } else {
@@ -249,7 +249,7 @@ export class BulkSelection {
      * Update bulk action buttons state
      * @private
      */
-    private _updateBulkActionButtons(): void {
+    private _updateBulkActionButtons (): void {
         const hasSelection = this.selectedTaskIds.size > 0
         const buttons = document.querySelectorAll(
             '#bulk-selection-toolbar button:not(#btn-bulk-cancel)'
@@ -267,7 +267,7 @@ export class BulkSelection {
     /**
      * Bulk select all visible tasks
      */
-    bulkSelectAllVisible(): void {
+    bulkSelectAllVisible (): void {
         const taskItems = document.querySelectorAll('.task-item')
         taskItems.forEach((item) => {
             const taskId = item.getAttribute('data-task-id')
@@ -287,7 +287,7 @@ export class BulkSelection {
     /**
      * Bulk complete selected tasks
      */
-    async bulkCompleteTasks(): Promise<void> {
+    async bulkCompleteTasks (): Promise<void> {
         if (this.selectedTaskIds.size === 0) return
 
         // Save state for undo
@@ -309,7 +309,7 @@ export class BulkSelection {
     /**
      * Bulk delete selected tasks
      */
-    async bulkDeleteTasks(): Promise<void> {
+    async bulkDeleteTasks (): Promise<void> {
         if (this.selectedTaskIds.size === 0) return
 
         if (!confirm(`Delete ${this.selectedTaskIds.size} selected task(s)?`)) {
@@ -335,7 +335,7 @@ export class BulkSelection {
     /**
      * Show bulk status menu
      */
-    showBulkStatusMenu(): void {
+    showBulkStatusMenu (): void {
         if (this.selectedTaskIds.size === 0) return
 
         // Create status menu
@@ -390,7 +390,7 @@ export class BulkSelection {
      * Bulk update task status
      * @param status - New status
      */
-    async bulkUpdateStatus(status: string): Promise<void> {
+    async bulkUpdateStatus (status: string): Promise<void> {
         if (this.selectedTaskIds.size === 0) return
 
         // Save state for undo
@@ -412,40 +412,260 @@ export class BulkSelection {
     /**
      * Show bulk energy menu
      */
-    showBulkEnergyMenu(): void {
-        // Similar implementation to showBulkStatusMenu
-        // For brevity, implementing the pattern
-        console.log('Show bulk energy menu')
+    showBulkEnergyMenu (): void {
+        const menu = document.createElement('div')
+        menu.className = 'bulk-menu'
+        menu.innerHTML = `
+            <div class="bulk-menu-item" data-energy="high">High Energy</div>
+            <div class="bulk-menu-item" data-energy="medium">Medium Energy</div>
+            <div class="bulk-menu-item" data-energy="low">Low Energy</div>
+            <div class="bulk-menu-item" data-energy="">No Energy</div>
+        `
+
+        document.body.appendChild(menu)
+
+        menu.querySelectorAll('.bulk-menu-item').forEach((option) => {
+            option.addEventListener('click', async (e) => {
+                const target = e.target as HTMLElement
+                const energy = target.getAttribute('data-energy') || ''
+                await this.bulkUpdateEnergy(energy)
+                document.body.removeChild(menu)
+            })
+        })
+
+        // Position menu near button
+        const energyBtn = document.getElementById('btn-bulk-energy')
+        if (energyBtn) {
+            const rect = energyBtn.getBoundingClientRect()
+            menu.style.position = 'absolute'
+            menu.style.top = `${rect.bottom + 5}px`
+            menu.style.left = `${rect.left}px`
+        }
+    }
+
+    /**
+     * Bulk update energy for selected tasks
+     * @param energy - New energy level
+     */
+    async bulkUpdateEnergy (energy: string): Promise<void> {
+        if (this.selectedTaskIds.size === 0) return
+
+        // Save state for undo
+        this.app.saveState?.(`Bulk update energy to ${energy || 'none'}`)
+
+        // Update each selected task
+        for (const taskId of this.selectedTaskIds) {
+            await this.app.updateTaskEnergy?.(taskId, energy)
+        }
+
+        // Clear selection and exit mode
+        this.exitBulkSelectionMode()
+
+        // Update UI
+        this.app.renderView?.()
+        this.app.updateCounts?.()
     }
 
     /**
      * Show bulk project menu
      */
-    showBulkProjectMenu(): void {
-        // Similar implementation to showBulkStatusMenu
-        console.log('Show bulk project menu')
+    showBulkProjectMenu (): void {
+        // Create project selection menu
+        const menu = document.createElement('div')
+        menu.className = 'bulk-menu'
+
+        // Add "No Project" option
+        menu.innerHTML = '<div class="bulk-menu-item" data-project-id="">No Project</div>'
+
+        // Add project options
+        if (this.app.renderProjectsDropdown) {
+            // This would need to be implemented to render project options
+            console.log('Project menu would show project options')
+        }
+
+        document.body.appendChild(menu)
+
+        menu.querySelectorAll('.bulk-menu-item').forEach((option) => {
+            option.addEventListener('click', async (e) => {
+                const target = e.target as HTMLElement
+                const projectId = target.getAttribute('data-project-id')
+                await this.bulkUpdateProject(projectId === '' ? null : projectId)
+                document.body.removeChild(menu)
+            })
+        })
+
+        // Position menu near button
+        const projectBtn = document.getElementById('btn-bulk-project')
+        if (projectBtn) {
+            const rect = projectBtn.getBoundingClientRect()
+            menu.style.position = 'absolute'
+            menu.style.top = `${rect.bottom + 5}px`
+            menu.style.left = `${rect.left}px`
+        }
+    }
+
+    /**
+     * Bulk update project for selected tasks
+     * @param projectId - New project ID or null for no project
+     */
+    async bulkUpdateProject (projectId: string | null): Promise<void> {
+        if (this.selectedTaskIds.size === 0) return
+
+        // Save state for undo
+        this.app.saveState?.('Bulk update project')
+
+        // Update each selected task
+        for (const taskId of this.selectedTaskIds) {
+            await this.app.updateTaskProject?.(taskId, projectId)
+        }
+
+        // Clear selection and exit mode
+        this.exitBulkSelectionMode()
+
+        // Update UI
+        this.app.renderView?.()
+        this.app.updateCounts?.()
     }
 
     /**
      * Show bulk context menu
      */
-    showBulkContextMenu(): void {
-        // Similar implementation to showBulkStatusMenu
-        console.log('Show bulk context menu')
+    showBulkContextMenu (): void {
+        const context = prompt('Enter context to add (with or without @):')
+        if (context === null) return // User cancelled
+
+        const trimmedContext = context.trim()
+        if (!trimmedContext) return // Empty input
+
+        // Ensure context starts with @
+        const formattedContext = trimmedContext.startsWith('@')
+            ? trimmedContext
+            : `@${trimmedContext}`
+
+        this.bulkAddContext(formattedContext)
+    }
+
+    /**
+     * Bulk add context to selected tasks
+     * @param context - Context to add (should start with @)
+     */
+    async bulkAddContext (context: string): Promise<void> {
+        if (this.selectedTaskIds.size === 0) return
+
+        // Save state for undo
+        this.app.saveState?.(`Bulk add context ${context}`)
+
+        // Update each selected task
+        for (const taskId of this.selectedTaskIds) {
+            // Get current task
+            const task = this.state.tasks.find((t) => t.id === taskId)
+            if (task) {
+                // Add context if not already present
+                const currentContexts = task.contexts || []
+                if (!currentContexts.includes(context)) {
+                    const newContexts = [...currentContexts, context]
+                    await this.app.updateTaskContexts?.(taskId, newContexts)
+                }
+            }
+        }
+
+        // Clear selection and exit mode
+        this.exitBulkSelectionMode()
+
+        // Update UI
+        this.app.renderView?.()
+        this.app.updateCounts?.()
     }
 
     /**
      * Show bulk due date menu
      */
-    showBulkDueDateMenu(): void {
-        // Similar implementation to showBulkStatusMenu
-        console.log('Show bulk due date menu')
+    showBulkDueDateMenu (): void {
+        const input = prompt('Enter due date (today, tomorrow, in X days, YYYY-MM-DD):')
+        if (input === null) return // User cancelled
+
+        const trimmedInput = input.trim()
+        if (!trimmedInput) return // Empty input
+
+        const dueDate = this._parseDueDate(trimmedInput)
+        if (dueDate) {
+            this.bulkUpdateDueDate(dueDate)
+        } else {
+            this.app.showNotification?.('Invalid date format', 'error')
+        }
+    }
+
+    /**
+     * Bulk update due date for selected tasks
+     * @param dueDate - New due date in YYYY-MM-DD format
+     */
+    async bulkUpdateDueDate (dueDate: string): Promise<void> {
+        if (this.selectedTaskIds.size === 0) return
+
+        // Save state for undo
+        this.app.saveState?.(`Bulk update due date to ${dueDate}`)
+
+        // Update each selected task
+        for (const taskId of this.selectedTaskIds) {
+            await this.app.updateTaskDueDate?.(taskId, dueDate)
+        }
+
+        // Clear selection and exit mode
+        this.exitBulkSelectionMode()
+
+        // Update UI
+        this.app.renderView?.()
+        this.app.updateCounts?.()
+    }
+
+    /**
+     * Parse due date input
+     * @private
+     */
+    private _parseDueDate (input: string): string | null {
+        const lowerInput = input.toLowerCase().trim()
+
+        if (lowerInput === 'today') {
+            return new Date().toISOString().split('T')[0]
+        }
+
+        if (lowerInput === 'tomorrow') {
+            const tomorrow = new Date()
+            tomorrow.setDate(tomorrow.getDate() + 1)
+            return tomorrow.toISOString().split('T')[0]
+        }
+
+        // Parse "in X days"
+        const daysMatch = lowerInput.match(/^in\s+(\d+)\s+days?$/)
+        if (daysMatch) {
+            const days = parseInt(daysMatch[1], 10)
+            const date = new Date()
+            date.setDate(date.getDate() + days)
+            return date.toISOString().split('T')[0]
+        }
+
+        // Parse "in X weeks"
+        const weeksMatch = lowerInput.match(/^in\s+(\d+)\s+weeks?$/)
+        if (weeksMatch) {
+            const weeks = parseInt(weeksMatch[1], 10)
+            const date = new Date()
+            date.setDate(date.getDate() + weeks * 7)
+            return date.toISOString().split('T')[0]
+        }
+
+        // Check if it's already in YYYY-MM-DD format
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/
+        if (dateRegex.test(input)) {
+            return input
+        }
+
+        return null
     }
 
     /**
      * Cancel bulk selection
      */
-    cancelBulkSelection(): void {
+    cancelBulkSelection (): void {
         this.exitBulkSelectionMode()
         this.app.renderView?.()
     }
@@ -454,7 +674,7 @@ export class BulkSelection {
      * Get selected task IDs
      * @returns Array of selected task IDs
      */
-    getSelectedTaskIds(): string[] {
+    getSelectedTaskIds (): string[] {
         return Array.from(this.selectedTaskIds)
     }
 
@@ -462,7 +682,57 @@ export class BulkSelection {
      * Get count of selected tasks
      * @returns Number of selected tasks
      */
-    getSelectedCount(): number {
+    getSelectedCount (): number {
         return this.selectedTaskIds.size
+    }
+
+    /**
+     * Check if bulk selection is active
+     * @returns True if bulk selection mode is active
+     */
+    isActive (): boolean {
+        return !!this.state.bulkSelectionMode
+    }
+
+    /**
+     * Check if a task is selected
+     * @param taskId - Task ID to check
+     * @returns True if task is selected
+     */
+    isTaskSelected (taskId: string): boolean {
+        return this.selectedTaskIds.has(taskId)
+    }
+
+    /**
+     * Toggle selection of a task
+     * @param taskId - Task ID to toggle
+     */
+    toggleBulkTaskSelection (taskId: string): void {
+        if (this.selectedTaskIds.has(taskId)) {
+            this.selectedTaskIds.delete(taskId)
+        } else {
+            this.selectedTaskIds.add(taskId)
+        }
+
+        // Update UI
+        this._updateBulkActionButtons()
+        this.updateBulkSelectedCount()
+    }
+
+    /**
+     * Update the selected count display
+     */
+    updateBulkSelectedCount (): void {
+        const countElement = document.getElementById('bulk-selected-count')
+        if (countElement) {
+            countElement.textContent = this.selectedTaskIds.size.toString()
+        }
+
+        // Update bulk complete button state
+        const completeBtn = document.getElementById('btn-bulk-complete') as HTMLButtonElement | null
+        if (completeBtn) {
+            completeBtn.disabled = this.selectedTaskIds.size === 0
+            completeBtn.style.opacity = this.selectedTaskIds.size === 0 ? '0.5' : '1'
+        }
     }
 }

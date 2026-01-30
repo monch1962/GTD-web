@@ -11,7 +11,7 @@ export class NotificationManager {
     private toasts: HTMLElement[]
     private defaultDuration: number
 
-    constructor() {
+    constructor () {
         this.toasts = []
         this.defaultDuration = 2000
     }
@@ -22,7 +22,7 @@ export class NotificationManager {
      * @param type - Notification type (success, error, info, warning)
      * @param duration - Duration in milliseconds
      */
-    showNotification(
+    showNotification (
         message: string,
         type: NotificationType = 'info',
         duration: number | null = null
@@ -44,7 +44,7 @@ export class NotificationManager {
      * Create a toast element
      * @private
      */
-    private _createToast(message: string, type: NotificationType): HTMLElement {
+    private _createToast (message: string, type: NotificationType): HTMLElement {
         const toast = document.createElement('div')
         toast.className = `toast-notification toast-${type}`
         toast.textContent = message
@@ -69,6 +69,11 @@ export class NotificationManager {
             transition: opacity 0.3s ease, transform 0.3s ease;
         `
 
+        // Add click to dismiss
+        toast.addEventListener('click', () => {
+            this._dismissToast(toast)
+        })
+
         // Add to toasts array
         this.toasts.push(toast)
 
@@ -86,7 +91,7 @@ export class NotificationManager {
      * @private
      * @param toast - Toast element to dismiss
      */
-    private _dismissToast(toast: HTMLElement): void {
+    private _dismissToast (toast: HTMLElement): void {
         // Remove from toasts array
         const index = this.toasts.indexOf(toast)
         if (index > -1) {
@@ -110,7 +115,7 @@ export class NotificationManager {
      * @param message - Success message
      * @param duration - Optional duration
      */
-    showSuccess(message: string, duration?: number): void {
+    showSuccess (message: string, duration?: number): void {
         this.showNotification(message, 'success', duration || null)
     }
 
@@ -119,7 +124,7 @@ export class NotificationManager {
      * @param message - Error message
      * @param duration - Optional duration
      */
-    showError(message: string, duration?: number): void {
+    showError (message: string, duration?: number): void {
         this.showNotification(message, 'error', duration || null)
     }
 
@@ -128,7 +133,7 @@ export class NotificationManager {
      * @param message - Info message
      * @param duration - Optional duration
      */
-    showInfo(message: string, duration?: number): void {
+    showInfo (message: string, duration?: number): void {
         this.showNotification(message, 'info', duration || null)
     }
 
@@ -137,42 +142,42 @@ export class NotificationManager {
      * @param message - Warning message
      * @param duration - Optional duration
      */
-    showWarning(message: string, duration?: number): void {
+    showWarning (message: string, duration?: number): void {
         this.showNotification(message, 'warning', duration || null)
     }
 
     /**
      * Show toast notification (alias for showNotification)
      */
-    showToast(message: string, type: string = 'info', duration?: number): void {
+    showToast (message: string, type: string = 'info', duration?: number): void {
         this.showNotification(message, type as any, duration)
     }
 
     /**
      * Convenience method for success notifications
      */
-    success(message: string, duration?: number): void {
+    success (message: string, duration?: number): void {
         this.showNotification(message, 'success', duration)
     }
 
     /**
      * Convenience method for error notifications
      */
-    error(message: string, duration?: number): void {
+    error (message: string, duration?: number): void {
         this.showNotification(message, 'error', duration)
     }
 
     /**
      * Convenience method for warning notifications
      */
-    warning(message: string, duration?: number): void {
+    warning (message: string, duration?: number): void {
         this.showNotification(message, 'warning', duration)
     }
 
     /**
      * Convenience method for info notifications
      */
-    info(message: string, duration?: number): void {
+    info (message: string, duration?: number): void {
         this.showNotification(message, 'info', duration)
     }
 
@@ -180,15 +185,17 @@ export class NotificationManager {
      * Dismiss a specific toast
      * @param toast - Toast element to dismiss
      */
-    dismissToast(toast: HTMLElement): void {
+    dismissToast (toast: HTMLElement): void {
         this._dismissToast(toast)
     }
 
     /**
      * Dismiss all active toasts
      */
-    dismissAll(): void {
-        this.toasts.forEach((toast) => {
+    dismissAll (): void {
+        // Create a copy to avoid modification during iteration
+        const toastsCopy = [...this.toasts]
+        toastsCopy.forEach((toast) => {
             this._dismissToast(toast)
         })
     }
@@ -197,7 +204,7 @@ export class NotificationManager {
      * Get count of active toasts
      * @returns Number of active toasts
      */
-    getActiveCount(): number {
+    getActiveCount (): number {
         return this.toasts.length
     }
 }

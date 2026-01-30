@@ -17,9 +17,9 @@
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:report": "playwright show-report",
     "test:e2e:install": "playwright install",
-    "lint": "eslint js/**/*.js __tests__/**/*.js",
-    "lint:fix": "eslint js/**/*.js __tests__/**/*.js --fix",
-    "lint:check": "eslint js/**/*.js __tests__/**/*.js --max-warnings 0",
+    "lint": "eslint js/**/*.{js,ts} __tests__/**/*.{js,ts}",
+    "lint:fix": "eslint js/**/*.{js,ts} __tests__/**/*.{js,ts} --fix",
+    "lint:check": "eslint js/**/*.{js,ts} __tests__/**/*.{js,ts} --max-warnings 0",
     "prepare": "husky"
   },
   "type": "module",
@@ -31,13 +31,13 @@
   "author": "",
   "license": "MIT",
   "lint-staged": {
-    "js/**/*.js": [
+    "js/**/*.{js,ts}": [
       "eslint --fix"
     ],
-    "__tests__/**/*.js": [
+    "__tests__/**/*.{js,ts}": [
       "eslint --fix"
     ],
-    "*.{js,json,css,md}": [
+    "*.{js,ts,json,css,md}": [
       "prettier --write"
     ]
   },

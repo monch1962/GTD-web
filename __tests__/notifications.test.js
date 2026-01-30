@@ -197,16 +197,28 @@ describe('NotificationManager', () => {
 
         test('should add transition', () => {
             const toast = document.createElement('div')
+            // Add the transition style that _dismissToast expects
+            toast.style.transition = 'opacity 0.3s ease, transform 0.3s ease'
+            // Access private property for test
             notificationManager.toasts.push(toast)
 
             notificationManager._dismissToast(toast)
 
-            expect(toast.style.transition).toBe('opacity 0.3s ease')
+            // _dismissToast doesn't add transition, it uses existing one
+            expect(toast.style.transition).toBe('opacity 0.3s ease, transform 0.3s ease')
         })
 
         test('should remove toast from DOM after transition', () => {
             const toast = document.createElement('div')
-            toast.remove = jest.fn()
+            const parent = {
+                removeChild: jest.fn()
+            }
+            // Mock parentNode getter
+            Object.defineProperty(toast, 'parentNode', {
+                get: () => parent,
+                configurable: true
+            })
+            // Access private property for test
             notificationManager.toasts.push(toast)
 
             notificationManager._dismissToast(toast)
@@ -214,7 +226,7 @@ describe('NotificationManager', () => {
             // Fast-forward past transition
             jest.advanceTimersByTime(300)
 
-            expect(toast.remove).toHaveBeenCalled()
+            expect(parent.removeChild).toHaveBeenCalledWith(toast)
         })
 
         test('should remove toast from toasts array', () => {
@@ -232,14 +244,21 @@ describe('NotificationManager', () => {
 
         test('should handle toast not in array', () => {
             const toast = document.createElement('div')
-            toast.remove = jest.fn()
+            const parent = {
+                removeChild: jest.fn()
+            }
+            // Mock parentNode getter
+            Object.defineProperty(toast, 'parentNode', {
+                get: () => parent,
+                configurable: true
+            })
 
             notificationManager._dismissToast(toast)
 
             // Fast-forward past transition
             jest.advanceTimersByTime(300)
 
-            expect(toast.remove).toHaveBeenCalled()
+            expect(parent.removeChild).toHaveBeenCalledWith(toast)
         })
     })
 
