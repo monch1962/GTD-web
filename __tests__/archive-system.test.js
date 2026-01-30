@@ -579,11 +579,14 @@ describe('Archive System Feature - Comprehensive Tests', () => {
                     title: 'Restored Task',
                     completed: true
                 },
-                archivedAt: '2025-01-08T00:00:00.000Z'
+                archivedAt: '2025-01-08T00:00:00.000Z',
+                originalStatus: 'completed',
+                originalProjectId: null
             }
 
+            jest.spyOn(window, 'confirm').mockReturnValue(true)
             jest.spyOn(app.storage, 'getArchivedTasks').mockReturnValue([archivedTask])
-            jest.spyOn(app.storage, 'saveArchivedTasks').mockResolvedValue()
+            jest.spyOn(app.storage, 'removeFromArchive').mockResolvedValue()
             jest.spyOn(app, 'saveTasks').mockResolvedValue()
             jest.spyOn(app, 'renderArchive')
             jest.spyOn(app, 'renderView')
@@ -593,7 +596,7 @@ describe('Archive System Feature - Comprehensive Tests', () => {
             await app.restoreFromArchive('task-1')
 
             expect(app.tasks.find((t) => t.id === 'task-1')).toBeTruthy()
-            expect(toastSpy).toHaveBeenCalledWith('Task restored')
+            expect(toastSpy).toHaveBeenCalledWith('Task "Restored Task" restored')
 
             jest.restoreAllMocks()
         })
@@ -604,17 +607,18 @@ describe('Archive System Feature - Comprehensive Tests', () => {
                 archivedAt: '2025-01-08T00:00:00.000Z'
             }
 
+            jest.spyOn(window, 'confirm').mockReturnValue(true)
             const getSpy = jest
                 .spyOn(app.storage, 'getArchivedTasks')
                 .mockReturnValue([archivedTask])
-            const saveSpy = jest.spyOn(app.storage, 'saveArchivedTasks').mockResolvedValue()
+            const removeSpy = jest.spyOn(app.storage, 'removeFromArchive').mockResolvedValue()
 
             await app.restoreFromArchive('task-1')
 
-            expect(saveSpy).toHaveBeenCalledWith([])
+            expect(removeSpy).toHaveBeenCalledWith('task-1')
 
             getSpy.mockRestore()
-            saveSpy.mockRestore()
+            removeSpy.mockRestore()
         })
 
         test('should save state before restoring', async () => {
@@ -623,8 +627,9 @@ describe('Archive System Feature - Comprehensive Tests', () => {
                 archivedAt: '2025-01-08T00:00:00.000Z'
             }
 
+            jest.spyOn(window, 'confirm').mockReturnValue(true)
             jest.spyOn(app.storage, 'getArchivedTasks').mockReturnValue([archivedTask])
-            jest.spyOn(app.storage, 'saveArchivedTasks').mockResolvedValue()
+            jest.spyOn(app.storage, 'removeFromArchive').mockResolvedValue()
             jest.spyOn(app, 'saveTasks').mockResolvedValue()
             jest.spyOn(app, 'renderArchive')
             jest.spyOn(app, 'renderView')
@@ -650,14 +655,14 @@ describe('Archive System Feature - Comprehensive Tests', () => {
 
             const confirmSpy = jest.spyOn(window, 'confirm').mockReturnValue(true)
             jest.spyOn(app.storage, 'getArchivedTasks').mockReturnValue([archivedTask])
-            const saveSpy = jest.spyOn(app.storage, 'saveArchivedTasks').mockResolvedValue()
+            const removeSpy = jest.spyOn(app.storage, 'removeFromArchive').mockResolvedValue()
             jest.spyOn(app, 'renderArchive')
             const toastSpy = jest.spyOn(app, 'showToast')
 
             await app.deleteFromArchive('task-1')
 
-            expect(saveSpy).toHaveBeenCalledWith([])
-            expect(toastSpy).toHaveBeenCalledWith('Archived task deleted')
+            expect(removeSpy).toHaveBeenCalledWith('task-1')
+            expect(toastSpy).toHaveBeenCalledWith('Task "Task" permanently deleted')
 
             confirmSpy.mockRestore()
             jest.restoreAllMocks()
@@ -750,11 +755,13 @@ describe('Archive System Feature - Comprehensive Tests', () => {
             const archivedEntry = {
                 task: task.toJSON(),
                 archivedAt: new Date().toISOString(),
-                completedAt: task.completedAt
+                originalStatus: 'completed',
+                originalProjectId: null
             }
 
+            jest.spyOn(window, 'confirm').mockReturnValue(true)
             jest.spyOn(app.storage, 'getArchivedTasks').mockReturnValue([archivedEntry])
-            jest.spyOn(app.storage, 'saveArchivedTasks').mockResolvedValue()
+            jest.spyOn(app.storage, 'removeFromArchive').mockResolvedValue()
             jest.spyOn(app, 'saveTasks').mockResolvedValue()
             jest.spyOn(app, 'renderArchive')
             jest.spyOn(app, 'renderView')
@@ -770,17 +777,17 @@ describe('Archive System Feature - Comprehensive Tests', () => {
             // Delete
             jest.spyOn(app.storage, 'getArchivedTasks').mockReturnValue([archivedEntry])
             jest.spyOn(window, 'confirm').mockReturnValue(true)
-            jest.spyOn(app.storage, 'saveArchivedTasks').mockResolvedValue()
+            jest.spyOn(app.storage, 'removeFromArchive').mockResolvedValue()
             jest.spyOn(app, 'renderArchive')
             jest.spyOn(app, 'showToast')
 
             await app.deleteFromArchive('task-1')
 
             // Should be deleted from archive
-            const saveSpy = jest.spyOn(app.storage, 'saveArchivedTasks')
-            expect(saveSpy).toHaveBeenCalledWith([])
+            const removeSpy = jest.spyOn(app.storage, 'removeFromArchive')
+            expect(removeSpy).toHaveBeenCalledWith('task-1')
 
-            saveSpy.mockRestore()
+            removeSpy.mockRestore()
             jest.restoreAllMocks()
         })
     })

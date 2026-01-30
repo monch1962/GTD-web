@@ -26,14 +26,19 @@ interface RemoteStorage {
 }
 
 export class Storage {
-    private userId: string | null
+    private _userId: string | null
     private listeners: Map<string, Array<(value: any) => void>>
     private QUOTA_WARNING_THRESHOLD: number
     private remoteStorage?: RemoteStorage
     private syncEnabled: boolean = false
 
+    // Public getter for userId
+    get userId(): string | null {
+        return this._userId
+    }
+
     constructor(userId: string | null = null) {
-        this.userId = userId || this.getUserId()
+        this._userId = userId || this.getUserId()
         this.listeners = new Map()
         this.QUOTA_WARNING_THRESHOLD = StorageConfig.QUOTA_WARNING_THRESHOLD
     }
