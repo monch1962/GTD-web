@@ -16,6 +16,8 @@ interface AppState {
     currentProjectId: string | null
     showingArchivedProjects: boolean
     selectedContextFilters: Set<string>
+    selectedTaskIds: Set<string>
+    filters: any
 }
 
 interface AppDependencies {
@@ -31,7 +33,7 @@ export class ViewManager {
     private taskRenderer: TaskRenderer
     private projectRenderer: ProjectRenderer
 
-    constructor (state: AppState, app: AppDependencies) {
+    constructor(state: AppState, app: AppDependencies) {
         this.state = state
         this.app = app
         this.taskRenderer = new TaskRenderer(state, app)
@@ -42,7 +44,7 @@ export class ViewManager {
      * Switch to a different view
      * @param view - View name
      */
-    switchView (view: string): void {
+    switchView(view: string): void {
         // Clear project filter when switching views
         this.state.currentProjectId = null
 
@@ -71,7 +73,7 @@ export class ViewManager {
      * View tasks for a specific project
      * @param projectId - Project ID
      */
-    viewProjectTasks (projectId: string): void {
+    viewProjectTasks(projectId: string): void {
         this.state.currentProjectId = projectId
 
         // Clear active nav items
@@ -124,7 +126,7 @@ export class ViewManager {
     /**
      * Render the current view
      */
-    renderView (): void {
+    renderView(): void {
         if (this.state.currentView === 'projects') {
             const container = document.getElementById('projects-container')
             if (container) {
@@ -146,7 +148,7 @@ export class ViewManager {
     /**
      * Render reference items
      */
-    renderReference (): void {
+    renderReference(): void {
         const container = document.getElementById('reference-container')
         if (!container) return
 
@@ -172,7 +174,7 @@ export class ViewManager {
     /**
      * Update count badges in navigation
      */
-    updateCounts (): void {
+    updateCounts(): void {
         const counts = {
             inbox: this.state.tasks.filter(
                 (t) => t.status === 'inbox' && !t.completed && !t.projectId
@@ -201,7 +203,7 @@ export class ViewManager {
     /**
      * Update context filter dropdown
      */
-    updateContextFilter (): void {
+    updateContextFilter(): void {
         const contextFilter = document.getElementById('context-filter')
         if (!contextFilter) return
 
@@ -238,7 +240,7 @@ export class ViewManager {
      * Update navigation active state
      * @private
      */
-    private _updateNavigationActiveState (view: string): void {
+    private _updateNavigationActiveState(view: string): void {
         // Update main navigation
         document.querySelectorAll('.nav-item').forEach((item) => {
             item.classList.remove('active')
@@ -260,7 +262,7 @@ export class ViewManager {
      * Update view title
      * @private
      */
-    private _updateViewTitle (view: string): void {
+    private _updateViewTitle(view: string): void {
         const baseTitle = (ViewLabels as Record<string, string>)[view] || view
         let title = baseTitle
 
@@ -280,7 +282,7 @@ export class ViewManager {
      * Toggle container visibility
      * @private
      */
-    private _toggleContainers (view: string): void {
+    private _toggleContainers(view: string): void {
         const tasksContainer = document.getElementById('tasks-container')
         const projectsContainer = document.getElementById('projects-container')
         const referenceContainer = document.getElementById('reference-container')
@@ -302,7 +304,7 @@ export class ViewManager {
      * Show tasks container
      * @private
      */
-    private _showTasksContainer (): void {
+    private _showTasksContainer(): void {
         const tasksContainer = document.getElementById('tasks-container')
         const projectsContainer = document.getElementById('projects-container')
         const referenceContainer = document.getElementById('reference-container')
@@ -316,7 +318,7 @@ export class ViewManager {
      * Create reference element
      * @private
      */
-    private _createReferenceElement (ref: Task): HTMLElement {
+    private _createReferenceElement(ref: Task): HTMLElement {
         const div = document.createElement('div')
         div.className = 'reference-item'
         div.dataset.referenceId = ref.id
@@ -330,14 +332,14 @@ export class ViewManager {
                 </div>
                 ${ref.description ? `<div class="reference-description">${escapeHtml(ref.description)}</div>` : ''}
                 ${
-    ref.contexts && ref.contexts.length > 0
-        ? `
+                    ref.contexts && ref.contexts.length > 0
+                        ? `
                     <div class="reference-contexts">
                         ${ref.contexts.map((ctx) => `<span class="task-context">${escapeHtml(ctx)}</span>`).join('')}
                     </div>
                 `
-        : ''
-}
+                        : ''
+                }
                 <div class="reference-meta">
                     <span class="reference-date">Added ${new Date(ref.createdAt).toLocaleDateString()}</span>
                 </div>
@@ -374,7 +376,7 @@ export class ViewManager {
      * Update count element
      * @private
      */
-    private _updateCount (elementId: string, count: number): void {
+    private _updateCount(elementId: string, count: number): void {
         const element = document.getElementById(elementId)
         if (element) {
             element.textContent = count > 0 ? count.toString() : ''
@@ -385,7 +387,7 @@ export class ViewManager {
      * Render empty state
      * @private
      */
-    private _renderEmptyState (message: string): string {
+    private _renderEmptyState(message: string): string {
         return `<div class="empty-state">
             <i class="fas fa-inbox fa-3x"></i>
             <p>${message}</p>
@@ -395,21 +397,21 @@ export class ViewManager {
     /**
      * Get task renderer instance
      */
-    getTaskRenderer (): TaskRenderer {
+    getTaskRenderer(): TaskRenderer {
         return this.taskRenderer
     }
 
     /**
      * Get project renderer instance
      */
-    getProjectRenderer (): ProjectRenderer {
+    getProjectRenderer(): ProjectRenderer {
         return this.projectRenderer
     }
 
     /**
      * Refresh current view
      */
-    refresh (): void {
+    refresh(): void {
         this.renderView()
         this.updateCounts()
     }
@@ -417,7 +419,7 @@ export class ViewManager {
     /**
      * Clean up
      */
-    destroy (): void {
+    destroy(): void {
         if (this.taskRenderer) {
             this.taskRenderer.destroy()
         }

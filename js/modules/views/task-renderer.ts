@@ -40,7 +40,7 @@ export class TaskRenderer {
     private currentContainer: HTMLElement | null
     private logger: ReturnType<typeof createLogger>
 
-    constructor (state: AppState, app: AppDependencies) {
+    constructor(state: AppState, app: AppDependencies) {
         this.state = state
         this.app = app // Reference to main app for callbacks
         this.virtualScroll = null
@@ -53,7 +53,7 @@ export class TaskRenderer {
      * @param container - Container element
      * @param filterFn - Optional filter function
      */
-    renderTasks (container: HTMLElement, filterFn: ((task: Task) => boolean) | null = null): void {
+    renderTasks(container: HTMLElement, filterFn: ((task: Task) => boolean) | null = null): void {
         this.currentContainer = container
 
         // Get filtered tasks
@@ -81,7 +81,7 @@ export class TaskRenderer {
      * @param container - Container element
      * @param tasks - Tasks to render
      */
-    private _renderWithVirtualScroll (container: HTMLElement, tasks: Task[]): void {
+    private _renderWithVirtualScroll(container: HTMLElement, tasks: Task[]): void {
         // Log activation for performance monitoring
         this.logger.debug(
             `Virtual scrolling ACTIVATED: ${tasks.length} tasks (threshold: ${VirtualScrollConfig.ACTIVATION_THRESHOLD})`
@@ -106,7 +106,7 @@ export class TaskRenderer {
      * @param container - Container element
      * @param tasks - Tasks to render
      */
-    private _renderRegular (container: HTMLElement, tasks: Task[]): void {
+    private _renderRegular(container: HTMLElement, tasks: Task[]): void {
         // Clean up virtual scroll if exists
         if (this.virtualScroll) {
             this.logger.debug(
@@ -132,7 +132,7 @@ export class TaskRenderer {
      * @param additionalFilter - Optional additional filter
      * @returns Filtered tasks
      */
-    private _getFilteredTasks (additionalFilter: ((task: Task) => boolean) | null = null): Task[] {
+    private _getFilteredTasks(additionalFilter: ((task: Task) => boolean) | null = null): Task[] {
         let filteredTasks = this.state.tasks.filter((task) => !task.completed)
 
         // Apply additional filter if provided
@@ -148,14 +148,14 @@ export class TaskRenderer {
      * @private
      * @param container - Container element
      */
-    private _initializeVirtualScroll (container: HTMLElement): void {
+    private _initializeVirtualScroll(container: HTMLElement): void {
         if (this.virtualScroll) {
             this.virtualScroll.destroy()
         }
 
         this.virtualScroll = new VirtualScrollManager(container, {
             itemHeight: VirtualScrollConfig.ITEM_HEIGHT,
-            bufferSize: VirtualScrollConfig.BUFFER_ITEMS,
+            bufferItems: VirtualScrollConfig.BUFFER_ITEMS,
             scrollDebounce: VirtualScrollConfig.DEBOUNCE_DELAY
         })
     }
@@ -166,7 +166,7 @@ export class TaskRenderer {
      * @param index - Task index in list
      * @returns Task element
      */
-    createTaskElement (task: Task, index: number): HTMLElement {
+    createTaskElement(task: Task, index: number): HTMLElement {
         const li = document.createElement('li')
         li.className = 'task-item'
         li.dataset.taskId = task.id
@@ -189,7 +189,7 @@ export class TaskRenderer {
      * @param task - Task object
      * @returns HTML string
      */
-    private _buildTaskHTML (task: Task): string {
+    private _buildTaskHTML(task: Task): string {
         const isOverdue = task.isOverdue()
         const isDueToday = task.isDueToday()
         const isStarred = task.starred
@@ -199,8 +199,8 @@ export class TaskRenderer {
         const contextTags =
             task.contexts && task.contexts.length > 0
                 ? task.contexts
-                    .map((ctx) => `<span class="task-context">${escapeHtml(ctx)}</span>`)
-                    .join('')
+                      .map((ctx) => `<span class="task-context">${escapeHtml(ctx)}</span>`)
+                      .join('')
                 : ''
 
         // Build due date indicator
@@ -270,21 +270,21 @@ export class TaskRenderer {
                 ${task.description ? `<div class="task-description">${escapeHtml(task.description)}</div>` : ''}
                 ${contextTags ? `<div class="task-contexts">${contextTags}</div>` : ''}
                 ${
-    task.subtasks && task.subtasks.length > 0
-        ? `<div class="task-subtasks">
+                    task.subtasks && task.subtasks.length > 0
+                        ? `<div class="task-subtasks">
                         ${task.subtasks
-        .map(
-            (sub) => `
+                            .map(
+                                (sub) => `
                             <div class="task-subtask ${sub.completed ? 'completed' : ''}">
                                 <input type="checkbox" ${sub.completed ? 'checked' : ''}>
                                 <span>${escapeHtml(sub.title)}</span>
                             </div>
                         `
-        )
-        .join('')}
+                            )
+                            .join('')}
                        </div>`
-        : ''
-}
+                        : ''
+                }
             </div>
         `
     }
@@ -295,7 +295,7 @@ export class TaskRenderer {
      * @param element - Task element
      * @param task - Task object
      */
-    private _attachTaskListeners (element: HTMLElement, task: Task): void {
+    private _attachTaskListeners(element: HTMLElement, task: Task): void {
         // Complete checkbox
         const checkbox = element.querySelector('.task-complete-checkbox')
         if (checkbox) {
@@ -374,7 +374,7 @@ export class TaskRenderer {
      * @param task - Task object
      * @param element - Task element
      */
-    private _showTaskContextMenu (event: MouseEvent, task: Task, element: HTMLElement): void {
+    private _showTaskContextMenu(event: MouseEvent, task: Task, element: HTMLElement): void {
         // Save state for undo
         this.app.saveState?.('Task context menu')
 
@@ -392,7 +392,7 @@ export class TaskRenderer {
      * @private
      * @param taskId - Task ID
      */
-    private _toggleTaskSelection (taskId: string): void {
+    private _toggleTaskSelection(taskId: string): void {
         if (!this.state.selectedTaskIds) {
             this.state.selectedTaskIds = new Set()
         }
@@ -423,7 +423,7 @@ export class TaskRenderer {
      * @param task - Parent task
      * @param subtaskIndex - Subtask index
      */
-    private _toggleSubtask (task: Task, subtaskIndex: number): void {
+    private _toggleSubtask(task: Task, subtaskIndex: number): void {
         if (!task.subtasks || subtaskIndex >= task.subtasks.length) {
             return
         }
@@ -446,7 +446,7 @@ export class TaskRenderer {
      * @param message - Empty state message
      * @returns HTML string
      */
-    private _renderEmptyState (message: string): string {
+    private _renderEmptyState(message: string): string {
         return `
             <div class="empty-state">
                 <div class="empty-state-icon">
@@ -462,7 +462,7 @@ export class TaskRenderer {
      * Scroll to specific task
      * @param taskId - Task ID to scroll to
      */
-    scrollToTask (taskId: string): void {
+    scrollToTask(taskId: string): void {
         if (!this.currentContainer) return
 
         const tasks = this._getFilteredTasks()
@@ -484,7 +484,7 @@ export class TaskRenderer {
     /**
      * Refresh rendering
      */
-    refresh (): void {
+    refresh(): void {
         if (this.currentContainer) {
             this.renderTasks(this.currentContainer)
         }
@@ -493,7 +493,7 @@ export class TaskRenderer {
     /**
      * Destroy virtual scroll manager
      */
-    destroy (): void {
+    destroy(): void {
         if (this.virtualScroll) {
             this.virtualScroll.destroy()
             this.virtualScroll = null

@@ -4,7 +4,7 @@
  */
 
 import { escapeHtml } from './dom-utils'
-import { PriorityThresholds, PriorityColors, PriorityLabels } from './constants'
+import { PriorityColors, PriorityLabels } from './constants'
 import { Task } from './models'
 
 interface TaskTemplateOptions {
@@ -29,7 +29,7 @@ export class TaskTemplates {
      * @param options - Rendering options
      * @returns HTML string
      */
-    static createTaskItem (task: Task, options: TaskTemplateOptions = {}): string {
+    static createTaskItem(task: Task, options: TaskTemplateOptions = {}): string {
         const {
             isBulkSelectMode = false,
             isBulkSelected = false,
@@ -40,10 +40,11 @@ export class TaskTemplates {
         return `
             <div class="task-item ${task.completed ? 'completed' : ''}" data-task-id="${task.id}">
                 <div class="task-drag-handle"><i class="fas fa-grip-vertical"></i></div>
-                ${isBulkSelectMode
-        ? `<input type="checkbox" class="bulk-select-checkbox" ${isBulkSelected ? 'checked' : ''}>`
-        : `<input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>`
-}
+                ${
+                    isBulkSelectMode
+                        ? `<input type="checkbox" class="bulk-select-checkbox" ${isBulkSelected ? 'checked' : ''}>`
+                        : `<input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>`
+                }
                 <div class="task-content">
                     <div class="task-title">${escapeHtml(task.title)}</div>
                     ${task.description ? `<div class="task-description">${escapeHtml(task.description)}</div>` : ''}
@@ -62,13 +63,18 @@ export class TaskTemplates {
      * Creates task metadata HTML
      * @private
      */
-    private static _createTaskMeta (task: Task, showPriority: boolean, showCountdown: boolean): string {
+    private static _createTaskMeta(
+        task: Task,
+        showPriority: boolean,
+        showCountdown: boolean
+    ): string {
         const metaItems: string[] = []
 
         // Priority indicator
-        if (showPriority && task.priority) {
-            const priority = task.priority
-            const color = PriorityColors[priority as keyof typeof PriorityColors] || PriorityColors.Medium
+        if (showPriority && (task as any).priority) {
+            const priority = (task as any).priority
+            const color =
+                PriorityColors[priority as keyof typeof PriorityColors] || PriorityColors.Medium
             const label = PriorityLabels[priority as keyof typeof PriorityLabels] || priority
             metaItems.push(`<span class="task-priority" style="color: ${color}">${label}</span>`)
         }
@@ -116,7 +122,7 @@ export class TaskTemplates {
      * Creates task action buttons HTML
      * @private
      */
-    private static _createTaskActions (task: Task): string {
+    private static _createTaskActions(task: Task): string {
         return `
             <button class="task-action edit" title="Edit task">
                 <i class="fas fa-edit"></i>
@@ -136,7 +142,7 @@ export class TaskTemplates {
      * @param icon - Icon class (default: fa-inbox)
      * @returns HTML string
      */
-    static createEmptyState (message: string, icon: string = 'fa-inbox'): string {
+    static createEmptyState(message: string, icon: string = 'fa-inbox'): string {
         return `
             <div class="empty-state">
                 <div class="empty-state-icon">
@@ -152,7 +158,7 @@ export class TaskTemplates {
      * @param message - Loading message
      * @returns HTML string
      */
-    static createLoadingSpinner (message: string = 'Loading...'): string {
+    static createLoadingSpinner(message: string = 'Loading...'): string {
         return `
             <div class="loading-spinner">
                 <div class="spinner"></div>
@@ -173,7 +179,11 @@ export class ProjectTemplates {
      * @param options - Rendering options
      * @returns HTML string
      */
-    static createProjectCard (project: any, taskCount: number, options: ProjectTemplateOptions = {}): string {
+    static createProjectCard(
+        project: any,
+        taskCount: number,
+        options: ProjectTemplateOptions = {}
+    ): string {
         const { showTaskCount = true, showStatus = true } = options
 
         return `
@@ -186,11 +196,16 @@ export class ProjectTemplates {
                     ${project.description ? `<p class="project-description">${escapeHtml(project.description)}</p>` : ''}
                     <div class="project-meta">
                         ${showTaskCount ? `<span class="project-task-count"><i class="fas fa-tasks"></i> ${taskCount} tasks</span>` : ''}
-                        ${project.contexts && project.contexts.length > 0
-        ? `<span class="project-contexts">${project.contexts
-            .map((ctx: string) => `<span class="context-tag">${escapeHtml(ctx)}</span>`)
-            .join('')}</span>`
-        : ''}
+                        ${
+                            project.contexts && project.contexts.length > 0
+                                ? `<span class="project-contexts">${project.contexts
+                                      .map(
+                                          (ctx: string) =>
+                                              `<span class="context-tag">${escapeHtml(ctx)}</span>`
+                                      )
+                                      .join('')}</span>`
+                                : ''
+                        }
                     </div>
                 </div>
                 <div class="project-actions">
@@ -221,7 +236,7 @@ export class ModalTemplates {
      * @param cancelText - Cancel button text
      * @returns HTML string
      */
-    static createConfirmationModal (
+    static createConfirmationModal(
         title: string,
         message: string,
         confirmText: string = 'Confirm',
@@ -253,7 +268,7 @@ export class ModalTemplates {
      * @param type - Alert type (success, error, warning, info)
      * @returns HTML string
      */
-    static createAlertModal (title: string, message: string, type: string = 'info'): string {
+    static createAlertModal(title: string, message: string, type: string = 'info'): string {
         const iconMap: Record<string, string> = {
             success: 'fa-check-circle',
             error: 'fa-exclamation-circle',

@@ -76,7 +76,7 @@ export class AppState {
     // Logger
     logger: ReturnType<typeof createLogger>
 
-    constructor () {
+    constructor() {
         this.logger = createLogger('AppState')
 
         // Core data
@@ -152,7 +152,7 @@ export class AppState {
      * Get current state as a plain object
      * @returns {Object} Current application state
      */
-    getState () {
+    getState() {
         return {
             tasks: this.tasks,
             projects: this.projects,
@@ -184,7 +184,7 @@ export class AppState {
      * Update multiple state properties at once
      * @param updates - Object containing properties to update
      */
-    setState (updates: Partial<AppState>) {
+    setState(updates: Partial<AppState>) {
         for (const key in updates) {
             if (Object.prototype.hasOwnProperty.call(updates, key)) {
                 // Check if property exists on AppState type
@@ -201,16 +201,16 @@ export class AppState {
      * Load usage statistics from localStorage
      * @returns {Object} Usage statistics
      */
-    loadUsageStats () {
+    loadUsageStats() {
         try {
             const stats = localStorage.getItem('gtd_usage_stats')
             return stats
                 ? JSON.parse(stats)
                 : {
-                    contexts: {},
-                    times: {},
-                    lastUpdated: null
-                }
+                      contexts: {},
+                      times: {},
+                      lastUpdated: null
+                  }
         } catch (error) {
             this.logger.warn('Failed to load usage stats:', error)
             return {
@@ -224,7 +224,7 @@ export class AppState {
     /**
      * Save usage statistics to localStorage
      */
-    saveUsageStats () {
+    saveUsageStats() {
         try {
             localStorage.setItem('gtd_usage_stats', JSON.stringify(this.usageStats))
             this.usageStats.lastUpdated = new Date().toISOString()
@@ -237,10 +237,10 @@ export class AppState {
      * Track task usage for smart defaults
      * @param {Task} task - The task to track
      */
-    trackTaskUsage (task) {
+    trackTaskUsage(task: Task) {
         // Track contexts
         if (task.contexts && task.contexts.length > 0) {
-            task.contexts.forEach((context) => {
+            task.contexts.forEach((context: string) => {
                 if (!this.usageStats.contexts[context]) {
                     this.usageStats.contexts[context] = 0
                 }
@@ -263,7 +263,7 @@ export class AppState {
     /**
      * Reset state to defaults
      */
-    reset () {
+    reset() {
         this.currentView = 'inbox'
         this.currentProjectId = null
         this.filters = { context: '', energy: '', time: '' }
@@ -282,7 +282,10 @@ export class AppState {
      * @param {Object} options - Filter options
      * @returns {Array} Array of suggested tasks with scores
      */
-    getSmartSuggestions (tasks = this.tasks, options = {}) {
+    getSmartSuggestions(
+        tasks: Task[] = this.tasks,
+        options: any = {}
+    ): Array<{ task: Task; score: number; reasons: string[] }> {
         const { maxSuggestions = 10, context = null, time = null, energy = null } = options
 
         // Get active next action tasks
@@ -302,7 +305,7 @@ export class AppState {
         }
 
         // Score tasks based on multiple factors
-        suggestions = suggestions.map((task) => {
+        const scoredSuggestions = suggestions.map((task) => {
             let score = 0
             const reasons = []
 
@@ -315,7 +318,7 @@ export class AppState {
             // Due date urgency
             if (task.dueDate) {
                 const daysUntilDue = Math.ceil(
-                    (new Date(task.dueDate) - new Date()) / (1000 * 60 * 60 * 24)
+                    ((new Date(task.dueDate) as any) - (new Date() as any)) / (1000 * 60 * 60 * 24)
                 )
                 if (daysUntilDue <= 0) {
                     score += 40 // Overdue
@@ -356,6 +359,6 @@ export class AppState {
         })
 
         // Sort by score (highest first) and limit results
-        return suggestions.sort((a, b) => b.score - a.score).slice(0, maxSuggestions)
+        return scoredSuggestions.sort((a, b) => b.score - a.score).slice(0, maxSuggestions)
     }
 }
