@@ -68,7 +68,7 @@ describe('BulkSelection', () => {
             'btn-bulk-due-date': { addEventListener: jest.fn() },
             'btn-bulk-delete': { addEventListener: jest.fn() },
             'btn-bulk-cancel': { addEventListener: jest.fn() },
-            'bulk-selection-toolbar': {
+            'bulk-actions-bar': {
                 style: { display: 'none' }
             },
             'bulk-selected-count': { textContent: '0' }
@@ -126,16 +126,14 @@ describe('BulkSelection', () => {
 
     describe('updateBulkSelectButtonVisibility', () => {
         test('should show button when there are tasks', () => {
-            document.querySelectorAll.mockReturnValueOnce([{ dataset: {} }])
-
+            // mockState.tasks already has tasks from beforeEach
             bulkSelection.updateBulkSelectButtonVisibility()
 
             expect(mockElements['btn-bulk-select'].style.display).toBe('block')
         })
 
         test('should hide button when there are no tasks', () => {
-            document.querySelectorAll.mockReturnValueOnce([])
-
+            mockState.tasks = []
             bulkSelection.updateBulkSelectButtonVisibility()
 
             expect(mockElements['btn-bulk-select'].style.display).toBe('none')
@@ -154,7 +152,7 @@ describe('BulkSelection', () => {
 
             expect(mockState.bulkSelectionMode).toBe(true)
             expect(mockElements['bulk-actions-bar'].style.display).toBe('flex')
-            expect(mockElements['btn-bulk-select'].innerHTML).toContain('Exit Selection')
+            expect(mockElements['btn-bulk-select'].textContent).toBe('Cancel Selection')
         })
 
         test('should disable bulk selection mode', () => {
@@ -181,7 +179,7 @@ describe('BulkSelection', () => {
             expect(mockState.bulkSelectionMode).toBe(false)
             expect(bulkSelection.selectedTaskIds.size).toBe(0)
             expect(mockElements['bulk-actions-bar'].style.display).toBe('none')
-            expect(mockElements['btn-bulk-select'].innerHTML).toContain('Select Multiple')
+            expect(mockElements['btn-bulk-select'].textContent).toBe('Select Multiple')
         })
 
         test('should update selected count', () => {
@@ -219,8 +217,8 @@ describe('BulkSelection', () => {
 
             bulkSelection.updateBulkSelectedCount()
 
-            // textContent receives number 2, not string '2'
-            expect(mockElements['bulk-selected-count'].textContent).toBe(2)
+            // textContent receives string '2'
+            expect(mockElements['bulk-selected-count'].textContent).toBe('2')
         })
 
         test('should disable complete button when no tasks selected', () => {
@@ -277,8 +275,7 @@ describe('BulkSelection', () => {
 
             await bulkSelection.bulkCompleteTasks()
 
-            // Note: actual code shows 0 because exitBulkSelectionMode clears Set first
-            expect(mockApp.showToast).toHaveBeenCalledWith('0 task(s) completed')
+            expect(mockApp.showToast).toHaveBeenCalledWith('2 task(s) completed')
         })
 
         test('should do nothing if no tasks selected', async () => {

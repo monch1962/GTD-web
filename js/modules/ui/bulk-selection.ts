@@ -137,7 +137,7 @@ export class BulkSelection {
         if (!bulkSelectBtn) return
 
         const hasTasks = this.state.tasks && this.state.tasks.length > 0
-        bulkSelectBtn.style.display = hasTasks ? 'inline-block' : 'none'
+        bulkSelectBtn.style.display = hasTasks ? 'block' : 'none'
     }
 
     /**
@@ -166,7 +166,7 @@ export class BulkSelection {
         this.state.selectedTaskIds = this.selectedTaskIds
 
         // Show bulk selection toolbar
-        const bulkToolbar = document.getElementById('bulk-selection-toolbar')
+        const bulkToolbar = document.getElementById('bulk-actions-bar')
         if (bulkToolbar) {
             bulkToolbar.style.display = 'flex'
         }
@@ -191,8 +191,11 @@ export class BulkSelection {
         this.selectedTaskIds.clear()
         this.state.selectedTaskIds = this.selectedTaskIds
 
+        // Exit bulk selection mode
+        this.state.bulkSelectionMode = false
+
         // Hide bulk selection toolbar
-        const bulkToolbar = document.getElementById('bulk-selection-toolbar')
+        const bulkToolbar = document.getElementById('bulk-actions-bar')
         if (bulkToolbar) {
             bulkToolbar.style.display = 'none'
         }
@@ -203,6 +206,9 @@ export class BulkSelection {
             bulkSelectBtn.textContent = 'Select Multiple'
             bulkSelectBtn.classList.remove('active')
         }
+
+        // Update selected count
+        this.updateBulkSelectedCount()
 
         // Remove selection class from task items
         this._updateTaskSelectionUI()
@@ -270,9 +276,14 @@ export class BulkSelection {
     bulkSelectAllVisible (): void {
         const taskItems = document.querySelectorAll('.task-item')
         taskItems.forEach((item) => {
-            const taskId = item.getAttribute('data-task-id')
+            const taskId = (item as HTMLElement).dataset.taskId
             if (taskId) {
-                this.selectedTaskIds.add(taskId)
+                // Check if task has a checkbox
+                const checkbox = item.querySelector('.task-checkbox') as HTMLInputElement | null
+                if (checkbox) {
+                    this.selectedTaskIds.add(taskId)
+                    checkbox.checked = true
+                }
             }
         })
 
@@ -282,6 +293,10 @@ export class BulkSelection {
         // Update UI
         this._updateTaskSelectionUI()
         this._updateBulkActionButtons()
+        this.updateBulkSelectedCount()
+
+        // Show toast
+        this.app.showToast?.(`${this.selectedTaskIds.size} tasks selected`)
     }
 
     /**
@@ -298,12 +313,20 @@ export class BulkSelection {
             await this.app.toggleTaskComplete?.(taskId)
         }
 
+        // Save tasks
+        await this.app.saveTasks?.()
+
+        // Show toast before clearing selection
+        const count = this.selectedTaskIds.size
+        this.app.showToast?.(`${count} task(s) completed`)
+
         // Clear selection and exit mode
         this.exitBulkSelectionMode()
 
         // Update UI
         this.app.renderView?.()
         this.app.updateCounts?.()
+        this.app.renderProjectsDropdown?.()
     }
 
     /**
@@ -400,6 +423,9 @@ export class BulkSelection {
         for (const taskId of this.selectedTaskIds) {
             await this.app.updateTaskStatus?.(taskId, status)
         }
+
+        // Save tasks
+        await this.app.saveTasks?.()
 
         // Clear selection and exit mode
         this.exitBulkSelectionMode()
@@ -734,5 +760,19 @@ export class BulkSelection {
             completeBtn.disabled = this.selectedTaskIds.size === 0
             completeBtn.style.opacity = this.selectedTaskIds.size === 0 ? '0.5' : '1'
         }
+    }
+
+    /**
+     * Bulk set project for selected tasks
+     */
+    async bulkSetProject (): Promise<void> {
+        this.showBulkProjectMenu()
+    }
+
+    /**
+     * Bulk set due date for selected tasks
+     */
+    async bulkSetDueDate (): Promise<void> {
+        this.showBulkDueDateMenu()
     }
 }
