@@ -310,7 +310,12 @@ export class BulkSelection {
 
         // Complete each selected task
         for (const taskId of this.selectedTaskIds) {
-            await this.app.toggleTaskComplete?.(taskId)
+            const task = this.state.tasks.find((t) => t.id === taskId)
+            if (task && !task.completed) {
+                task.completed = true
+                task.completedAt = new Date().toISOString()
+                task.updatedAt = new Date().toISOString()
+            }
         }
 
         // Save tasks
@@ -343,9 +348,11 @@ export class BulkSelection {
         this.app.saveState?.('Bulk delete tasks')
 
         // Delete each selected task
-        for (const taskId of this.selectedTaskIds) {
-            await this.app.deleteTask?.(taskId)
-        }
+        const originalLength = this.state.tasks.length
+        this.state.tasks = this.state.tasks.filter((task) => !this.selectedTaskIds.has(task.id))
+
+        // Save tasks
+        await this.app.saveTasks?.()
 
         // Clear selection and exit mode
         this.exitBulkSelectionMode()
@@ -353,6 +360,10 @@ export class BulkSelection {
         // Update UI
         this.app.renderView?.()
         this.app.updateCounts?.()
+
+        // Show toast
+        const deletedCount = originalLength - this.state.tasks.length
+        this.app.showToast?.(`Deleted ${deletedCount} task(s)`)
     }
 
     /**
@@ -657,8 +668,15 @@ export class BulkSelection {
 
         // Update each selected task
         for (const taskId of this.selectedTaskIds) {
-            await this.app.updateTaskDueDate?.(taskId, dueDate)
+            const task = this.state.tasks.find((t) => t.id === taskId)
+            if (task) {
+                task.dueDate = dueDate
+                task.updatedAt = new Date().toISOString()
+            }
         }
+
+        // Save tasks
+        await this.app.saveTasks?.()
 
         // Clear selection and exit mode
         this.exitBulkSelectionMode()
@@ -666,6 +684,9 @@ export class BulkSelection {
         // Update UI
         this.app.renderView?.()
         this.app.updateCounts?.()
+
+        // Show toast
+        this.app.showToast?.(`Due date set to ${dueDate}`)
     }
 
     /**
@@ -822,9 +843,20 @@ export class BulkSelection {
     }
 
     /**
-     * Bulk set due date for selected tasks
+     * Bulk set due date for selected tasks (with prompt)
      */
     async bulkSetDueDate (): Promise<void> {
-        this.showBulkDueDateMenu()
+        const input = prompt('Enter due date (today, tomorrow, in X days, YYYY-MM-DD):')
+        if (input === null) return // User cancelled
+
+        const trimmedInput = input.trim()
+        if (!trimmedInput) return // Empty input
+
+        const dueDate = this._parseDueDate(trimmedInput)
+        if (dueDate) {
+            await this.bulkUpdateDueDate(dueDate)
+        } else {
+            this.app.showNotification?.('Invalid date format', 'error')
+        }
     }
 }
