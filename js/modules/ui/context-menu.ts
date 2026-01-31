@@ -24,6 +24,8 @@ interface AppDependencies {
     showNotification?: (message: string, type?: string) => void
     showWarning?: (message: string) => void
     showError?: (message: string) => void
+    toggleTaskComplete?: (taskId: string) => Promise<void>
+    archiveTask?: (taskId: string) => Promise<void>
 }
 
 interface TouchPosition {
@@ -46,7 +48,7 @@ export class ContextMenuManager {
     private longPressTimer: NodeJS.Timeout | null = null
     private touchStartPos: TouchPosition | null = null
 
-    constructor (state: AppState, app: AppDependencies) {
+    constructor(state: AppState, app: AppDependencies) {
         this.state = state
         this.app = app
     }
@@ -54,7 +56,7 @@ export class ContextMenuManager {
     /**
      * Setup context menu functionality
      */
-    setupContextMenu (): void {
+    setupContextMenu(): void {
         const contextMenu = document.getElementById('context-menu') as HTMLElement | null
         if (!contextMenu) return
 
@@ -168,7 +170,7 @@ export class ContextMenuManager {
     /**
      * Show context menu at position
      */
-    showContextMenu (event: MouseEvent | SyntheticEvent, taskId: string): void {
+    showContextMenu(event: MouseEvent | SyntheticEvent, taskId: string): void {
         const contextMenu = document.getElementById('context-menu') as HTMLElement | null
         if (!contextMenu) return
 
@@ -223,7 +225,7 @@ export class ContextMenuManager {
     /**
      * Hide context menu
      */
-    hideContextMenu (): void {
+    hideContextMenu(): void {
         const contextMenu = document.getElementById('context-menu') as HTMLElement | null
         if (contextMenu) {
             contextMenu.style.display = 'none'
@@ -234,7 +236,7 @@ export class ContextMenuManager {
     /**
      * Populate projects submenu in context menu
      */
-    populateContextMenuProjects (): void {
+    populateContextMenuProjects(): void {
         const submenu = document.getElementById('context-menu-projects') as HTMLElement | null
         if (!submenu) return
 
@@ -264,7 +266,7 @@ export class ContextMenuManager {
     /**
      * Handle context menu action
      */
-    async handleContextMenuAction (
+    async handleContextMenuAction(
         action: string,
         data: DOMStringMap,
         taskId: string
@@ -273,121 +275,120 @@ export class ContextMenuManager {
         if (!task) return
 
         switch (action) {
-        case 'edit':
-            this.app.openTaskModal?.(task)
-            break
+            case 'edit':
+                this.app.openTaskModal?.(task)
+                break
 
-        case 'duplicate':
-            await this.app.duplicateTask?.(taskId)
-            break
+            case 'duplicate':
+                await this.app.duplicateTask?.(taskId)
+                break
 
-        case 'save-as-template':
-            this.app.saveTaskAsTemplate?.(taskId)
-            break
+            case 'save-as-template':
+                this.app.saveTaskAsTemplate?.(taskId)
+                break
 
-        case 'toggle-star':
-            this.app.saveState?.('Toggle task star')
-            task.toggleStar()
-            await this.app.saveTasks?.()
-            this.app.renderView?.()
-            this.app.showToast?.(task.starred ? 'Task starred' : 'Task unstarred')
-            break
+            case 'toggle-star':
+                this.app.saveState?.('Toggle task star')
+                task.toggleStar()
+                await this.app.saveTasks?.()
+                this.app.renderView?.()
+                this.app.showToast?.(task.starred ? 'Task starred' : 'Task unstarred')
+                break
 
-        case 'set-status':
-            this.app.saveState?.('Change task status')
-            task.status = data.status as any
-            task.updatedAt = new Date().toISOString()
-            await this.app.saveTasks?.()
-            this.app.renderView?.()
-            this.app.updateCounts?.()
-            this.app.showToast?.(`Status changed to ${data.status}`)
-            break
-
-        case 'set-energy':
-            this.app.saveState?.('Change task energy')
-            task.energy = data.energy as any
-            task.updatedAt = new Date().toISOString()
-            await this.app.saveTasks?.()
-            this.app.renderView?.()
-            this.app.showToast?.(`Energy changed to ${data.energy || 'none'}`)
-            break
-
-        case 'set-project':
-            const projectId = data.project || null
-            this.app.saveState?.('Change task project')
-            task.projectId = projectId
-            task.updatedAt = new Date().toISOString()
-            await this.app.saveTasks?.()
-            this.app.renderView?.()
-            this.app.showToast?.(projectId ? 'Project assigned' : 'Project removed')
-            break
-
-        case 'complete':
-            this.app.saveState?.('Complete task')
-            task.markComplete()
-            await this.app.saveTasks?.()
-            this.app.renderView?.()
-            this.app.updateCounts?.()
-            this.app.showToast?.('Task completed')
-            break
-
-        case 'archive':
-            if (confirm('Archive this task?')) {
-                this.app.saveState?.('Archive task')
-                task.status = 'completed'
-                task.completedAt = new Date().toISOString()
+            case 'set-status':
+                this.app.saveState?.('Change task status')
+                task.status = data.status as any
+                task.updatedAt = new Date().toISOString()
                 await this.app.saveTasks?.()
                 this.app.renderView?.()
                 this.app.updateCounts?.()
-                this.app.showToast?.('Task archived')
-            }
-            break
+                this.app.showToast?.(`Status changed to ${data.status}`)
+                break
 
-        case 'delete':
-            if (confirm('Delete this task? This cannot be undone.')) {
-                this.app.saveState?.('Delete task')
-                const taskIndex = this.state.tasks.findIndex((t) => t.id === taskId)
-                if (taskIndex > -1) {
-                    this.state.tasks.splice(taskIndex, 1)
+            case 'set-energy':
+                this.app.saveState?.('Change task energy')
+                task.energy = data.energy as any
+                task.updatedAt = new Date().toISOString()
+                await this.app.saveTasks?.()
+                this.app.renderView?.()
+                this.app.showToast?.(`Energy changed to ${data.energy || 'none'}`)
+                break
+
+            case 'set-project':
+                const projectId = data.project || null
+                this.app.saveState?.('Change task project')
+                task.projectId = projectId
+                task.updatedAt = new Date().toISOString()
+                await this.app.saveTasks?.()
+                this.app.renderView?.()
+                this.app.showToast?.(projectId ? 'Project assigned' : 'Project removed')
+                break
+
+            case 'complete':
+                this.app.saveState?.('Complete task')
+                await this.app.toggleTaskComplete?.(taskId)
+                await this.app.saveTasks?.()
+                this.app.renderView?.()
+                this.app.updateCounts?.()
+                this.app.showToast?.('Task completed')
+                break
+
+            case 'archive':
+                if (confirm('Archive this task?')) {
+                    this.app.saveState?.('Archive task')
+                    await this.app.archiveTask?.(taskId)
                     await this.app.saveTasks?.()
                     this.app.renderView?.()
                     this.app.updateCounts?.()
-                    this.app.showToast?.('Task deleted')
+                    this.app.showToast?.('Task archived')
                 }
-            }
-            break
+                break
 
-        case 'add-context':
-            const contextToAdd = data.context
-            if (contextToAdd && !task.contexts?.includes(contextToAdd)) {
-                this.app.saveState?.('Add context to task')
-                if (!task.contexts) task.contexts = []
-                task.contexts.push(contextToAdd)
-                task.updatedAt = new Date().toISOString()
-                await this.app.saveTasks?.()
-                this.app.renderView?.()
-                this.app.showToast?.(`Added context: ${contextToAdd}`)
-            }
-            break
+            case 'delete':
+                if (confirm('Delete this task? This cannot be undone.')) {
+                    this.app.saveState?.('Delete task')
+                    const taskIndex = this.state.tasks.findIndex((t) => t.id === taskId)
+                    if (taskIndex > -1) {
+                        this.state.tasks.splice(taskIndex, 1)
+                        await this.app.saveTasks?.()
+                        this.app.renderView?.()
+                        this.app.updateCounts?.()
+                        this.app.showToast?.('Task deleted')
+                    }
+                }
+                break
 
-        case 'remove-context':
-            const contextToRemove = data.context
-            if (contextToRemove && task.contexts?.includes(contextToRemove)) {
-                this.app.saveState?.('Remove context from task')
-                task.contexts = task.contexts.filter((c) => c !== contextToRemove)
-                task.updatedAt = new Date().toISOString()
-                await this.app.saveTasks?.()
-                this.app.renderView?.()
-                this.app.showToast?.(`Removed context: ${contextToRemove}`)
-            }
-            break
+            case 'add-context':
+                const contextToAdd = data.context
+                if (contextToAdd && !task.contexts?.includes(contextToAdd)) {
+                    this.app.saveState?.('Add context to task')
+                    if (!task.contexts) task.contexts = []
+                    task.contexts.push(contextToAdd)
+                    task.updatedAt = new Date().toISOString()
+                    await this.app.saveTasks?.()
+                    this.app.renderView?.()
+                    this.app.showToast?.(`Added ${contextToAdd.trim()}`)
+                }
+                break
+
+            case 'remove-context':
+                const contextToRemove = data.context
+                if (contextToRemove && task.contexts?.includes(contextToRemove)) {
+                    this.app.saveState?.('Remove context from task')
+                    task.contexts = task.contexts.filter((c) => c !== contextToRemove)
+                    task.updatedAt = new Date().toISOString()
+                    await this.app.saveTasks?.()
+                    this.app.renderView?.()
+                    this.app.showToast?.(`Removed ${contextToRemove.trim()}`)
+                }
+                break
         }
     }
 
     /**
      * Populate add context submenu
      */
-    populateAddContextMenu (taskId: string): void {
+    populateAddContextMenu(taskId: string): void {
         const submenu = document.getElementById('context-menu-add-context') as HTMLElement | null
         if (!submenu) return
 
@@ -404,7 +405,7 @@ export class ContextMenuManager {
         const customContexts = this.getCustomContexts()
 
         // Combine all contexts
-        const allContexts = [...defaultContexts, ...customContexts]
+        const allContexts = [...defaultContexts, ...(customContexts || [])]
 
         // Filter out contexts the task already has
         const availableContexts = allContexts.filter((context) => !task.contexts?.includes(context))
@@ -436,7 +437,7 @@ export class ContextMenuManager {
     /**
      * Populate remove context submenu
      */
-    populateRemoveContextMenu (taskId: string): void {
+    populateRemoveContextMenu(taskId: string): void {
         const submenu = document.getElementById('context-menu-remove-context') as HTMLElement | null
         if (!submenu) return
 
@@ -473,9 +474,12 @@ export class ContextMenuManager {
     /**
      * Get custom contexts from localStorage
      */
-    getCustomContexts (): string[] {
+    getCustomContexts(): string[] | null {
         try {
             const customContexts = localStorage.getItem('gtd_custom_contexts')
+            if (customContexts === 'null') {
+                return null
+            }
             if (customContexts) {
                 const parsed = JSON.parse(customContexts)
                 return Array.isArray(parsed) ? parsed : []
@@ -489,14 +493,14 @@ export class ContextMenuManager {
     /**
      * Get current context menu task ID
      */
-    getContextMenuTaskId (): string | null {
+    getContextMenuTaskId(): string | null {
         return this.contextMenuTaskId
     }
 
     /**
      * Check if context menu is visible
      */
-    isContextMenuVisible (): boolean {
+    isContextMenuVisible(): boolean {
         const contextMenu = document.getElementById('context-menu') as HTMLElement | null
         if (!contextMenu) return false
         return contextMenu.style.display === 'block'

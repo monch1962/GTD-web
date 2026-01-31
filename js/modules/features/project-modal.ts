@@ -8,14 +8,11 @@
  * projectModal.openProjectModal(existingProject); // Open for editing
  * projectModal.openGanttChart(existingProject); // Show Gantt chart
  */
-
 import { Project, Task, ProjectStatus } from '../../models'
-
 // Define interfaces for state and app dependencies
 interface AppState {
     projects: Project[]
 }
-
 interface AppDependencies {
     projects?: Project[]
     tasks?: Task[]
@@ -28,31 +25,26 @@ interface AppDependencies {
     updateContextFilter?: () => void
     openTaskModal?: (task: Task | null, projectId?: string, pendingData?: any) => void
 }
-
 interface PendingTaskData {
     title?: string
     description?: string
 }
-
 interface TaskPosition {
     x: number
     y: number
     width: number
     height: number
 }
-
 export class ProjectModalManager {
     private state: AppState
     private app: AppDependencies
     private pendingTaskData: PendingTaskData | null
-
     /**
      * Create a new ProjectModalManager instance
      * @param state - Application state object
      * @param app - Application instance
      */
-    constructor (state: AppState, app: AppDependencies) {
-        // @ts-ignore - Required by pattern, not used in this module
+    constructor(state: AppState, app: AppDependencies) {
         this.state = state
         this.app = app
         this.pendingTaskData = null
@@ -75,21 +67,17 @@ export class ProjectModalManager {
      * // Open modal with pending task data
      * manager.openProjectModal(null, { title: 'My Task' });
      */
-    openProjectModal (
+    openProjectModal(
         project: Project | null = null,
         pendingTaskData: PendingTaskData | null = null
     ): void {
         const modal = document.getElementById('project-modal')
         const form = document.getElementById('project-form') as HTMLFormElement | null
         const title = document.getElementById('project-modal-title')
-
         if (!modal || !form || !title) return
-
         form.reset()
-
         // Store pending task data if coming from task modal
         this.pendingTaskData = pendingTaskData
-
         if (project) {
             title.textContent = 'Edit Project'
             ;(document.getElementById('project-id') as HTMLInputElement).value = project.id
@@ -104,14 +92,13 @@ export class ProjectModalManager {
             title.textContent = 'Add Project'
             ;(document.getElementById('project-id') as HTMLInputElement).value = ''
         }
-
         modal.classList.add('active')
     }
 
     /**
      * Close project modal
      */
-    closeProjectModal (): void {
+    closeProjectModal(): void {
         const modal = document.getElementById('project-modal')
         if (modal) {
             modal.classList.remove('active')
@@ -122,7 +109,7 @@ export class ProjectModalManager {
     /**
      * Save project from form
      */
-    async saveProjectFromForm (): Promise<void> {
+    async saveProjectFromForm(): Promise<void> {
         const projectId = (document.getElementById('project-id') as HTMLInputElement).value
         const title = (document.getElementById('project-title') as HTMLInputElement).value.trim()
         const description = (
@@ -132,7 +119,6 @@ export class ProjectModalManager {
             .value as ProjectStatus
         const contextsValue = (document.getElementById('project-contexts') as HTMLInputElement)
             .value
-
         // Parse contexts
         let contexts: string[] = []
         if (contextsValue) {
@@ -143,26 +129,22 @@ export class ProjectModalManager {
             // Ensure contexts start with @
             contexts = contexts.map((c) => (c.startsWith('@') ? c : `@${c}`))
         }
-
         // Validate title
         if (!title) {
             this.app.showNotification?.('Please enter a project title')
             return
         }
-
         // Save state for undo
         this.app.saveState?.(projectId ? 'Update project' : 'Create project')
-
         if (projectId) {
             // Update existing project
-            const project = this.app.projects?.find((p) => p.id === projectId)
+            const project = this.state.projects.find((p) => p.id === projectId)
             if (project) {
                 project.title = title
                 project.description = description
                 project.status = status
                 project.contexts = contexts
                 project.updatedAt = new Date().toISOString()
-
                 await this.app.saveProjects?.()
                 this.app.renderView?.()
                 this.app.updateCounts?.()
@@ -177,20 +159,17 @@ export class ProjectModalManager {
                 description,
                 status,
                 contexts,
-                position: this.app.projects?.length || 0
+                position: this.state.projects.length || 0
             })
-
-            this.app.projects?.push(newProject)
+            this.state.projects.push(newProject)
             await this.app.saveProjects?.()
             this.app.renderView?.()
             this.app.updateCounts?.()
             this.app.renderProjectsDropdown?.()
             this.app.showNotification?.(`Project "${title}" created`)
         }
-
         // Close modal
         this.closeProjectModal()
-
         // If we have pending task data, open task modal with new project selected
         if (this.pendingTaskData) {
             this.app.openTaskModal?.(null, projectId || undefined, this.pendingTaskData)
@@ -202,13 +181,11 @@ export class ProjectModalManager {
      * Open Gantt chart modal for a project
      * @param project - Project to show Gantt chart for
      */
-    openGanttChart (project: Project): void {
+    openGanttChart(project: Project): void {
         const modal = document.getElementById('gantt-modal')
         const title = document.getElementById('gantt-modal-title')
         if (!modal || !title) return
-
         title.textContent = `${project.title} - Gantt Chart`
-
         modal.classList.add('active')
         this.renderGanttChart(project)
     }
@@ -216,7 +193,7 @@ export class ProjectModalManager {
     /**
      * Close Gantt chart modal
      */
-    closeGanttModal (): void {
+    closeGanttModal(): void {
         const modal = document.getElementById('gantt-modal')
         if (modal) {
             modal.classList.remove('active')
@@ -227,13 +204,11 @@ export class ProjectModalManager {
      * Render Gantt chart for a project
      * @param project - Project to render Gantt chart for
      */
-    renderGanttChart (project: Project): void {
+    renderGanttChart(project: Project): void {
         const container = document.getElementById('gantt-chart')
         if (!container) return
-
         // Get all tasks for this project (including completed ones)
         const projectTasks = this.app.tasks?.filter((t) => t.projectId === project.id) || []
-
         if (projectTasks.length === 0) {
             container.innerHTML = `
                 <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
@@ -244,16 +219,13 @@ export class ProjectModalManager {
             `
             return
         }
-
         // Calculate dependency levels for tasks
         const taskLevels: Record<string, number> = {} // task.id -> level (0 = no dependencies)
         const maxIterations = projectTasks.length + 1
-
         // Initialize all tasks at level 0
         projectTasks.forEach((task) => {
             taskLevels[task.id] = 0
         })
-
         // Calculate levels based on dependencies
         for (let iter = 0; iter < maxIterations; iter++) {
             projectTasks.forEach((task) => {
@@ -268,7 +240,6 @@ export class ProjectModalManager {
                 }
             })
         }
-
         // Group tasks by level
         const levelGroups: Record<number, Task[]> = {}
         projectTasks.forEach((task) => {
@@ -278,20 +249,17 @@ export class ProjectModalManager {
             }
             levelGroups[level].push(task)
         })
-
         // Layout parameters
         const taskWidth = 200
         const taskHeight = 60
         const horizontalSpacing = 80
         const verticalSpacing = 100
         const marginLeft = 50
-
         // Calculate dimensions
         const maxLevel = Math.max(...Object.keys(levelGroups).map(Number))
         const maxTasksInLevel = Math.max(...Object.values(levelGroups).map((tasks) => tasks.length))
         const canvasWidth = marginLeft + maxTasksInLevel * (taskWidth + horizontalSpacing)
         const canvasHeight = (maxLevel + 1) * (taskHeight + verticalSpacing) + 100
-
         // Build SVG
         let svgHtml = `
             <svg width="${canvasWidth}" height="${canvasHeight}" style="overflow-x: auto;">
@@ -301,17 +269,14 @@ export class ProjectModalManager {
                     </marker>
                 </defs>
         `
-
         // Render tasks and connections
         const taskPositions: Record<string, TaskPosition> = {} // task.id -> {x, y}
         let yPos = 50
-
         Object.keys(levelGroups)
             .sort((a, b) => Number(a) - Number(b))
             .forEach((level) => {
                 const tasks = levelGroups[Number(level)]
                 let xPos = marginLeft
-
                 tasks.forEach((task) => {
                     taskPositions[task.id] = {
                         x: xPos,
@@ -319,18 +284,16 @@ export class ProjectModalManager {
                         width: taskWidth,
                         height: taskHeight
                     }
-
                     // Task rectangle
                     const completedClass = task.completed ? 'completed' : ''
                     const statusColor =
                         task.status === 'next'
                             ? '#48bb78'
                             : task.status === 'waiting'
-                                ? '#ed8936'
-                                : task.status === 'someday'
-                                    ? '#9f7aea'
-                                    : '#4299e1'
-
+                              ? '#ed8936'
+                              : task.status === 'someday'
+                                ? '#9f7aea'
+                                : '#4299e1'
                     svgHtml += `
                     <g class="task-node ${completedClass}" data-task-id="${task.id}">
                         <rect x="${xPos}" y="${yPos}" width="${taskWidth}" height="${taskHeight}"
@@ -341,28 +304,22 @@ export class ProjectModalManager {
                               fill="rgba(255,255,255,0.9)" font-size="10">${task.status}</text>
                     </g>
                 `
-
                     xPos += taskWidth + horizontalSpacing
                 })
-
                 yPos += taskHeight + verticalSpacing
             })
-
         // Render dependency arrows
         projectTasks.forEach((task) => {
             if (task.waitingForTaskIds && task.waitingForTaskIds.length > 0) {
                 const targetPos = taskPositions[task.id]
                 if (!targetPos) return
-
                 task.waitingForTaskIds.forEach((depId) => {
                     const sourcePos = taskPositions[depId]
                     if (!sourcePos) return
-
                     const startX = sourcePos.x + sourcePos.width / 2
                     const startY = sourcePos.y + sourcePos.height
                     const endX = targetPos.x + targetPos.width / 2
                     const endY = targetPos.y
-
                     // Draw curved arrow
                     const midY = (startY + endY) / 2
                     svgHtml += `
@@ -372,7 +329,6 @@ export class ProjectModalManager {
                 })
             }
         })
-
         svgHtml += '</svg>'
         container.innerHTML = svgHtml
     }
@@ -382,7 +338,7 @@ export class ProjectModalManager {
      * @param text - Text to escape
      * @returns Escaped text
      */
-    escapeHtml (text: string): string {
+    escapeHtml(text: string): string {
         const div = document.createElement('div')
         div.textContent = text
         return div.innerHTML

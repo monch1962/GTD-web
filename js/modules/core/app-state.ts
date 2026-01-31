@@ -76,7 +76,7 @@ export class AppState {
     // Logger
     logger: ReturnType<typeof createLogger>
 
-    constructor() {
+    constructor () {
         this.logger = createLogger('AppState')
 
         // Core data
@@ -152,7 +152,7 @@ export class AppState {
      * Get current state as a plain object
      * @returns {Object} Current application state
      */
-    getState() {
+    getState () {
         return {
             tasks: this.tasks,
             projects: this.projects,
@@ -184,7 +184,7 @@ export class AppState {
      * Update multiple state properties at once
      * @param updates - Object containing properties to update
      */
-    setState(updates: Partial<AppState>) {
+    setState (updates: Partial<AppState>) {
         for (const key in updates) {
             if (Object.prototype.hasOwnProperty.call(updates, key)) {
                 // Check if property exists on AppState type
@@ -201,16 +201,16 @@ export class AppState {
      * Load usage statistics from localStorage
      * @returns {Object} Usage statistics
      */
-    loadUsageStats() {
+    loadUsageStats () {
         try {
             const stats = localStorage.getItem('gtd_usage_stats')
             return stats
                 ? JSON.parse(stats)
                 : {
-                      contexts: {},
-                      times: {},
-                      lastUpdated: null
-                  }
+                    contexts: {},
+                    times: {},
+                    lastUpdated: null
+                }
         } catch (error) {
             this.logger.warn('Failed to load usage stats:', error)
             return {
@@ -224,7 +224,7 @@ export class AppState {
     /**
      * Save usage statistics to localStorage
      */
-    saveUsageStats() {
+    saveUsageStats () {
         try {
             localStorage.setItem('gtd_usage_stats', JSON.stringify(this.usageStats))
             this.usageStats.lastUpdated = new Date().toISOString()
@@ -237,7 +237,7 @@ export class AppState {
      * Track task usage for smart defaults
      * @param {Task} task - The task to track
      */
-    trackTaskUsage(task: Task) {
+    trackTaskUsage (task: Task) {
         // Track contexts
         if (task.contexts && task.contexts.length > 0) {
             task.contexts.forEach((context: string) => {
@@ -263,7 +263,7 @@ export class AppState {
     /**
      * Reset state to defaults
      */
-    reset() {
+    reset () {
         this.currentView = 'inbox'
         this.currentProjectId = null
         this.filters = { context: '', energy: '', time: '' }
@@ -282,7 +282,7 @@ export class AppState {
      * @param {Object} options - Filter options
      * @returns {Array} Array of suggested tasks with scores
      */
-    getSmartSuggestions(
+    getSmartSuggestions (
         tasks: Task[] = this.tasks,
         options: any = {}
     ): Array<{ task: Task; score: number; reasons: string[] }> {

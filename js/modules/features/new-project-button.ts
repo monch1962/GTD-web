@@ -9,9 +9,7 @@
  * - New project button click handler
  * - Opens task modal with project type pre-selected
  */
-
 import { Task } from '../../models'
-
 /**
  * App interface for type safety
  */
@@ -22,19 +20,16 @@ interface App {
         defaultData?: Record<string, any>
     ) => void
 }
-
 /**
  * State interface (minimal for this module)
  */
 interface State {
     // State properties will be defined as needed
 }
-
 export class NewProjectButtonManager {
     private state: State
     private app: App
-
-    constructor (state: State, app: App) {
+    constructor(state: State, app: App) {
         this.state = state
         this.app = app
     }
@@ -42,11 +37,10 @@ export class NewProjectButtonManager {
     // =========================================================================
     // PUBLIC API
     // =========================================================================
-
     /**
      * Setup the new project button
      */
-    setupNewProjectButton (): void {
+    setupNewProjectButton(): void {
         const newProjectBtn = document.getElementById('btn-new-project')
         if (newProjectBtn) {
             newProjectBtn.addEventListener('click', () => {

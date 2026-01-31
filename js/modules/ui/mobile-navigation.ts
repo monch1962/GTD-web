@@ -28,7 +28,7 @@ interface AppDependencies {
     showWeeklyReview?: () => void
     showDashboard?: () => void
     showDependencies?: () => void
-    showHeatmap?: () => void
+    openHeatmapModal?: () => void
     showSuggestions?: () => void
     openTemplatesModal?: () => void
     showSearch?: () => void
@@ -45,6 +45,16 @@ interface AppDependencies {
 
     // Storage
     saveTasks?: () => Promise<void>
+    storage?: {
+        getTasks?: () => any[]
+    }
+
+    // Models
+    models?: {
+        Task?: {
+            fromJSON?: (data: any) => any
+        }
+    }
 
     // Notifications
     showNotification?: (message: string, type?: string) => void
@@ -61,6 +71,8 @@ interface Logger {
 interface TouchData {
     startX: number
     startY: number
+    lastX: number
+    lastY: number
     taskElement: HTMLElement | null
     taskId: string | null
     startTime: number
@@ -81,7 +93,7 @@ export class MobileNavigationManager {
     private touchData: TouchData | null = null
     private swipeThreshold: number = 100
 
-    constructor (state: AppState, app: AppDependencies) {
+    constructor(state: AppState, app: AppDependencies) {
         this.state = state // Kept for compatibility with manager pattern
         this.app = app
         this.logger = createLogger('MobileNav')
@@ -96,7 +108,7 @@ export class MobileNavigationManager {
      * Setup all mobile navigation features
      * This is the main entry point for setting up mobile navigation
      */
-    setupMobileNavigation (): void {
+    setupMobileNavigation(): void {
         // Call the internal setup directly
         // The DOM should already be ready when this is called from setupEventListeners
         this.setupMobileNavigationInternal()
@@ -106,7 +118,7 @@ export class MobileNavigationManager {
      * Internal setup method for mobile navigation
      * Can be called directly for testing purposes
      */
-    setupMobileNavigationInternal (): void {
+    setupMobileNavigationInternal(): void {
         this.logger.debug('Setting up mobile navigation...')
 
         this.setupHamburgerMenu()
@@ -120,14 +132,14 @@ export class MobileNavigationManager {
      * Synchronous setup method for testing
      * This bypasses the setTimeout and DOMContentLoaded checks
      */
-    setupForTest (): void {
+    setupForTest(): void {
         this.setupMobileNavigationInternal()
     }
 
     /**
      * Setup hamburger menu for sidebar toggle
      */
-    setupHamburgerMenu (): void {
+    setupHamburgerMenu(): void {
         const hamburger = document.getElementById('hamburger-menu') as HTMLButtonElement | null
         const sidebar = document.querySelector('.sidebar') as HTMLElement | null
         const overlay = document.getElementById('sidebar-overlay') as HTMLElement | null
@@ -156,7 +168,7 @@ export class MobileNavigationManager {
     /**
      * Setup mobile menu dropdown in header
      */
-    setupMobileMenuDropdown (): void {
+    setupMobileMenuDropdown(): void {
         const mobileMenuBtn = document.getElementById('btn-mobile-menu') as HTMLButtonElement | null
         const mobileMenuDropdown = document.getElementById(
             'mobile-menu-dropdown'
@@ -201,39 +213,39 @@ export class MobileNavigationManager {
 
                 // Execute the corresponding action
                 switch (action) {
-                case 'calendar-view':
-                    this.app.showCalendar?.()
-                    break
-                case 'focus-mode':
-                    this.app.enterFocusMode?.()
-                    break
-                case 'new-project':
-                    this.app.openProjectModal?.()
-                    break
-                case 'daily-review':
-                    this.app.showDailyReview?.()
-                    break
-                case 'weekly-review':
-                    this.app.showWeeklyReview?.()
-                    break
-                case 'dashboard':
-                    this.app.showDashboard?.()
-                    break
-                case 'dependencies':
-                    this.app.showDependencies?.()
-                    break
-                case 'heatmap':
-                    this.app.showHeatmap?.()
-                    break
-                case 'suggestions':
-                    this.app.showSuggestions?.()
-                    break
-                case 'undo':
-                    this.app.undo?.()
-                    break
-                case 'redo':
-                    this.app.redo?.()
-                    break
+                    case 'calendar-view':
+                        this.app.showCalendar?.()
+                        break
+                    case 'focus-mode':
+                        this.app.enterFocusMode?.()
+                        break
+                    case 'new-project':
+                        this.app.openProjectModal?.()
+                        break
+                    case 'daily-review':
+                        this.app.showDailyReview?.()
+                        break
+                    case 'weekly-review':
+                        this.app.showWeeklyReview?.()
+                        break
+                    case 'dashboard':
+                        this.app.showDashboard?.()
+                        break
+                    case 'dependencies':
+                        this.app.showDependencies?.()
+                        break
+                    case 'heatmap':
+                        this.app.openHeatmapModal?.()
+                        break
+                    case 'suggestions':
+                        this.app.showSuggestions?.()
+                        break
+                    case 'undo':
+                        this.app.undo?.()
+                        break
+                    case 'redo':
+                        this.app.redo?.()
+                        break
                 }
             })
         })
@@ -242,7 +254,7 @@ export class MobileNavigationManager {
     /**
      * Setup bottom navigation for mobile
      */
-    setupBottomNavigation (): void {
+    setupBottomNavigation(): void {
         const bottomNavItems = document.querySelectorAll('.bottom-nav-item')
 
         if (bottomNavItems.length === 0) {
@@ -260,6 +272,12 @@ export class MobileNavigationManager {
                 if (view) {
                     // Switch to the specified view
                     this.app.switchView?.(view)
+
+                    // Update active state on bottom nav items
+                    bottomNavItems.forEach((navItem) => {
+                        navItem.classList.remove('active')
+                    })
+                    item.classList.add('active')
 
                     // Close sidebar if open
                     const sidebar = document.querySelector('.sidebar') as HTMLElement | null
@@ -302,15 +320,15 @@ export class MobileNavigationManager {
     /**
      * Setup pull to refresh functionality
      */
-    setupPullToRefresh (): void {
-        const contentArea = document.querySelector('.content-area') as HTMLElement | null
+    setupPullToRefresh(): void {
+        const contentArea = document.querySelector('.main-content') as HTMLElement | null
         if (!contentArea) {
             this.logger.warn('Content area not found for pull-to-refresh')
             return
         }
 
         const pullIndicator = document.createElement('div')
-        pullIndicator.id = 'pull-to-refresh-indicator'
+        pullIndicator.className = 'pull-to-refresh'
         pullIndicator.style.cssText = `
             position: absolute;
             top: -50px;
@@ -327,7 +345,7 @@ export class MobileNavigationManager {
             z-index: 1000;
         `
         pullIndicator.innerHTML = '<i class="fas fa-sync-alt"></i> Pull to refresh'
-        contentArea.parentElement?.insertBefore(pullIndicator, contentArea)
+        contentArea.appendChild(pullIndicator)
 
         let isAtTop = false
 
@@ -360,8 +378,10 @@ export class MobileNavigationManager {
                     if (pullDistance > this.pullThreshold) {
                         pullIndicator.innerHTML =
                             '<i class="fas fa-sync-alt fa-spin"></i> Release to refresh'
+                        pullIndicator.classList.add('refreshing')
                     } else {
                         pullIndicator.innerHTML = '<i class="fas fa-sync-alt"></i> Pull to refresh'
+                        pullIndicator.classList.remove('refreshing')
                     }
                 }
             },
@@ -395,8 +415,8 @@ export class MobileNavigationManager {
     /**
      * Setup swipe gestures for tasks
      */
-    setupSwipeGestures (): void {
-        const contentArea = document.querySelector('.content-area') as HTMLElement | null
+    setupSwipeGestures(): void {
+        const contentArea = document.querySelector('.tasks-container') as HTMLElement | null
         if (!contentArea) {
             this.logger.warn('Content area not found for swipe gestures')
             return
@@ -412,13 +432,15 @@ export class MobileNavigationManager {
             'touchstart',
             (e: TouchEvent) => {
                 const touch = e.touches[0]
-                const target = document.elementFromPoint(touch.clientX, touch.clientY)
+                const target = e.target as HTMLElement
                 const taskElement = target?.closest('.task-item') as HTMLElement | null
 
                 if (taskElement) {
                     this.touchData = {
                         startX: touch.clientX,
                         startY: touch.clientY,
+                        lastX: touch.clientX,
+                        lastY: touch.clientY,
                         taskElement,
                         taskId: taskElement.getAttribute('data-task-id'),
                         startTime: Date.now()
@@ -437,8 +459,14 @@ export class MobileNavigationManager {
                 const deltaX = touch.clientX - this.touchData.startX
                 const deltaY = touch.clientY - this.touchData.startY
 
-                // Only process horizontal swipes
-                if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                // Update last position
+                this.touchData.lastX = touch.clientX
+                this.touchData.lastY = touch.clientY
+
+                // Only process horizontal swipes (handle case where deltaY might be NaN)
+                const absDeltaX = Math.abs(deltaX)
+                const absDeltaY = Math.abs(deltaY)
+                if (isNaN(absDeltaY) || absDeltaX > absDeltaY) {
                     e.preventDefault() // Prevent vertical scroll during horizontal swipe
 
                     // Apply transform to task element
@@ -466,7 +494,7 @@ export class MobileNavigationManager {
                 return
             }
 
-            const deltaX = this.touchData.taskElement.offsetLeft - this.touchData.startX
+            const deltaX = this.touchData.lastX - this.touchData.startX
             const elapsedTime = Date.now() - this.touchData.startTime
 
             // Reset task element
@@ -475,7 +503,7 @@ export class MobileNavigationManager {
             this.touchData.taskElement.style.backgroundColor = ''
 
             // Check if swipe was significant and fast enough
-            if (Math.abs(deltaX) > this.swipeThreshold && elapsedTime < 500) {
+            if (Math.abs(deltaX) >= this.swipeThreshold && elapsedTime < 500) {
                 if (deltaX > 0) {
                     // Swipe right - complete task
                     this.app.toggleTaskComplete?.(this.touchData.taskId)
@@ -494,22 +522,35 @@ export class MobileNavigationManager {
     /**
      * Refresh tasks from storage
      */
-    async refreshTasks (): Promise<void> {
+    async refreshTasks(): Promise<void> {
         try {
             // Simulate network delay
             await new Promise((resolve) => setTimeout(resolve, 1000))
 
             // Reload tasks from storage
-            await this.app.saveTasks?.()
+            const tasksData = this.app.storage?.getTasks?.() || []
+
+            // Convert to Task instances if Task.fromJSON is available
+            if (this.app.models?.Task?.fromJSON && tasksData.length > 0) {
+                const tasks = tasksData.map((taskData: any) =>
+                    this.app.models!.Task!.fromJSON!(taskData)
+                )
+                // Update state with loaded tasks
+                this.state.tasks = tasks
+            } else if (tasksData.length > 0) {
+                // Use raw data if Task.fromJSON is not available
+                this.state.tasks = tasksData
+            } else {
+                // Empty task list
+                this.state.tasks = []
+            }
 
             // Update UI
             this.app.renderView?.()
             this.app.updateCounts?.()
 
             // Hide refresh indicator
-            const pullIndicator = document.getElementById(
-                'pull-to-refresh-indicator'
-            ) as HTMLElement | null
+            const pullIndicator = document.querySelector('.pull-to-refresh') as HTMLElement | null
             if (pullIndicator) {
                 pullIndicator.classList.remove('refreshing')
                 pullIndicator.innerHTML = '<i class="fas fa-sync-alt"></i> Pull to refresh'

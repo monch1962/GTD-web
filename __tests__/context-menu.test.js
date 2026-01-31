@@ -4,7 +4,7 @@
  */
 
 import { GTDApp } from '../js/app.ts'
-import { Task, Project, Template } from '../js/models.ts'
+import { Task } from '../js/models.ts'
 
 describe('Context Menu Feature - Comprehensive Tests', () => {
     let app
@@ -1320,7 +1320,7 @@ describe('Context Menu Feature - Comprehensive Tests', () => {
             await app.handleContextMenuAction('add-context', { context: '  @work  ' }, 'task-1')
 
             // Toast should show the context as provided (trimmed by the actual code)
-            expect(toastSpy).toHaveBeenCalledWith('Added   @work  ')
+            expect(toastSpy).toHaveBeenCalledWith('Added @work')
         })
     })
 })

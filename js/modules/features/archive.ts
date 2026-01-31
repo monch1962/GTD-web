@@ -31,7 +31,7 @@ export class ArchiveManager {
     private state: AppState
     private app: AppDependencies
 
-    constructor(state: AppState, app: AppDependencies) {
+    constructor (state: AppState, app: AppDependencies) {
         this.state = state
         this.app = app
     }
@@ -39,7 +39,7 @@ export class ArchiveManager {
     /**
      * Setup archive functionality
      */
-    setupArchive(): void {
+    setupArchive (): void {
         // Archive button in sidebar
         const archiveBtn = document.getElementById('archive-button') as HTMLButtonElement | null
         if (archiveBtn) {
@@ -87,7 +87,7 @@ export class ArchiveManager {
     /**
      * Open archive modal
      */
-    openArchiveModal(): void {
+    openArchiveModal (): void {
         const modal = document.getElementById('archive-modal') as HTMLElement | null
         if (modal) {
             modal.classList.add('active')
@@ -99,7 +99,7 @@ export class ArchiveManager {
     /**
      * Close archive modal
      */
-    closeArchiveModal(): void {
+    closeArchiveModal (): void {
         const modal = document.getElementById('archive-modal') as HTMLElement | null
         if (modal) modal.classList.remove('active')
     }
@@ -107,7 +107,7 @@ export class ArchiveManager {
     /**
      * Auto-archive old completed tasks
      */
-    async autoArchiveOldTasks(daysOld: number = 30): Promise<void> {
+    async autoArchiveOldTasks (daysOld: number = 30): Promise<void> {
         const cutoffDate = new Date()
         cutoffDate.setDate(cutoffDate.getDate() - daysOld)
 
@@ -147,7 +147,7 @@ export class ArchiveManager {
     /**
      * Archive multiple tasks
      */
-    async archiveTasks(tasksToArchive: Task[]): Promise<void> {
+    async archiveTasks (tasksToArchive: Task[]): Promise<void> {
         if (this.app.storage) {
             await this.app.storage.addToArchive(tasksToArchive)
         }
@@ -156,7 +156,7 @@ export class ArchiveManager {
     /**
      * Archive a single task
      */
-    async archiveTask(taskId: string): Promise<void> {
+    async archiveTask (taskId: string): Promise<void> {
         const task = this.state.tasks.find((t) => t.id === taskId)
         if (!task) return
 
@@ -187,7 +187,7 @@ export class ArchiveManager {
     /**
      * Restore task from archive
      */
-    async restoreFromArchive(taskId: string): Promise<void> {
+    async restoreFromArchive (taskId: string): Promise<void> {
         if (!this.app.storage) return
 
         const archive = this.app.storage.getArchivedTasks()
@@ -225,7 +225,7 @@ export class ArchiveManager {
     /**
      * Delete task from archive permanently
      */
-    async deleteFromArchive(taskId: string): Promise<void> {
+    async deleteFromArchive (taskId: string): Promise<void> {
         if (!this.app.storage) return
 
         const archive = this.app.storage.getArchivedTasks()
@@ -252,7 +252,7 @@ export class ArchiveManager {
     /**
      * Render archive with optional search filter
      */
-    renderArchive(searchQuery: string = ''): void {
+    renderArchive (searchQuery: string = ''): void {
         const container = document.getElementById('archive-content') as HTMLElement | null
         const countSpan = document.getElementById('archive-count') as HTMLElement | null
         const projectFilter = document.getElementById(
@@ -378,7 +378,7 @@ export class ArchiveManager {
     /**
      * Populate archive project filter dropdown
      */
-    populateArchiveProjectFilter(): void {
+    populateArchiveProjectFilter (): void {
         const select = document.getElementById('archive-filter-project') as HTMLSelectElement | null
         if (!select || !this.app.storage) return
 
@@ -410,7 +410,7 @@ export class ArchiveManager {
      * @param projectId - Project ID
      * @returns Project title or empty string
      */
-    getProjectTitle(projectId: string): string {
+    getProjectTitle (projectId: string): string {
         const project = this.state.projects.find((p) => p.id === projectId)
         return project ? project.title : ''
     }
@@ -419,7 +419,7 @@ export class ArchiveManager {
      * Get archived tasks
      * @returns Array of archived task entries
      */
-    getArchivedTasks(): ArchiveEntry[] {
+    getArchivedTasks (): ArchiveEntry[] {
         if (!this.app.storage) return []
         return this.app.storage.getArchivedTasks()
     }
@@ -428,7 +428,7 @@ export class ArchiveManager {
      * Get archive count
      * @returns Number of archived tasks
      */
-    getArchiveCount(): number {
+    getArchiveCount (): number {
         if (!this.app.storage) return 0
         return this.app.storage.getArchivedTasks().length
     }
@@ -438,7 +438,7 @@ export class ArchiveManager {
      * @param query - Search query
      * @returns Filtered archive entries
      */
-    searchArchive(query: string): ArchiveEntry[] {
+    searchArchive (query: string): ArchiveEntry[] {
         if (!this.app.storage) return []
         const archive = this.app.storage.getArchivedTasks()
         const lowerQuery = query.toLowerCase()

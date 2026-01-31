@@ -12,43 +12,36 @@
  * - Task suggestion rendering with reasoning
  * - User selection and task highlighting
  */
-
 import { Task, Project } from '../../models'
 import { escapeHtml } from '../../dom-utils'
 import { getAllContexts } from '../../config/defaultContexts'
-
 // Define interfaces for state and app dependencies
 interface AppState {
     tasks: Task[]
     projects: Project[]
     currentView: string
 }
-
 interface AppDependencies {
     showToast?: (message: string, type?: string) => void
     showSuccess?: (message: string) => void
     showError?: (message: string) => void
     selectSuggestedTask?: (taskId: string) => void
 }
-
 interface SuggestionPreferences {
     context?: string
     availableMinutes?: number | null
     energyLevel?: string
     maxSuggestions?: number
 }
-
 interface ScoredTask {
     task: Task
     score: number
     reasons: string[]
 }
-
 export class SmartSuggestionsManager {
     private state: AppState
     private app: AppDependencies
-
-    constructor (state: AppState, app: AppDependencies) {
+    constructor(state: AppState, app: AppDependencies) {
         this.state = state
         this.app = app
     }
@@ -56,31 +49,27 @@ export class SmartSuggestionsManager {
     // =========================================================================
     // SETUP
     // =========================================================================
-
     /**
      * Setup the smart suggestions feature (called from app setup)
      * Currently no setup needed - feature is triggered on demand
      */
-    setupSmartSuggestions (): void {
+    setupSmartSuggestions(): void {
         // Feature is triggered via button click - no initialization needed
     }
 
     // =========================================================================
     // PUBLIC API
     // =========================================================================
-
     /**
      * Show the smart suggestions modal with filters
      */
-    showSuggestions (): void {
+    showSuggestions(): void {
         const modal = document.createElement('div')
         modal.className = 'modal active'
         modal.id = 'suggestions-modal'
-
         // Get all contexts (default + custom) using standard function
         const allContexts = getAllContexts(this.state.tasks)
         const sortedContexts = Array.from(allContexts).sort()
-
         // Generate context options dynamically
         const contextOptions = sortedContexts
             .map(
@@ -88,7 +77,6 @@ export class SmartSuggestionsManager {
                     `<option value="${escapeHtml(context)}">${escapeHtml(context)}</option>`
             )
             .join('\n                                ')
-
         modal.innerHTML = `
             <div class="modal-content" style="max-width: 700px;">
                 <div class="modal-header">
@@ -137,9 +125,7 @@ export class SmartSuggestionsManager {
                 </div>
             </div>
         `
-
         document.body.appendChild(modal)
-
         // Setup event listeners for automatic filter updates
         const contextSelect = document.getElementById(
             'suggestion-context'
@@ -151,15 +137,12 @@ export class SmartSuggestionsManager {
         const refreshBtn = document.getElementById(
             'refresh-suggestions'
         ) as HTMLButtonElement | null
-
         // Auto-update when any filter changes
         const updateSuggestions = () => this.renderSuggestions()
-
         if (contextSelect) contextSelect.addEventListener('change', updateSuggestions)
         if (timeSelect) timeSelect.addEventListener('change', updateSuggestions)
         if (energySelect) energySelect.addEventListener('change', updateSuggestions)
         if (refreshBtn) refreshBtn.addEventListener('click', updateSuggestions)
-
         // Initial render
         this.renderSuggestions()
     }
@@ -169,14 +152,13 @@ export class SmartSuggestionsManager {
      * @param preferences - User preferences for filtering
      * @returns Array of scored task suggestions with reasons
      */
-    getSmartSuggestions (preferences: SuggestionPreferences = {}): ScoredTask[] {
+    getSmartSuggestions(preferences: SuggestionPreferences = {}): ScoredTask[] {
         const {
             context = '',
             availableMinutes = null,
             energyLevel = '',
             maxSuggestions = 5
         } = preferences
-
         // Get all actionable tasks (not completed, not deferred)
         const candidateTasks = this.state.tasks.filter((task) => {
             if (task.completed) return false
@@ -184,30 +166,24 @@ export class SmartSuggestionsManager {
             if (task.status === 'someday') return false
             if (task.status === 'completed') return false
             if (!task.isAvailable()) return false // Deferred tasks
-
             // Skip tasks with unmet dependencies
             if (!task.areDependenciesMet(this.state.tasks)) return false
-
             // Filter by current view context
             if (this.state.currentView !== 'all' && this.state.currentView !== 'inbox') {
                 if (this.state.currentView === 'next' && task.status !== 'next') return false
                 if (this.state.currentView === 'waiting' && task.status !== 'waiting') return false
             }
-
             return true
         })
-
         // Score each task based on multiple factors
         const scoredTasks = candidateTasks.map((task) => {
             let score = 0
             const reasons: string[] = []
-
             // Factor 1: Overdue tasks (highest priority)
             if (task.isOverdue()) {
                 score += 100
                 reasons.push('Overdue')
             }
-
             // Factor 2: Due today or soon
             if (task.isDueToday()) {
                 score += 75
@@ -216,19 +192,16 @@ export class SmartSuggestionsManager {
                 score += 50
                 reasons.push(`Due in ${this.getDaysUntilDue(task)} days`)
             }
-
             // Factor 3: Context match
             if (context && task.contexts && task.contexts.includes(context)) {
                 score += 60
                 reasons.push(`Matches current context (${context})`)
             }
-
             // Factor 4: Energy level match
             if (energyLevel && task.energy === energyLevel) {
                 score += 40
                 reasons.push(`Matches your energy level (${energyLevel})`)
             }
-
             // Factor 5: Time available match
             if (availableMinutes && task.time) {
                 if (task.time <= availableMinutes) {
@@ -242,18 +215,15 @@ export class SmartSuggestionsManager {
                 score += 20
                 reasons.push('Quick task')
             }
-
             // Factor 6: Next Actions get priority
             if (task.status === 'next') {
                 score += 25
                 reasons.push('Next Action')
             }
-
             // Factor 7: Quick tasks get slight boost
             if (task.time && task.time <= 5) {
                 score += 15
             }
-
             // Factor 8: Project urgency (projects due soon get priority)
             if (task.projectId) {
                 const project = this.state.projects.find((p) => p.id === task.projectId)
@@ -262,7 +232,6 @@ export class SmartSuggestionsManager {
                     reasons.push('Active project')
                 }
             }
-
             // Factor 9: Waiting tasks get lower priority unless dependencies met
             if (task.status === 'waiting') {
                 score -= 20
@@ -270,18 +239,14 @@ export class SmartSuggestionsManager {
                     reasons.push('Waiting for something')
                 }
             }
-
             // Factor 10: Tasks with descriptions are more defined
             if (task.description && task.description.trim().length > 10) {
                 score += 5
             }
-
             return { task, score, reasons }
         })
-
         // Sort by score (highest first) and limit results
         scoredTasks.sort((a, b) => b.score - a.score)
-
         // Return top suggestions
         return scoredTasks.slice(0, maxSuggestions)
     }
@@ -291,7 +256,7 @@ export class SmartSuggestionsManager {
      * @param task - Task to check
      * @returns Days until due, or null if no due date
      */
-    getDaysUntilDue (task: Task): number | null {
+    getDaysUntilDue(task: Task): number | null {
         if (!task.dueDate) return null
         const dueDate = new Date(task.dueDate)
         const today = new Date()
@@ -304,30 +269,24 @@ export class SmartSuggestionsManager {
     // =========================================================================
     // PRIVATE METHODS
     // =========================================================================
-
     /**
      * Render task suggestions in the modal
      */
-    renderSuggestions (): void {
+    renderSuggestions(): void {
         const contextSelect = document.getElementById('suggestion-context') as HTMLSelectElement
         const timeSelect = document.getElementById('suggestion-time') as HTMLSelectElement
         const energySelect = document.getElementById('suggestion-energy') as HTMLSelectElement
-
         if (!contextSelect || !timeSelect || !energySelect) return
-
         const context = contextSelect.value
         const time = timeSelect.value
         const energy = energySelect.value
-
         const suggestions = this.getSmartSuggestions({
             context,
             availableMinutes: time ? parseInt(time) : null,
             energyLevel: energy
         })
-
         const container = document.getElementById('suggestions-list')
         if (!container) return
-
         if (suggestions.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
@@ -338,16 +297,14 @@ export class SmartSuggestionsManager {
             `
             return
         }
-
         container.innerHTML = suggestions
             .map(({ task, score, reasons }) => {
                 const contexts =
                     task.contexts && task.contexts.length > 0
                         ? task.contexts
-                            .map((c) => `<span class="task-context">${escapeHtml(c)}</span>`)
-                            .join(' ')
+                              .map((c) => `<span class="task-context">${escapeHtml(c)}</span>`)
+                              .join(' ')
                         : ''
-
                 const reasonBadges = reasons
                     .slice(0, 3)
                     .map(
@@ -355,7 +312,6 @@ export class SmartSuggestionsManager {
                             `<span style="background: var(--info-color); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; margin-right: 4px;">${reason}</span>`
                     )
                     .join('')
-
                 return `
                 <div class="task-item" style="border-left: 4px solid var(--primary-color); cursor: pointer;" onclick="app.selectSuggestedTask('${task.id}')">
                     <div class="task-checkbox">
@@ -384,13 +340,12 @@ export class SmartSuggestionsManager {
      * User clicked on a suggested task - highlight it and close modal
      * @param taskId - ID of the selected task
      */
-    selectSuggestedTask (taskId: string): void {
+    selectSuggestedTask(taskId: string): void {
         // Remove the modal
         const modal = document.getElementById('suggestions-modal')
         if (modal) {
             modal.remove()
         }
-
         // Scroll to and highlight the task
         setTimeout(() => {
             const taskElement = document.querySelector(`[data-task-id="${taskId}"]`)

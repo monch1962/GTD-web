@@ -33,17 +33,17 @@ export class Storage {
     private syncEnabled: boolean = false
 
     // Public getter for userId
-    get userId(): string | null {
+    get userId (): string | null {
         return this._userId
     }
 
-    constructor(userId: string | null = null) {
+    constructor (userId: string | null = null) {
         this._userId = userId || this.getUserId()
         this.listeners = new Map()
         this.QUOTA_WARNING_THRESHOLD = StorageConfig.QUOTA_WARNING_THRESHOLD
     }
 
-    async init(): Promise<this> {
+    async init (): Promise<this> {
         // Initialize localStorage
         console.log('Storage initialized with localStorage')
 
@@ -53,7 +53,7 @@ export class Storage {
     /**
      * Get or generate user ID
      */
-    getUserId(): string {
+    getUserId (): string {
         let userId = localStorage.getItem('gtd_user_id')
 
         if (!userId) {
@@ -69,7 +69,7 @@ export class Storage {
      * Check available localStorage space
      * @returns Space info with used, total, percentage, and available bytes
      */
-    getStorageInfo(): StorageInfo {
+    getStorageInfo (): StorageInfo {
         let total = 0
         let used = 0
 
@@ -101,7 +101,7 @@ export class Storage {
      * @param bytesToFree - Number of bytes to try to free
      * @returns Bytes actually freed
      */
-    async freeSpace(bytesToFree: number): Promise<number> {
+    async freeSpace (bytesToFree: number): Promise<number> {
         let bytesFreed = 0
 
         // Try to remove old archived tasks first
@@ -144,7 +144,7 @@ export class Storage {
     /**
      * Get item from localStorage with error handling
      */
-    getItem(key: string): any {
+    getItem (key: string): any {
         try {
             const data = localStorage.getItem(key)
             if (data) {
@@ -167,7 +167,7 @@ export class Storage {
     /**
      * Set item in localStorage with quota management and error handling
      */
-    async setItem(key: string, value: any): Promise<boolean> {
+    async setItem (key: string, value: any): Promise<boolean> {
         const data = JSON.stringify(value)
         const dataSize = new Blob([data]).size
 
@@ -228,7 +228,7 @@ export class Storage {
     /**
      * Remove item from localStorage and remote
      */
-    async removeItem(key: string): Promise<boolean> {
+    async removeItem (key: string): Promise<boolean> {
         try {
             localStorage.removeItem(key)
 
@@ -253,7 +253,7 @@ export class Storage {
     /**
      * Show quota warning to user
      */
-    showQuotaWarning(): void {
+    showQuotaWarning (): void {
         const storageInfo = this.getStorageInfo()
         const message = `Storage almost full (${storageInfo.percentage.toFixed(1)}% used). Old archive items are being cleaned up automatically.`
 
@@ -272,7 +272,7 @@ export class Storage {
     /**
      * Show quota error to user
      */
-    showQuotaError(): void {
+    showQuotaError (): void {
         const message =
             'Storage quota exceeded! Please archive old tasks or clear your browser data.'
 
@@ -299,7 +299,7 @@ export class Storage {
     /**
      * Sync all data from remote storage
      */
-    async syncFromRemote(): Promise<void> {
+    async syncFromRemote (): Promise<void> {
         if (!this.remoteStorage) return
 
         try {
@@ -340,7 +340,7 @@ export class Storage {
     /**
      * Merge local and remote data based on timestamp
      */
-    mergeData(local: any[], remote: any[], timestampField: string): any[] {
+    mergeData (local: any[], remote: any[], timestampField: string): any[] {
         const merged = new Map()
 
         // Add all local items
@@ -365,14 +365,14 @@ export class Storage {
     /**
      * Manual sync trigger
      */
-    async sync(): Promise<void> {
+    async sync (): Promise<void> {
         await this.syncFromRemote()
     }
 
     /**
      * Update sync status in UI
      */
-    updateSyncStatus(status: 'syncing' | 'synced' | 'error'): void {
+    updateSyncStatus (status: 'syncing' | 'synced' | 'error'): void {
         const syncButton = document.getElementById('sync-status')
         if (!syncButton) return
 
@@ -382,24 +382,24 @@ export class Storage {
         syncButton.classList.remove('syncing', 'error')
 
         switch (status) {
-            case 'syncing':
-                syncButton.classList.add('syncing')
-                syncText.textContent = 'Syncing...'
-                break
-            case 'synced':
-                syncText.textContent = 'Synced'
-                break
-            case 'error':
-                syncButton.classList.add('error')
-                syncText.textContent = 'Sync Error'
-                break
+        case 'syncing':
+            syncButton.classList.add('syncing')
+            syncText.textContent = 'Syncing...'
+            break
+        case 'synced':
+            syncText.textContent = 'Synced'
+            break
+        case 'error':
+            syncButton.classList.add('error')
+            syncText.textContent = 'Sync Error'
+            break
         }
     }
 
     /**
      * Subscribe to data changes
      */
-    subscribe(key: string, callback: (value: any) => void): void {
+    subscribe (key: string, callback: (value: any) => void): void {
         if (!this.listeners.has(key)) {
             this.listeners.set(key, [])
         }
@@ -409,7 +409,7 @@ export class Storage {
     /**
      * Notify listeners of data changes
      */
-    notifyListeners(key: string, value: any): void {
+    notifyListeners (key: string, value: any): void {
         const callbacks = this.listeners.get(key)
         if (callbacks) {
             callbacks.forEach((callback) => callback(value))
@@ -419,35 +419,35 @@ export class Storage {
     /**
      * Get all tasks
      */
-    getTasks(): any[] {
+    getTasks (): any[] {
         return this.getItem('gtd_tasks') || []
     }
 
     /**
      * Save all tasks
      */
-    async saveTasks(tasks: any[]): Promise<void> {
+    async saveTasks (tasks: any[]): Promise<void> {
         await this.setItem('gtd_tasks', tasks)
     }
 
     /**
      * Get all projects
      */
-    getProjects(): any[] {
+    getProjects (): any[] {
         return this.getItem('gtd_projects') || []
     }
 
     /**
      * Save all projects
      */
-    async saveProjects(projects: any[]): Promise<void> {
+    async saveProjects (projects: any[]): Promise<void> {
         await this.setItem('gtd_projects', projects)
     }
 
     /**
      * Get settings
      */
-    getSettings(): any {
+    getSettings (): any {
         return (
             this.getItem('gtd_settings') || {
                 theme: 'light',
@@ -459,42 +459,42 @@ export class Storage {
     /**
      * Save settings
      */
-    async saveSettings(settings: any): Promise<void> {
+    async saveSettings (settings: any): Promise<void> {
         await this.setItem('gtd_settings', settings)
     }
 
     /**
      * Get all templates
      */
-    getTemplates(): any[] {
+    getTemplates (): any[] {
         return this.getItem('gtd_templates') || []
     }
 
     /**
      * Save all templates
      */
-    async saveTemplates(templates: any[]): Promise<void> {
+    async saveTemplates (templates: any[]): Promise<void> {
         await this.setItem('gtd_templates', templates)
     }
 
     /**
      * Get archived tasks
      */
-    getArchivedTasks(): ArchiveEntry[] {
+    getArchivedTasks (): ArchiveEntry[] {
         return this.getItem('gtd_archive') || []
     }
 
     /**
      * Save archived tasks
      */
-    async saveArchivedTasks(archivedTasks: ArchiveEntry[]): Promise<void> {
+    async saveArchivedTasks (archivedTasks: ArchiveEntry[]): Promise<void> {
         await this.setItem('gtd_archive', archivedTasks)
     }
 
     /**
      * Add tasks to archive
      */
-    async addToArchive(tasksToArchive: any[]): Promise<void> {
+    async addToArchive (tasksToArchive: any[]): Promise<void> {
         const archive = this.getArchivedTasks()
         const archivedAt = new Date().toISOString()
 
@@ -511,7 +511,7 @@ export class Storage {
     /**
      * Remove task from archive
      */
-    async removeFromArchive(taskId: string): Promise<void> {
+    async removeFromArchive (taskId: string): Promise<void> {
         const archive = this.getArchivedTasks()
         const filteredArchive = archive.filter((entry) => entry.task.id !== taskId)
         await this.saveArchivedTasks(filteredArchive)

@@ -8,7 +8,6 @@ describe('KeyboardNavigation', () => {
     let keyboardNav
     let mockState
     let mockApp
-    let mockDocument
 
     let mockTaskElements
     let mockQuickAddInput
@@ -34,6 +33,9 @@ describe('KeyboardNavigation', () => {
             switchView: jest.fn(),
             showInfo: jest.fn()
         }
+
+        // Mock window.confirm for delete confirmation
+        global.confirm = jest.fn().mockReturnValue(true)
 
         // Create mock task elements
         mockTaskElements = [

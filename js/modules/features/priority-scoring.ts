@@ -21,16 +21,13 @@
  * - Defer date (0-20 points penalty)
  * - Age of task (0-7 points)
  */
-
 import { Task, Project } from '../../models'
-
 /**
  * App interface for type safety
  */
 interface App {
     // App methods will be defined as needed
 }
-
 /**
  * State interface for priority scoring
  */
@@ -38,20 +35,15 @@ interface State {
     tasks: Task[]
     projects: Project[]
 }
-
 export class PriorityScoringManager {
     private state: State
-    private app: App
-
     constructor (state: State, app: App) {
         this.state = state
-        this.app = app
     }
 
     // =========================================================================
     // PUBLIC API
     // =========================================================================
-
     /**
      * Calculate priority score for a task (0-100 scale)
      * @param {Task} task - Task to score
@@ -59,10 +51,8 @@ export class PriorityScoringManager {
      */
     calculatePriorityScore (task: Task): number {
         if (!task || task.completed) return 0
-
         let score = 50 // Base score
         const reasons: string[] = []
-
         // Factor 1: Due date urgency (0-25 points)
         if (task.dueDate) {
             const daysUntilDue = this.getDaysUntilDue(task)
@@ -84,13 +74,11 @@ export class PriorityScoringManager {
                 }
             }
         }
-
         // Factor 2: Starred tasks (0-15 points)
         if (task.starred) {
             score += 15
             reasons.push('Starred')
         }
-
         // Factor 3: Task status priority (0-10 points)
         if (task.status === 'next') {
             score += 10
@@ -98,7 +86,6 @@ export class PriorityScoringManager {
         } else if (task.status === 'inbox') {
             score += 5
         }
-
         // Factor 4: Dependencies (0-10 points)
         if (task.waitingForTaskIds && task.waitingForTaskIds.length > 0) {
             if (task.areDependenciesMet(this.state.tasks)) {
@@ -109,7 +96,6 @@ export class PriorityScoringManager {
                 reasons.push('Blocked')
             }
         }
-
         // Factor 5: Energy vs available time (0-8 points)
         if (task.energy && task.time) {
             // Quick high-energy tasks get boost
@@ -121,7 +107,6 @@ export class PriorityScoringManager {
                 score -= 5
             }
         }
-
         // Factor 6: Time estimate (0-5 points)
         if (task.time) {
             if (task.time <= 5) {
@@ -131,7 +116,6 @@ export class PriorityScoringManager {
                 score += 3
             }
         }
-
         // Factor 7: Project priority (0-5 points)
         if (task.projectId) {
             const project = this.state.projects.find((p) => p.id === task.projectId)
@@ -140,13 +124,11 @@ export class PriorityScoringManager {
                 reasons.push('Active project')
             }
         }
-
         // Factor 8: Defer date (0-20 points penalty)
         if (task.deferDate && !task.isAvailable()) {
             score -= 20
             reasons.push('Deferred')
         }
-
         // Factor 9: Age of task (0-7 points)
         const daysSinceCreated = Math.floor(
             (new Date().getTime() - new Date(task.createdAt).getTime()) / (1000 * 60 * 60 * 24)
@@ -159,10 +141,8 @@ export class PriorityScoringManager {
         } else if (daysSinceCreated > 7) {
             score += 3
         }
-
         // Ensure score is within 0-100 range
         score = Math.max(0, Math.min(100, score))
-
         return score
     }
 
@@ -195,7 +175,6 @@ export class PriorityScoringManager {
     // =========================================================================
     // PRIVATE METHODS
     // =========================================================================
-
     /**
      * Get days until due date
      * @param {Task} task - Task to check
@@ -203,14 +182,11 @@ export class PriorityScoringManager {
      */
     private getDaysUntilDue (task: Task): number | null {
         if (!task.dueDate) return null
-
         // Parse date string as local time (not UTC) to avoid timezone issues
         const [year, month, day] = task.dueDate.split('-').map(Number)
         const dueDate = new Date(year, month - 1, day)
-
         const today = new Date()
         today.setHours(0, 0, 0, 0)
-
         const diffTime = dueDate.getTime() - today.getTime()
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
         return diffDays

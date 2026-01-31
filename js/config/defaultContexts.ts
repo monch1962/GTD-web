@@ -64,32 +64,32 @@ export const defaultContexts: Context[] = [
 ]
 
 // Helper function to get all context IDs
-export function getContextIds (): string[] {
+export function getContextIds(): string[] {
     return defaultContexts.map((ctx) => ctx.id)
 }
 
 // Helper function to get context by ID
-export function getContextById (id: string): Context | undefined {
+export function getContextById(id: string): Context | undefined {
     return defaultContexts.find((ctx) => ctx.id === id)
 }
 
 // Helper function to get contexts by category
-export function getContextsByCategory (category: string): Context[] {
+export function getContextsByCategory(category: string): Context[] {
     return defaultContexts.filter((ctx) => ctx.category === category)
 }
 
 // Helper function to get simple array of context IDs (for backward compatibility)
-export function getDefaultContextIds (): string[] {
+export function getDefaultContextIds(): string[] {
     return getContextIds()
 }
 
 // Helper function to check if a context is a default context
-export function isDefaultContext (contextId: string): boolean {
+export function isDefaultContext(contextId: string): boolean {
     return getContextIds().includes(contextId)
 }
 
 // Get all categories
-export function getCategories (): string[] {
+export function getCategories(): string[] {
     const categories = new Set(defaultContexts.map((ctx) => ctx.category))
     return Array.from(categories)
 }
@@ -101,7 +101,7 @@ export function getCategories (): string[] {
  * @param tasks - Array of task objects that may have contexts
  * @returns Set containing all context IDs (default + custom)
  */
-export function getAllContexts (tasks: any[] = []): Set<string> {
+export function getAllContexts(tasks: any[] = []): Set<string> {
     const defaultContextIds = getContextIds()
     const customContexts = new Set<string>()
 
@@ -121,6 +121,23 @@ export function getAllContexts (tasks: any[] = []): Set<string> {
         }
     })
 
+    // Also check localStorage for legacy custom contexts
+    try {
+        const storedCustomContexts = localStorage.getItem('gtd_custom_contexts')
+        if (storedCustomContexts) {
+            const parsed = JSON.parse(storedCustomContexts)
+            if (Array.isArray(parsed)) {
+                parsed.forEach((context: string) => {
+                    if (!defaultContextIds.includes(context)) {
+                        customContexts.add(context)
+                    }
+                })
+            }
+        }
+    } catch (e) {
+        // Ignore localStorage errors
+    }
+
     // Combine default and custom contexts
     return new Set([...defaultContextIds, ...Array.from(customContexts)])
 }
@@ -131,7 +148,7 @@ export function getAllContexts (tasks: any[] = []): Set<string> {
  * @param tasks - Array of task objects that may have contexts
  * @returns Map of context ID to task count
  */
-export function getContextTaskCounts (tasks: any[] = []): Record<string, number> {
+export function getContextTaskCounts(tasks: any[] = []): Record<string, number> {
     const counts: Record<string, number> = {}
 
     // Handle null or undefined tasks
