@@ -7,7 +7,6 @@ import { NewProjectButtonManager } from '../js/modules/features/new-project-butt
 
 describe('NewProjectButtonManager - Basic Functionality', () => {
     let manager
-    let mockState
     let mockApp
 
     beforeEach(() => {
@@ -19,15 +18,10 @@ describe('NewProjectButtonManager - Basic Functionality', () => {
         newProjectBtn.id = 'btn-new-project'
         document.body.appendChild(newProjectBtn)
 
-        mockState = {
-            tasks: [],
-            projects: []
-        }
-
         mockApp = new GTDApp()
         mockApp.openTaskModal = jest.fn()
 
-        manager = new NewProjectButtonManager(mockState, mockApp)
+        manager = new NewProjectButtonManager(mockApp)
     })
 
     afterEach(() => {
@@ -37,7 +31,6 @@ describe('NewProjectButtonManager - Basic Functionality', () => {
     describe('Constructor', () => {
         test('should initialize successfully', () => {
             expect(manager).toBeDefined()
-            expect(manager.state).toBe(mockState)
             expect(manager.app).toBe(mockApp)
         })
     })
@@ -91,7 +84,7 @@ describe('NewProjectButtonManager - Basic Functionality', () => {
     describe('Integration with App', () => {
         test('should use optional chaining when calling openTaskModal', () => {
             const appWithoutModal = {}
-            const managerWithoutModal = new NewProjectButtonManager(mockState, appWithoutModal)
+            const managerWithoutModal = new NewProjectButtonManager(appWithoutModal)
 
             expect(() => {
                 managerWithoutModal.setupNewProjectButton()
@@ -127,21 +120,15 @@ describe('NewProjectButtonManager - Basic Functionality', () => {
 
 describe('NewProjectButtonManager - Edge Cases', () => {
     let manager
-    let mockState
     let mockApp
 
     beforeEach(() => {
         localStorage.clear()
         document.body.innerHTML = ''
 
-        mockState = {
-            tasks: [],
-            projects: []
-        }
-
         mockApp = new GTDApp()
         mockApp.openTaskModal = jest.fn()
-        manager = new NewProjectButtonManager(mockState, mockApp)
+        manager = new NewProjectButtonManager(mockApp)
     })
 
     afterEach(() => {
@@ -190,22 +177,16 @@ describe('NewProjectButtonManager - Edge Cases', () => {
 
 describe('NewProjectButtonManager - DOM Integration', () => {
     let manager
-    let mockState
     let mockApp
 
     beforeEach(() => {
         localStorage.clear()
         document.body.innerHTML = ''
 
-        mockState = {
-            tasks: [],
-            projects: []
-        }
-
         mockApp = new GTDApp()
         mockApp.openTaskModal = jest.fn()
 
-        manager = new NewProjectButtonManager(mockState, mockApp)
+        manager = new NewProjectButtonManager(mockApp)
     })
 
     afterEach(() => {
@@ -264,7 +245,6 @@ describe('NewProjectButtonManager - DOM Integration', () => {
 
 describe('NewProjectButtonManager - Feature Consistency', () => {
     let manager
-    let mockState
     let mockApp
 
     beforeEach(() => {
@@ -276,33 +256,21 @@ describe('NewProjectButtonManager - Feature Consistency', () => {
         button.id = 'btn-new-project'
         document.body.appendChild(button)
 
-        mockState = {
-            tasks: [],
-            projects: []
-        }
-
         mockApp = new GTDApp()
         mockApp.openTaskModal = jest.fn()
 
-        manager = new NewProjectButtonManager(mockState, mockApp)
+        manager = new NewProjectButtonManager(mockApp)
     })
 
     afterEach(() => {
         document.body.innerHTML = ''
     })
 
-    test('should always pass project type regardless of state', () => {
-        manager.setupNewProjectButton()
-
+    test('should always pass project type', () => {
         const button = document.getElementById('btn-new-project')
+        expect(button).toBeTruthy()
 
-        // Test with empty state
-        button.click()
-        expect(mockApp.openTaskModal).toHaveBeenCalledWith(null, null, { type: 'project' })
-
-        // Test with projects in state
-        mockState.projects.push({ id: '1', title: 'Existing Project' })
-        jest.clearAllMocks()
+        manager.setupNewProjectButton()
 
         button.click()
         expect(mockApp.openTaskModal).toHaveBeenCalledWith(null, null, { type: 'project' })
@@ -312,7 +280,7 @@ describe('NewProjectButtonManager - Feature Consistency', () => {
         const app2 = new GTDApp()
         app2.openTaskModal = jest.fn()
 
-        const manager2 = new NewProjectButtonManager(mockState, app2)
+        const manager2 = new NewProjectButtonManager(app2)
 
         // Button already exists from beforeEach
         const button = document.getElementById('btn-new-project')

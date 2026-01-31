@@ -26,22 +26,24 @@ interface AppState {
     tasks: Task[]
     projects: Project[]
 }
+// AppDependencies is not used in this module but kept for consistency
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface AppDependencies {
-    // App methods will be defined as needed
+    // No methods needed since app is not used
 }
 interface CompletionData {
     [dateKey: string]: number
 }
 export class ProductivityHeatmapManager {
     private state: AppState
-    private app: AppDependencies
+    private _app: AppDependencies
     /**
      * @param state - The application state object
      * @param app - The main app instance for delegation
      */
     constructor (state: AppState, app: AppDependencies) {
         this.state = state
-        this.app = app
+        this._app = app
     }
 
     // =========================================================================
@@ -115,19 +117,21 @@ export class ProductivityHeatmapManager {
      */
     buildCompletionData (startDate: Date, endDate: Date): CompletionData {
         const data: CompletionData = {}
-        const currentDate = new Date(startDate)
         // Initialize all days with 0
-        while (currentDate <= endDate) {
+        for (
+            let currentDate = new Date(startDate);
+            currentDate <= endDate;
+            currentDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000)
+        ) {
             const dateKey = this.getDateKey(currentDate)
             data[dateKey] = 0
-            currentDate.setDate(currentDate.getDate() + 1)
         }
         // Count completed tasks per day
         this.state.tasks.forEach((task) => {
             if (task.completed && task.completedAt) {
                 const completedDate = new Date(task.completedAt)
                 const dateKey = this.getDateKey(completedDate)
-                if (data.hasOwnProperty(dateKey)) {
+                if (Object.prototype.hasOwnProperty.call(data, dateKey)) {
                     data[dateKey]++
                 }
             }
@@ -216,8 +220,11 @@ export class ProductivityHeatmapManager {
             .join('')
         // Create cells
         let cellsHTML = ''
-        const currentDate = new Date(startDate)
-        while (currentDate <= endDate) {
+        for (
+            let currentDate = new Date(startDate);
+            currentDate <= endDate;
+            currentDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000)
+        ) {
             const dateKey = this.getDateKey(currentDate)
             const count = completionData[dateKey] || 0
             const level = this.getHeatmapLevel(count, maxCount)
@@ -228,7 +235,6 @@ export class ProductivityHeatmapManager {
                 day: 'numeric'
             })
             cellsHTML += `<div class="heatmap-cell level-${level}" data-date="${formattedDate}" data-count="${count}"></div>`
-            currentDate.setDate(currentDate.getDate() + 1)
         }
         // Create month labels
         const monthLabelsHTML = this.createMonthLabels(startDate, endDate)
@@ -271,11 +277,14 @@ export class ProductivityHeatmapManager {
      */
     createMonthLabels (startDate: Date, endDate: Date): string {
         const labels: string[] = []
-        const currentMonth = new Date(startDate)
-        currentMonth.setDate(1) // Set to first of month
         let weekIndex = 0
         let weeksInMonth = 0
-        while (currentMonth <= endDate) {
+        for (
+            let currentMonth = new Date(startDate);
+            currentMonth <= endDate;
+            currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1)
+        ) {
+            currentMonth.setDate(1) // Set to first of month
             const daysInMonth = new Date(
                 currentMonth.getFullYear(),
                 currentMonth.getMonth() + 1,
@@ -288,7 +297,6 @@ export class ProductivityHeatmapManager {
                 `<span class="heatmap-month-label" style="left: ${leftPos}px;">${monthName}</span>`
             )
             weekIndex += weeksInMonth
-            currentMonth.setMonth(currentMonth.getMonth() + 1)
         }
         return labels.join('')
     }

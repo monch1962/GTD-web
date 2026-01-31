@@ -17,20 +17,12 @@ interface App {
     openTaskModal?: (
         task: Task | null,
         defaultProjectId?: string | null,
-        defaultData?: Record<string, any>
+        defaultData?: Record<string, unknown>
     ) => void
 }
-/**
- * State interface (minimal for this module)
- */
-interface State {
-    // State properties will be defined as needed
-}
 export class NewProjectButtonManager {
-    private state: State
     private app: App
-    constructor (state: State, app: App) {
-        this.state = state
+    constructor (app: App) {
         this.app = app
     }
 

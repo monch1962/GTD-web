@@ -23,12 +23,6 @@
  */
 import { Task, Project } from '../../models'
 /**
- * App interface for type safety
- */
-interface App {
-    // App methods will be defined as needed
-}
-/**
  * State interface for priority scoring
  */
 interface State {
@@ -37,7 +31,7 @@ interface State {
 }
 export class PriorityScoringManager {
     private state: State
-    constructor (state: State, app: App) {
+    constructor (state: State) {
         this.state = state
     }
 

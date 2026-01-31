@@ -2,7 +2,7 @@
  * Comprehensive Tests for Productivity Heatmap Manager
  */
 
-import { Task, Project, Template } from '../js/models.ts'
+import { Task, _Project, _Template } from '../js/models.ts'
 import { ProductivityHeatmapManager } from '../js/modules/features/productivity-heatmap.ts'
 
 // Make Task available globally
@@ -29,7 +29,7 @@ describe('ProductivityHeatmapManager - Initialization', () => {
     test('should initialize successfully', () => {
         expect(manager).toBeDefined()
         expect(manager.state).toBe(mockState)
-        expect(manager.app).toBe(mockApp)
+        expect(manager._app).toBe(mockApp)
     })
 })
 
@@ -653,8 +653,8 @@ describe('ProductivityHeatmapManager - renderHeatmapGrid()', () => {
             '2025-01-03': 10
         }
 
-        const startDate = new Date(2025, 0, 1)
-        const endDate = new Date(2025, 0, 3)
+        const _startDate = new Date(2025, 0, 1)
+        const _endDate = new Date(2025, 0, 3)
         const container = document.createElement('div')
 
         manager.renderHeatmapGrid(completionData, 3, container)
@@ -667,8 +667,8 @@ describe('ProductivityHeatmapManager - renderHeatmapGrid()', () => {
     test('should set level-0 for zero count days', () => {
         const completionData = { '2025-01-01': 0 }
 
-        const startDate = new Date(2025, 0, 1)
-        const endDate = new Date(2025, 0, 1)
+        const _startDate = new Date(2025, 0, 1)
+        const _endDate = new Date(2025, 0, 1)
         const container = document.createElement('div')
 
         manager.renderHeatmapGrid(completionData, 1, container)
@@ -686,9 +686,9 @@ describe('ProductivityHeatmapManager - renderHeatmapGrid()', () => {
         const dateKey = manager.getDateKey(today)
         const completionData = { [dateKey]: 5 }
 
-        const startDate = new Date(today)
-        startDate.setDate(startDate.getDate() - 1)
-        const endDate = today
+        const _startDate = new Date(today)
+        _startDate.setDate(_startDate.getDate() - 1)
+        const _endDate = today
         const container = document.createElement('div')
 
         manager.renderHeatmapGrid(completionData, 1, container)
@@ -703,8 +703,8 @@ describe('ProductivityHeatmapManager - renderHeatmapGrid()', () => {
     test('should setup tooltips after rendering', () => {
         const completionData = { '2025-01-01': 5 }
 
-        const startDate = new Date(2025, 0, 1)
-        const endDate = new Date(2025, 0, 1)
+        const _startDate = new Date(2025, 0, 1)
+        const _endDate = new Date(2025, 0, 1)
         const container = document.createElement('div')
         document.body.appendChild(container)
 

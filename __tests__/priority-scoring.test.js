@@ -6,9 +6,9 @@ import { GTDApp } from '../js/app.ts'
 import { PriorityScoringManager } from '../js/modules/features/priority-scoring.ts'
 
 describe('PriorityScoringManager - Score Calculation', () => {
-    let manager
+    let _manager
     let mockState
-    let mockApp
+    let _mockApp
 
     beforeEach(() => {
         mockState = {
@@ -16,18 +16,18 @@ describe('PriorityScoringManager - Score Calculation', () => {
             projects: []
         }
 
-        mockApp = new GTDApp()
-        manager = new PriorityScoringManager(mockState, mockApp)
+        _mockApp = new GTDApp()
+        _manager = new PriorityScoringManager(mockState)
     })
 
     describe('calculatePriorityScore() - Base Cases', () => {
         test('should return 0 for null task', () => {
-            const score = manager.calculatePriorityScore(null)
+            const score = _manager.calculatePriorityScore(null)
             expect(score).toBe(0)
         })
 
         test('should return 0 for undefined task', () => {
-            const score = manager.calculatePriorityScore(undefined)
+            const score = _manager.calculatePriorityScore(undefined)
             expect(score).toBe(0)
         })
 
@@ -38,7 +38,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 completed: true
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(0)
         })
 
@@ -49,7 +49,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 completed: false
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(50)
         })
 
@@ -68,7 +68,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 createdAt: '2025-12-01T00:00:00.000Z'
             }
 
-            const score = manager.calculatePriorityScore(highPriorityTask)
+            const score = _manager.calculatePriorityScore(highPriorityTask)
             expect(score).toBeGreaterThanOrEqual(0)
             expect(score).toBeLessThanOrEqual(100)
         })
@@ -86,7 +86,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 dueDate: pastDate.toISOString().split('T')[0]
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(75) // 50 base + 25 overdue
         })
 
@@ -100,7 +100,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 dueDate: today
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(70) // 50 base + 20 due today
         })
 
@@ -115,7 +115,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 dueDate: tomorrow.toISOString().split('T')[0]
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(65) // 50 base + 15 due tomorrow
         })
 
@@ -130,7 +130,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 dueDate: inThreeDays.toISOString().split('T')[0]
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(60) // 50 base + 10 due soon
         })
 
@@ -145,7 +145,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 dueDate: inFiveDays.toISOString().split('T')[0]
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(55) // 50 base + 5
         })
 
@@ -160,7 +160,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 dueDate: inTwoWeeks.toISOString().split('T')[0]
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(50) // 50 base only
         })
     })
@@ -174,7 +174,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 starred: true
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(65) // 50 base + 15 starred
         })
 
@@ -186,7 +186,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 starred: false
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(50) // 50 base only
         })
     })
@@ -200,7 +200,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 status: 'next'
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(60) // 50 base + 10 next
         })
 
@@ -212,7 +212,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 status: 'inbox'
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(55) // 50 base + 5 inbox
         })
 
@@ -224,7 +224,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 status: 'waiting'
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(50) // 50 base only
         })
     })
@@ -249,7 +249,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 areDependenciesMet: () => true
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(60) // 50 base + 10 dependencies met
         })
 
@@ -272,7 +272,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 areDependenciesMet: () => false
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(40) // 50 base - 10 blocked
         })
 
@@ -283,7 +283,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 completed: false
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(50) // 50 base only
         })
     })
@@ -298,7 +298,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 time: 10
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(61) // 50 base + 8 (high energy + quick) + 3 (time estimate)
         })
 
@@ -311,7 +311,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 time: 90
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(45) // 50 base - 5
         })
 
@@ -324,7 +324,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 time: 30
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(50) // 50 base only
         })
     })
@@ -338,7 +338,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 time: 5
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(55) // 50 base + 5
         })
 
@@ -350,7 +350,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 time: 15
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(53) // 50 base + 3
         })
 
@@ -362,7 +362,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 time: 30
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(50) // 50 base only
         })
     })
@@ -378,7 +378,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 projectId: 'proj1'
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(55) // 50 base + 5
         })
 
@@ -392,7 +392,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 projectId: 'proj1'
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(50) // 50 base only
         })
 
@@ -404,7 +404,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 projectId: 'nonexistent'
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(50) // 50 base only
         })
     })
@@ -422,7 +422,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 isAvailable: () => false
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(30) // 50 base - 20 deferred
         })
 
@@ -435,7 +435,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 isAvailable: () => true
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(50) // 50 base only
         })
     })
@@ -452,7 +452,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 createdAt: oldDate.toISOString()
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(57) // 50 base + 7
         })
 
@@ -467,7 +467,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 createdAt: oldDate.toISOString()
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(55) // 50 base + 5
         })
 
@@ -482,7 +482,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 createdAt: oldDate.toISOString()
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(53) // 50 base + 3
         })
 
@@ -497,7 +497,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 createdAt: recentDate.toISOString()
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(50) // 50 base only
         })
     })
@@ -516,7 +516,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 time: 5 // +5
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(100) // 50 + 20 + 15 + 10 + 5 = 100 (maxed out)
         })
 
@@ -539,7 +539,7 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 createdAt: oldDate.toISOString() // +7
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(100) // Should cap at 100
         })
 
@@ -559,131 +559,135 @@ describe('PriorityScoringManager - Score Calculation', () => {
                 isAvailable: () => false
             }
 
-            const score = manager.calculatePriorityScore(task)
+            const score = _manager.calculatePriorityScore(task)
             expect(score).toBe(15) // 50 - 20 - 5 - 10 = 15 (minimum)
         })
     })
 })
 
 describe('PriorityScoringManager - Score Color Mapping', () => {
-    let manager
+    let _manager
     let mockState
-    let mockApp
+    let _mockApp
 
     beforeEach(() => {
         mockState = { tasks: [], projects: [] }
-        mockApp = new GTDApp()
-        manager = new PriorityScoringManager(mockState, mockApp)
+        _mockApp = new GTDApp()
+        _manager = new PriorityScoringManager(mockState)
     })
 
     describe('getPriorityScoreColor()', () => {
-        test('should return danger color for urgent scores (≥80)', () => {
-            expect(manager.getPriorityScoreColor(80)).toBe('var(--danger-color)')
-            expect(manager.getPriorityScoreColor(90)).toBe('var(--danger-color)')
-            expect(manager.getPriorityScoreColor(100)).toBe('var(--danger-color)')
+        let _manager
+        let mockState
+        let _mockApp
+
+        beforeEach(() => {
+            mockState = { tasks: [], projects: [] }
+            _mockApp = new GTDApp()
+            _manager = new PriorityScoringManager(mockState)
         })
 
         test('should return orange for high scores (60-79)', () => {
-            expect(manager.getPriorityScoreColor(60)).toBe('#f39c12')
-            expect(manager.getPriorityScoreColor(70)).toBe('#f39c12')
-            expect(manager.getPriorityScoreColor(79)).toBe('#f39c12')
+            expect(_manager.getPriorityScoreColor(60)).toBe('#f39c12')
+            expect(_manager.getPriorityScoreColor(70)).toBe('#f39c12')
+            expect(_manager.getPriorityScoreColor(79)).toBe('#f39c12')
         })
 
         test('should return warning color for medium scores (40-59)', () => {
-            expect(manager.getPriorityScoreColor(40)).toBe('var(--warning-color)')
-            expect(manager.getPriorityScoreColor(50)).toBe('var(--warning-color)')
-            expect(manager.getPriorityScoreColor(59)).toBe('var(--warning-color)')
+            expect(_manager.getPriorityScoreColor(40)).toBe('var(--warning-color)')
+            expect(_manager.getPriorityScoreColor(50)).toBe('var(--warning-color)')
+            expect(_manager.getPriorityScoreColor(59)).toBe('var(--warning-color)')
         })
 
         test('should return info color for low scores (20-39)', () => {
-            expect(manager.getPriorityScoreColor(20)).toBe('var(--info-color)')
-            expect(manager.getPriorityScoreColor(30)).toBe('var(--info-color)')
-            expect(manager.getPriorityScoreColor(39)).toBe('var(--info-color)')
+            expect(_manager.getPriorityScoreColor(20)).toBe('var(--info-color)')
+            expect(_manager.getPriorityScoreColor(30)).toBe('var(--info-color)')
+            expect(_manager.getPriorityScoreColor(39)).toBe('var(--info-color)')
         })
 
         test('should return text-secondary for very low scores (<20)', () => {
-            expect(manager.getPriorityScoreColor(0)).toBe('var(--text-secondary)')
-            expect(manager.getPriorityScoreColor(10)).toBe('var(--text-secondary)')
-            expect(manager.getPriorityScoreColor(19)).toBe('var(--text-secondary)')
+            expect(_manager.getPriorityScoreColor(0)).toBe('var(--text-secondary)')
+            expect(_manager.getPriorityScoreColor(10)).toBe('var(--text-secondary)')
+            expect(_manager.getPriorityScoreColor(19)).toBe('var(--text-secondary)')
         })
 
         test('should handle boundary values correctly', () => {
-            expect(manager.getPriorityScoreColor(79)).toBe('#f39c12') // Not urgent yet
-            expect(manager.getPriorityScoreColor(80)).toBe('var(--danger-color)') // Urgent
-            expect(manager.getPriorityScoreColor(59)).toBe('var(--warning-color)') // Medium
-            expect(manager.getPriorityScoreColor(60)).toBe('#f39c12') // High
-            expect(manager.getPriorityScoreColor(39)).toBe('var(--info-color)') // Low
-            expect(manager.getPriorityScoreColor(40)).toBe('var(--warning-color)') // Medium
-            expect(manager.getPriorityScoreColor(19)).toBe('var(--text-secondary)') // Very low
-            expect(manager.getPriorityScoreColor(20)).toBe('var(--info-color)') // Low
+            expect(_manager.getPriorityScoreColor(79)).toBe('#f39c12') // Not urgent yet
+            expect(_manager.getPriorityScoreColor(80)).toBe('var(--danger-color)') // Urgent
+            expect(_manager.getPriorityScoreColor(59)).toBe('var(--warning-color)') // Medium
+            expect(_manager.getPriorityScoreColor(60)).toBe('#f39c12') // High
+            expect(_manager.getPriorityScoreColor(39)).toBe('var(--info-color)') // Low
+            expect(_manager.getPriorityScoreColor(40)).toBe('var(--warning-color)') // Medium
+            expect(_manager.getPriorityScoreColor(19)).toBe('var(--text-secondary)') // Very low
+            expect(_manager.getPriorityScoreColor(20)).toBe('var(--info-color)') // Low
         })
     })
 })
 
 describe('PriorityScoringManager - Score Label Mapping', () => {
-    let manager
+    let _manager
     let mockState
-    let mockApp
+    let _mockApp
 
     beforeEach(() => {
         mockState = { tasks: [], projects: [] }
-        mockApp = new GTDApp()
-        manager = new PriorityScoringManager(mockState, mockApp)
+        _mockApp = new GTDApp()
+        _manager = new PriorityScoringManager(mockState)
     })
 
     describe('getPriorityLabel()', () => {
         test('should return "Urgent" for urgent scores (≥80)', () => {
-            expect(manager.getPriorityLabel(80)).toBe('Urgent')
-            expect(manager.getPriorityLabel(90)).toBe('Urgent')
-            expect(manager.getPriorityLabel(100)).toBe('Urgent')
+            expect(_manager.getPriorityLabel(80)).toBe('Urgent')
+            expect(_manager.getPriorityLabel(90)).toBe('Urgent')
+            expect(_manager.getPriorityLabel(100)).toBe('Urgent')
         })
 
         test('should return "High" for high scores (60-79)', () => {
-            expect(manager.getPriorityLabel(60)).toBe('High')
-            expect(manager.getPriorityLabel(70)).toBe('High')
-            expect(manager.getPriorityLabel(79)).toBe('High')
+            expect(_manager.getPriorityLabel(60)).toBe('High')
+            expect(_manager.getPriorityLabel(70)).toBe('High')
+            expect(_manager.getPriorityLabel(79)).toBe('High')
         })
 
         test('should return "Medium" for medium scores (40-59)', () => {
-            expect(manager.getPriorityLabel(40)).toBe('Medium')
-            expect(manager.getPriorityLabel(50)).toBe('Medium')
-            expect(manager.getPriorityLabel(59)).toBe('Medium')
+            expect(_manager.getPriorityLabel(40)).toBe('Medium')
+            expect(_manager.getPriorityLabel(50)).toBe('Medium')
+            expect(_manager.getPriorityLabel(59)).toBe('Medium')
         })
 
         test('should return "Low" for low scores (20-39)', () => {
-            expect(manager.getPriorityLabel(20)).toBe('Low')
-            expect(manager.getPriorityLabel(30)).toBe('Low')
-            expect(manager.getPriorityLabel(39)).toBe('Low')
+            expect(_manager.getPriorityLabel(20)).toBe('Low')
+            expect(_manager.getPriorityLabel(30)).toBe('Low')
+            expect(_manager.getPriorityLabel(39)).toBe('Low')
         })
 
         test('should return "Very Low" for very low scores (<20)', () => {
-            expect(manager.getPriorityLabel(0)).toBe('Very Low')
-            expect(manager.getPriorityLabel(10)).toBe('Very Low')
-            expect(manager.getPriorityLabel(19)).toBe('Very Low')
+            expect(_manager.getPriorityLabel(0)).toBe('Very Low')
+            expect(_manager.getPriorityLabel(10)).toBe('Very Low')
+            expect(_manager.getPriorityLabel(19)).toBe('Very Low')
         })
 
         test('should handle boundary values correctly', () => {
-            expect(manager.getPriorityLabel(79)).toBe('High')
-            expect(manager.getPriorityLabel(80)).toBe('Urgent')
-            expect(manager.getPriorityLabel(59)).toBe('Medium')
-            expect(manager.getPriorityLabel(60)).toBe('High')
-            expect(manager.getPriorityLabel(39)).toBe('Low')
-            expect(manager.getPriorityLabel(40)).toBe('Medium')
-            expect(manager.getPriorityLabel(19)).toBe('Very Low')
-            expect(manager.getPriorityLabel(20)).toBe('Low')
+            expect(_manager.getPriorityLabel(79)).toBe('High')
+            expect(_manager.getPriorityLabel(80)).toBe('Urgent')
+            expect(_manager.getPriorityLabel(59)).toBe('Medium')
+            expect(_manager.getPriorityLabel(60)).toBe('High')
+            expect(_manager.getPriorityLabel(39)).toBe('Low')
+            expect(_manager.getPriorityLabel(40)).toBe('Medium')
+            expect(_manager.getPriorityLabel(19)).toBe('Very Low')
+            expect(_manager.getPriorityLabel(20)).toBe('Low')
         })
     })
 })
 
 describe('PriorityScoringManager - Private Methods', () => {
-    let manager
+    let _manager
     let mockState
-    let mockApp
+    let _mockApp
 
     beforeEach(() => {
         mockState = { tasks: [], projects: [] }
-        mockApp = new GTDApp()
-        manager = new PriorityScoringManager(mockState, mockApp)
+        _mockApp = new GTDApp()
+        _manager = new PriorityScoringManager(mockState)
     })
 
     describe('getDaysUntilDue()', () => {
@@ -697,7 +701,7 @@ describe('PriorityScoringManager - Private Methods', () => {
                 dueDate: futureDate.toISOString().split('T')[0]
             }
 
-            const days = manager.getDaysUntilDue(task)
+            const days = _manager.getDaysUntilDue(task)
             expect(days).toBe(5)
         })
 
@@ -711,7 +715,7 @@ describe('PriorityScoringManager - Private Methods', () => {
                 dueDate: pastDate.toISOString().split('T')[0]
             }
 
-            const days = manager.getDaysUntilDue(task)
+            const days = _manager.getDaysUntilDue(task)
             expect(days).toBe(-3)
         })
 
@@ -724,7 +728,7 @@ describe('PriorityScoringManager - Private Methods', () => {
                 dueDate: today
             }
 
-            const days = manager.getDaysUntilDue(task)
+            const days = _manager.getDaysUntilDue(task)
             expect(days).toBe(0)
         })
 
@@ -734,7 +738,7 @@ describe('PriorityScoringManager - Private Methods', () => {
                 title: 'No due date'
             }
 
-            const days = manager.getDaysUntilDue(task)
+            const days = _manager.getDaysUntilDue(task)
             expect(days).toBeNull()
         })
     })

@@ -184,8 +184,8 @@ export class ContextMenuManager {
         this.populateRemoveContextMenu(taskId)
 
         // Position menu
-        const x = event.clientX || (event as any).pageX || 0
-        const y = event.clientY || (event as any).pageY || 0
+        const x = event.clientX || (event as MouseEvent).pageX || 0
+        const y = event.clientY || (event as MouseEvent).pageY || 0
 
         contextMenu.style.display = 'block'
 
@@ -297,7 +297,7 @@ export class ContextMenuManager {
 
         case 'set-status':
             this.app.saveState?.('Change task status')
-            task.status = data.status as any
+            task.status = data.status as import('../../models').TaskStatus
             task.updatedAt = new Date().toISOString()
             await this.app.saveTasks?.()
             this.app.renderView?.()
@@ -307,14 +307,14 @@ export class ContextMenuManager {
 
         case 'set-energy':
             this.app.saveState?.('Change task energy')
-            task.energy = data.energy as any
+            task.energy = data.energy as import('../../models').EnergyLevel
             task.updatedAt = new Date().toISOString()
             await this.app.saveTasks?.()
             this.app.renderView?.()
             this.app.showToast?.(`Energy changed to ${data.energy || 'none'}`)
             break
 
-        case 'set-project':
+        case 'set-project': {
             const projectId = data.project || null
             this.app.saveState?.('Change task project')
             task.projectId = projectId
@@ -323,6 +323,7 @@ export class ContextMenuManager {
             this.app.renderView?.()
             this.app.showToast?.(projectId ? 'Project assigned' : 'Project removed')
             break
+        }
 
         case 'complete':
             this.app.saveState?.('Complete task')
@@ -344,7 +345,7 @@ export class ContextMenuManager {
             }
             break
 
-        case 'delete':
+        case 'delete': {
             if (confirm('Delete this task? This cannot be undone.')) {
                 this.app.saveState?.('Delete task')
                 const taskIndex = this.state.tasks.findIndex((t) => t.id === taskId)
@@ -357,8 +358,9 @@ export class ContextMenuManager {
                 }
             }
             break
+        }
 
-        case 'add-context':
+        case 'add-context': {
             const contextToAdd = data.context
             if (contextToAdd && !task.contexts?.includes(contextToAdd)) {
                 this.app.saveState?.('Add context to task')
@@ -370,8 +372,9 @@ export class ContextMenuManager {
                 this.app.showToast?.(`Added ${contextToAdd.trim()}`)
             }
             break
+        }
 
-        case 'remove-context':
+        case 'remove-context': {
             const contextToRemove = data.context
             if (contextToRemove && task.contexts?.includes(contextToRemove)) {
                 this.app.saveState?.('Remove context from task')
@@ -382,6 +385,7 @@ export class ContextMenuManager {
                 this.app.showToast?.(`Removed ${contextToRemove.trim()}`)
             }
             break
+        }
         }
     }
 
@@ -399,7 +403,7 @@ export class ContextMenuManager {
         submenu.innerHTML = ''
 
         // Get default contexts from state or use empty array
-        const defaultContexts = (this.state as any).defaultContexts || []
+        const defaultContexts = (this.state as { defaultContexts?: string[] }).defaultContexts || []
 
         // Get custom contexts from localStorage
         const customContexts = this.getCustomContexts()

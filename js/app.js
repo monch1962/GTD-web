@@ -129,7 +129,7 @@ class GTDApp {
         this.focusPomodoro = new FocusPomodoroManager(this, this)
         this.dailyReview = new DailyReviewManager(this, this)
         this.smartSuggestions = new SmartSuggestionsManager(this, this)
-        this.priorityScoring = new PriorityScoringManager(this, this)
+        this.priorityScoring = new PriorityScoringManager(this)
         this.globalQuickCapture = new GlobalQuickCaptureManager(this, this)
         this.productivityHeatmap = new ProductivityHeatmapManager(this, this)
         this.undoRedo = new UndoRedoManager(this, this)
@@ -137,7 +137,7 @@ class GTDApp {
         this.timeTracking = new TimeTrackingManager(this, this)
         this.subtasks = new SubtasksManager(this, this)
         this.quickCaptureWidget = new QuickCaptureWidgetManager(this, this)
-        this.newProjectButton = new NewProjectButtonManager(this, this)
+        this.newProjectButton = new NewProjectButtonManager(this)
         this.navigation = new NavigationManager(this, this)
         this.smartDateSuggestions = new SmartDateSuggestionsManager(this, this)
         this.search = new SearchManager(this, this)
@@ -3958,7 +3958,7 @@ class ErrorHandler {
                 errorLog.splice(0, errorLog.length - 20)
             }
             localStorage.setItem('gtd_error_log', JSON.stringify(errorLog))
-        } catch (_e) {
+        } catch {
             // Ignore errors in error logging
         }
     }
