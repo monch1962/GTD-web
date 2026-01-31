@@ -25,6 +25,14 @@ const mockApp = {
     renderView: jest.fn(),
     saveTasks: jest.fn().mockResolvedValue(undefined),
     toggleTaskComplete: jest.fn().mockResolvedValue(undefined),
+    toggleSubtask: jest.fn().mockImplementation((taskId, subtaskIndex) => {
+        // Find task and toggle subtask
+        const task = mockState.tasks.find((t) => t.id === taskId)
+        if (task && task.subtasks && task.subtasks[subtaskIndex]) {
+            task.subtasks[subtaskIndex].completed = !task.subtasks[subtaskIndex].completed
+        }
+        return Promise.resolve()
+    }),
     openTaskModal: jest.fn(),
     getSmartSuggestions: jest.fn().mockReturnValue([])
 }

@@ -1660,8 +1660,6 @@ class GTDApp {
             return tags ? JSON.parse(tags) : []
         }
 
-        const defaultContexts = this.defaultContexts
-
         const saveCustomTag = (context) => {
             const tags = getCustomContexts()
             const allContexts = getAllContexts(this.tasks)
@@ -3767,6 +3765,7 @@ class GTDApp {
         }
 
         // Save the new context with normalized name
+        const customContexts = JSON.parse(localStorage.getItem('gtd_custom_contexts') || '[]')
         customContexts.push(normalizedName)
         localStorage.setItem('gtd_custom_contexts', JSON.stringify(customContexts))
 
