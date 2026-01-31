@@ -44,7 +44,7 @@ export class ProjectModalManager {
      * @param state - Application state object
      * @param app - Application instance
      */
-    constructor(state: AppState, app: AppDependencies) {
+    constructor (state: AppState, app: AppDependencies) {
         this.state = state
         this.app = app
         this.pendingTaskData = null
@@ -67,7 +67,7 @@ export class ProjectModalManager {
      * // Open modal with pending task data
      * manager.openProjectModal(null, { title: 'My Task' });
      */
-    openProjectModal(
+    openProjectModal (
         project: Project | null = null,
         pendingTaskData: PendingTaskData | null = null
     ): void {
@@ -98,7 +98,7 @@ export class ProjectModalManager {
     /**
      * Close project modal
      */
-    closeProjectModal(): void {
+    closeProjectModal (): void {
         const modal = document.getElementById('project-modal')
         if (modal) {
             modal.classList.remove('active')
@@ -109,7 +109,7 @@ export class ProjectModalManager {
     /**
      * Save project from form
      */
-    async saveProjectFromForm(): Promise<void> {
+    async saveProjectFromForm (): Promise<void> {
         const projectId = (document.getElementById('project-id') as HTMLInputElement).value
         const title = (document.getElementById('project-title') as HTMLInputElement).value.trim()
         const description = (
@@ -181,7 +181,7 @@ export class ProjectModalManager {
      * Open Gantt chart modal for a project
      * @param project - Project to show Gantt chart for
      */
-    openGanttChart(project: Project): void {
+    openGanttChart (project: Project): void {
         const modal = document.getElementById('gantt-modal')
         const title = document.getElementById('gantt-modal-title')
         if (!modal || !title) return
@@ -193,7 +193,7 @@ export class ProjectModalManager {
     /**
      * Close Gantt chart modal
      */
-    closeGanttModal(): void {
+    closeGanttModal (): void {
         const modal = document.getElementById('gantt-modal')
         if (modal) {
             modal.classList.remove('active')
@@ -204,7 +204,7 @@ export class ProjectModalManager {
      * Render Gantt chart for a project
      * @param project - Project to render Gantt chart for
      */
-    renderGanttChart(project: Project): void {
+    renderGanttChart (project: Project): void {
         const container = document.getElementById('gantt-chart')
         if (!container) return
         // Get all tasks for this project (including completed ones)
@@ -290,10 +290,10 @@ export class ProjectModalManager {
                         task.status === 'next'
                             ? '#48bb78'
                             : task.status === 'waiting'
-                              ? '#ed8936'
-                              : task.status === 'someday'
-                                ? '#9f7aea'
-                                : '#4299e1'
+                                ? '#ed8936'
+                                : task.status === 'someday'
+                                    ? '#9f7aea'
+                                    : '#4299e1'
                     svgHtml += `
                     <g class="task-node ${completedClass}" data-task-id="${task.id}">
                         <rect x="${xPos}" y="${yPos}" width="${taskWidth}" height="${taskHeight}"
@@ -338,7 +338,7 @@ export class ProjectModalManager {
      * @param text - Text to escape
      * @returns Escaped text
      */
-    escapeHtml(text: string): string {
+    escapeHtml (text: string): string {
         const div = document.createElement('div')
         div.textContent = text
         return div.innerHTML

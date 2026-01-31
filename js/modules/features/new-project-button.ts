@@ -29,7 +29,7 @@ interface State {
 export class NewProjectButtonManager {
     private state: State
     private app: App
-    constructor(state: State, app: App) {
+    constructor (state: State, app: App) {
         this.state = state
         this.app = app
     }
@@ -40,7 +40,7 @@ export class NewProjectButtonManager {
     /**
      * Setup the new project button
      */
-    setupNewProjectButton(): void {
+    setupNewProjectButton (): void {
         const newProjectBtn = document.getElementById('btn-new-project')
         if (newProjectBtn) {
             newProjectBtn.addEventListener('click', () => {

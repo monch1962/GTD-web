@@ -43,7 +43,7 @@ export class DailyReviewManager {
      * @param state - The application state object
      * @param app - The main app instance for delegation
      */
-    constructor(state: AppState, app: AppDependencies) {
+    constructor (state: AppState, app: AppDependencies) {
         this.state = state
         this.app = app
     }
@@ -51,7 +51,7 @@ export class DailyReviewManager {
     /**
      * Setup daily review modal event listeners
      */
-    setupDailyReview(): void {
+    setupDailyReview (): void {
         const dailyReviewBtn = document.getElementById('btn-daily-review')
         const closeDailyReviewBtn = document.getElementById('close-daily-review-modal')
 
@@ -71,7 +71,7 @@ export class DailyReviewManager {
     /**
      * Show daily review modal
      */
-    showDailyReview(): void {
+    showDailyReview (): void {
         const modal = document.getElementById('daily-review-modal')
         if (!modal) return
 
@@ -82,7 +82,7 @@ export class DailyReviewManager {
     /**
      * Close daily review modal
      */
-    closeDailyReview(): void {
+    closeDailyReview (): void {
         const modal = document.getElementById('daily-review-modal')
         if (modal) modal.style.display = 'none'
     }
@@ -90,7 +90,7 @@ export class DailyReviewManager {
     /**
      * Render daily review content
      */
-    renderDailyReview(): void {
+    renderDailyReview (): void {
         const dailyReviewContent = document.getElementById('daily-review-content')
         if (!dailyReviewContent) return
 
@@ -158,8 +158,8 @@ export class DailyReviewManager {
 
                 <!-- Due Today -->
                 ${
-                    dueToday.length > 0
-                        ? `
+    dueToday.length > 0
+        ? `
                     <div style="margin-bottom: var(--spacing-lg);">
                         <h3 style="margin-bottom: var(--spacing-md); color: var(--primary-color);">
                             <i class="fas fa-calendar-day"></i> Due Today
@@ -169,79 +169,79 @@ export class DailyReviewManager {
                         </div>
                     </div>
                 `
-                        : ''
-                }
+        : ''
+}
 
                 <!-- Overdue -->
                 ${
-                    overdue.length > 0
-                        ? `
+    overdue.length > 0
+        ? `
                     <div style="margin-bottom: var(--spacing-lg);">
                         <h3 style="margin-bottom: var(--spacing-md); color: var(--warning-color);">
                             <i class="fas fa-exclamation-circle"></i> Overdue
                         </h3>
                         <div class="task-list">
                             ${overdue
-                                .slice(0, 10)
-                                .map((task) => this.renderDailyReviewTask(task, 'overdue'))
-                                .join('')}
+        .slice(0, 10)
+        .map((task) => this.renderDailyReviewTask(task, 'overdue'))
+        .join('')}
                         </div>
                     </div>
                 `
-                        : ''
-                }
+        : ''
+}
 
                 <!-- Due This Week -->
                 ${
-                    dueThisWeek.length > 0
-                        ? `
+    dueThisWeek.length > 0
+        ? `
                     <div style="margin-bottom: var(--spacing-lg);">
                         <h3 style="margin-bottom: var(--spacing-md); color: var(--info-color);">
                             <i class="fas fa-calendar-week"></i> Due This Week
                         </h3>
                         <div class="task-list">
                             ${dueThisWeek
-                                .slice(0, 10)
-                                .map((task) => this.renderDailyReviewTask(task, 'week'))
-                                .join('')}
+        .slice(0, 10)
+        .map((task) => this.renderDailyReviewTask(task, 'week'))
+        .join('')}
                         </div>
                     </div>
                 `
-                        : ''
-                }
+        : ''
+}
 
                 <!-- High Priority -->
                 ${
-                    highPriority.length > 0
-                        ? `
+    highPriority.length > 0
+        ? `
                     <div style="margin-bottom: var(--spacing-lg);">
                         <h3 style="margin-bottom: var(--spacing-md); color: var(--accent-color);">
                             <i class="fas fa-star"></i> High Priority
                         </h3>
                         <div class="task-list">
                             ${highPriority
-                                .slice(0, 10)
-                                .map((task) => this.renderDailyReviewTask(task, 'priority'))
-                                .join('')}
+        .slice(0, 10)
+        .map((task) => this.renderDailyReviewTask(task, 'priority'))
+        .join('')}
                         </div>
                     </div>
                 `
-                        : ''
-                }
+        : ''
+}
 
                 ${
-                    dueToday.length === 0 &&
+    dueToday.length === 0 &&
                     overdue.length === 0 &&
                     dueThisWeek.length === 0 &&
                     highPriority.length === 0
-                        ? `
+        ? `
                     <div style="text-align: center; padding: var(--spacing-xl); color: var(--text-secondary);">
                         <i class="fas fa-check-circle" style="font-size: 3rem; margin-bottom: var(--spacing-md);"></i>
                         <div>All caught up! No urgent tasks.</div>
                     </div>
                 `
-                        : ''
-                }
+        : ''
+}
             </div>
         `
     }
@@ -251,7 +251,7 @@ export class DailyReviewManager {
      * @param task - Task object
      * @param type - Type of task list (today, overdue, week, priority)
      */
-    renderDailyReviewTask(task: Task, _type: string): string {
+    renderDailyReviewTask (task: Task, _type: string): string {
         const dueDate = task.dueDate ? new Date(task.dueDate) : null
         const isOverdue = dueDate && dueDate < new Date() && !task.completed
         const isDueToday = dueDate && dueDate.toDateString() === new Date().toDateString()
@@ -293,44 +293,44 @@ export class DailyReviewManager {
                     <div class="task-title">${escapeHtml(task.title)}</div>
                     <div class="task-meta">
                         ${
-                            task.contexts && task.contexts.length > 0
-                                ? `
+    task.contexts && task.contexts.length > 0
+        ? `
                             <span class="task-contexts">
                                 ${task.contexts.map((c) => `<span class="context-tag">${escapeHtml(c)}</span>`).join('')}
                             </span>
                         `
-                                : ''
-                        }
+        : ''
+}
                         ${
-                            task.projectId
-                                ? `
+    task.projectId
+        ? `
                             <span class="task-project">
                                 <i class="fas fa-folder"></i>
                                 ${escapeHtml(this.getProjectTitle(task.projectId))}
                             </span>
                         `
-                                : ''
-                        }
+        : ''
+}
                         ${
-                            dueDate
-                                ? `
+    dueDate
+        ? `
                             <span class="task-due-date ${dateClass}">
                                 <i class="fas ${dateIcon}"></i>
                                 ${dateLabel}
                             </span>
                         `
-                                : ''
-                        }
+        : ''
+}
                         ${
-                            hasHighPriority
-                                ? `
+    hasHighPriority
+        ? `
                             <span class="task-priority high">
                                 <i class="fas fa-star"></i>
                                 ${taskWithPriority.priority}
                             </span>
                         `
-                                : ''
-                        }
+        : ''
+}
                     </div>
                 </div>
                 <div class="task-actions">
@@ -346,7 +346,7 @@ export class DailyReviewManager {
      * Get greeting based on time of day
      * @returns Greeting (Morning, Afternoon, or Evening)
      */
-    getGreeting(): string {
+    getGreeting (): string {
         const hour = new Date().getHours()
         if (hour < 12) return 'Morning'
         if (hour < 17) return 'Afternoon'
@@ -357,7 +357,7 @@ export class DailyReviewManager {
      * Get personalized greeting message
      * @returns Personalized greeting with task count
      */
-    getGreetingMessage(): string {
+    getGreetingMessage (): string {
         const greeting = this.getGreeting()
         const totalTasks = this.state.tasks.filter((t) => !t.completed).length
         const completedToday = this.state.tasks.filter(
@@ -381,7 +381,7 @@ export class DailyReviewManager {
      * @param projectId - Project ID
      * @returns Project title or 'Unknown Project'
      */
-    getProjectTitle(projectId: string): string {
+    getProjectTitle (projectId: string): string {
         const project = this.state.projects.find((p) => p.id === projectId)
         return project ? project.title : 'Unknown Project'
     }

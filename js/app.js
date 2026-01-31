@@ -93,7 +93,7 @@ class GTDApp {
     // =========================================================================
     // INITIALIZATION
     // =========================================================================
-    constructor() {
+    constructor () {
         this.storage = new Storage()
         this.tasks = []
         this.projects = []
@@ -149,7 +149,7 @@ class GTDApp {
         this.dataExportImport = new DataExportImportManager(this, this)
     }
 
-    async init() {
+    async init () {
         const initTimeout = setTimeout(() => {
             this.showDebugBanner(
                 '✗ INIT TIMEOUT - Taking too long',
@@ -329,7 +329,7 @@ class GTDApp {
         }
     }
 
-    updateDebugBanner(title, details, type = 'info') {
+    updateDebugBanner (title, details, type = 'info') {
         let banner = document.getElementById('gtd-debug-banner')
         if (!banner) {
             banner = document.createElement('div')
@@ -347,11 +347,11 @@ class GTDApp {
         banner.innerHTML = `<div>${title}</div><div style="margin-top:5px;font-size:12px;font-weight:normal;">${info}</div>`
     }
 
-    async initializeStorage() {
+    async initializeStorage () {
         await this.storage.init()
     }
 
-    displayUserId() {
+    displayUserId () {
         console.log('displayUserId: Called')
         console.log('displayUserId: ElementIds.userId =', ElementIds.userId)
         const userIdElement = document.getElementById(ElementIds.userId)
@@ -383,7 +383,7 @@ class GTDApp {
         }
     }
 
-    showDebugBanner(title, details) {
+    showDebugBanner (title, details) {
         // Create a visible debug banner for mobile
         const banner = document.createElement('div')
         banner.id = 'gtd-debug-banner'
@@ -403,7 +403,7 @@ class GTDApp {
         setTimeout(() => banner.remove(), 30000)
     }
 
-    initializeCustomContexts() {
+    initializeCustomContexts () {
         try {
             this.renderDefaultContextButtons()
             this.renderCustomContexts()
@@ -413,7 +413,7 @@ class GTDApp {
         }
     }
 
-    handleInitializationError(error) {
+    handleInitializationError (error) {
         console.error('Error initializing GTD Web:', error)
         try {
             this.renderView()
@@ -422,7 +422,7 @@ class GTDApp {
         }
     }
 
-    async loadData() {
+    async loadData () {
         // Load tasks
         const tasksData = this.storage.getTasks()
         this.tasks = tasksData.map((data) => Task.fromJSON(data))
@@ -439,7 +439,7 @@ class GTDApp {
     // =========================================================================
     // SETUP & EVENT LISTENERS
     // =========================================================================
-    setupEventListeners() {
+    setupEventListeners () {
         this.setupNavigationListeners()
         this.setupProjectsDropdown()
         this.setupQuickAdd()
@@ -471,7 +471,7 @@ class GTDApp {
         this.setupMobileNavigation()
     }
 
-    setupNavigationListeners() {
+    setupNavigationListeners () {
         document.querySelectorAll('.nav-item').forEach((item) => {
             item.addEventListener('click', (e) => {
                 e.preventDefault()
@@ -481,7 +481,7 @@ class GTDApp {
         })
     }
 
-    setupProjectsDropdown() {
+    setupProjectsDropdown () {
         const projectsToggle = document.querySelector('.projects-dropdown-toggle')
         if (!projectsToggle) return
 
@@ -500,7 +500,7 @@ class GTDApp {
         })
     }
 
-    setupQuickAdd() {
+    setupQuickAdd () {
         const quickAddInput = document.getElementById('quick-add-input')
         if (!quickAddInput) return
 
@@ -518,7 +518,7 @@ class GTDApp {
         })
     }
 
-    updateQuickAddPlaceholder() {
+    updateQuickAddPlaceholder () {
         const quickAddInput = document.getElementById('quick-add-input')
         if (!quickAddInput) return
 
@@ -547,7 +547,7 @@ class GTDApp {
         quickAddInput.placeholder = placeholder
     }
 
-    setupFormListeners() {
+    setupFormListeners () {
         const taskForm = document.getElementById('task-form')
         if (taskForm) {
             taskForm.addEventListener('submit', (e) => {
@@ -565,7 +565,7 @@ class GTDApp {
         }
     }
 
-    setupModalListeners() {
+    setupModalListeners () {
         // Task modal close buttons
         this.setupModalCloseButtons('task-modal', ['close-modal', 'cancel-modal'], () =>
             this.closeTaskModal()
@@ -582,7 +582,7 @@ class GTDApp {
         )
     }
 
-    setupModalCloseButtons(modalId, buttonIds, closeHandler) {
+    setupModalCloseButtons (modalId, buttonIds, closeHandler) {
         // Setup button click handlers
         buttonIds.forEach((buttonId) => {
             const button = document.getElementById(buttonId)
@@ -602,13 +602,13 @@ class GTDApp {
         }
     }
 
-    setupFilterListeners() {
+    setupFilterListeners () {
         this.setupFilter('context-filter', 'context')
         this.setupFilter('energy-filter', 'energy')
         this.setupFilter('time-filter', 'time')
     }
 
-    setupFilter(elementId, filterKey) {
+    setupFilter (elementId, filterKey) {
         const filter = document.getElementById(elementId)
         if (!filter) return
 
@@ -618,7 +618,7 @@ class GTDApp {
         })
     }
 
-    setupSyncButton() {
+    setupSyncButton () {
         const syncButton = document.getElementById('sync-status')
         if (!syncButton) return
 
@@ -678,7 +678,7 @@ class GTDApp {
         })
     }
 
-    setupSuggestionsButton() {
+    setupSuggestionsButton () {
         const suggestionsButton = document.getElementById('btn-suggestions')
         if (!suggestionsButton) return
 
@@ -705,7 +705,7 @@ class GTDApp {
         this.setupTaskTemplates()
     }
 
-    setupTaskTemplates() {
+    setupTaskTemplates () {
         const templates = [
             { name: 'Quick Email', template: 'Quick email response 15min low energy' },
             { name: 'Phone Call', template: 'Phone call @phone 10min medium energy' },
@@ -794,7 +794,7 @@ class GTDApp {
         }
     }
 
-    setupKeyboardShortcuts() {
+    setupKeyboardShortcuts () {
         document.addEventListener('keydown', (e) => {
             // Ignore if user is typing in an input or textarea
             const target = e.target
@@ -882,7 +882,7 @@ class GTDApp {
         })
     }
 
-    selectTask(taskId) {
+    selectTask (taskId) {
         // Deselect previous task
         this.deselectTask()
 
@@ -895,7 +895,7 @@ class GTDApp {
         }
     }
 
-    deselectTask() {
+    deselectTask () {
         if (this.selectedTaskId) {
             const taskElement = document.querySelector(`[data-task-id="${this.selectedTaskId}"]`)
             if (taskElement) {
@@ -905,235 +905,235 @@ class GTDApp {
         }
     }
 
-    setupBulkSelection() {
+    setupBulkSelection () {
         this.bulkOperations.setupBulkSelection()
     }
 
-    updateBulkSelectButtonVisibility() {
+    updateBulkSelectButtonVisibility () {
         this.bulkOperations.updateBulkSelectButtonVisibility()
     }
 
-    toggleBulkSelectionMode() {
+    toggleBulkSelectionMode () {
         this.bulkOperations.toggleBulkSelectionMode()
     }
 
-    exitBulkSelectionMode() {
+    exitBulkSelectionMode () {
         this.bulkOperations.exitBulkSelectionMode()
     }
 
-    toggleBulkTaskSelection(taskId) {
+    toggleBulkTaskSelection (taskId) {
         this.bulkOperations.toggleBulkTaskSelection(taskId)
     }
 
-    updateBulkSelectedCount() {
+    updateBulkSelectedCount () {
         this.bulkOperations.updateBulkSelectedCount()
     }
 
-    async bulkCompleteTasks() {
+    async bulkCompleteTasks () {
         return this.bulkOperations.bulkCompleteTasks()
     }
 
-    bulkSelectAllVisible() {
+    bulkSelectAllVisible () {
         this.bulkOperations.bulkSelectAllVisible()
     }
 
-    async bulkSetStatus() {
+    async bulkSetStatus () {
         return this.bulkOperations.bulkSetStatus()
     }
 
-    async bulkSetEnergy() {
+    async bulkSetEnergy () {
         return this.bulkOperations.bulkSetEnergy()
     }
 
-    async bulkSetProject() {
+    async bulkSetProject () {
         return this.bulkOperations.bulkSetProject()
     }
 
-    async bulkAddContext() {
+    async bulkAddContext () {
         return this.bulkOperations.bulkAddContext()
     }
 
-    async bulkSetDueDate() {
+    async bulkSetDueDate () {
         return this.bulkOperations.bulkSetDueDate()
     }
 
-    async bulkDeleteTasks() {
+    async bulkDeleteTasks () {
         return this.bulkOperations.bulkDeleteTasks()
     }
 
     // ==================== SEARCH FUNCTIONALITY (Delegated to SearchManager module) ====================
 
-    setupSearch() {
+    setupSearch () {
         this.search.setupSearch()
     }
 
-    populateSearchContexts(selectElement) {
+    populateSearchContexts (selectElement) {
         this.search.populateSearchContexts(selectElement)
     }
 
-    clearSearch() {
+    clearSearch () {
         this.search.clearSearch()
     }
 
-    clearAdvancedSearch() {
+    clearAdvancedSearch () {
         this.search.clearAdvancedSearch()
     }
 
-    saveCurrentSearch() {
+    saveCurrentSearch () {
         this.search.saveCurrentSearch()
     }
 
-    loadSavedSearch(searchId) {
+    loadSavedSearch (searchId) {
         this.search.loadSavedSearch(searchId)
     }
 
-    deleteSavedSearch(searchId) {
+    deleteSavedSearch (searchId) {
         this.search.deleteSavedSearch(searchId)
     }
 
-    renderSavedSearches() {
+    renderSavedSearches () {
         this.search.renderSavedSearches()
     }
 
-    filterTasksBySearch(tasks) {
+    filterTasksBySearch (tasks) {
         return this.search.filterTasksBySearch(tasks)
     }
 
     // ==================== DASHBOARD FUNCTIONALITY (Delegated to DashboardManager module) ====================
 
-    setupDashboard() {
+    setupDashboard () {
         this.dashboard.setupDashboard()
     }
 
-    showDashboard() {
+    showDashboard () {
         this.dashboard.showDashboard()
     }
 
-    closeDashboard() {
+    closeDashboard () {
         this.dashboard.closeDashboard()
     }
 
-    renderDashboard() {
+    renderDashboard () {
         this.dashboard.renderDashboard()
     }
 
     // ==================== NEW PROJECT BUTTON (Delegated to NewProjectButtonManager module) ====================
 
-    setupNewProjectButton() {
+    setupNewProjectButton () {
         this.newProjectButton.setupNewProjectButton()
     }
 
     // ==================== TEMPLATES SYSTEM (Delegated to TemplatesManager module) ====================
 
-    getCustomContexts() {
+    getCustomContexts () {
         return this.templatesManager.getCustomContexts()
     }
 
-    setupTemplates() {
+    setupTemplates () {
         this.templatesManager.setupTemplates()
     }
 
-    openTemplatesModal() {
+    openTemplatesModal () {
         this.templatesManager.openTemplatesModal()
     }
 
-    closeTemplatesModal() {
+    closeTemplatesModal () {
         this.templatesManager.closeTemplatesModal()
     }
 
-    openTemplateEditModal(templateId) {
+    openTemplateEditModal (templateId) {
         this.templatesManager.openTemplateEditModal(templateId)
     }
 
-    closeTemplateEditModal() {
+    closeTemplateEditModal () {
         this.templatesManager.closeTemplateEditModal()
     }
 
-    async handleTemplateFormSubmit(e) {
+    async handleTemplateFormSubmit (e) {
         return this.templatesManager.handleTemplateFormSubmit(e)
     }
 
-    async deleteTemplate(templateId) {
+    async deleteTemplate (templateId) {
         return this.templatesManager.deleteTemplate(templateId)
     }
 
-    saveTaskAsTemplate(taskId) {
+    saveTaskAsTemplate (taskId) {
         this.templatesManager.saveTaskAsTemplate(taskId)
     }
 
-    openTemplateEditModalWithData(templateData) {
+    openTemplateEditModalWithData (templateData) {
         this.templatesManager.openTemplateEditModalWithData(templateData)
     }
 
-    async createTaskFromTemplate(templateId) {
+    async createTaskFromTemplate (templateId) {
         return this.templatesManager.createTaskFromTemplate(templateId)
     }
 
-    renderTemplatesList() {
+    renderTemplatesList () {
         this.templatesManager.renderTemplatesList()
     }
 
-    editTemplate(templateId) {
+    editTemplate (templateId) {
         this.templatesManager.editTemplate(templateId)
     }
 
-    renderTemplateContexts(selectedContexts) {
+    renderTemplateContexts (selectedContexts) {
         this.templatesManager.renderTemplateContexts(selectedContexts)
     }
 
-    getSelectedTemplateContexts() {
+    getSelectedTemplateContexts () {
         return this.templatesManager.getSelectedTemplateContexts()
     }
 
-    renderTemplateSubtasks(subtasks) {
+    renderTemplateSubtasks (subtasks) {
         this.templatesManager.renderTemplateSubtasks(subtasks)
     }
 
-    addTemplateSubtask() {
+    addTemplateSubtask () {
         this.templatesManager.addTemplateSubtask()
     }
 
-    removeTemplateSubtask(index) {
+    removeTemplateSubtask (index) {
         this.templatesManager.removeTemplateSubtask(index)
     }
 
-    getTemplateSubtasks() {
+    getTemplateSubtasks () {
         return this.templatesManager.getTemplateSubtasks()
     }
 
     // ==================== DARK MODE (Delegated to DarkModeManager module) ====================
 
-    initializeDarkMode() {
+    initializeDarkMode () {
         this.darkMode.initializeDarkMode()
     }
 
-    setupDarkMode() {
+    setupDarkMode () {
         this.darkMode.setupDarkMode()
     }
 
-    toggleDarkMode() {
+    toggleDarkMode () {
         this.darkMode.toggleDarkMode()
     }
 
-    updateDarkModeButton() {
+    updateDarkModeButton () {
         this.darkMode.updateDarkModeButton()
     }
 
     // ==================== WEEKLY REVIEW (Delegated to WeeklyReviewManager module) ====================
 
-    setupWeeklyReview() {
+    setupWeeklyReview () {
         this.weeklyReview.setupWeeklyReview()
     }
 
-    showWeeklyReview() {
+    showWeeklyReview () {
         this.weeklyReview.showWeeklyReview()
     }
 
-    closeWeeklyReview() {
+    closeWeeklyReview () {
         this.weeklyReview.closeWeeklyReview()
     }
 
-    renderWeeklyReview() {
+    renderWeeklyReview () {
         this.weeklyReview.renderWeeklyReview()
     }
 
@@ -1141,23 +1141,23 @@ class GTDApp {
 
     // ==================== DAILY REVIEW (Delegated to DailyReviewManager module) ====================
 
-    setupDailyReview() {
+    setupDailyReview () {
         this.dailyReview.setupDailyReview()
     }
 
-    showDailyReview() {
+    showDailyReview () {
         this.dailyReview.showDailyReview()
     }
 
-    closeDailyReview() {
+    closeDailyReview () {
         this.dailyReview.closeDailyReview()
     }
 
-    renderDailyReview() {
+    renderDailyReview () {
         this.dailyReview.renderDailyReview()
     }
 
-    renderDailyReviewTask(task, type) {
+    renderDailyReviewTask (task, type) {
         return this.dailyReview.renderDailyReviewTask(task, type)
     }
 
@@ -1165,19 +1165,19 @@ class GTDApp {
 
     // ==================== NAVIGATION & VIEWS (Delegated to NavigationManager module) ====================
 
-    getGreeting() {
+    getGreeting () {
         return this.navigation.getGreeting()
     }
 
-    getGreetingMessage() {
+    getGreetingMessage () {
         return this.navigation.getGreetingMessage()
     }
 
-    navigateTo(view) {
+    navigateTo (view) {
         this.navigation.navigateTo(view)
     }
 
-    getProjectTitle(projectId) {
+    getProjectTitle (projectId) {
         return this.navigation.getProjectTitle(projectId)
     }
 
@@ -1185,15 +1185,15 @@ class GTDApp {
 
     // ==================== TIME TRACKING (Delegated to TimeTrackingManager module) ====================
 
-    setupTimeTracking() {
+    setupTimeTracking () {
         this.timeTracking.setupTimeTracking()
     }
 
-    startTaskTimer(taskId) {
+    startTaskTimer (taskId) {
         this.timeTracking.startTaskTimer(taskId)
     }
 
-    stopTaskTimer() {
+    stopTaskTimer () {
         this.timeTracking.stopTaskTimer()
     }
 
@@ -1201,269 +1201,269 @@ class GTDApp {
 
     // ==================== CALENDAR VIEW (Delegated to CalendarManager module) ====================
 
-    setupCalendarView() {
+    setupCalendarView () {
         this.calendar.setupCalendarView()
     }
 
-    showCalendar() {
+    showCalendar () {
         this.calendar.showCalendar()
     }
 
-    closeCalendar() {
+    closeCalendar () {
         this.calendar.closeCalendar()
     }
 
-    renderCalendar() {
+    renderCalendar () {
         this.calendar.renderCalendar()
     }
 
-    navigateCalendar(direction) {
+    navigateCalendar (direction) {
         this.calendar.navigateCalendar(direction)
     }
 
-    getTasksForMonth(year, month) {
+    getTasksForMonth (year, month) {
         return this.calendar.getTasksForMonth(year, month)
     }
 
-    showTasksForDate(year, month, day) {
+    showTasksForDate (year, month, day) {
         this.calendar.showTasksForDate(year, month, day)
     }
 
     // ==================== ARCHIVE SYSTEM ====================
 
-    setupArchive() {
+    setupArchive () {
         this.archive.setupArchive()
     }
 
-    openArchiveModal() {
+    openArchiveModal () {
         this.archive.openArchiveModal()
     }
 
-    closeArchiveModal() {
+    closeArchiveModal () {
         this.archive.closeArchiveModal()
     }
 
-    async autoArchiveOldTasks(daysOld = 30) {
+    async autoArchiveOldTasks (daysOld = 30) {
         return this.archive.autoArchiveOldTasks(daysOld)
     }
 
-    async archiveTasks(tasksToArchive) {
+    async archiveTasks (tasksToArchive) {
         return this.archive.archiveTasks(tasksToArchive)
     }
 
-    async archiveTask(taskId) {
+    async archiveTask (taskId) {
         return this.archive.archiveTask(taskId)
     }
 
-    async restoreFromArchive(archiveId) {
+    async restoreFromArchive (archiveId) {
         return this.archive.restoreFromArchive(archiveId)
     }
 
-    async deleteFromArchive(archiveId) {
+    async deleteFromArchive (archiveId) {
         return this.archive.deleteFromArchive(archiveId)
     }
 
-    renderArchive(searchQuery = '') {
+    renderArchive (searchQuery = '') {
         this.archive.renderArchive(searchQuery)
     }
 
-    populateArchiveProjectFilter() {
+    populateArchiveProjectFilter () {
         this.archive.populateArchiveProjectFilter()
     }
 
     // ==================== QUICK ACTIONS CONTEXT MENU ====================
 
-    setupContextMenu() {
+    setupContextMenu () {
         this.contextMenu.setupContextMenu()
     }
 
-    showContextMenu(event, taskId) {
+    showContextMenu (event, taskId) {
         this.contextMenu.showContextMenu(event, taskId)
     }
 
-    hideContextMenu() {
+    hideContextMenu () {
         this.contextMenu.hideContextMenu()
     }
 
-    populateContextMenuProjects() {
+    populateContextMenuProjects () {
         this.contextMenu.populateContextMenuProjects()
     }
 
-    async handleContextMenuAction(action, data, taskId) {
+    async handleContextMenuAction (action, data, taskId) {
         return this.contextMenu.handleContextMenuAction(action, data, taskId)
     }
 
     // ==================== DEPENDENCIES VISUALIZATION (Delegated to DependenciesManager module) ====================
 
-    setupDependenciesVisualization() {
+    setupDependenciesVisualization () {
         this.dependencies.setupDependenciesVisualization()
     }
 
-    populateDepsProjectFilter() {
+    populateDepsProjectFilter () {
         this.dependencies.populateDepsProjectFilter()
     }
 
-    openDependenciesModal() {
+    openDependenciesModal () {
         this.dependencies.openDependenciesModal()
     }
 
-    closeDependenciesModal() {
+    closeDependenciesModal () {
         this.dependencies.closeDependenciesModal()
     }
 
-    updateDepsViewButtons() {
+    updateDepsViewButtons () {
         this.dependencies.updateDepsViewButtons()
     }
 
-    renderDependenciesView() {
+    renderDependenciesView () {
         this.dependencies.renderDependenciesView()
     }
 
-    getDependenciesTasks(projectId) {
+    getDependenciesTasks (projectId) {
         return this.dependencies.getDependenciesTasks(projectId)
     }
 
-    updateDepsStats(tasks) {
+    updateDepsStats (tasks) {
         this.dependencies.updateDepsStats(tasks)
     }
 
-    renderDependencyGraph(tasks, container) {
+    renderDependencyGraph (tasks, container) {
         this.dependencies.renderDependencyGraph(tasks, container)
     }
 
-    calculateNodePositions(tasks) {
+    calculateNodePositions (tasks) {
         return this.dependencies.calculateNodePositions(tasks)
     }
 
-    calculateTaskLevel(task, allTasks) {
+    calculateTaskLevel (task, allTasks) {
         return this.dependencies.calculateTaskLevel(task, allTasks)
     }
 
-    renderDependencyLines(tasks, positions, container) {
+    renderDependencyLines (tasks, positions, container) {
         this.dependencies.renderDependencyLines(tasks, positions, container)
     }
 
-    renderDependencyChains(tasks, container) {
+    renderDependencyChains (tasks, container) {
         this.dependencies.renderDependencyChains(tasks, container)
     }
 
-    buildDependencyChains(tasks) {
+    buildDependencyChains (tasks) {
         return this.dependencies.buildDependencyChains(tasks)
     }
 
-    renderChain(chain) {
+    renderChain (chain) {
         return this.dependencies.renderChain(chain)
     }
 
-    renderCriticalPath(tasks, container) {
+    renderCriticalPath (tasks, container) {
         this.dependencies.renderCriticalPath(tasks, container)
     }
 
-    calculateCriticalPath(tasks) {
+    calculateCriticalPath (tasks) {
         return this.dependencies.calculateCriticalPath(tasks)
     }
 
     // ==================== PRODUCTIVITY HEATMAP ====================
 
-    setupProductivityHeatmap() {
+    setupProductivityHeatmap () {
         this.productivityHeatmap.setupProductivityHeatmap()
     }
 
-    openHeatmapModal() {
+    openHeatmapModal () {
         this.productivityHeatmap.openHeatmapModal()
     }
 
-    closeHeatmapModal() {
+    closeHeatmapModal () {
         this.productivityHeatmap.closeHeatmapModal()
     }
 
-    renderProductivityHeatmap() {
+    renderProductivityHeatmap () {
         this.productivityHeatmap.renderProductivityHeatmap()
     }
 
     // ==================== GLOBAL QUICK CAPTURE (Delegated to GlobalQuickCaptureManager module) ====================
 
-    setupGlobalQuickCapture() {
+    setupGlobalQuickCapture () {
         this.globalQuickCapture.setupGlobalQuickCapture()
     }
 
-    openGlobalQuickCapture() {
+    openGlobalQuickCapture () {
         this.globalQuickCapture.openGlobalQuickCapture()
     }
 
-    closeGlobalQuickCapture() {
+    closeGlobalQuickCapture () {
         this.globalQuickCapture.closeGlobalQuickCapture()
     }
 
-    handleGlobalQuickCapture(input) {
+    handleGlobalQuickCapture (input) {
         this.globalQuickCapture.handleGlobalQuickCapture(input)
     }
 
-    parseQuickCaptureInput(input) {
+    parseQuickCaptureInput (input) {
         return this.globalQuickCapture.parseQuickCaptureInput(input)
     }
 
-    toggleQuickCaptureTemplates() {
+    toggleQuickCaptureTemplates () {
         this.globalQuickCapture.toggleQuickCaptureTemplates()
     }
 
-    renderQuickCaptureTemplates(container) {
+    renderQuickCaptureTemplates (container) {
         this.globalQuickCapture.renderQuickCaptureTemplates(container)
     }
 
-    selectTemplateForQuickCapture(templateId) {
+    selectTemplateForQuickCapture (templateId) {
         this.globalQuickCapture.selectTemplateForQuickCapture(templateId)
     }
 
     // ==================== TASK PRIORITY SCORING (Delegated to PriorityScoringManager module) ====================
 
-    calculatePriorityScore(task) {
+    calculatePriorityScore (task) {
         return this.priorityScoring.calculatePriorityScore(task)
     }
 
-    getPriorityScoreColor(score) {
+    getPriorityScoreColor (score) {
         return this.priorityScoring.getPriorityScoreColor(score)
     }
 
-    getPriorityLabel(score) {
+    getPriorityLabel (score) {
         return this.priorityScoring.getPriorityLabel(score)
     }
 
     // ==================== SMART DATE SUGGESTIONS (Delegated to SmartDateSuggestionsManager module) ====================
 
-    setupSmartDateSuggestions() {
+    setupSmartDateSuggestions () {
         this.smartDateSuggestions.setupSmartDateSuggestions()
     }
 
-    setupDateInputSuggestions(input) {
+    setupDateInputSuggestions (input) {
         this.smartDateSuggestions.setupDateInputSuggestions(input)
     }
 
-    parseNaturalDate(input) {
+    parseNaturalDate (input) {
         return this.smartDateSuggestions.parseNaturalDate(input)
     }
 
     // ==================== UNDO/REDO SYSTEM ====================
 
-    setupUndoRedo() {
+    setupUndoRedo () {
         this.undoRedo.setupUndoRedo()
     }
 
-    saveState(action) {
+    saveState (action) {
         this.undoRedo.saveState(action)
     }
 
-    async undo() {
+    async undo () {
         return this.undoRedo.undo()
     }
 
-    async redo() {
+    async redo () {
         return this.undoRedo.redo()
     }
 
     // ==================== MOBILE NAVIGATION ====================
 
-    setupMobileNavigation() {
+    setupMobileNavigation () {
         this.mobileNavigation.setupMobileNavigation()
     }
 
@@ -1473,7 +1473,7 @@ class GTDApp {
      * @param {string} type - Notification type: 'success', 'error', 'warning', 'info', or empty for default
      * @param {number} duration - How long to show the notification in ms (default: 2000)
      */
-    showNotification(message, type = '', duration = 2000) {
+    showNotification (message, type = '', duration = 2000) {
         // Create toast notification
         const toast = document.createElement('div')
         toast.className = `toast-notification ${type}`
@@ -1525,105 +1525,105 @@ class GTDApp {
     }
 
     // Alias for showNotification for consistency
-    showToast(message, type = '') {
+    showToast (message, type = '') {
         this.showNotification(message, type)
     }
 
     /**
      * Convenience method for success notifications
      */
-    showSuccess(message) {
+    showSuccess (message) {
         this.showNotification(message, 'success')
     }
 
     /**
      * Convenience method for error notifications
      */
-    showError(message) {
+    showError (message) {
         this.showNotification(message, 'error', 3000)
     }
 
     /**
      * Convenience method for warning notifications
      */
-    showWarning(message) {
+    showWarning (message) {
         this.showNotification(message, 'warning', 3000)
     }
 
     /**
      * Convenience method for info notifications
      */
-    showInfo(message) {
+    showInfo (message) {
         this.showNotification(message, 'info', 3000)
     }
 
     // ==================== QUICK CAPTURE WIDGET (Delegated to QuickCaptureWidgetManager module) ====================
 
-    setupQuickCapture() {
+    setupQuickCapture () {
         this.quickCaptureWidget.setupQuickCapture()
     }
 
-    renderQuickCaptureContexts() {
+    renderQuickCaptureContexts () {
         this.quickCaptureWidget.renderQuickCaptureContexts()
     }
 
     // ==================== FOCUS MODE (Delegated to FocusPomodoroManager module) ====================
 
-    setupFocusMode() {
+    setupFocusMode () {
         this.focusPomodoro.setupFocusMode()
     }
 
-    enterFocusMode(taskId) {
+    enterFocusMode (taskId) {
         return this.focusPomodoro.enterFocusMode(taskId)
     }
 
-    exitFocusMode() {
+    exitFocusMode () {
         return this.focusPomodoro.exitFocusMode()
     }
 
-    renderFocusTask(task) {
+    renderFocusTask (task) {
         this.focusPomodoro.renderFocusTask(task)
     }
 
-    autoTrackTimeSpent() {
+    autoTrackTimeSpent () {
         return this.focusPomodoro.autoTrackTimeSpent()
     }
 
-    toggleSubtaskFromFocus(taskId, subtaskIndex) {
+    toggleSubtaskFromFocus (taskId, subtaskIndex) {
         return this.focusPomodoro.toggleSubtaskFromFocus(taskId, subtaskIndex)
     }
 
-    completeTaskAndExitFocus(taskId) {
+    completeTaskAndExitFocus (taskId) {
         return this.focusPomodoro.completeTaskAndExitFocus(taskId)
     }
 
-    editTaskFromFocus(taskId) {
+    editTaskFromFocus (taskId) {
         this.focusPomodoro.editTaskFromFocus(taskId)
     }
 
     // ==================== POMODORO TIMER (Delegated to FocusPomodoroManager module) ====================
 
-    startPomodoro() {
+    startPomodoro () {
         this.focusPomodoro.startPomodoro()
     }
 
-    pausePomodoro() {
+    pausePomodoro () {
         this.focusPomodoro.pausePomodoro()
     }
 
-    resetPomodoro() {
+    resetPomodoro () {
         this.focusPomodoro.resetPomodoro()
     }
 
-    pomodoroComplete() {
+    pomodoroComplete () {
         this.focusPomodoro.pomodoroComplete()
     }
 
-    updatePomodoroDisplay() {
+    updatePomodoroDisplay () {
         this.focusPomodoro.updatePomodoroDisplay()
     }
 
-    updatePomodoroButtons() {
+    updatePomodoroButtons () {
         this.focusPomodoro.updatePomodoroButtons()
     }
 
@@ -1631,29 +1631,29 @@ class GTDApp {
 
     // ==================== SUBTASKS MANAGEMENT (Delegated to SubtasksManager module) ====================
 
-    renderSubtasksInModal(subtasks) {
+    renderSubtasksInModal (subtasks) {
         this.subtasks.renderSubtasksInModal(subtasks)
     }
 
-    addSubtask() {
+    addSubtask () {
         this.subtasks.addSubtask()
     }
 
-    removeSubtask(index) {
+    removeSubtask (index) {
         this.subtasks.removeSubtask(index)
     }
 
-    toggleSubtaskCompletion(index) {
+    toggleSubtaskCompletion (index) {
         this.subtasks.toggleSubtaskCompletion(index)
     }
 
-    getSubtasksFromModal() {
+    getSubtasksFromModal () {
         return this.subtasks.getSubtasksFromModal()
     }
 
     // ==================== MODAL HELPERS ====================
 
-    setupCustomTagHandler() {
+    setupCustomTagHandler () {
         // Get or create custom tags from localStorage
         const getCustomContexts = () => {
             const tags = localStorage.getItem('gtd_custom_contexts')
@@ -1706,16 +1706,16 @@ class GTDApp {
     }
 
     // Usage Stats for Smart Defaults
-    loadUsageStats() {
+    loadUsageStats () {
         const stats = localStorage.getItem('gtd_usage_stats')
         return stats ? JSON.parse(stats) : { contexts: {}, times: {}, totalTasks: 0 }
     }
 
-    saveUsageStats() {
+    saveUsageStats () {
         localStorage.setItem('gtd_usage_stats', JSON.stringify(this.usageStats))
     }
 
-    trackTaskUsage(task) {
+    trackTaskUsage (task) {
         // Track context usage
         if (task.contexts && task.contexts.length > 0) {
             task.contexts.forEach((context) => {
@@ -1739,7 +1739,7 @@ class GTDApp {
         this.saveUsageStats()
     }
 
-    getMostFrequentContext() {
+    getMostFrequentContext () {
         let maxCount = 0
         let mostFrequent = ''
 
@@ -1753,7 +1753,7 @@ class GTDApp {
         return mostFrequent
     }
 
-    getMostFrequentTime() {
+    getMostFrequentTime () {
         let maxCount = 0
         let mostFrequent = 0
 
@@ -1767,7 +1767,7 @@ class GTDApp {
         return mostFrequent
     }
 
-    getSmartDefaults() {
+    getSmartDefaults () {
         const context = this.getMostFrequentContext()
         const time = this.getMostFrequentTime()
 
@@ -1782,7 +1782,7 @@ class GTDApp {
      * Render default context buttons dynamically
      * Keeps all context buttons in sync with the single source of truth
      */
-    renderDefaultContextButtons() {
+    renderDefaultContextButtons () {
         // Get task counts for contexts
         const contextTaskCounts = getContextTaskCounts(this.tasks)
 
@@ -1848,7 +1848,7 @@ class GTDApp {
         }
     }
 
-    renderCustomContexts() {
+    renderCustomContexts () {
         const customContexts = JSON.parse(localStorage.getItem('gtd_custom_contexts') || '[]')
 
         // Quick-add section custom tags
@@ -1960,7 +1960,7 @@ class GTDApp {
     // =========================================================================
     // VIEW MANAGEMENT
     // =========================================================================
-    switchView(view) {
+    switchView (view) {
         // Clear project filter when switching views
         this.currentProjectId = null
 
@@ -2019,7 +2019,7 @@ class GTDApp {
         this.renderView()
     }
 
-    viewProjectTasks(projectId) {
+    viewProjectTasks (projectId) {
         this.currentProjectId = projectId
 
         // Update active state (no nav item should be active for project view)
@@ -2065,7 +2065,7 @@ class GTDApp {
         this.renderTasks()
     }
 
-    renderView() {
+    renderView () {
         if (this.currentView === 'projects') {
             this.renderProjects()
         } else if (this.currentView === 'reference') {
@@ -2078,7 +2078,7 @@ class GTDApp {
         this.updateBulkSelectButtonVisibility()
     }
 
-    renderTasks() {
+    renderTasks () {
         const container = document.getElementById('tasks-container')
         let filteredTasks = this.tasks.filter((task) => !task.completed)
 
@@ -2156,32 +2156,32 @@ class GTDApp {
 
             // Then apply selected sort
             switch (sortOption) {
-                case 'due':
-                    // Sort by due date (tasks without due dates last)
-                    if (!a.dueDate && !b.dueDate) return 0
-                    if (!a.dueDate) return 1
-                    if (!b.dueDate) return -1
-                    return new Date(a.dueDate) - new Date(b.dueDate)
+            case 'due':
+                // Sort by due date (tasks without due dates last)
+                if (!a.dueDate && !b.dueDate) return 0
+                if (!a.dueDate) return 1
+                if (!b.dueDate) return -1
+                return new Date(a.dueDate) - new Date(b.dueDate)
 
-                case 'created':
-                    // Sort by creation date
-                    return new Date(b.createdAt) - new Date(a.createdAt)
+            case 'created':
+                // Sort by creation date
+                return new Date(b.createdAt) - new Date(a.createdAt)
 
-                case 'time':
-                    // Sort by time estimate (longer tasks first)
-                    if (!a.time && !b.time) return 0
-                    if (!a.time) return 1
-                    if (!b.time) return -1
-                    return b.time - a.time
+            case 'time':
+                // Sort by time estimate (longer tasks first)
+                if (!a.time && !b.time) return 0
+                if (!a.time) return 1
+                if (!b.time) return -1
+                return b.time - a.time
 
-                case 'title':
-                    // Sort alphabetically by title
-                    return a.title.localeCompare(b.title)
+            case 'title':
+                // Sort alphabetically by title
+                return a.title.localeCompare(b.title)
 
-                case 'updated':
-                default:
-                    // Sort by last updated date (default)
-                    return new Date(b.updatedAt) - new Date(a.updatedAt)
+            case 'updated':
+            default:
+                // Sort by last updated date (default)
+                return new Date(b.updatedAt) - new Date(a.updatedAt)
             }
         })
 
@@ -2192,7 +2192,7 @@ class GTDApp {
         })
     }
 
-    createTaskElement(task, _index) {
+    createTaskElement (task, _index) {
         const div = document.createElement('div')
         div.className = 'task-item'
         div.draggable = true
@@ -2324,10 +2324,10 @@ class GTDApp {
         div.innerHTML = `
             ${dragHandle.outerHTML}
             ${
-                isBulkSelectMode
-                    ? `<input type="checkbox" class="bulk-select-checkbox" ${isBulkSelected ? 'checked' : ''}>`
-                    : `<input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>`
-            }
+    isBulkSelectMode
+        ? `<input type="checkbox" class="bulk-select-checkbox" ${isBulkSelected ? 'checked' : ''}>`
+        : `<input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>`
+}
             <div class="task-content">
                 <div class="task-title">${escapeHtml(task.title)}</div>
                 ${task.description ? `<div class="task-description">${escapeHtml(task.description)}</div>` : ''}
@@ -2344,39 +2344,39 @@ class GTDApp {
                     ${!task.completed ? `<span class="priority-score" style="background: ${this.getPriorityScoreColor(this.calculatePriorityScore(task))};" title="Priority: ${this.getPriorityLabel(this.calculatePriorityScore(task))}">${this.calculatePriorityScore(task)}</span>` : ''}
                 </div>
                 ${
-                    task.subtasks && task.subtasks.length > 0
-                        ? `
+    task.subtasks && task.subtasks.length > 0
+        ? `
                     <div class="task-subtasks" style="margin-top: var(--spacing-xs);">
                         <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 4px;">
                             <i class="fas fa-tasks"></i> ${task.subtasks.filter((s) => s.completed).length}/${task.subtasks.length} subtasks
                         </div>
                         ${task.subtasks
-                            .filter((s) => !s.completed)
-                            .slice(0, 3)
-                            .map(
-                                (subtask) => `
+        .filter((s) => !s.completed)
+        .slice(0, 3)
+        .map(
+            (subtask) => `
                             <div style="font-size: 0.75rem; color: var(--text-secondary); padding-left: 12px;">
                                 <i class="fas fa-square" style="color: var(--border-color);"></i> ${escapeHtml(subtask.title)}
                             </div>
                         `
-                            )
-                            .join('')}
+        )
+        .join('')}
                         ${task.subtasks.filter((s) => !s.completed).length > 3 ? `<div style="font-size: 0.75rem; color: var(--text-secondary); padding-left: 12px;">+${task.subtasks.filter((s) => !s.completed).length - 3} more</div>` : ''}
                     </div>
                 `
-                        : ''
-                }
+        : ''
+}
             </div>
             <div class="task-actions">
                 ${
-                    this.activeTimers.has(task.id)
-                        ? `<button class="task-action-btn timer-active" title="Stop timer">
+    this.activeTimers.has(task.id)
+        ? `<button class="task-action-btn timer-active" title="Stop timer">
                         <i class="fas fa-stop"></i>
                        </button>`
-                        : `<button class="task-action-btn timer" title="Start timer">
+        : `<button class="task-action-btn timer" title="Start timer">
                         <i class="fas fa-play"></i>
                        </button>`
-                }
+}
                 <button class="task-action-btn star" title="Star task" ${task.starred ? 'style="color: #ffd700;"' : ''}>
                     <i class="fas fa-star"></i>
                 </button>
@@ -2582,7 +2582,7 @@ class GTDApp {
         return div
     }
 
-    enableInlineEdit(task, titleElement) {
+    enableInlineEdit (task, titleElement) {
         const currentTitle = task.title
         const input = document.createElement('input')
         input.type = 'text'
@@ -2644,7 +2644,7 @@ class GTDApp {
         })
     }
 
-    renderProjects() {
+    renderProjects () {
         const container = document.getElementById('projects-container')
         let filteredProjects = this.projects
 
@@ -2716,7 +2716,7 @@ class GTDApp {
         })
     }
 
-    createProjectElement(project) {
+    createProjectElement (project) {
         const div = document.createElement('div')
         div.className = 'project-card'
         div.draggable = true
@@ -2783,8 +2783,8 @@ class GTDApp {
 
             <!-- Progress Bar -->
             ${
-                totalTasks > 0
-                    ? `
+    totalTasks > 0
+        ? `
                 <div class="project-progress">
                     <div class="progress-bar-container">
                         <div class="progress-bar" style="width: ${completionPercent}%"></div>
@@ -2795,23 +2795,23 @@ class GTDApp {
                     </div>
                 </div>
             `
-                    : ''
-            }
+        : ''
+}
 
             ${
-                taskCount > 0
-                    ? `
+    taskCount > 0
+        ? `
                 <div class="project-tasks">
                     ${tasksPreview}
                     ${taskCount > 3 ? `<div class="project-tasks-more">+${taskCount - 3} more tasks</div>` : ''}
                 </div>
             `
-                    : ''
-            }
+        : ''
+}
 
             ${
-                taskCount === 0 && project.status !== 'archived'
-                    ? `
+    taskCount === 0 && project.status !== 'archived'
+        ? `
                 <div class="project-empty-actions" style="padding: var(--spacing-sm); background: rgba(240, 173, 78, 0.1); border-radius: var(--border-radius); margin-top: var(--spacing-sm);">
                     <div style="display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm);">
                         <i class="fas fa-info-circle" style="color: #f0ad4e;"></i>
@@ -2827,12 +2827,12 @@ class GTDApp {
                     </div>
                 </div>
             `
-                    : ''
-            }
+        : ''
+}
 
             ${
-                project.status === 'archived'
-                    ? `
+    project.status === 'archived'
+        ? `
                 <div class="project-archived-badge" style="padding: var(--spacing-sm); background: rgba(127, 130, 140, 0.1); border-radius: var(--border-radius); margin-top: var(--spacing-sm);">
                     <div style="display: flex; align-items: center; justify-content: space-between;">
                         <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
@@ -2845,16 +2845,16 @@ class GTDApp {
                     </div>
                 </div>
             `
-                    : ''
-            }
+        : ''
+}
 
             <div class="project-meta">
                 <div class="project-tags">
                     ${project.contexts ? project.contexts.map((context) => `<span class="task-context">${escapeHtml(context)}</span>`).join('') : ''}
                 </div>
                 ${
-                    totalTasks > 0
-                        ? `
+    totalTasks > 0
+        ? `
                 <div class="project-actions">
                     <button class="btn-view-tasks" title="View tasks">
                         <i class="fas fa-list"></i>
@@ -2868,14 +2868,14 @@ class GTDApp {
                     </button>
                 </div>
                 `
-                        : `
+        : `
                 <div class="project-actions">
                     <button class="task-action-btn edit-project" title="Edit">
                         <i class="fas fa-edit"></i>
                     </button>
                 </div>
                 `
-                }
+}
             </div>
         `
 
@@ -2963,7 +2963,7 @@ class GTDApp {
         return div
     }
 
-    renderReference() {
+    renderReference () {
         const container = document.getElementById('reference-container')
         const references = this.tasks.filter((task) => task.type === 'reference')
 
@@ -2980,7 +2980,7 @@ class GTDApp {
         })
     }
 
-    renderEmptyState(message) {
+    renderEmptyState (message) {
         return `
             <div class="empty-state">
                 <i class="fas fa-inbox"></i>
@@ -2994,66 +2994,66 @@ class GTDApp {
     // TASK OPERATIONS (Delegated to TaskOperations module)
     // =========================================================================
 
-    async quickAddTask(title) {
+    async quickAddTask (title) {
         return this.taskOperations.quickAddTask(title)
     }
 
-    async duplicateTask(taskId) {
+    async duplicateTask (taskId) {
         return this.taskOperations.duplicateTask(taskId)
     }
 
-    async toggleTaskComplete(taskId) {
+    async toggleTaskComplete (taskId) {
         return this.taskOperations.toggleTaskComplete(taskId)
     }
 
-    async deleteTask(taskId) {
+    async deleteTask (taskId) {
         return this.taskOperations.deleteTask(taskId)
     }
 
-    async migrateBlockedTasksToWaiting() {
+    async migrateBlockedTasksToWaiting () {
         return this.taskOperations.migrateBlockedTasksToWaiting()
     }
 
-    async checkWaitingTasksDependencies() {
+    async checkWaitingTasksDependencies () {
         return this.taskOperations.checkWaitingTasksDependencies()
     }
 
-    wouldCreateCircularDependency(prerequisiteTaskId, dependentTaskId) {
+    wouldCreateCircularDependency (prerequisiteTaskId, dependentTaskId) {
         return this.taskOperations.wouldCreateCircularDependency(
             prerequisiteTaskId,
             dependentTaskId
         )
     }
 
-    async updateTaskPositions() {
+    async updateTaskPositions () {
         return this.taskOperations.updateTaskPositions()
     }
 
-    getTaskById(taskId) {
+    getTaskById (taskId) {
         return this.taskOperations.getTaskById(taskId)
     }
 
-    async updateTask(taskId, updates) {
+    async updateTask (taskId, updates) {
         return this.taskOperations.updateTask(taskId, updates)
     }
 
-    async assignTaskToProject(taskId, projectId) {
+    async assignTaskToProject (taskId, projectId) {
         return this.taskOperations.assignTaskToProject(taskId, projectId)
     }
 
-    async addTimeSpent(taskId, minutes) {
+    async addTimeSpent (taskId, minutes) {
         return this.taskOperations.addTimeSpent(taskId, minutes)
     }
 
-    getActiveTasks() {
+    getActiveTasks () {
         return this.taskOperations.getActiveTasks()
     }
 
-    getCompletedTasks() {
+    getCompletedTasks () {
         return this.taskOperations.getCompletedTasks()
     }
 
-    searchTasks(query) {
+    searchTasks (query) {
         return this.taskOperations.searchTasks(query)
     }
 
@@ -3061,27 +3061,27 @@ class GTDApp {
     // CONTEXT FILTER (Delegated to ContextFilter module)
     // =========================================================================
 
-    updateContextFilter() {
+    updateContextFilter () {
         return this.contextFilter.updateContextFilter()
     }
 
-    updateSidebarContextFilters() {
+    updateSidebarContextFilters () {
         return this.contextFilter.updateSidebarContextFilters()
     }
 
-    toggleContextFilter(context, isChecked) {
+    toggleContextFilter (context, isChecked) {
         return this.contextFilter.toggleContextFilter(context, isChecked)
     }
 
-    clearContextFilters() {
+    clearContextFilters () {
         return this.contextFilter.clearContextFilters()
     }
 
-    getSelectedContexts() {
+    getSelectedContexts () {
         return this.contextFilter.getSelectedContexts()
     }
 
-    isContextSelected(context) {
+    isContextSelected (context) {
         return this.contextFilter.isContextSelected(context)
     }
 
@@ -3089,67 +3089,67 @@ class GTDApp {
     // PROJECT OPERATIONS (Delegated to ProjectOperations module)
     // =========================================================================
 
-    createProject(projectData) {
+    createProject (projectData) {
         return this.projectOperations.createProject(projectData)
     }
 
-    async deleteProject(projectId) {
+    async deleteProject (projectId) {
         return this.projectOperations.deleteProject(projectId)
     }
 
-    async archiveProject(projectId) {
+    async archiveProject (projectId) {
         return this.projectOperations.archiveProject(projectId)
     }
 
-    async restoreProject(projectId) {
+    async restoreProject (projectId) {
         return this.projectOperations.restoreProject(projectId)
     }
 
-    async updateProjectPositions() {
+    async updateProjectPositions () {
         return this.projectOperations.updateProjectPositions()
     }
 
-    getProjectById(projectId) {
+    getProjectById (projectId) {
         return this.projectOperations.getProjectById(projectId)
     }
 
-    getActiveProjects() {
+    getActiveProjects () {
         return this.projectOperations.getActiveProjects()
     }
 
-    getArchivedProjects() {
+    getArchivedProjects () {
         return this.projectOperations.getArchivedProjects()
     }
 
-    getProjectsByStatus(status) {
+    getProjectsByStatus (status) {
         return this.projectOperations.getProjectsByStatus(status)
     }
 
-    getTasksForProject(projectId) {
+    getTasksForProject (projectId) {
         return this.projectOperations.getTasksForProject(projectId)
     }
 
-    getIncompleteTasksForProject(projectId) {
+    getIncompleteTasksForProject (projectId) {
         return this.projectOperations.getIncompleteTasksForProject(projectId)
     }
 
-    getCompletedTasksForProject(projectId) {
+    getCompletedTasksForProject (projectId) {
         return this.projectOperations.getCompletedTasksForProject(projectId)
     }
 
-    getProjectCompletion(projectId) {
+    getProjectCompletion (projectId) {
         return this.projectOperations.getProjectCompletion(projectId)
     }
 
-    getProjectStats(projectId) {
+    getProjectStats (projectId) {
         return this.projectOperations.getProjectStats(projectId)
     }
 
-    async updateProject(projectId, updates) {
+    async updateProject (projectId, updates) {
         return this.projectOperations.updateProject(projectId, updates)
     }
 
-    searchProjects(query) {
+    searchProjects (query) {
         return this.projectOperations.searchProjects(query)
     }
 
@@ -3157,31 +3157,31 @@ class GTDApp {
     // TASK MODAL (Delegated to TaskModal module)
     // =========================================================================
 
-    openTaskModal(task = null, defaultProjectId = null, defaultData = {}) {
+    openTaskModal (task = null, defaultProjectId = null, defaultData = {}) {
         return this.taskModal.openTaskModal(task, defaultProjectId, defaultData)
     }
 
-    closeTaskModal() {
+    closeTaskModal () {
         return this.taskModal.closeTaskModal()
     }
 
-    async saveTaskFromForm() {
+    async saveTaskFromForm () {
         return this.taskModal.saveTaskFromForm()
     }
 
-    openTaskModalWithData(formData, projectId = null) {
+    openTaskModalWithData (formData, projectId = null) {
         return this.taskModal.openTaskModalWithData(formData, projectId)
     }
 
-    renderWaitingForTasksList(currentTask) {
+    renderWaitingForTasksList (currentTask) {
         return this.taskModal.renderWaitingForTasksList(currentTask)
     }
 
-    getSelectedWaitingForTasks() {
+    getSelectedWaitingForTasks () {
         return this.taskModal.getSelectedWaitingForTasks()
     }
 
-    escapeHtml(text) {
+    escapeHtml (text) {
         return this.taskModal.escapeHtml(text)
     }
 
@@ -3189,27 +3189,27 @@ class GTDApp {
     // PROJECT MODAL (Delegated to ProjectModal module)
     // =========================================================================
 
-    openProjectModal(project = null, pendingTaskData = null) {
+    openProjectModal (project = null, pendingTaskData = null) {
         return this.projectModal.openProjectModal(project, pendingTaskData)
     }
 
-    closeProjectModal() {
+    closeProjectModal () {
         return this.projectModal.closeProjectModal()
     }
 
-    async saveProjectFromForm() {
+    async saveProjectFromForm () {
         return this.projectModal.saveProjectFromForm()
     }
 
-    openGanttChart(project) {
+    openGanttChart (project) {
         return this.projectModal.openGanttChart(project)
     }
 
-    closeGanttModal() {
+    closeGanttModal () {
         return this.projectModal.closeGanttModal()
     }
 
-    renderGanttChart(project) {
+    renderGanttChart (project) {
         return this.projectModal.renderGanttChart(project)
     }
 
@@ -3217,19 +3217,19 @@ class GTDApp {
     // DATA EXPORT/IMPORT (Delegated to DataExportImport module)
     // =========================================================================
 
-    setupDataExportImport() {
+    setupDataExportImport () {
         return this.dataExportImport.setupDataExportImport()
     }
 
-    exportData() {
+    exportData () {
         return this.dataExportImport.exportData()
     }
 
-    async importData(file) {
+    async importData (file) {
         return this.dataExportImport.importData(file)
     }
 
-    openTaskModal_DEPRECATED(task = null, defaultProjectId = null, defaultData = {}) {
+    openTaskModal_DEPRECATED (task = null, defaultProjectId = null, defaultData = {}) {
         const modal = document.getElementById('task-modal')
         const form = document.getElementById('task-form')
         const title = document.getElementById('modal-title')
@@ -3409,7 +3409,7 @@ class GTDApp {
      * @param {string|object} recurrence - Recurrence value
      * @returns {string} Human-readable recurrence label
      */
-    getRecurrenceLabel(recurrence) {
+    getRecurrenceLabel (recurrence) {
         if (!recurrence) {
             return ''
         }
@@ -3452,7 +3452,7 @@ class GTDApp {
     /**
      * Build recurrence object from form fields
      */
-    buildRecurrenceFromForm() {
+    buildRecurrenceFromForm () {
         const recurrenceType = document.getElementById('task-recurrence-type').value
 
         if (!recurrenceType || recurrenceType === '') {
@@ -3519,7 +3519,7 @@ class GTDApp {
     /**
      * Parse recurrence object and populate form fields
      */
-    populateRecurrenceInForm(recurrence) {
+    populateRecurrenceInForm (recurrence) {
         // Reset all fields
         document.getElementById('task-recurrence-type').value = ''
         document.querySelectorAll('.recurrence-day-checkbox').forEach((cb) => {
@@ -3584,22 +3584,22 @@ class GTDApp {
         }
     }
 
-    async saveTasks() {
+    async saveTasks () {
         const tasksData = this.tasks.map((t) => t.toJSON())
         await this.storage.saveTasks(tasksData)
     }
 
-    async saveProjects() {
+    async saveProjects () {
         const projectsData = this.projects.map((p) => p.toJSON())
         await this.storage.saveProjects(projectsData)
     }
 
-    async saveTemplates() {
+    async saveTemplates () {
         const templatesData = this.templates.map((t) => t.toJSON())
         await this.storage.saveTemplates(templatesData)
     }
 
-    updateCounts() {
+    updateCounts () {
         const counts = {
             inbox: this.tasks.filter((t) => t.status === 'inbox' && !t.completed && !t.projectId)
                 .length,
@@ -3621,7 +3621,7 @@ class GTDApp {
         document.getElementById('templates-count').textContent = this.templates.length || ''
     }
 
-    renderProjectsDropdown() {
+    renderProjectsDropdown () {
         const dropdown = document.getElementById('projects-dropdown')
         if (!dropdown) return
 
@@ -3707,7 +3707,7 @@ class GTDApp {
      * @param {string} context - Context name to normalize
      * @returns {string} - Normalized context name starting with @
      */
-    normalizeContextName(context) {
+    normalizeContextName (context) {
         if (!context || typeof context !== 'string') return context
         const trimmed = context.trim()
         // If it already starts with @, return as is
@@ -3717,7 +3717,7 @@ class GTDApp {
     }
 
     // Context Modal Methods
-    openTagModal() {
+    openTagModal () {
         const modal = document.getElementById('context-modal')
         const form = document.getElementById('context-form')
         const errorDiv = document.getElementById('context-error')
@@ -3732,12 +3732,12 @@ class GTDApp {
         }, 100)
     }
 
-    closeTagModal() {
+    closeTagModal () {
         document.getElementById('context-modal').classList.remove('active')
         document.getElementById('context-error').style.display = 'none'
     }
 
-    saveTagFromForm() {
+    saveTagFromForm () {
         const tagName = document.getElementById('context-name').value.trim()
         const errorDiv = document.getElementById('context-error')
 
@@ -3776,7 +3776,7 @@ class GTDApp {
         this.closeTagModal()
     }
 
-    async deleteTag(tagName) {
+    async deleteTag (tagName) {
         // Confirm deletion
         const confirmed = confirm(
             `Are you sure you want to delete the context "${tagName}"?\n\nThis will remove the context from all tasks and projects that use it.`
@@ -3826,34 +3826,34 @@ class GTDApp {
      * @param {Object} preferences - User's current situation
      * @returns {Array} - Suggested tasks with reasons
      */
-    getSmartSuggestions(preferences = {}) {
+    getSmartSuggestions (preferences = {}) {
         return this.smartSuggestions.getSmartSuggestions(preferences)
     }
 
     /**
      * Show suggestion modal with smart recommendations
      */
-    showSuggestions() {
+    showSuggestions () {
         this.smartSuggestions.showSuggestions()
     }
 
     /**
      * Render task suggestions in the modal
      */
-    renderSuggestions() {
+    renderSuggestions () {
         this.smartSuggestions.renderSuggestions()
     }
 
     /**
      * User clicked on a suggested task - highlight it and close modal
      */
-    selectSuggestedTask(taskId) {
+    selectSuggestedTask (taskId) {
         this.smartSuggestions.selectSuggestedTask(taskId)
     }
 }
 
 // Helper function for drag-and-drop
-function getDragAfterElement(container, y) {
+function getDragAfterElement (container, y) {
     // Select either task items or project cards based on what's in the container
     const taskItems = [...container.querySelectorAll('.task-item:not(.dragging)')]
     const projectCards = [...container.querySelectorAll('.project-card:not(.dragging)')]
@@ -3877,13 +3877,13 @@ function getDragAfterElement(container, y) {
  * Global Error Handler
  */
 class ErrorHandler {
-    constructor() {
+    constructor () {
         this.errorLog = []
         this.maxLogSize = 50
         this.setupGlobalHandlers()
     }
 
-    setupGlobalHandlers() {
+    setupGlobalHandlers () {
         // Catch unhandled errors
         window.addEventListener('error', (event) => {
             this.handleError(event.error || new Error(event.message), {
@@ -3901,7 +3901,7 @@ class ErrorHandler {
         })
     }
 
-    handleError(error, context = {}) {
+    handleError (error, context = {}) {
         // Log error
         const errorInfo = {
             message: error.message || String(error),
@@ -3926,7 +3926,7 @@ class ErrorHandler {
         this.showErrorNotification(error)
     }
 
-    showErrorNotification(error) {
+    showErrorNotification (error) {
         // Create user-friendly error message
         let message = 'An error occurred. Please refresh the page.'
 
@@ -3963,11 +3963,11 @@ class ErrorHandler {
         }
     }
 
-    getErrorLog() {
+    getErrorLog () {
         return this.errorLog
     }
 
-    clearErrorLog() {
+    clearErrorLog () {
         this.errorLog = []
         localStorage.removeItem('gtd_error_log')
     }

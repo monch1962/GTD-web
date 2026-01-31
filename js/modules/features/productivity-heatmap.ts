@@ -39,7 +39,7 @@ export class ProductivityHeatmapManager {
      * @param state - The application state object
      * @param app - The main app instance for delegation
      */
-    constructor(state: AppState, app: AppDependencies) {
+    constructor (state: AppState, app: AppDependencies) {
         this.state = state
         this.app = app
     }
@@ -50,7 +50,7 @@ export class ProductivityHeatmapManager {
     /**
      * Setup the productivity heatmap feature
      */
-    setupProductivityHeatmap(): void {
+    setupProductivityHeatmap (): void {
         const heatmapBtn = document.getElementById('btn-heatmap')
         if (heatmapBtn) {
             heatmapBtn.addEventListener('click', () => this.openHeatmapModal())
@@ -67,7 +67,7 @@ export class ProductivityHeatmapManager {
     /**
      * Open the heatmap modal
      */
-    openHeatmapModal(): void {
+    openHeatmapModal (): void {
         const modal = document.getElementById('heatmap-modal')
         if (modal) {
             modal.classList.add('active')
@@ -78,7 +78,7 @@ export class ProductivityHeatmapManager {
     /**
      * Close the heatmap modal
      */
-    closeHeatmapModal(): void {
+    closeHeatmapModal (): void {
         const modal = document.getElementById('heatmap-modal')
         if (modal) {
             modal.classList.remove('active')
@@ -88,7 +88,7 @@ export class ProductivityHeatmapManager {
     /**
      * Render the productivity heatmap
      */
-    renderProductivityHeatmap(): void {
+    renderProductivityHeatmap (): void {
         const container = document.getElementById('heatmap-container')
         if (!container) return
         // Get completion data for the last 365 days
@@ -113,7 +113,7 @@ export class ProductivityHeatmapManager {
      * @param endDate - End date
      * @returns Completion data with date keys
      */
-    buildCompletionData(startDate: Date, endDate: Date): CompletionData {
+    buildCompletionData (startDate: Date, endDate: Date): CompletionData {
         const data: CompletionData = {}
         const currentDate = new Date(startDate)
         // Initialize all days with 0
@@ -140,7 +140,7 @@ export class ProductivityHeatmapManager {
      * @param date - Date to format
      * @returns Formatted date key
      */
-    getDateKey(date: Date): string {
+    getDateKey (date: Date): string {
         return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
     }
 
@@ -148,7 +148,7 @@ export class ProductivityHeatmapManager {
      * Update heatmap statistics display
      * @param completionData - Completion data
      */
-    updateHeatmapStats(completionData: CompletionData): void {
+    updateHeatmapStats (completionData: CompletionData): void {
         const values = Object.values(completionData)
         const totalCompleted = values.reduce((sum, count) => sum + count, 0)
         const bestDay = Math.max(...values)
@@ -172,7 +172,7 @@ export class ProductivityHeatmapManager {
      * @param completionData - Completion data
      * @returns Current streak in days
      */
-    calculateCurrentStreak(completionData: CompletionData): number {
+    calculateCurrentStreak (completionData: CompletionData): number {
         let streak = 0
         const today = new Date()
         const checkDate = new Date(today)
@@ -197,7 +197,7 @@ export class ProductivityHeatmapManager {
      * @param days - Number of days to display
      * @param container - Container element
      */
-    renderHeatmapGrid(completionData: CompletionData, days: number, container: HTMLElement): void {
+    renderHeatmapGrid (completionData: CompletionData, days: number, container: HTMLElement): void {
         const endDate = new Date()
         const startDate = new Date()
         startDate.setDate(startDate.getDate() - days)
@@ -251,7 +251,7 @@ export class ProductivityHeatmapManager {
      * @param maxCount - Maximum count in the dataset
      * @returns Level from 0-4
      */
-    getHeatmapLevel(count: number, maxCount: number): number {
+    getHeatmapLevel (count: number, maxCount: number): number {
         if (count === 0) return 0
         if (maxCount <= 4) {
             return Math.min(count, 4)
@@ -269,7 +269,7 @@ export class ProductivityHeatmapManager {
      * @param endDate - End date
      * @returns HTML string of month labels
      */
-    createMonthLabels(startDate: Date, endDate: Date): string {
+    createMonthLabels (startDate: Date, endDate: Date): string {
         const labels: string[] = []
         const currentMonth = new Date(startDate)
         currentMonth.setDate(1) // Set to first of month
@@ -296,7 +296,7 @@ export class ProductivityHeatmapManager {
     /**
      * Setup interactive tooltips for heatmap cells
      */
-    setupHeatmapTooltips(): void {
+    setupHeatmapTooltips (): void {
         const cells = document.querySelectorAll('.heatmap-cell')
         let tooltip: HTMLElement | null = null
         cells.forEach((cell) => {

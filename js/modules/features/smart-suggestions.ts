@@ -41,7 +41,7 @@ interface ScoredTask {
 export class SmartSuggestionsManager {
     private state: AppState
     private app: AppDependencies
-    constructor(state: AppState, app: AppDependencies) {
+    constructor (state: AppState, app: AppDependencies) {
         this.state = state
         this.app = app
     }
@@ -53,7 +53,7 @@ export class SmartSuggestionsManager {
      * Setup the smart suggestions feature (called from app setup)
      * Currently no setup needed - feature is triggered on demand
      */
-    setupSmartSuggestions(): void {
+    setupSmartSuggestions (): void {
         // Feature is triggered via button click - no initialization needed
     }
 
@@ -63,7 +63,7 @@ export class SmartSuggestionsManager {
     /**
      * Show the smart suggestions modal with filters
      */
-    showSuggestions(): void {
+    showSuggestions (): void {
         const modal = document.createElement('div')
         modal.className = 'modal active'
         modal.id = 'suggestions-modal'
@@ -152,7 +152,7 @@ export class SmartSuggestionsManager {
      * @param preferences - User preferences for filtering
      * @returns Array of scored task suggestions with reasons
      */
-    getSmartSuggestions(preferences: SuggestionPreferences = {}): ScoredTask[] {
+    getSmartSuggestions (preferences: SuggestionPreferences = {}): ScoredTask[] {
         const {
             context = '',
             availableMinutes = null,
@@ -256,7 +256,7 @@ export class SmartSuggestionsManager {
      * @param task - Task to check
      * @returns Days until due, or null if no due date
      */
-    getDaysUntilDue(task: Task): number | null {
+    getDaysUntilDue (task: Task): number | null {
         if (!task.dueDate) return null
         const dueDate = new Date(task.dueDate)
         const today = new Date()
@@ -272,7 +272,7 @@ export class SmartSuggestionsManager {
     /**
      * Render task suggestions in the modal
      */
-    renderSuggestions(): void {
+    renderSuggestions (): void {
         const contextSelect = document.getElementById('suggestion-context') as HTMLSelectElement
         const timeSelect = document.getElementById('suggestion-time') as HTMLSelectElement
         const energySelect = document.getElementById('suggestion-energy') as HTMLSelectElement
@@ -302,8 +302,8 @@ export class SmartSuggestionsManager {
                 const contexts =
                     task.contexts && task.contexts.length > 0
                         ? task.contexts
-                              .map((c) => `<span class="task-context">${escapeHtml(c)}</span>`)
-                              .join(' ')
+                            .map((c) => `<span class="task-context">${escapeHtml(c)}</span>`)
+                            .join(' ')
                         : ''
                 const reasonBadges = reasons
                     .slice(0, 3)
@@ -340,7 +340,7 @@ export class SmartSuggestionsManager {
      * User clicked on a suggested task - highlight it and close modal
      * @param taskId - ID of the selected task
      */
-    selectSuggestedTask(taskId: string): void {
+    selectSuggestedTask (taskId: string): void {
         // Remove the modal
         const modal = document.getElementById('suggestions-modal')
         if (modal) {
