@@ -568,14 +568,32 @@ export class BulkSelection {
             ? trimmedContext
             : `@${trimmedContext}`
 
-        this.bulkAddContext(formattedContext)
+        this._bulkAddContext(formattedContext)
+    }
+
+    /**
+     * Bulk add context to selected tasks (with prompt)
+     */
+    async bulkAddContext (): Promise<void> {
+        const context = prompt('Enter context to add (with or without @):')
+        if (context === null) return // User cancelled
+
+        const trimmedContext = context.trim()
+        if (!trimmedContext) return // Empty input
+
+        // Ensure context starts with @
+        const formattedContext = trimmedContext.startsWith('@')
+            ? trimmedContext
+            : `@${trimmedContext}`
+
+        await this._bulkAddContext(formattedContext)
     }
 
     /**
      * Bulk add context to selected tasks
      * @param context - Context to add (should start with @)
      */
-    async bulkAddContext (context: string): Promise<void> {
+    async _bulkAddContext (context: string): Promise<void> {
         if (this.selectedTaskIds.size === 0) return
 
         // Save state for undo
@@ -587,13 +605,16 @@ export class BulkSelection {
             const task = this.state.tasks.find((t) => t.id === taskId)
             if (task) {
                 // Add context if not already present
-                const currentContexts = task.contexts || []
-                if (!currentContexts.includes(context)) {
-                    const newContexts = [...currentContexts, context]
-                    await this.app.updateTaskContexts?.(taskId, newContexts)
+                task.contexts = task.contexts || []
+                if (!task.contexts.includes(context)) {
+                    task.contexts.push(context)
                 }
+                task.updatedAt = new Date().toISOString()
             }
         }
+
+        // Save tasks
+        await this.app.saveTasks?.()
 
         // Clear selection and exit mode
         this.exitBulkSelectionMode()
@@ -601,6 +622,9 @@ export class BulkSelection {
         // Update UI
         this.app.renderView?.()
         this.app.updateCounts?.()
+
+        // Show toast
+        this.app.showToast?.(`Added ${context} to ${this.selectedTaskIds.size} task(s)`)
     }
 
     /**
@@ -766,7 +790,35 @@ export class BulkSelection {
      * Bulk set project for selected tasks
      */
     async bulkSetProject (): Promise<void> {
-        this.showBulkProjectMenu()
+        if (this.selectedTaskIds.size === 0) return
+
+        // Simple prompt - could be enhanced with a custom modal
+        const projectTitles = this.state.projects
+            .map((p: { id: string; title: string }, i: number) => `${i + 1}. ${p.title}`)
+            .join('\n')
+        const choice = prompt(
+            `Enter project number to move tasks to:\n0. No Project\n${projectTitles}`
+        )
+
+        if (choice === null) return
+
+        const index = parseInt(choice) - 1
+        const projectId =
+            index === -1 ? null : this.state.projects[index] ? this.state.projects[index].id : null
+
+        this.app.saveState?.('Bulk set project')
+        for (const taskId of this.selectedTaskIds) {
+            const task = this.state.tasks.find((t) => t.id === taskId)
+            if (task) {
+                task.projectId = projectId
+                task.updatedAt = new Date().toISOString()
+            }
+        }
+
+        await this.app.saveTasks?.()
+        this.exitBulkSelectionMode()
+        this.app.renderView?.()
+        this.app.showToast?.(`Moved ${this.selectedTaskIds.size} task(s) to project`)
     }
 
     /**
