@@ -3,18 +3,8 @@
  * Handles analytics and productivity dashboard
  */
 
-import { Task, Project } from '../../models'
 import { escapeHtml } from '../../dom-utils'
-
-// Define interfaces for state and app dependencies
-interface AppState {
-    tasks: Task[]
-    projects: Project[]
-}
-
-interface AppDependencies {
-    showToast?: (message: string, type?: string) => void
-}
+import type { AppState, AppDependencies } from '../../types'
 
 interface ContextCompletion {
     total: number

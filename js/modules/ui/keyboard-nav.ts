@@ -15,25 +15,8 @@
  * keyboardNav.selectTask('task-123');
  */
 
-import { Task } from '../../models'
-
-// Define types for the app interface
-interface AppDependencies {
-    showSuggestions?: () => void
-    duplicateTask?: (taskId: string) => Promise<void>
-    openTaskModal?: (task: Task | null) => void
-    toggleTaskComplete?: (taskId: string) => Promise<void>
-    deleteTask?: (taskId: string) => Promise<void>
-    enterFocusMode?: (taskId: string) => void
-    switchView?: (view: string) => void
-    showInfo?: (message: string) => void
-    [key: string]: any // Allow for additional app methods
-}
-
-interface AppState {
-    tasks: Task[]
-    [key: string]: any // Allow for additional state properties
-}
+import type { AppState, AppDependencies } from '../../types'
+import type { Task } from '../../models'
 
 export class KeyboardNavigation {
     private state: AppState

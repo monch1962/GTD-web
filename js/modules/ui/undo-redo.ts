@@ -3,7 +3,8 @@
  * Manages history and provides undo/redo functionality
  */
 
-import { Task, Project } from '../../models'
+import type { AppState, AppDependencies } from '../../types'
+import type { Task, Project } from '../../models'
 
 interface HistoryEntry {
     action: string
@@ -13,22 +14,6 @@ interface HistoryEntry {
         projects: Project[]
         [key: string]: any
     }
-}
-
-// Define types for the app interface
-interface AppDependencies {
-    showNotification?: (message: string, type: string) => void
-    renderView?: () => void
-    updateCounts?: () => void
-    saveTasks?: () => Promise<void>
-    saveProjects?: () => Promise<void>
-    [key: string]: any // Allow for additional app methods
-}
-
-interface AppState {
-    tasks: Task[]
-    projects: Project[]
-    [key: string]: any // Allow for additional state properties
 }
 
 export class UndoRedoManager {

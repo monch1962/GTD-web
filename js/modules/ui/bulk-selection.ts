@@ -3,31 +3,7 @@
  * Handles bulk operations on multiple tasks
  */
 
-import { Task } from '../../models'
-
-// Define types for the app interface
-interface AppDependencies {
-    saveState?: (action: string) => void
-    showNotification?: (message: string, type: string) => void
-    toggleTaskComplete?: (taskId: string) => Promise<void>
-    deleteTask?: (taskId: string) => Promise<void>
-    updateTaskStatus?: (taskId: string, status: string) => Promise<void>
-    updateTaskEnergy?: (taskId: string, energy: string) => Promise<void>
-    updateTaskProject?: (taskId: string, projectId: string | null) => Promise<void>
-    updateTaskContexts?: (taskId: string, contexts: string[]) => Promise<void>
-    updateTaskDueDate?: (taskId: string, dueDate: string | null) => Promise<void>
-    renderView?: () => void
-    updateCounts?: () => void
-    saveTasks?: () => Promise<void>
-    [key: string]: any // Allow for additional app methods
-}
-
-interface AppState {
-    tasks: Task[]
-    selectedTaskIds: Set<string>
-    bulkSelectionMode: boolean
-    [key: string]: any // Allow for additional state properties
-}
+import type { AppState, AppDependencies } from '../../types'
 
 export class BulkSelection {
     private state: AppState

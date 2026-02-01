@@ -3,30 +3,8 @@
  * Handles right-click context menu for tasks
  */
 
-import { Task, Project } from '../../models'
 import { escapeHtml } from '../../dom-utils'
-
-// Define interfaces for state and app dependencies
-interface AppState {
-    tasks: Task[]
-    projects: Project[]
-}
-
-interface AppDependencies {
-    openTaskModal?: (task: Task) => void
-    duplicateTask?: (taskId: string) => Promise<void>
-    saveTaskAsTemplate?: (taskId: string) => void
-    saveState?: (description: string) => void
-    saveTasks?: () => Promise<void>
-    renderView?: () => void
-    updateCounts?: () => void
-    showToast?: (message: string) => void
-    showNotification?: (message: string, type?: string) => void
-    showWarning?: (message: string) => void
-    showError?: (message: string) => void
-    toggleTaskComplete?: (taskId: string) => Promise<void>
-    archiveTask?: (taskId: string) => Promise<void>
-}
+import type { AppState, AppDependencies } from '../../types'
 
 interface TouchPosition {
     x: number

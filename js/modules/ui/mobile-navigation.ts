@@ -9,57 +9,7 @@
  */
 
 import { createLogger } from '../utils/logger'
-import { Task } from '../../models'
-
-// Define interfaces for state and app dependencies
-interface AppState {
-    tasks: Task[]
-}
-
-interface AppDependencies {
-    // View switching
-    switchView?: (view: string) => void
-
-    // Modal/show methods
-    showCalendar?: () => void
-    enterFocusMode?: () => void
-    openProjectModal?: () => void
-    showDailyReview?: () => void
-    showWeeklyReview?: () => void
-    showDashboard?: () => void
-    showDependencies?: () => void
-    openHeatmapModal?: () => void
-    showSuggestions?: () => void
-    openTemplatesModal?: () => void
-    showSearch?: () => void
-    undo?: () => void
-    redo?: () => void
-
-    // Task operations
-    toggleTaskComplete?: (taskId: string) => Promise<void>
-    archiveTask?: (taskId: string) => Promise<void>
-
-    // UI updates
-    renderView?: () => void
-    updateCounts?: () => void
-
-    // Storage
-    saveTasks?: () => Promise<void>
-    storage?: {
-        getTasks?: () => any[]
-    }
-
-    // Models
-    models?: {
-        Task?: {
-            fromJSON?: (data: any) => any
-        }
-    }
-
-    // Notifications
-    showNotification?: (message: string, type?: string) => void
-    showToast?: (message: string) => void
-}
+import type { AppState, AppDependencies } from '../../types'
 
 interface Logger {
     debug: (...args: any[]) => void
@@ -220,7 +170,7 @@ export class MobileNavigationManager {
                     this.app.enterFocusMode?.()
                     break
                 case 'new-project':
-                    this.app.openProjectModal?.()
+                    this.app.openProjectModal?.(null)
                     break
                 case 'daily-review':
                     this.app.showDailyReview?.()
