@@ -223,39 +223,47 @@ describe('TimeTrackingManager - Stop Timer', () => {
         })
 
         test('should add elapsed time to task.timeSpent', async () => {
-            jest.useRealTimers() // Use real timers for accurate timing
+            // Mock Date.now to simulate 2 seconds passing
+            const originalDateNow = Date.now
+            let currentTime = 1000
+            Date.now = jest.fn(() => currentTime)
 
             manager.startTaskTimer('task1')
 
-            // Wait 2 seconds
-            await new Promise((resolve) => setTimeout(resolve, 2000))
+            // Simulate 2 seconds passing (2000ms)
+            currentTime += 2000
 
-            // Stop timer
             await manager.stopTaskTimer()
 
-            // Should add at least 0 minutes (2 seconds < 1 minute)
+            // Should add 0 minutes (2 seconds < 1 minute)
             // The elapsed time is floored, so 2 seconds = 0 minutes
             expect(mockState.tasks[0].timeSpent).toBe(0)
 
-            jest.useFakeTimers()
+            // Restore original Date.now
+            Date.now = originalDateNow
         })
 
         test('should accumulate time correctly', async () => {
             mockState.tasks[0].timeSpent = 30 // Already has 30 minutes
 
-            jest.useRealTimers()
+            // Mock Date.now to simulate 65 seconds passing
+            const originalDateNow = Date.now
+            let currentTime = 1000
+            Date.now = jest.fn(() => currentTime)
+
             manager.startTaskTimer('task1')
 
-            // Wait enough time to add 1 more minute
-            await new Promise((resolve) => setTimeout(resolve, 65000))
+            // Simulate 65 seconds passing (65,000ms)
+            currentTime += 65000
 
             await manager.stopTaskTimer()
 
-            // Should now have 31 minutes
+            // Should now have 31 minutes (30 + 1)
             expect(mockState.tasks[0].timeSpent).toBe(31)
 
-            jest.useFakeTimers()
-        }, 75000) // Increase timeout to 75 seconds for this long-running test
+            // Restore original Date.now
+            Date.now = originalDateNow
+        })
 
         test('should update task timestamp', async () => {
             manager.startTaskTimer('task1')
@@ -354,23 +362,27 @@ describe('TimeTrackingManager - Timer State Management', () => {
     })
 
     test('should maintain separate time tracking for each task', async () => {
-        jest.useRealTimers()
+        // Mock Date.now to simulate time passing
+        const originalDateNow = Date.now
+        let currentTime = 1000
+        Date.now = jest.fn(() => currentTime)
 
         // Track time on task1
         manager.startTaskTimer('task1')
-        await new Promise((resolve) => setTimeout(resolve, 1100))
+        currentTime += 1100 // Simulate 1.1 seconds passing
         await manager.stopTaskTimer()
 
         // Track time on task2
         manager.startTaskTimer('task2')
-        await new Promise((resolve) => setTimeout(resolve, 1100))
+        currentTime += 1100 // Simulate another 1.1 seconds passing
         await manager.stopTaskTimer()
 
-        // Each should have its own time
-        expect(mockState.tasks[0].timeSpent).toBe(0) // 1.1s = 0 min
-        expect(mockState.tasks[1].timeSpent).toBe(0) // 1.1s = 0 min
+        // Each should have its own time (both 0 minutes since < 60 seconds)
+        expect(mockState.tasks[0].timeSpent).toBe(0)
+        expect(mockState.tasks[1].timeSpent).toBe(0)
 
-        jest.useFakeTimers()
+        // Restore original Date.now
+        Date.now = originalDateNow
     })
 
     test('should handle rapid start/stop cycles', async () => {
