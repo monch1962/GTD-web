@@ -594,3 +594,616 @@ describe('SearchManager - Populate Contexts', () => {
         expect(select.options[0].value).toBe('')
     })
 })
+
+describe('SearchManager - Saved Searches', () => {
+    let manager: SearchManager
+    let mockState: any
+    let mockApp: GTDApp
+
+    beforeEach(() => {
+        localStorage.clear()
+        document.body.innerHTML = ''
+
+        // Create saved searches dropdown
+        const savedSearchesSelect = document.createElement('select')
+        savedSearchesSelect.id = 'saved-searches'
+        // Add default "Select saved search..." option
+        const defaultOption = document.createElement('option')
+        defaultOption.value = ''
+        defaultOption.textContent = 'Select saved search...'
+        savedSearchesSelect.appendChild(defaultOption)
+        document.body.appendChild(savedSearchesSelect)
+
+        const deleteSavedSearchBtn = document.createElement('button')
+        deleteSavedSearchBtn.id = 'delete-saved-search'
+        deleteSavedSearchBtn.style.display = 'none'
+        document.body.appendChild(deleteSavedSearchBtn)
+
+        mockState = {
+            tasks: [],
+            projects: [],
+            defaultContexts: ['@home', '@work'],
+            searchQuery: '',
+            advancedSearchFilters: {
+                context: '',
+                energy: '',
+                status: '',
+                due: '',
+                sort: 'updated'
+            },
+            savedSearches: []
+        }
+
+        mockApp = new GTDApp()
+        mockApp.showNotification = jest.fn()
+        mockApp.renderView = jest.fn()
+
+        manager = new SearchManager(mockState, mockApp)
+        manager.setupSearch()
+    })
+
+    afterEach(() => {
+        document.body.innerHTML = ''
+    })
+
+    describe('saveCurrentSearch()', () => {
+        beforeEach(() => {
+            global.prompt = jest.fn()
+        })
+
+        afterEach(() => {
+            ;(global.prompt as jest.Mock).mockRestore()
+        })
+
+        test('should save current search with name', () => {
+            mockState.searchQuery = 'work tasks'
+            mockState.advancedSearchFilters.context = '@work'
+            ;(global.prompt as jest.Mock).mockReturnValue('My Work Search')
+
+            manager.saveCurrentSearch()
+
+            expect(mockState.savedSearches).toHaveLength(1)
+            expect(mockState.savedSearches[0].name).toBe('My Work Search')
+            expect(mockState.savedSearches[0].query).toBe('work tasks')
+            expect(mockState.savedSearches[0].filters.context).toBe('@work')
+        })
+
+        test('should generate unique ID for saved search', () => {
+            mockState.searchQuery = 'test'
+            ;(global.prompt as jest.Mock).mockReturnValue('Test Search')
+
+            manager.saveCurrentSearch()
+
+            const saved = mockState.savedSearches[0]
+            expect(saved.id).toBeDefined()
+            expect(typeof saved.id).toBe('string')
+        })
+
+        test('should add timestamp to saved search', () => {
+            mockState.searchQuery = 'test'
+            ;(global.prompt as jest.Mock).mockReturnValue('Test Search')
+
+            manager.saveCurrentSearch()
+
+            const saved = mockState.savedSearches[0]
+            expect(saved.createdAt).toBeDefined()
+        })
+
+        test('should save to localStorage', () => {
+            mockState.searchQuery = 'test'
+            ;(global.prompt as jest.Mock).mockReturnValue('Test Search')
+
+            manager.saveCurrentSearch()
+
+            const stored = JSON.parse(localStorage.getItem('gtd_saved_searches') || '[]')
+            expect(stored).toHaveLength(1)
+            expect(stored[0].name).toBe('Test Search')
+        })
+
+        test('should not save when name is empty', () => {
+            mockState.searchQuery = 'test'
+            ;(global.prompt as jest.Mock).mockReturnValue(null)
+
+            manager.saveCurrentSearch()
+
+            expect(mockState.savedSearches).toHaveLength(0)
+        })
+
+        test('should show notification after saving', () => {
+            mockState.searchQuery = 'test'
+            ;(global.prompt as jest.Mock).mockReturnValue('Test Search')
+
+            manager.saveCurrentSearch()
+
+            expect(mockApp.showNotification).toHaveBeenCalledWith('Search saved!')
+        })
+    })
+
+    describe('loadSavedSearch()', () => {
+        beforeEach(() => {
+            document.body.innerHTML = ''
+
+            const savedSearchesSelect = document.createElement('select')
+            savedSearchesSelect.id = 'saved-searches'
+            document.body.appendChild(savedSearchesSelect)
+
+            const clearSearchBtn = document.createElement('button')
+            clearSearchBtn.id = 'clear-search'
+            document.body.appendChild(clearSearchBtn)
+
+            const advancedPanel = document.createElement('div')
+            advancedPanel.id = 'advanced-search-panel'
+            document.body.appendChild(advancedPanel)
+
+            const searchInput = document.createElement('input')
+            searchInput.id = 'global-search'
+            document.body.appendChild(searchInput)
+
+            const searchContext = document.createElement('select')
+            searchContext.id = 'search-context'
+            document.body.appendChild(searchContext)
+
+            const searchSort = document.createElement('select')
+            searchSort.id = 'search-sort'
+            document.body.appendChild(searchSort)
+
+            // Re-initialize manager with new DOM
+            manager = new SearchManager(mockState, mockApp)
+            manager.setupSearch()
+        })
+
+        test('should load saved search parameters', () => {
+            const savedSearch = {
+                id: '1',
+                name: 'Work',
+                query: 'work tasks',
+                filters: { context: '@work', sort: 'priority' }
+            }
+
+            mockState.savedSearches.push(savedSearch)
+
+            manager.loadSavedSearch('1')
+
+            expect(mockState.searchQuery).toBe('work tasks')
+            expect(mockState.advancedSearchFilters.context).toBe('@work')
+            expect(mockState.advancedSearchFilters.sort).toBe('priority')
+        })
+
+        test('should update search input value', () => {
+            const savedSearch = {
+                id: '1',
+                name: 'Test',
+                query: 'test query',
+                filters: {}
+            }
+
+            mockState.savedSearches.push(savedSearch)
+
+            manager.loadSavedSearch('1')
+
+            const searchInput = document.getElementById('global-search') as HTMLInputElement
+            expect(searchInput.value).toBe('test query')
+        })
+
+        test('should show advanced panel', () => {
+            const savedSearch = {
+                id: '1',
+                name: 'Test',
+                query: 'test',
+                filters: {}
+            }
+
+            mockState.savedSearches.push(savedSearch)
+
+            manager.loadSavedSearch('1')
+
+            const advancedPanel = document.getElementById('advanced-search-panel') as HTMLDivElement
+            expect(advancedPanel.style.display).toBe('block')
+        })
+
+        test('should handle non-existent search', () => {
+            expect(() => {
+                manager.loadSavedSearch('nonexistent')
+            }).not.toThrow()
+        })
+
+        test('should trigger render', () => {
+            const savedSearch = {
+                id: '1',
+                name: 'Test',
+                query: 'test',
+                filters: {}
+            }
+
+            mockState.savedSearches.push(savedSearch)
+
+            manager.loadSavedSearch('1')
+
+            expect(mockApp.renderView).toHaveBeenCalled()
+        })
+    })
+})
+
+describe('SearchManager - filterTasksBySearch()', () => {
+    let manager: SearchManager
+    let mockState: any
+    let mockApp: GTDApp
+    let tasks: any[]
+
+    beforeEach(() => {
+        tasks = [
+            {
+                id: '1',
+                title: 'Buy groceries',
+                description: 'Get milk and eggs',
+                contexts: ['@home', '@errand'],
+                energy: 'high',
+                status: 'next',
+                dueDate: '2025-01-15',
+                isOverdue: () => false,
+                isDueToday: () => false
+            } as any,
+            {
+                id: '2',
+                title: 'Write report',
+                description: 'Quarterly review',
+                contexts: ['@work'],
+                energy: 'medium',
+                status: 'waiting',
+                dueDate: null,
+                isOverdue: () => false,
+                isDueToday: () => false
+            } as any,
+            {
+                id: '3',
+                title: 'Exercise',
+                description: 'Morning workout at home',
+                contexts: ['@home'],
+                energy: 'low',
+                status: 'inbox',
+                dueDate: '2025-01-20',
+                isOverdue: () => false,
+                isDueToday: () => false
+            } as any,
+            {
+                id: '4',
+                title: 'Call mom',
+                description: 'Weekly check-in',
+                contexts: [],
+                energy: 'low',
+                status: 'next',
+                dueDate: null,
+                isOverdue: () => false,
+                isDueToday: () => false
+            } as any
+        ]
+
+        mockState = {
+            tasks: [],
+            projects: [],
+            defaultContexts: ['@home', '@work'],
+            searchQuery: '',
+            advancedSearchFilters: {
+                context: '',
+                energy: '',
+                status: '',
+                due: '',
+                sort: 'updated'
+            },
+            savedSearches: []
+        }
+
+        mockApp = new GTDApp()
+
+        manager = new SearchManager(mockState, mockApp)
+    })
+
+    test('should return all tasks when no filters active', () => {
+        const result = manager.filterTasksBySearch(tasks)
+
+        expect(result).toEqual(tasks)
+    })
+
+    test('should filter by title text search', () => {
+        mockState.searchQuery = 'groceries'
+
+        const result = manager.filterTasksBySearch(tasks)
+
+        expect(result).toHaveLength(1)
+        expect(result[0].id).toBe('1')
+    })
+
+    test('should filter by description text search', () => {
+        mockState.searchQuery = 'milk'
+
+        const result = manager.filterTasksBySearch(tasks)
+
+        expect(result).toHaveLength(1)
+        expect(result[0].id).toBe('1')
+    })
+
+    test('should filter by context text search', () => {
+        mockState.searchQuery = '@work'
+
+        const result = manager.filterTasksBySearch(tasks)
+
+        expect(result).toHaveLength(1)
+        expect(result[0].id).toBe('2')
+    })
+
+    test('should be case insensitive', () => {
+        mockState.searchQuery = 'GROCERIES'
+
+        const result = manager.filterTasksBySearch(tasks)
+
+        expect(result).toHaveLength(1)
+        expect(result[0].id).toBe('1')
+    })
+
+    test('should filter by advanced context filter', () => {
+        mockState.advancedSearchFilters.context = '@home'
+
+        const result = manager.filterTasksBySearch(tasks)
+
+        expect(result).toHaveLength(2)
+        expect(result.map((t: any) => t.id)).toEqual(['1', '3'])
+    })
+
+    test('should exclude tasks without context when context filter active', () => {
+        mockState.advancedSearchFilters.context = '@home'
+
+        const result = manager.filterTasksBySearch(tasks)
+
+        // Task 4 has no contexts, should be excluded
+        expect(result).not.toContainEqual(expect.objectContaining({ id: '4' }))
+    })
+
+    test('should filter by advanced energy filter', () => {
+        mockState.advancedSearchFilters.energy = 'high'
+
+        const result = manager.filterTasksBySearch(tasks)
+
+        expect(result).toHaveLength(1)
+        expect(result[0].id).toBe('1')
+    })
+
+    test('should filter by advanced status filter', () => {
+        mockState.advancedSearchFilters.status = 'next'
+
+        const result = manager.filterTasksBySearch(tasks)
+
+        expect(result).toHaveLength(2)
+        expect(result.map((t: any) => t.id)).toEqual(['1', '4'])
+    })
+
+    test('should filter tasks without due date when nodate filter', () => {
+        mockState.advancedSearchFilters.due = 'nodate'
+
+        const result = manager.filterTasksBySearch(tasks)
+
+        expect(result).toHaveLength(2)
+        expect(result.map((t: any) => t.id)).toEqual(['2', '4'])
+    })
+
+    test('should handle multiple filters combined', () => {
+        mockState.searchQuery = 'home'
+        mockState.advancedSearchFilters.energy = 'low'
+
+        const result = manager.filterTasksBySearch(tasks)
+
+        expect(result).toHaveLength(1)
+        expect(result[0].id).toBe('3')
+    })
+
+    test('should return empty array when no matches', () => {
+        mockState.searchQuery = 'nonexistent'
+
+        const result = manager.filterTasksBySearch(tasks)
+
+        expect(result).toHaveLength(0)
+    })
+
+    test('should handle tasks with null description', () => {
+        const tasksWithNullDesc = [
+            {
+                id: '5',
+                title: 'Task with null description',
+                description: null,
+                contexts: ['@test'],
+                energy: 'medium',
+                status: 'next',
+                dueDate: null,
+                isOverdue: () => false,
+                isDueToday: () => false
+            } as any
+        ]
+
+        mockState.searchQuery = 'test'
+        const result = manager.filterTasksBySearch(tasksWithNullDesc)
+
+        expect(result).toHaveLength(1)
+    })
+
+    test('should handle tasks with null contexts', () => {
+        const tasksWithNullContexts = [
+            {
+                id: '6',
+                title: 'Task with null contexts',
+                description: 'Test',
+                contexts: null,
+                energy: 'medium',
+                status: 'next',
+                dueDate: null,
+                isOverdue: () => false,
+                isDueToday: () => false
+            } as any
+        ]
+
+        mockState.searchQuery = 'test'
+        const result = manager.filterTasksBySearch(tasksWithNullContexts)
+
+        expect(result).toHaveLength(1)
+    })
+})
+
+describe('SearchManager - Getters and Utilities', () => {
+    let manager: SearchManager
+    let mockState: any
+    let mockApp: GTDApp
+
+    beforeEach(() => {
+        mockState = {
+            tasks: [],
+            projects: [],
+            defaultContexts: ['@home', '@work'],
+            searchQuery: 'test query',
+            advancedSearchFilters: {
+                context: '@home',
+                energy: 'high',
+                status: 'next',
+                due: '',
+                sort: 'updated'
+            },
+            savedSearches: [
+                {
+                    id: '1',
+                    name: 'Test',
+                    query: 'test query',
+                    filters: {
+                        context: '@home',
+                        energy: 'high',
+                        status: 'next',
+                        due: '',
+                        sort: 'updated'
+                    },
+                    createdAt: '2025-01-01T00:00:00.000Z'
+                }
+            ]
+        }
+
+        mockApp = new GTDApp()
+
+        manager = new SearchManager(mockState, mockApp)
+    })
+
+    test('getSearchQuery() should return current query', () => {
+        expect(manager.getSearchQuery()).toBe('test query')
+    })
+
+    test('getAdvancedFilters() should return copy of filters', () => {
+        const filters = manager.getAdvancedFilters()
+
+        expect(filters).toEqual({
+            context: '@home',
+            energy: 'high',
+            status: 'next',
+            due: '',
+            sort: 'updated'
+        })
+
+        // Verify it's a copy, not reference
+        filters.context = '@work'
+        expect(mockState.advancedSearchFilters.context).toBe('@home')
+    })
+
+    test('getSavedSearches() should return copy of saved searches', () => {
+        const searches = manager.getSavedSearches()
+
+        expect(searches).toEqual([
+            {
+                id: '1',
+                name: 'Test',
+                query: 'test query',
+                filters: {
+                    context: '@home',
+                    energy: 'high',
+                    status: 'next',
+                    due: '',
+                    sort: 'updated'
+                },
+                createdAt: '2025-01-01T00:00:00.000Z'
+            }
+        ])
+
+        // Verify it's a shallow copy - array is copied but objects are references
+        searches.push({
+            id: '2',
+            name: 'New',
+            query: '',
+            filters: { context: '', energy: '', status: '', due: '', sort: 'updated' },
+            createdAt: new Date().toISOString()
+        })
+        expect(mockState.savedSearches).toHaveLength(1) // Original array unchanged
+
+        // Objects inside are still references (shallow copy)
+        searches[0].name = 'Modified'
+        expect(mockState.savedSearches[0].name).toBe('Modified') // Object is referenced
+    })
+})
+
+describe('SearchManager - isSearchActive()', () => {
+    let manager: SearchManager
+    let mockState: any
+    let mockApp: GTDApp
+
+    beforeEach(() => {
+        mockState = {
+            tasks: [],
+            projects: [],
+            defaultContexts: ['@home', '@work'],
+            searchQuery: '',
+            advancedSearchFilters: {
+                context: '',
+                energy: '',
+                status: '',
+                due: '',
+                sort: 'updated'
+            },
+            savedSearches: []
+        }
+
+        mockApp = new GTDApp()
+
+        manager = new SearchManager(mockState, mockApp)
+    })
+
+    test('should return false when no filters active', () => {
+        expect(manager.isSearchActive()).toBe(false)
+    })
+
+    test('should return true when searchQuery is active', () => {
+        mockState.searchQuery = 'test'
+
+        expect(manager.isSearchActive()).toBe(true)
+    })
+
+    test('should return true when context filter is active', () => {
+        mockState.advancedSearchFilters.context = '@home'
+
+        expect(manager.isSearchActive()).toBe(true)
+    })
+
+    test('should return true when energy filter is active', () => {
+        mockState.advancedSearchFilters.energy = 'high'
+
+        expect(manager.isSearchActive()).toBe(true)
+    })
+
+    test('should return true when status filter is active', () => {
+        mockState.advancedSearchFilters.status = 'next'
+
+        expect(manager.isSearchActive()).toBe(true)
+    })
+
+    test('should return true when due filter is active', () => {
+        mockState.advancedSearchFilters.due = 'today'
+
+        expect(manager.isSearchActive()).toBe(true)
+    })
+
+    test('should return false when only sort is set', () => {
+        mockState.advancedSearchFilters.sort = 'priority'
+
+        expect(manager.isSearchActive()).toBe(false)
+    })
+})
