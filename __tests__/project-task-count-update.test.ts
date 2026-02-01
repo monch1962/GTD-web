@@ -1,7 +1,7 @@
 /**
  * Regression Test: Project Task Count Update
  * Tests that project task counts update when a task is assigned to a project
-
+ *
  * NOTE: Tests skipped due to modularization
  * These tests check for implementation patterns in app.js that were moved
  * to manager modules. The functionality is tested by the actual feature tests.
@@ -9,11 +9,15 @@
  * rather than implementation detail checking.
  */
 
+import { GTDApp } from '../js/app.ts'
+import { Storage } from '../js/storage.ts'
+import { Task, Project } from '../js/models.ts'
+
 describe.skip('Project Task Count Update Regression Test', () => {
-    let app
-    let storage
-    let mockLocalStorage
-    let mockGetElementById
+    let app: GTDApp
+    let storage: Storage
+    let mockLocalStorage: any
+    let mockGetElementById: jest.Mock
 
     beforeAll(() => {
         // Mock localStorage
@@ -32,7 +36,7 @@ describe.skip('Project Task Count Update Regression Test', () => {
 
         // Mock DOM elements
         mockGetElementById = jest.fn((id) => {
-            const elements = {
+            const elements: Record<string, any> = {
                 'task-id': { value: '' },
                 'task-title': { value: '' },
                 'task-description': { value: '' },
@@ -74,23 +78,21 @@ describe.skip('Project Task Count Update Regression Test', () => {
             })),
             querySelectorAll: jest.fn(() => []),
             querySelector: jest.fn(() => ({ classList: { remove: jest.fn() } }))
-        }
+        } as any
 
         global.window = {
             location: { href: '' },
             addEventListener: jest.fn()
-        }
+        } as any
     })
 
     beforeEach(() => {
         jest.clearAllMocks()
 
-        const { Storage } = require('../js/storage.js')
         storage = new Storage()
         storage.userId = 'test_user'
 
         // Import and setup app
-        const { GTDApp } = require('../js/app.js')
         app = new GTDApp()
         app.storage = storage
         app.tasks = []
@@ -123,7 +125,7 @@ describe.skip('Project Task Count Update Regression Test', () => {
 
         // Set up form values to simulate editing the task and assigning it to project
         mockGetElementById.mockImplementation((id) => {
-            const elements = {
+            const elements: Record<string, any> = {
                 'task-id': { value: task.id },
                 'task-title': { value: 'Test Task' },
                 'task-status': { value: 'inbox' },
@@ -171,7 +173,7 @@ describe.skip('Project Task Count Update Regression Test', () => {
 
         // Set up form values to simulate creating a new task with project assignment
         mockGetElementById.mockImplementation((id) => {
-            const elements = {
+            const elements: Record<string, any> = {
                 'task-id': { value: '' }, // Empty ID = new task
                 'task-title': { value: 'New Task with Project' },
                 'task-status': { value: 'inbox' },
@@ -195,7 +197,7 @@ describe.skip('Project Task Count Update Regression Test', () => {
         // Assert: New task should be created and assigned to project
         const newTask = app.tasks.find((t) => t.title === 'New Task with Project')
         expect(newTask).toBeDefined()
-        expect(newTask.projectId).toBe(project.id)
+        expect(newTask!.projectId).toBe(project.id)
 
         // CRITICAL: renderProjectsDropdown should be called to update the count
         expect(renderProjectsDropdownSpy).toHaveBeenCalled()

@@ -3,22 +3,23 @@
  */
 
 import { KeyboardNavigation } from '../js/modules/ui/keyboard-nav.ts'
+import { Task } from '../js/models.ts'
 
 describe('KeyboardNavigation', () => {
-    let keyboardNav
-    let mockState
-    let mockApp
+    let keyboardNav: KeyboardNavigation
+    let mockState: { tasks: Task[] }
+    let mockApp: any
 
-    let mockTaskElements
-    let mockQuickAddInput
+    let mockTaskElements: any[]
+    let mockQuickAddInput: HTMLInputElement
 
     beforeEach(() => {
         // Mock state with tasks
         mockState = {
             tasks: [
-                { id: 'task-1', title: 'Task 1', status: 'inbox' },
-                { id: 'task-2', title: 'Task 2', status: 'inbox' },
-                { id: 'task-3', title: 'Task 3', status: 'inbox' }
+                new Task({ id: 'task-1', title: 'Task 1', status: 'inbox' }),
+                new Task({ id: 'task-2', title: 'Task 2', status: 'inbox' }),
+                new Task({ id: 'task-3', title: 'Task 3', status: 'inbox' })
             ]
         }
 
@@ -57,13 +58,21 @@ describe('KeyboardNavigation', () => {
         ]
 
         // Mock quick-add input
-        mockQuickAddInput = { focus: jest.fn(), select: jest.fn(), id: 'quick-add-input' }
+        mockQuickAddInput = {
+            focus: jest.fn(),
+            select: jest.fn(),
+            id: 'quick-add-input'
+        } as unknown as HTMLInputElement
 
         // Mock document methods with jest.fn()
         global.document.querySelector = jest.fn((selector) => {
             if (selector.startsWith('[data-task-id')) {
-                const taskId = selector.match(/data-task-id="([^"]+)"/)[1]
-                return mockTaskElements.find((t) => t.dataset.taskId === taskId) || null
+                const match = selector.match(/data-task-id="([^"]+)"/)
+                if (match) {
+                    const taskId = match[1]
+                    return mockTaskElements.find((t) => t.dataset.taskId === taskId) || null
+                }
+                return null
             }
             if (selector === '#quick-add-input') {
                 return mockQuickAddInput
@@ -74,14 +83,38 @@ describe('KeyboardNavigation', () => {
             return null
         })
 
-        global.document.querySelectorAll = jest.fn(() => mockTaskElements)
+        global.document.querySelectorAll = jest.fn(() => {
+            // Convert array to NodeList-like object with array indexing support
+            const nodeList = {
+                length: mockTaskElements.length,
+                item: (index: number) => mockTaskElements[index] || null,
+                [Symbol.iterator]: function * () {
+                    for (let i = 0; i < this.length; i++) {
+                        yield this.item(i)
+                    }
+                },
+                forEach: (callback: (value: any, index: number, array: any[]) => void) => {
+                    mockTaskElements.forEach(callback)
+                }
+            }
+            // Add array indexing support
+            const proxy = new Proxy(nodeList, {
+                get (target, prop) {
+                    if (typeof prop === 'string' && !isNaN(parseInt(prop))) {
+                        return target.item(parseInt(prop))
+                    }
+                    return (target as any)[prop]
+                }
+            })
+            return proxy as unknown as NodeList
+        })
         global.document.addEventListener = jest.fn()
         global.document.getElementById = jest.fn((id) => {
             if (id === 'quick-add-input') {
                 return mockQuickAddInput
             }
             if (id === 'btn-suggestions') {
-                return { id: 'btn-suggestions' }
+                return { id: 'btn-suggestions' } as HTMLElement
             }
             return null
         })
@@ -95,12 +128,12 @@ describe('KeyboardNavigation', () => {
 
     describe('Constructor', () => {
         test('should initialize with state and app', () => {
-            expect(keyboardNav.state).toBe(mockState)
-            expect(keyboardNav.app).toBe(mockApp)
+            expect((keyboardNav as any).state).toBe(mockState)
+            expect((keyboardNav as any).app).toBe(mockApp)
         })
 
         test('should initialize with no selected task', () => {
-            expect(keyboardNav.selectedTaskId).toBeNull()
+            expect((keyboardNav as any).selectedTaskId).toBeNull()
         })
     })
 
@@ -116,21 +149,21 @@ describe('KeyboardNavigation', () => {
         test('should set selectedTaskId', () => {
             keyboardNav.selectTask('task-1')
 
-            expect(keyboardNav.selectedTaskId).toBe('task-1')
+            expect((keyboardNav as any).selectedTaskId).toBe('task-1')
         })
 
         test('should add selected class to task element', () => {
             keyboardNav.selectTask('task-1')
 
             const taskElement = document.querySelector('[data-task-id="task-1"]')
-            expect(taskElement.classList.add).toHaveBeenCalledWith('selected')
+            expect(taskElement!.classList.add).toHaveBeenCalledWith('selected')
         })
 
         test('should scroll task into view', () => {
             keyboardNav.selectTask('task-1')
 
             const taskElement = document.querySelector('[data-task-id="task-1"]')
-            expect(taskElement.scrollIntoView).toHaveBeenCalledWith({
+            expect(taskElement!.scrollIntoView).toHaveBeenCalledWith({
                 behavior: 'smooth',
                 block: 'nearest'
             })
@@ -140,7 +173,7 @@ describe('KeyboardNavigation', () => {
             keyboardNav.selectTask('task-1')
             keyboardNav.selectTask('task-2')
 
-            expect(keyboardNav.selectedTaskId).toBe('task-2')
+            expect((keyboardNav as any).selectedTaskId).toBe('task-2')
         })
     })
 
@@ -150,14 +183,14 @@ describe('KeyboardNavigation', () => {
             keyboardNav.deselectTask()
 
             const taskElement = document.querySelector('[data-task-id="task-1"]')
-            expect(taskElement.classList.remove).toHaveBeenCalledWith('selected')
+            expect(taskElement!.classList.remove).toHaveBeenCalledWith('selected')
         })
 
         test('should set selectedTaskId to null', () => {
             keyboardNav.selectTask('task-1')
             keyboardNav.deselectTask()
 
-            expect(keyboardNav.selectedTaskId).toBeNull()
+            expect((keyboardNav as any).selectedTaskId).toBeNull()
         })
 
         test('should do nothing if no task selected', () => {
@@ -191,15 +224,15 @@ describe('KeyboardNavigation', () => {
         test('should select first task', () => {
             keyboardNav.selectFirstTask()
 
-            expect(keyboardNav.selectedTaskId).toBe('task-1')
+            expect((keyboardNav as any).selectedTaskId).toBe('task-1')
         })
 
         test('should do nothing if no tasks', () => {
-            document.querySelectorAll.mockReturnValueOnce([])
+            ;(document.querySelectorAll as jest.Mock).mockReturnValueOnce([])
 
             keyboardNav.selectFirstTask()
 
-            expect(keyboardNav.selectedTaskId).toBeNull()
+            expect((keyboardNav as any).selectedTaskId).toBeNull()
         })
     })
 
@@ -207,15 +240,15 @@ describe('KeyboardNavigation', () => {
         test('should select last task', () => {
             keyboardNav.selectLastTask()
 
-            expect(keyboardNav.selectedTaskId).toBe('task-3')
+            expect((keyboardNav as any).selectedTaskId).toBe('task-3')
         })
 
         test('should do nothing if no tasks', () => {
-            document.querySelectorAll.mockReturnValueOnce([])
+            ;(document.querySelectorAll as jest.Mock).mockReturnValueOnce([])
 
             keyboardNav.selectLastTask()
 
-            expect(keyboardNav.selectedTaskId).toBeNull()
+            expect((keyboardNav as any).selectedTaskId).toBeNull()
         })
     })
 
@@ -223,21 +256,21 @@ describe('KeyboardNavigation', () => {
         test('should select first task if no selection', () => {
             keyboardNav.selectNextTask()
 
-            expect(keyboardNav.selectedTaskId).toBe('task-1')
+            expect((keyboardNav as any).selectedTaskId).toBe('task-1')
         })
 
         test('should select next task', () => {
             keyboardNav.selectTask('task-1')
             keyboardNav.selectNextTask()
 
-            expect(keyboardNav.selectedTaskId).toBe('task-2')
+            expect((keyboardNav as any).selectedTaskId).toBe('task-2')
         })
 
         test('should wrap to first task when at end', () => {
             keyboardNav.selectTask('task-3')
             keyboardNav.selectNextTask()
 
-            expect(keyboardNav.selectedTaskId).toBe('task-1')
+            expect((keyboardNav as any).selectedTaskId).toBe('task-1')
         })
     })
 
@@ -245,21 +278,21 @@ describe('KeyboardNavigation', () => {
         test('should select last task if no selection', () => {
             keyboardNav.selectPreviousTask()
 
-            expect(keyboardNav.selectedTaskId).toBe('task-3')
+            expect((keyboardNav as any).selectedTaskId).toBe('task-3')
         })
 
         test('should select previous task', () => {
             keyboardNav.selectTask('task-2')
             keyboardNav.selectPreviousTask()
 
-            expect(keyboardNav.selectedTaskId).toBe('task-1')
+            expect((keyboardNav as any).selectedTaskId).toBe('task-1')
         })
 
         test('should wrap to last task when at start', () => {
             keyboardNav.selectTask('task-1')
             keyboardNav.selectPreviousTask()
 
-            expect(keyboardNav.selectedTaskId).toBe('task-3')
+            expect((keyboardNav as any).selectedTaskId).toBe('task-3')
         })
     })
 
@@ -268,7 +301,7 @@ describe('KeyboardNavigation', () => {
             keyboardNav.selectTask('task-1')
             keyboardNav.clearSelection()
 
-            expect(keyboardNav.selectedTaskId).toBeNull()
+            expect((keyboardNav as any).selectedTaskId).toBeNull()
         })
     })
 
@@ -278,7 +311,7 @@ describe('KeyboardNavigation', () => {
         })
 
         test('should handle ArrowDown key', () => {
-            const handler = document.addEventListener.mock.calls[0][1]
+            const handler = (document.addEventListener as jest.Mock).mock.calls[0][1]
             const event = {
                 key: 'ArrowDown',
                 target: { tagName: 'DIV' },
@@ -287,34 +320,34 @@ describe('KeyboardNavigation', () => {
 
             handler(event)
 
-            expect(keyboardNav.selectedTaskId).toBe('task-1')
+            expect((keyboardNav as any).selectedTaskId).toBe('task-1')
         })
 
         test('should handle ArrowUp key', () => {
-            const handler = document.addEventListener.mock.calls[0][1]
+            const handler = (document.addEventListener as jest.Mock).mock.calls[0][1]
             const event = { key: 'ArrowUp', target: { tagName: 'DIV' }, preventDefault: jest.fn() }
 
             handler(event)
 
-            expect(keyboardNav.selectedTaskId).toBe('task-3')
+            expect((keyboardNav as any).selectedTaskId).toBe('task-3')
         })
 
         test('should handle j key', () => {
-            const handler = document.addEventListener.mock.calls[0][1]
+            const handler = (document.addEventListener as jest.Mock).mock.calls[0][1]
             const event = { key: 'j', target: { tagName: 'DIV' }, preventDefault: jest.fn() }
 
             handler(event)
 
-            expect(keyboardNav.selectedTaskId).toBe('task-1')
+            expect((keyboardNav as any).selectedTaskId).toBe('task-1')
         })
 
         test('should handle k key', () => {
-            const handler = document.addEventListener.mock.calls[0][1]
+            const handler = (document.addEventListener as jest.Mock).mock.calls[0][1]
             const event = { key: 'k', target: { tagName: 'DIV' }, preventDefault: jest.fn() }
 
             handler(event)
 
-            expect(keyboardNav.selectedTaskId).toBe('task-3')
+            expect((keyboardNav as any).selectedTaskId).toBe('task-3')
         })
     })
 
@@ -325,7 +358,7 @@ describe('KeyboardNavigation', () => {
 
         test('should handle Enter key to edit task', () => {
             keyboardNav.selectTask('task-1')
-            const handler = document.addEventListener.mock.calls[0][1]
+            const handler = (document.addEventListener as jest.Mock).mock.calls[0][1]
             const event = { key: 'Enter', target: { tagName: 'DIV' }, preventDefault: jest.fn() }
 
             handler(event)
@@ -335,17 +368,17 @@ describe('KeyboardNavigation', () => {
 
         test('should handle Escape key to deselect', () => {
             keyboardNav.selectTask('task-1')
-            const handler = document.addEventListener.mock.calls[0][1]
+            const handler = (document.addEventListener as jest.Mock).mock.calls[0][1]
             const event = { key: 'Escape', target: { tagName: 'DIV' }, preventDefault: jest.fn() }
 
             handler(event)
 
-            expect(keyboardNav.selectedTaskId).toBeNull()
+            expect((keyboardNav as any).selectedTaskId).toBeNull()
         })
 
         test('should handle Space key to toggle complete', () => {
             keyboardNav.selectTask('task-1')
-            const handler = document.addEventListener.mock.calls[0][1]
+            const handler = (document.addEventListener as jest.Mock).mock.calls[0][1]
             const event = { key: ' ', target: { tagName: 'DIV' }, preventDefault: jest.fn() }
 
             handler(event)
@@ -355,7 +388,7 @@ describe('KeyboardNavigation', () => {
 
         test('should handle Delete key', () => {
             keyboardNav.selectTask('task-1')
-            const handler = document.addEventListener.mock.calls[0][1]
+            const handler = (document.addEventListener as jest.Mock).mock.calls[0][1]
             const event = { key: 'Delete', target: { tagName: 'DIV' }, preventDefault: jest.fn() }
 
             handler(event)
@@ -365,7 +398,7 @@ describe('KeyboardNavigation', () => {
 
         test('should handle Backspace key', () => {
             keyboardNav.selectTask('task-1')
-            const handler = document.addEventListener.mock.calls[0][1]
+            const handler = (document.addEventListener as jest.Mock).mock.calls[0][1]
             const event = {
                 key: 'Backspace',
                 target: { tagName: 'DIV' },
@@ -384,7 +417,7 @@ describe('KeyboardNavigation', () => {
         })
 
         test('should handle Ctrl+K to focus quick-add', () => {
-            const handler = document.addEventListener.mock.calls[0][1]
+            const handler = (document.addEventListener as jest.Mock).mock.calls[0][1]
             const event = {
                 key: 'k',
                 ctrlKey: true,
@@ -394,12 +427,12 @@ describe('KeyboardNavigation', () => {
 
             handler(event)
 
-            const quickAddInput = document.querySelector('#quick-add-input')
-            expect(quickAddInput.focus).toHaveBeenCalled()
+            const quickAddInput = document.querySelector('#quick-add-input') as HTMLInputElement
+            expect(quickAddInput!.focus).toHaveBeenCalled()
         })
 
         test('should handle Ctrl+N to show suggestions', () => {
-            const handler = document.addEventListener.mock.calls[0][1]
+            const handler = (document.addEventListener as jest.Mock).mock.calls[0][1]
             const event = {
                 key: 'n',
                 ctrlKey: true,
@@ -414,7 +447,7 @@ describe('KeyboardNavigation', () => {
 
         test('should handle Ctrl+D to duplicate task', () => {
             keyboardNav.selectTask('task-1')
-            const handler = document.addEventListener.mock.calls[0][1]
+            const handler = (document.addEventListener as jest.Mock).mock.calls[0][1]
             const event = {
                 key: 'd',
                 ctrlKey: true,
@@ -429,7 +462,7 @@ describe('KeyboardNavigation', () => {
 
         test('should handle Ctrl+/ to enter focus mode', () => {
             keyboardNav.selectTask('task-1')
-            const handler = document.addEventListener.mock.calls[0][1]
+            const handler = (document.addEventListener as jest.Mock).mock.calls[0][1]
             const event = {
                 key: '/',
                 ctrlKey: true,
@@ -443,7 +476,7 @@ describe('KeyboardNavigation', () => {
         })
 
         test('should handle Ctrl+1 to switch to inbox', () => {
-            const handler = document.addEventListener.mock.calls[0][1]
+            const handler = (document.addEventListener as jest.Mock).mock.calls[0][1]
             const event = {
                 key: '1',
                 ctrlKey: true,
@@ -457,7 +490,7 @@ describe('KeyboardNavigation', () => {
         })
 
         test('should handle Ctrl+2 to switch to next', () => {
-            const handler = document.addEventListener.mock.calls[0][1]
+            const handler = (document.addEventListener as jest.Mock).mock.calls[0][1]
             const event = {
                 key: '2',
                 ctrlKey: true,
@@ -471,7 +504,7 @@ describe('KeyboardNavigation', () => {
         })
 
         test('should handle Ctrl+3 to switch to waiting', () => {
-            const handler = document.addEventListener.mock.calls[0][1]
+            const handler = (document.addEventListener as jest.Mock).mock.calls[0][1]
             const event = {
                 key: '3',
                 ctrlKey: true,
@@ -492,7 +525,7 @@ describe('KeyboardNavigation', () => {
 
         test('should ignore keys when typing in INPUT', () => {
             keyboardNav.selectTask('task-1')
-            const handler = document.addEventListener.mock.calls[0][1]
+            const handler = (document.addEventListener as jest.Mock).mock.calls[0][1]
             const event = {
                 key: 'j',
                 target: { tagName: 'INPUT' },
@@ -502,12 +535,12 @@ describe('KeyboardNavigation', () => {
             handler(event)
 
             // Task should remain selected (no navigation)
-            expect(keyboardNav.selectedTaskId).toBe('task-1')
+            expect((keyboardNav as any).selectedTaskId).toBe('task-1')
         })
 
         test('should ignore keys when typing in TEXTAREA', () => {
             keyboardNav.selectTask('task-1')
-            const handler = document.addEventListener.mock.calls[0][1]
+            const handler = (document.addEventListener as jest.Mock).mock.calls[0][1]
             const event = {
                 key: 'j',
                 target: { tagName: 'TEXTAREA' },
@@ -516,12 +549,12 @@ describe('KeyboardNavigation', () => {
 
             handler(event)
 
-            expect(keyboardNav.selectedTaskId).toBe('task-1')
+            expect((keyboardNav as any).selectedTaskId).toBe('task-1')
         })
 
         test('should ignore keys when contentEditable', () => {
             keyboardNav.selectTask('task-1')
-            const handler = document.addEventListener.mock.calls[0][1]
+            const handler = (document.addEventListener as jest.Mock).mock.calls[0][1]
             const event = {
                 key: 'j',
                 target: { tagName: 'DIV', isContentEditable: true },
@@ -530,11 +563,11 @@ describe('KeyboardNavigation', () => {
 
             handler(event)
 
-            expect(keyboardNav.selectedTaskId).toBe('task-1')
+            expect((keyboardNav as any).selectedTaskId).toBe('task-1')
         })
 
         test('should allow Ctrl+K from non-quick-add inputs', () => {
-            const handler = document.addEventListener.mock.calls[0][1]
+            const handler = (document.addEventListener as jest.Mock).mock.calls[0][1]
             const event = {
                 key: 'k',
                 ctrlKey: true,
@@ -564,7 +597,7 @@ describe('KeyboardNavigation', () => {
 
             keyboardNav.selectFirstTask()
 
-            expect(keyboardNav.selectedTaskId).toBeNull()
+            expect((keyboardNav as any).selectedTaskId).toBeNull()
 
             // Restore original
             global.document.querySelectorAll = originalQuerySelectorAll
@@ -572,7 +605,7 @@ describe('KeyboardNavigation', () => {
 
         test('should handle Enter key without selection', () => {
             keyboardNav.setupKeyboardShortcuts()
-            const handler = global.document.addEventListener.mock.calls[0][1]
+            const handler = (global.document.addEventListener as jest.Mock).mock.calls[0][1]
             const event = { key: 'Enter', target: { tagName: 'DIV' }, preventDefault: jest.fn() }
 
             handler(event)
@@ -582,7 +615,7 @@ describe('KeyboardNavigation', () => {
 
         test('should handle Space key without selection', () => {
             keyboardNav.setupKeyboardShortcuts()
-            const handler = global.document.addEventListener.mock.calls[0][1]
+            const handler = (global.document.addEventListener as jest.Mock).mock.calls[0][1]
             const event = { key: ' ', target: { tagName: 'DIV' }, preventDefault: jest.fn() }
 
             handler(event)
@@ -592,7 +625,7 @@ describe('KeyboardNavigation', () => {
 
         test('should handle Ctrl+D without selection', () => {
             keyboardNav.setupKeyboardShortcuts()
-            const handler = global.document.addEventListener.mock.calls[0][1]
+            const handler = (global.document.addEventListener as jest.Mock).mock.calls[0][1]
             const event = {
                 key: 'd',
                 ctrlKey: true,
@@ -613,7 +646,7 @@ describe('KeyboardNavigation', () => {
             keyboardNav.selectNextTask()
 
             // Should remain on task-1 since current element not found
-            expect(keyboardNav.selectedTaskId).toBe('task-1')
+            expect((keyboardNav as any).selectedTaskId).toBe('task-1')
 
             // Restore original
             global.document.querySelector = originalQuerySelector

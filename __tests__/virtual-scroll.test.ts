@@ -1,11 +1,11 @@
 /**
- * Tests for virtual-scroll.js - VirtualScrollManager class
+ * Tests for virtual-scroll.ts - VirtualScrollManager class
  */
 
 import { VirtualScrollManager } from '../js/modules/ui/virtual-scroll.ts'
 
 // Mock dependencies
-jest.mock('../js/constants.js', () => ({
+jest.mock('../js/constants.ts', () => ({
     VirtualScrollConfig: {
         ITEM_HEIGHT: 50,
         BUFFER_ITEMS: 3,
@@ -14,7 +14,7 @@ jest.mock('../js/constants.js', () => ({
     }
 }))
 
-jest.mock('../js/modules/utils/logger.js', () => ({
+jest.mock('../js/modules/utils/logger.ts', () => ({
     createLogger: jest.fn(() => ({
         debug: jest.fn(),
         info: jest.fn(),
@@ -24,10 +24,10 @@ jest.mock('../js/modules/utils/logger.js', () => ({
 }))
 
 describe('VirtualScrollManager', () => {
-    let virtualScroll
-    let mockContainer
-    let mockItems
-    let mockRenderItem
+    let virtualScroll: VirtualScrollManager
+    let mockContainer: any
+    let mockItems: any[]
+    let mockRenderItem: jest.Mock
 
     beforeEach(() => {
         // Mock container
@@ -49,7 +49,7 @@ describe('VirtualScrollManager', () => {
         }))
 
         // Mock render function
-        mockRenderItem = jest.fn((item, index) => {
+        mockRenderItem = jest.fn((item: any, _index: number) => {
             const div = document.createElement('div')
             div.textContent = item.title
             div.dataset.id = item.id
@@ -57,7 +57,7 @@ describe('VirtualScrollManager', () => {
         })
 
         // Mock document methods
-        global.document.createElement = jest.fn((tag) => {
+        global.document.createElement = jest.fn((tag: string) => {
             const element = {
                 style: {},
                 tagName: tag.toUpperCase(),
@@ -66,12 +66,12 @@ describe('VirtualScrollManager', () => {
                 innerHTML: '',
                 dataset: {}
             }
-            return element
+            return element as any
         })
 
         global.document.createDocumentFragment = jest.fn(() => ({
             appendChild: jest.fn()
-        }))
+        })) as any
 
         global.document.getElementById = jest.fn(() => null)
 
@@ -219,8 +219,8 @@ describe('VirtualScrollManager', () => {
         test('should update spacer heights', () => {
             virtualScroll._updateViewport()
 
-            expect(virtualScroll.spacerTop.style.height).toBeTruthy()
-            expect(virtualScroll.spacerBottom.style.height).toBeTruthy()
+            expect(virtualScroll.spacerTop!.style.height).toBeTruthy()
+            expect(virtualScroll.spacerBottom!.style.height).toBeTruthy()
         })
 
         test('should render visible range', () => {
@@ -274,7 +274,7 @@ describe('VirtualScrollManager', () => {
         test.skip('should clear viewport before rendering', () => {
             virtualScroll._renderRange(0, 5)
 
-            expect(virtualScroll.viewport.innerHTML).toBe('')
+            expect(virtualScroll.viewport!.innerHTML).toBe('')
         })
     })
 
@@ -286,8 +286,8 @@ describe('VirtualScrollManager', () => {
         test('should set spacer heights to 0', () => {
             virtualScroll._renderAll()
 
-            expect(virtualScroll.spacerTop.style.height).toBe('0px')
-            expect(virtualScroll.spacerBottom.style.height).toBe('0px')
+            expect(virtualScroll.spacerTop!.style.height).toBe('0px')
+            expect(virtualScroll.spacerBottom!.style.height).toBe('0px')
         })
 
         test('should render all items', () => {
@@ -464,7 +464,7 @@ describe('VirtualScrollManager', () => {
 
         test('should announce to screen reader when announcer exists', () => {
             const mockAnnouncer = { textContent: '' }
-            global.document.getElementById.mockReturnValueOnce(mockAnnouncer)
+            ;(global.document.getElementById as jest.Mock).mockReturnValueOnce(mockAnnouncer)
 
             virtualScroll._announceVisibleRange(5, 10)
 
@@ -472,7 +472,7 @@ describe('VirtualScrollManager', () => {
         })
 
         test('should handle missing announcer gracefully', () => {
-            global.document.getElementById.mockReturnValueOnce(null)
+            ;(global.document.getElementById as jest.Mock).mockReturnValueOnce(null)
 
             expect(() => virtualScroll._announceVisibleRange(5, 10)).not.toThrow()
         })
@@ -481,7 +481,7 @@ describe('VirtualScrollManager', () => {
     describe('_throttle', () => {
         test('should throttle function calls', () => {
             const func = jest.fn()
-            const throttled = virtualScroll._throttle(func, 100)
+            const throttled = (virtualScroll as any)._throttle(func, 100)
 
             throttled()
             throttled()
@@ -492,7 +492,7 @@ describe('VirtualScrollManager', () => {
 
         test('should allow function call after delay', () => {
             const func = jest.fn()
-            const throttled = virtualScroll._throttle(func, 100)
+            const throttled = (virtualScroll as any)._throttle(func, 100)
 
             throttled()
             jest.advanceTimersByTime(100)
@@ -505,7 +505,7 @@ describe('VirtualScrollManager', () => {
     describe('_debounce', () => {
         test('should debounce function calls', () => {
             const func = jest.fn()
-            const debounced = virtualScroll._debounce(func, 100)
+            const debounced = (virtualScroll as any)._debounce(func, 100)
 
             debounced()
             debounced()
@@ -516,7 +516,7 @@ describe('VirtualScrollManager', () => {
 
         test('should call function after delay', () => {
             const func = jest.fn()
-            const debounced = virtualScroll._debounce(func, 100)
+            const debounced = (virtualScroll as any)._debounce(func, 100)
 
             debounced()
             jest.advanceTimersByTime(100)
@@ -526,7 +526,7 @@ describe('VirtualScrollManager', () => {
 
         test('should reset delay on subsequent calls', () => {
             const func = jest.fn()
-            const debounced = virtualScroll._debounce(func, 100)
+            const debounced = (virtualScroll as any)._debounce(func, 100)
 
             debounced()
             jest.advanceTimersByTime(50)
@@ -613,8 +613,7 @@ describe('VirtualScrollManager', () => {
         test('should handle viewport height change on resize', () => {
             virtualScroll.setItems(mockItems, mockRenderItem)
             mockContainer.clientHeight = 600
-
-            virtualScroll.handleResize()
+            ;(virtualScroll as any).handleResize()
             jest.advanceTimersByTime(100) // DEBOUNCE_DELAY
 
             expect(virtualScroll.viewportHeight).toBe(600)

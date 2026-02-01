@@ -4,11 +4,12 @@
 
 import { GTDApp } from '../js/app.ts'
 import { GlobalQuickCaptureManager } from '../js/modules/features/global-quick-capture.ts'
+import { Task } from '../js/models'
 
 describe('GlobalQuickCaptureManager - Initialization', () => {
-    let manager
-    let mockState
-    let mockApp
+    let manager: GlobalQuickCaptureManager
+    let mockState: any
+    let mockApp: GTDApp
 
     beforeEach(() => {
         localStorage.clear()
@@ -59,17 +60,17 @@ describe('GlobalQuickCaptureManager - Initialization', () => {
 
     test('should initialize successfully', () => {
         expect(manager).toBeDefined()
-        expect(manager.state).toBe(mockState)
-        expect(manager.app).toBe(mockApp)
+        expect((manager as any).state).toBe(mockState)
+        expect((manager as any).app).toBe(mockApp)
     })
 })
 
 describe('GlobalQuickCaptureManager - Open/Close Overlay', () => {
-    let manager
-    let mockState
-    let mockApp
-    let overlay
-    let input
+    let manager: GlobalQuickCaptureManager
+    let mockState: any
+    let mockApp: GTDApp
+    let overlay: HTMLElement
+    let input: HTMLInputElement
 
     beforeEach(() => {
         localStorage.clear()
@@ -142,11 +143,11 @@ describe('GlobalQuickCaptureManager - Open/Close Overlay', () => {
 
         test('should hide templates initially', () => {
             const templates = document.getElementById('global-quick-capture-templates')
-            templates.style.display = 'block'
+            templates!.style.display = 'block'
 
             manager.openGlobalQuickCapture()
 
-            expect(templates.style.display).toBe('none')
+            expect(templates!.style.display).toBe('none')
         })
     })
 
@@ -162,9 +163,9 @@ describe('GlobalQuickCaptureManager - Open/Close Overlay', () => {
 })
 
 describe('GlobalQuickCaptureManager - Input Parsing', () => {
-    let manager
-    let mockState
-    let mockApp
+    let manager: GlobalQuickCaptureManager
+    let mockState: any
+    let mockApp: GTDApp
 
     beforeEach(() => {
         localStorage.clear()
@@ -191,14 +192,14 @@ describe('GlobalQuickCaptureManager - Input Parsing', () => {
 
     describe('parseQuickCaptureInput()', () => {
         test('should parse simple task', () => {
-            const result = manager.parseQuickCaptureInput('Buy groceries')
+            const result = (manager as any).parseQuickCaptureInput('Buy groceries')
 
             expect(result.title).toBe('Buy groceries')
             expect(result.status).toBe('inbox')
         })
 
         test('should extract @contexts', () => {
-            const result = manager.parseQuickCaptureInput('Call @john about @work project')
+            const result = (manager as any).parseQuickCaptureInput('Call @john about @work project')
 
             expect(result.contexts).toContain('@john')
             expect(result.contexts).toContain('@work')
@@ -206,46 +207,46 @@ describe('GlobalQuickCaptureManager - Input Parsing', () => {
         })
 
         test('should extract !energy', () => {
-            const result = manager.parseQuickCaptureInput('Quick task !high')
+            const result = (manager as any).parseQuickCaptureInput('Quick task !high')
 
             expect(result.energy).toBe('high')
             expect(result.title).toBe('Quick task')
         })
 
         test('should extract !medium energy', () => {
-            const result = manager.parseQuickCaptureInput('Task !medium')
+            const result = (manager as any).parseQuickCaptureInput('Task !medium')
 
             expect(result.energy).toBe('medium')
         })
 
         test('should extract !low energy', () => {
-            const result = manager.parseQuickCaptureInput('Task !low')
+            const result = (manager as any).parseQuickCaptureInput('Task !low')
 
             expect(result.energy).toBe('low')
         })
 
         test('should extract #project', () => {
-            const result = manager.parseQuickCaptureInput('Finish report #Work')
+            const result = (manager as any).parseQuickCaptureInput('Finish report #Work')
 
             expect(result.projectId).toBe('proj1')
             expect(result.title).toBe('Finish report')
         })
 
         test('should match project case-insensitively', () => {
-            const result = manager.parseQuickCaptureInput('Task #work')
+            const result = (manager as any).parseQuickCaptureInput('Task #work')
 
             expect(result.projectId).toBe('proj1')
         })
 
         test('should not match non-existent project', () => {
-            const result = manager.parseQuickCaptureInput('Task #nonexistent')
+            const result = (manager as any).parseQuickCaptureInput('Task #nonexistent')
 
             expect(result.projectId).toBeUndefined()
             expect(result.title).toBe('Task')
         })
 
         test('should parse "today"', () => {
-            const result = manager.parseQuickCaptureInput('Task due today')
+            const result = (manager as any).parseQuickCaptureInput('Task due today')
 
             const today = new Date().toISOString().split('T')[0]
             expect(result.dueDate).toBe(today)
@@ -253,7 +254,7 @@ describe('GlobalQuickCaptureManager - Input Parsing', () => {
         })
 
         test('should parse "tomorrow"', () => {
-            const result = manager.parseQuickCaptureInput('Task due tomorrow')
+            const result = (manager as any).parseQuickCaptureInput('Task due tomorrow')
 
             const tomorrow = new Date()
             tomorrow.setDate(tomorrow.getDate() + 1)
@@ -264,7 +265,7 @@ describe('GlobalQuickCaptureManager - Input Parsing', () => {
         })
 
         test('should parse "in X days"', () => {
-            const result = manager.parseQuickCaptureInput('Task in 5 days')
+            const result = (manager as any).parseQuickCaptureInput('Task in 5 days')
 
             const expectedDate = new Date()
             expectedDate.setDate(expectedDate.getDate() + 5)
@@ -274,7 +275,7 @@ describe('GlobalQuickCaptureManager - Input Parsing', () => {
         })
 
         test('should parse complex input with multiple elements', () => {
-            const result = manager.parseQuickCaptureInput(
+            const result = (manager as any).parseQuickCaptureInput(
                 'Call @john about report #Work due today !high'
             )
 
@@ -288,9 +289,9 @@ describe('GlobalQuickCaptureManager - Input Parsing', () => {
 })
 
 describe('GlobalQuickCaptureManager - Task Creation', () => {
-    let manager
-    let mockState
-    let mockApp
+    let manager: GlobalQuickCaptureManager
+    let mockState: any
+    let mockApp: GTDApp
 
     beforeEach(() => {
         localStorage.clear()
@@ -331,7 +332,7 @@ describe('GlobalQuickCaptureManager - Task Creation', () => {
         })
 
         test('should add task to beginning of array', () => {
-            mockState.tasks.push({ id: 'existing', title: 'Existing task' })
+            mockState.tasks.push(new Task({ id: 'existing', title: 'Existing task' }))
 
             manager.handleGlobalQuickCapture('New task')
 
@@ -354,11 +355,11 @@ describe('GlobalQuickCaptureManager - Task Creation', () => {
 
         test('should close overlay', () => {
             const overlay = document.getElementById('global-quick-capture-overlay')
-            overlay.style.display = 'flex'
+            overlay!.style.display = 'flex'
 
             manager.handleGlobalQuickCapture('Task')
 
-            expect(overlay.style.display).toBe('none')
+            expect(overlay!.style.display).toBe('none')
         })
 
         test('should show toast notification', () => {
@@ -383,9 +384,9 @@ describe('GlobalQuickCaptureManager - Task Creation', () => {
 })
 
 describe('GlobalQuickCaptureManager - Templates', () => {
-    let manager
-    let mockState
-    let mockApp
+    let manager: GlobalQuickCaptureManager
+    let mockState: any
+    let mockApp: GTDApp
 
     beforeEach(() => {
         localStorage.clear()
@@ -415,7 +416,11 @@ describe('GlobalQuickCaptureManager - Templates', () => {
                     description: 'Review tasks for the week',
                     category: 'Review',
                     createTask: function () {
-                        return { id: 'task1', title: this.title, description: this.description }
+                        return new Task({
+                            id: 'task1',
+                            title: this.title,
+                            description: this.description
+                        })
                     }
                 },
                 {
@@ -423,7 +428,7 @@ describe('GlobalQuickCaptureManager - Templates', () => {
                     title: 'Morning Routine',
                     category: 'Daily',
                     createTask: function () {
-                        return { id: 'task2', title: this.title }
+                        return new Task({ id: 'task2', title: this.title })
                     }
                 }
             ]
@@ -448,16 +453,16 @@ describe('GlobalQuickCaptureManager - Templates', () => {
 
             manager.toggleQuickCaptureTemplates()
 
-            expect(templates.style.display).toBe('block')
+            expect(templates!.style.display).toBe('block')
         })
 
         test('should hide templates when shown', () => {
             const templates = document.getElementById('global-quick-capture-templates')
-            templates.style.display = 'block'
+            templates!.style.display = 'block'
 
             manager.toggleQuickCaptureTemplates()
 
-            expect(templates.style.display).toBe('none')
+            expect(templates!.style.display).toBe('none')
         })
 
         test('should render templates list when showing', () => {
@@ -465,8 +470,8 @@ describe('GlobalQuickCaptureManager - Templates', () => {
 
             manager.toggleQuickCaptureTemplates()
 
-            expect(templatesList.innerHTML).toContain('Weekly Review')
-            expect(templatesList.innerHTML).toContain('Morning Routine')
+            expect(templatesList!.innerHTML).toContain('Weekly Review')
+            expect(templatesList!.innerHTML).toContain('Morning Routine')
         })
 
         test('should show message when no templates', () => {
@@ -476,7 +481,7 @@ describe('GlobalQuickCaptureManager - Templates', () => {
 
             manager.toggleQuickCaptureTemplates()
 
-            expect(templatesList.innerHTML).toContain('No templates available')
+            expect(templatesList!.innerHTML).toContain('No templates available')
         })
     })
 
@@ -509,11 +514,11 @@ describe('GlobalQuickCaptureManager - Templates', () => {
 
         test('should close overlay', () => {
             const overlay = document.getElementById('global-quick-capture-overlay')
-            overlay.style.display = 'flex'
+            overlay!.style.display = 'flex'
 
             manager.selectTemplateForQuickCapture('tmpl1')
 
-            expect(overlay.style.display).toBe('none')
+            expect(overlay!.style.display).toBe('none')
         })
 
         test('should show toast with template title', () => {
@@ -527,10 +532,10 @@ describe('GlobalQuickCaptureManager - Templates', () => {
 })
 
 describe('GlobalQuickCaptureManager - Keyboard Shortcuts', () => {
-    let manager
-    let mockState
-    let mockApp
-    let input
+    let manager: GlobalQuickCaptureManager
+    let mockState: any
+    let mockApp: GTDApp
+    let input: HTMLInputElement
 
     beforeEach(() => {
         localStorage.clear()
@@ -619,20 +624,20 @@ describe('GlobalQuickCaptureManager - Keyboard Shortcuts', () => {
 
     test('should close on Escape key', () => {
         const overlay = document.getElementById('global-quick-capture-overlay')
-        overlay.style.display = 'flex'
+        overlay!.style.display = 'flex'
 
         const event = new KeyboardEvent('keydown', { key: 'Escape' })
         document.dispatchEvent(event)
 
-        expect(overlay.style.display).toBe('none')
+        expect(overlay!.style.display).toBe('none')
     })
 
     test('should close on overlay click', () => {
         const overlay = document.getElementById('global-quick-capture-overlay')
-        overlay.style.display = 'flex'
+        overlay!.style.display = 'flex'
 
-        overlay.dispatchEvent(new Event('click'))
+        overlay!.dispatchEvent(new Event('click'))
 
-        expect(overlay.style.display).toBe('none')
+        expect(overlay!.style.display).toBe('none')
     })
 })

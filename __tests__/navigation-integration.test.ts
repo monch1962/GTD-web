@@ -5,18 +5,19 @@
 
 // Mock all the dependencies
 import { GTDApp } from '../js/app.ts'
+import { Task, Project } from '../js/models.ts'
 
-jest.mock('../js/dom-utils.js', () => ({
-    escapeHtml: (str) => str,
-    getElement: (_id) => null,
-    setTextContent: (el, text) => {
+jest.mock('../js/dom-utils.ts', () => ({
+    escapeHtml: (str: string) => str,
+    getElement: (_id: string) => null,
+    setTextContent: (el: HTMLElement | null, text: string) => {
         if (el) el.textContent = text
     },
     announce: jest.fn()
 }))
 
 // Mock all manager modules
-jest.mock('../js/modules/ui/dark-mode.js', () => ({
+jest.mock('../js/modules/ui/dark-mode.ts', () => ({
     DarkModeManager: jest.fn().mockImplementation(() => ({
         initializeDarkMode: jest.fn(),
         setupDarkMode: jest.fn(),
@@ -25,7 +26,7 @@ jest.mock('../js/modules/ui/dark-mode.js', () => ({
     }))
 }))
 
-jest.mock('../js/modules/features/calendar.js', () => ({
+jest.mock('../js/modules/features/calendar.ts', () => ({
     CalendarManager: jest.fn().mockImplementation(() => ({
         setupCalendarView: jest.fn(),
         showCalendar: jest.fn(),
@@ -37,7 +38,7 @@ jest.mock('../js/modules/features/calendar.js', () => ({
     }))
 }))
 
-jest.mock('../js/modules/features/weekly-review.js', () => ({
+jest.mock('../js/modules/features/weekly-review.ts', () => ({
     WeeklyReviewManager: jest.fn().mockImplementation(() => ({
         setupWeeklyReview: jest.fn(),
         showWeeklyReview: jest.fn(),
@@ -46,7 +47,7 @@ jest.mock('../js/modules/features/weekly-review.js', () => ({
     }))
 }))
 
-jest.mock('../js/modules/features/dashboard.js', () => ({
+jest.mock('../js/modules/features/dashboard.ts', () => ({
     DashboardManager: jest.fn().mockImplementation(() => ({
         setupDashboard: jest.fn(),
         showDashboard: jest.fn(),
@@ -55,7 +56,7 @@ jest.mock('../js/modules/features/dashboard.js', () => ({
     }))
 }))
 
-jest.mock('../js/modules/features/archive.js', () => ({
+jest.mock('../js/modules/features/archive.ts', () => ({
     ArchiveManager: jest.fn().mockImplementation(() => ({
         setupArchive: jest.fn(),
         openArchiveModal: jest.fn(),
@@ -70,7 +71,7 @@ jest.mock('../js/modules/features/archive.js', () => ({
     }))
 }))
 
-jest.mock('../js/modules/ui/context-menu.js', () => ({
+jest.mock('../js/modules/ui/context-menu.ts', () => ({
     ContextMenuManager: jest.fn().mockImplementation(() => ({
         setupContextMenu: jest.fn(),
         showContextMenu: jest.fn(),
@@ -109,7 +110,7 @@ jest.mock('../js/modules/features/templates', () => ({
     }))
 }))
 
-jest.mock('../js/modules/ui/mobile-navigation.js', () => ({
+jest.mock('../js/modules/ui/mobile-navigation.ts', () => ({
     MobileNavigationManager: jest.fn().mockImplementation(() => ({
         setupMobileNavigation: jest.fn(),
         setupHamburgerMenu: jest.fn(),
@@ -121,7 +122,7 @@ jest.mock('../js/modules/ui/mobile-navigation.js', () => ({
     }))
 }))
 
-jest.mock('../js/storage.js', () => ({
+jest.mock('../js/storage.ts', () => ({
     Storage: jest.fn().mockImplementation(() => ({
         loadState: jest.fn().mockReturnValue({}),
         saveState: jest.fn(),
@@ -135,9 +136,9 @@ jest.mock('../js/storage.js', () => ({
 }))
 
 describe('Navigation Integration Tests', () => {
-    let app
-    let consoleWarnSpy
-    let consoleErrorSpy
+    let app: GTDApp
+    let consoleWarnSpy: jest.SpyInstance
+    let consoleErrorSpy: jest.SpyInstance
 
     beforeEach(() => {
         // Setup DOM
@@ -400,8 +401,8 @@ describe('Navigation Integration Tests', () => {
 
             // Mock tasks with no completed tasks
             app.tasks = [
-                { id: '1', title: 'Task 1', completed: false },
-                { id: '2', title: 'Task 2', completed: false }
+                new Task({ id: '1', title: 'Task 1', completed: false }),
+                new Task({ id: '2', title: 'Task 2', completed: false })
             ]
 
             const message = app.getGreetingMessage()
@@ -413,8 +414,8 @@ describe('Navigation Integration Tests', () => {
 
         test('getProjectTitle should return project title or Unknown', () => {
             app.projects = [
-                { id: 'p1', title: 'Project 1' },
-                { id: 'p2', title: 'Project 2' }
+                new Project({ id: 'p1', title: 'Project 1' }),
+                new Project({ id: 'p2', title: 'Project 2' })
             ]
 
             expect(app.getProjectTitle('p1')).toBe('Project 1')
@@ -424,14 +425,14 @@ describe('Navigation Integration Tests', () => {
 
         test('navigateTo should update current view and re-render', () => {
             app.renderView = jest.fn()
-            app.updateNavigation = jest.fn()
+            ;(app as any).updateNavigation = jest.fn()
 
             app.navigateTo('inbox')
 
             expect(app.currentView).toBe('inbox')
             expect(app.currentProjectId).toBeNull()
             expect(app.renderView).toHaveBeenCalled()
-            expect(app.updateNavigation).toHaveBeenCalled()
+            expect((app as any).updateNavigation).toHaveBeenCalled()
         })
     })
 
@@ -439,7 +440,7 @@ describe('Navigation Integration Tests', () => {
         test('should be able to call all navigation methods without errors', () => {
             // Mock renderView and updateNavigation to avoid DOM issues
             app.renderView = jest.fn()
-            app.updateNavigation = jest.fn()
+            ;(app as any).updateNavigation = jest.fn()
 
             // This is a smoke test to ensure all navigation methods exist and can be called
             expect(() => {

@@ -8,9 +8,9 @@ import { Task, Project, Template } from '../js/models.ts'
 import { ProjectModalManager } from '../js/modules/features/project-modal.ts'
 
 describe('ProjectModalManager - Initialization', () => {
-    let manager
-    let mockState
-    let mockApp
+    let manager: ProjectModalManager
+    let mockState: any
+    let mockApp: any
 
     beforeEach(() => {
         document.body.innerHTML = ''
@@ -60,17 +60,17 @@ describe('ProjectModalManager - Initialization', () => {
 
     test('should initialize successfully', () => {
         expect(manager).toBeDefined()
-        expect(manager.state).toBe(mockState)
-        expect(manager.app).toBe(mockApp)
-        expect(manager.pendingTaskData).toBeNull()
+        expect((manager as any).state).toBe(mockState)
+        expect((manager as any).app).toBe(mockApp)
+        expect((manager as any).pendingTaskData).toBeNull()
     })
 })
 
 describe('ProjectModalManager - Open Project Modal', () => {
-    let manager
-    let mockState
-    let mockApp
-    let modal
+    let manager: ProjectModalManager
+    let mockState: any
+    let mockApp: any
+    let modal: HTMLElement
 
     beforeEach(() => {
         document.body.innerHTML = ''
@@ -120,8 +120,8 @@ describe('ProjectModalManager - Open Project Modal', () => {
             manager.openProjectModal()
 
             expect(modal.classList.contains('active')).toBe(true)
-            expect(document.getElementById('project-modal-title').textContent).toBe('Add Project')
-            expect(document.getElementById('project-id').value).toBe('')
+            expect(document.getElementById('project-modal-title')!.textContent).toBe('Add Project')
+            expect((document.getElementById('project-id') as HTMLInputElement).value).toBe('')
         })
 
         test('should open modal for editing existing project', () => {
@@ -129,38 +129,46 @@ describe('ProjectModalManager - Open Project Modal', () => {
             manager.openProjectModal(project)
 
             expect(modal.classList.contains('active')).toBe(true)
-            expect(document.getElementById('project-modal-title').textContent).toBe('Edit Project')
-            expect(document.getElementById('project-id').value).toBe('1')
-            expect(document.getElementById('project-title').value).toBe('Test Project')
-            expect(document.getElementById('project-description').value).toBe('Test')
-            expect(document.getElementById('project-status').value).toBe('active')
-            expect(document.getElementById('project-contexts').value).toBe('@work')
+            expect(document.getElementById('project-modal-title')!.textContent).toBe('Edit Project')
+            expect((document.getElementById('project-id') as HTMLInputElement).value).toBe('1')
+            expect((document.getElementById('project-title') as HTMLInputElement).value).toBe(
+                'Test Project'
+            )
+            expect(
+                (document.getElementById('project-description') as HTMLTextAreaElement).value
+            ).toBe('Test')
+            expect((document.getElementById('project-status') as HTMLSelectElement).value).toBe(
+                'active'
+            )
+            expect((document.getElementById('project-contexts') as HTMLInputElement).value).toBe(
+                '@work'
+            )
         })
 
         test('should store pending task data', () => {
             const pendingData = { title: 'Pending Task' }
             manager.openProjectModal(null, pendingData)
 
-            expect(manager.pendingTaskData).toEqual(pendingData)
+            expect((manager as any).pendingTaskData).toEqual(pendingData)
         })
 
         test('should reset form', () => {
-            document.getElementById('project-title').value = 'Existing title'
-            document.getElementById('project-id').value = '123'
+            ;(document.getElementById('project-title') as HTMLInputElement).value = 'Existing title'
+            ;(document.getElementById('project-id') as HTMLInputElement).value = '123'
 
             manager.openProjectModal()
 
-            expect(document.getElementById('project-title').value).toBe('')
-            expect(document.getElementById('project-id').value).toBe('')
+            expect((document.getElementById('project-title') as HTMLInputElement).value).toBe('')
+            expect((document.getElementById('project-id') as HTMLInputElement).value).toBe('')
         })
     })
 })
 
 describe('ProjectModalManager - Close Project Modal', () => {
-    let manager
-    let mockState
-    let mockApp
-    let modal
+    let manager: ProjectModalManager
+    let mockState: any
+    let mockApp: any
+    let modal: HTMLElement
 
     beforeEach(() => {
         document.body.innerHTML = ''
@@ -177,7 +185,7 @@ describe('ProjectModalManager - Close Project Modal', () => {
         mockApp = {}
 
         manager = new ProjectModalManager(mockState, mockApp)
-        manager.pendingTaskData = { title: 'Test' }
+        ;(manager as any).pendingTaskData = { title: 'Test' }
     })
 
     afterEach(() => {
@@ -194,15 +202,15 @@ describe('ProjectModalManager - Close Project Modal', () => {
         test('should clear pending task data', () => {
             manager.closeProjectModal()
 
-            expect(manager.pendingTaskData).toBeNull()
+            expect((manager as any).pendingTaskData).toBeNull()
         })
     })
 })
 
 describe('ProjectModalManager - Save Project From Form', () => {
-    let manager
-    let mockState
-    let mockApp
+    let manager: ProjectModalManager
+    let mockState: any
+    let mockApp: any
 
     beforeEach(() => {
         document.body.innerHTML = ''
@@ -249,7 +257,7 @@ describe('ProjectModalManager - Save Project From Form', () => {
 
     describe('saveProjectFromForm()', () => {
         test('should validate title and show notification if empty', async () => {
-            document.getElementById('project-title').value = '   '
+            ;(document.getElementById('project-title') as HTMLInputElement).value = '   '
 
             await manager.saveProjectFromForm()
 
@@ -257,10 +265,11 @@ describe('ProjectModalManager - Save Project From Form', () => {
         })
 
         test('should create new project', async () => {
-            document.getElementById('project-title').value = 'New Project'
-            document.getElementById('project-description').value = 'Description'
-            document.getElementById('project-status').value = 'active'
-            document.getElementById('project-contexts').value = '@work'
+            ;(document.getElementById('project-title') as HTMLInputElement).value = 'New Project'
+            ;(document.getElementById('project-description') as HTMLTextAreaElement).value =
+                'Description'
+            ;(document.getElementById('project-status') as HTMLSelectElement).value = 'active'
+            ;(document.getElementById('project-contexts') as HTMLInputElement).value = '@work'
 
             await manager.saveProjectFromForm()
 
@@ -271,8 +280,8 @@ describe('ProjectModalManager - Save Project From Form', () => {
         })
 
         test('should parse contexts from comma-separated string', async () => {
-            document.getElementById('project-title').value = 'Project'
-            document.getElementById('project-contexts').value = 'work, home'
+            ;(document.getElementById('project-title') as HTMLInputElement).value = 'Project'
+            ;(document.getElementById('project-contexts') as HTMLInputElement).value = 'work, home'
 
             await manager.saveProjectFromForm()
 
@@ -282,8 +291,8 @@ describe('ProjectModalManager - Save Project From Form', () => {
         })
 
         test('should add @ to contexts if missing', async () => {
-            document.getElementById('project-title').value = 'Project'
-            document.getElementById('project-contexts').value = 'work, @home'
+            ;(document.getElementById('project-title') as HTMLInputElement).value = 'Project'
+            ;(document.getElementById('project-contexts') as HTMLInputElement).value = 'work, @home'
 
             await manager.saveProjectFromForm()
 
@@ -293,7 +302,7 @@ describe('ProjectModalManager - Save Project From Form', () => {
         })
 
         test('should call saveState for new project', async () => {
-            document.getElementById('project-title').value = 'New Project'
+            ;(document.getElementById('project-title') as HTMLInputElement).value = 'New Project'
 
             await manager.saveProjectFromForm()
 
@@ -301,7 +310,7 @@ describe('ProjectModalManager - Save Project From Form', () => {
         })
 
         test('should update UI after saving', async () => {
-            document.getElementById('project-title').value = 'New Project'
+            ;(document.getElementById('project-title') as HTMLInputElement).value = 'New Project'
 
             await manager.saveProjectFromForm()
 
@@ -311,7 +320,7 @@ describe('ProjectModalManager - Save Project From Form', () => {
         })
 
         test('should show notification for new project', async () => {
-            document.getElementById('project-title').value = 'Test Project'
+            ;(document.getElementById('project-title') as HTMLInputElement).value = 'Test Project'
 
             await manager.saveProjectFromForm()
 
@@ -321,11 +330,11 @@ describe('ProjectModalManager - Save Project From Form', () => {
 })
 
 describe('ProjectModalManager - Gantt Chart', () => {
-    let manager
-    let mockState
-    let mockApp
-    let modal
-    let chartContainer
+    let manager: ProjectModalManager
+    let mockState: any
+    let mockApp: any
+    let modal: HTMLElement
+    let chartContainer: HTMLElement
 
     beforeEach(() => {
         document.body.innerHTML = ''
@@ -377,7 +386,7 @@ describe('ProjectModalManager - Gantt Chart', () => {
             manager.openGanttChart(project)
 
             expect(modal.classList.contains('active')).toBe(true)
-            expect(document.getElementById('gantt-modal-title').textContent).toBe(
+            expect(document.getElementById('gantt-modal-title')!.textContent).toBe(
                 'Test Project - Gantt Chart'
             )
         })
@@ -401,7 +410,7 @@ describe('ProjectModalManager - Gantt Chart', () => {
             manager.renderGanttChart(project)
 
             const container = document.getElementById('gantt-chart')
-            expect(container.innerHTML).toContain('No Tasks in This Project')
+            expect(container!.innerHTML).toContain('No Tasks in This Project')
         })
 
         test('should render tasks in chart', () => {
@@ -410,8 +419,8 @@ describe('ProjectModalManager - Gantt Chart', () => {
             manager.renderGanttChart(project)
 
             const container = document.getElementById('gantt-chart')
-            expect(container.innerHTML).toContain('Task 1')
-            expect(container.innerHTML).toContain('Task 2')
+            expect(container!.innerHTML).toContain('Task 1')
+            expect(container!.innerHTML).toContain('Task 2')
         })
 
         test('should handle missing container gracefully', () => {
@@ -425,9 +434,9 @@ describe('ProjectModalManager - Gantt Chart', () => {
 })
 
 describe('ProjectModalManager - Escape HTML', () => {
-    let manager
-    let mockState
-    let mockApp
+    let manager: ProjectModalManager
+    let mockState: any
+    let mockApp: any
 
     beforeEach(() => {
         mockState = { projects: [] }
@@ -438,7 +447,7 @@ describe('ProjectModalManager - Escape HTML', () => {
 
     describe('escapeHtml()', () => {
         test('should escape HTML tags', () => {
-            const result = manager.escapeHtml('<script>alert("xss")</script>')
+            const result = (manager as any).escapeHtml('<script>alert("xss")</script>')
 
             expect(result).toContain('&lt;')
             expect(result).toContain('&gt;')
@@ -446,19 +455,19 @@ describe('ProjectModalManager - Escape HTML', () => {
         })
 
         test('should escape ampersands', () => {
-            const result = manager.escapeHtml('Tom & Jerry')
+            const result = (manager as any).escapeHtml('Tom & Jerry')
 
             expect(result).toContain('&amp;')
         })
 
         test('should handle empty string', () => {
-            const result = manager.escapeHtml('')
+            const result = (manager as any).escapeHtml('')
 
             expect(result).toBe('')
         })
 
         test('should handle plain text', () => {
-            const result = manager.escapeHtml('Hello World')
+            const result = (manager as any).escapeHtml('Hello World')
 
             expect(result).toBe('Hello World')
         })
@@ -466,9 +475,9 @@ describe('ProjectModalManager - Escape HTML', () => {
 })
 
 describe('ProjectModalManager - Integration', () => {
-    let manager
-    let mockState
-    let mockApp
+    let manager: ProjectModalManager
+    let mockState: any
+    let mockApp: any
 
     beforeEach(() => {
         document.body.innerHTML = ''
@@ -514,10 +523,11 @@ describe('ProjectModalManager - Integration', () => {
     test('should handle complete project creation workflow', async () => {
         // Open modal
         manager.openProjectModal()
-        expect(document.getElementById('project-modal').classList.contains('active')).toBe(true)
+        expect(document.getElementById('project-modal')!.classList.contains('active')).toBe(true)
 
         // Fill form
-        document.getElementById('project-title').value = 'Complete Workflow Test'
+        ;(document.getElementById('project-title') as HTMLInputElement).value =
+            'Complete Workflow Test'
 
         // Save
         await manager.saveProjectFromForm()
@@ -535,13 +545,13 @@ describe('ProjectModalManager - Integration', () => {
 
         // Open with pending data
         manager.openProjectModal(null, pendingData)
-        expect(manager.pendingTaskData).toEqual(pendingData)
+        expect((manager as any).pendingTaskData).toEqual(pendingData)
 
         // Fill form and save
-        document.getElementById('project-title').value = 'New Project'
+        ;(document.getElementById('project-title') as HTMLInputElement).value = 'New Project'
         await manager.saveProjectFromForm()
 
         // Pending data should be cleared
-        expect(manager.pendingTaskData).toBeNull()
+        expect((manager as any).pendingTaskData).toBeNull()
     })
 })
