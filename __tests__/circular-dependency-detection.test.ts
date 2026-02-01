@@ -3,7 +3,7 @@
  * Verify that all circular dependency scenarios are properly detected
  *
  * NOTE: Tests skipped due to modularization
- * These tests check for implementation patterns in app.js that were moved
+ * These tests check for implementation patterns in app.ts that were moved
  * to manager modules. The functionality is tested by the actual feature tests.
  */
 
@@ -11,7 +11,7 @@ import fs from 'fs'
 import path from 'path'
 
 describe.skip('Circular Dependency Detection', () => {
-    const appJsPath = path.resolve(process.cwd(), 'js', 'app.js')
+    const appJsPath = path.resolve(process.cwd(), 'js', 'app.ts')
     const appJsContent = fs.readFileSync(appJsPath, 'utf-8')
 
     test('should have wouldCreateCircularDependency method with BFS algorithm', () => {
