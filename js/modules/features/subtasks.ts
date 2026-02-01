@@ -16,12 +16,14 @@ import { escapeHtml } from '../../dom-utils'
 /**
  * App interface for type safety
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface App {
     // App methods will be called via inline event handlers
 }
 /**
  * State interface for subtasks
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface State {
     // State properties will be defined as needed
 }

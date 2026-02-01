@@ -20,6 +20,7 @@ interface AppState {
     projects: Project[]
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface AppDependencies {
     // This module doesn't use any app methods
 }
