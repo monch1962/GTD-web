@@ -1,0 +1,212 @@
+name: Create Release
+
+on:
+    push:
+        branches: [main]
+        # Also trigger on version tags for semantic versioning
+        tags: ['v*']
+
+# Cancel in-progress runs for the same branch/tag
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    build-and-release:
+        name: Build and Create Release
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write # Required for creating releases
+            id-token: write # Optional: for provenance signing
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0 # Get full history for version detection
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+                  cache: 'npm'
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Run tests
+              run: npm test
+
+            - name: Build application
+              run: npm run build
+
+            - name: Generate build timestamp
+              id: timestamp
+              run: echo "time=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_OUTPUT
+
+            - name: Create release package
+              run: |
+                  # Get version from package.json
+                  VERSION=$(node -p "require('./package.json').version")
+                  COMMIT_SHORT=$(git rev-parse --short HEAD)
+                  TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+
+                  # Create a deployment README
+                  cat > dist/README-DEPLOY.md << 'EOF'
+                  # GTD Web Application Deployment
+
+                  ## Quick Start
+                  1. Extract this ZIP file to any web server directory
+                  2. Serve `index.html` as the main file
+                  3. Open in a browser at your server's URL
+
+                  ## Features
+                  - Single-file HTML application (all assets inlined)
+                  - Progressive Web App (PWA) compatible
+                  - Offline capable with service worker
+                  - No backend required - uses localStorage
+                  - Mobile responsive design
+
+                  ## Technical Details
+                  - Built with Vite + TypeScript
+                  - Self-contained: no external dependencies needed
+                  - File size: ~430KB (gzipped: ~87KB)
+                  - Version: $VERSION
+                  - Commit: $COMMIT_SHORT
+                  - Build date: $TIMESTAMP
+
+                  ## Deployment Options
+                  - **Any static file server** (nginx, Apache, etc.)
+                  - **Cloud storage** (AWS S3, Google Cloud Storage)
+                  - **CDN services** (Cloudflare Pages, Netlify, Vercel)
+                  - **Local file system** (open `index.html` directly)
+
+                  ## Browser Support
+                  - Chrome/Edge 80+
+                  - Firefox 75+
+                  - Safari 14+
+                  - Mobile browsers (iOS Safari, Chrome for Android)
+
+                  ## Troubleshooting
+                  - If offline features don't work, ensure HTTPS is used
+                  - Clear browser cache if experiencing issues
+                  - Check browser console for errors (F12 → Console)
+
+                  ## Source Code
+                  Full source available at: https://github.com/${{ github.repository }}
+                  EOF
+
+                  # Create ZIP archive
+                  cd dist
+                  zip -r ../gtd-web-v${VERSION}-${COMMIT_SHORT}.zip .
+                  cd ..
+
+                  # Create tar.gz archive (alternative format)
+                  tar -czf gtd-web-v${VERSION}-${COMMIT_SHORT}.tar.gz -C dist .
+
+                  # List created artifacts
+                  echo "Created artifacts:"
+                  ls -lh gtd-web-*.zip gtd-web-*.tar.gz
+
+            - name: Determine release name and tag
+              id: release_info
+              run: |
+                  # Get version from package.json
+                  VERSION=$(node -p "require('./package.json').version")
+
+                  if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+                    # Use the tag name if it's a version tag
+                    TAG_NAME="${GITHUB_REF#refs/tags/}"
+                    RELEASE_NAME="GTD Web $TAG_NAME"
+                  else
+                    # For main branch pushes, use commit-based naming
+                    COMMIT_SHORT=$(git rev-parse --short HEAD)
+                    TAG_NAME="build-$COMMIT_SHORT"
+                    RELEASE_NAME="GTD Web $VERSION (Build $COMMIT_SHORT)"
+                  fi
+
+                  echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+                  echo "release_name=$RELEASE_NAME" >> $GITHUB_OUTPUT
+                  echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+            - name: Create GitHub Release
+              uses: softprops/action-gh-release@v1
+              with:
+                  name: ${{ steps.release_info.outputs.release_name }}
+                  tag_name: ${{ steps.release_info.outputs.tag_name }}
+                  body: |
+                      ## GTD Web Application Release
+
+                      **Build Information:**
+                      - Version: ${{ steps.release_info.outputs.version }}
+                      - Commit: ${{ github.sha }}
+                      - Branch: ${{ github.ref_name }}
+                      - Build timestamp: ${{ steps.timestamp.outputs.time }}
+
+                      **Artifacts:**
+                      - `gtd-web-v${{ steps.release_info.outputs.version }}-*.zip`: Complete build package (ZIP format)
+                      - `gtd-web-v${{ steps.release_info.outputs.version }}-*.tar.gz`: Compressed archive (tar.gz format)
+
+                      **How to Deploy:**
+                      1. Download either ZIP or tar.gz file
+                      2. Extract to any web server directory
+                      3. Serve `index.html` as the main file
+                      4. Application is ready to use
+
+                      **Application Features:**
+                      - ✅ Single-file HTML application (no external dependencies)
+                      - ✅ Progressive Web App (PWA) support
+                      - ✅ Offline capability
+                      - ✅ Mobile responsive design
+                      - ✅ LocalStorage persistence (no backend required)
+                      - ✅ TypeScript-based with comprehensive testing
+
+                      **Technical Details:**
+                      - Build tool: Vite
+                      - Language: TypeScript
+                      - Bundle size: ~430KB (gzipped: ~87KB)
+                      - All tests passing: ✅
+
+                      **Source Code:**
+                      Full source available in this repository.
+
+                      ---
+
+                      *This release was automatically generated by GitHub Actions.*
+                  files: |
+                      gtd-web-*.zip
+                      gtd-web-*.tar.gz
+                  draft: false
+                  prerelease: false
+                  generate_release_notes: true
+                  make_latest: ${{ github.ref == 'refs/heads/main' }}
+
+            - name: Upload build artifacts (backup)
+              uses: actions/upload-artifact@v4
+              with:
+                  name: release-build-${{ github.sha }}
+                  path: |
+                      gtd-web-*.zip
+                      gtd-web-*.tar.gz
+                  retention-days: 30
+
+            - name: Summary
+              run: |
+                  echo "## Release Summary" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "✅ **Release created successfully!**" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "**Release:** ${{ steps.release_info.outputs.release_name }}" >> $GITHUB_STEP_SUMMARY
+                  echo "**Tag:** ${{ steps.release_info.outputs.tag_name }}" >> $GITHUB_STEP_SUMMARY
+                  echo "**Version:** ${{ steps.release_info.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "**Artifacts created:**" >> $GITHUB_STEP_SUMMARY
+                  ls -1 gtd-web-*.zip gtd-web-*.tar.gz 2>/dev/null | while read file; do
+                    size=$(ls -lh "$file" | awk '{print $5}')
+                    echo "- \`$file\` ($size)" >> $GITHUB_STEP_SUMMARY
+                  done
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "**Next steps:**" >> $GITHUB_STEP_SUMMARY
+                  echo "1. Visit GitHub Releases page to download artifacts" >> $GITHUB_STEP_SUMMARY
+                  echo "2. Extract and deploy to your preferred hosting" >> $GITHUB_STEP_SUMMARY
+                  echo "3. Test the deployed application" >> $GITHUB_STEP_SUMMARY

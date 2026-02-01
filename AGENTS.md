@@ -80,7 +80,7 @@ npm run lint:check           # Strict linting (fails on warnings)
 2. **✅ Week 3**: Utilities (`storage.ts`, `dom-utils.ts`, `validation.ts`)
 3. **✅ Week 4-8**: Feature Modules (simple → complex managers) - All 41 modules
    migrated
-4. **✅ Week 9**: Test Migration (`*.test.js` → `*.test.ts`) - 38/60 tests
+4. **✅ Week 9**: Test Migration (`*.test.js` → `*.test.ts`) - 39/61 tests
    migrated, ongoing
 5. **✅ Week 10**: Final Integration + Documentation - Main app.ts migrated,
    build working
@@ -92,15 +92,15 @@ npm run lint:check           # Strict linting (fails on warnings)
 - **✅ All feature modules** (41 modules) migrated to TypeScript
 - **✅ Build system works** with TypeScript compilation
 - **✅ Tests passing** with TypeScript and JavaScript tests
-- **🔄 Test migration in progress** (38/60 test files migrated - 63% complete)
+- **🔄 Test migration in progress** (39/61 test files migrated - 64% complete)
 - **🔄 Linting improvements ongoing** (reducing `any` type usage)
 
 ### Migration Statistics
 
 - **TypeScript Files**: 44 (100% of application code)
 - **JavaScript Test Files**: 22 (migration in progress)
-- **TypeScript Test Files**: 38 (migrated)
-- **Total Test Files**: 60
+- **TypeScript Test Files**: 39 (migrated)
+- **Total Test Files**: 61
 - **Build Status**: ✅ Working
 - **Test Status**: ✅ Passing
 
@@ -192,8 +192,74 @@ export class FeatureManager {
 
 ## Deployment
 
-1. Build: `npm run build` (creates `dist/index.html`)
-2. Test: `npm run preview` (verify locally)
-3. Version: Update `package.json` (semantic versioning)
-4. Release: GitHub release with build artifacts
-5. Deploy: Single-file bundle to static hosting
+### GitHub Releases (Automated)
+
+**Workflow**: `.github/workflows/release.yml`
+
+- **Trigger**: Push to `main` branch or version tags (`v*`)
+- **Actions**:
+    1. Run all tests (`npm test`)
+    2. Build application (`npm run build`)
+    3. Create packaged artifacts (ZIP and tar.gz)
+    4. Create GitHub Release with artifacts
+
+**Artifacts Created**:
+
+- `gtd-web-v{version}-{commit}.zip`: Complete build package
+- `gtd-web-v{version}-{commit}.tar.gz`: Compressed archive
+
+**Release Contents**:
+
+- `index.html`: Main application (single-file bundle)
+- `assets/manifest.*.json`: PWA manifest
+- `README-DEPLOY.md`: Deployment instructions
+
+### Manual Deployment Process
+
+1. **Build**: `npm run build` (creates `dist/index.html`)
+2. **Test Locally**: `npm run preview` (verify at http://localhost:4173)
+3. **Version Update**: Update `package.json` with semantic versioning
+4. **Create Release**:
+    ```bash
+    git tag v1.2.0
+    git push origin v1.2.0
+    ```
+5. **Deploy**: Download release artifacts and deploy to any static hosting
+
+### Deployment Options
+
+**Static Hosting**:
+
+- **Any web server**: nginx, Apache, etc.
+- **Cloud storage**: AWS S3, Google Cloud Storage
+- **CDN services**: Cloudflare Pages, Netlify, Vercel
+- **GitHub Pages**: Configure from repository settings
+
+**Quick Deployment**:
+
+```bash
+# Download latest release
+wget https://github.com/{user}/{repo}/releases/latest/download/gtd-web-*.zip
+
+# Extract and serve
+unzip gtd-web-*.zip -d /var/www/html/
+```
+
+### Release Management
+
+**Versioning Strategy**:
+
+- Semantic versioning: `MAJOR.MINOR.PATCH`
+- Tag format: `v1.2.0`
+- Automatic build tags: `build-{commit}`
+
+**Release Types**:
+
+- **Main branch pushes**: Build releases with commit-based tags
+- **Version tags**: Semantic version releases (recommended for production)
+
+**Artifact Verification**:
+
+- All tests must pass before release
+- Build size: ~430KB (gzipped: ~87KB)
+- Single-file HTML with inlined assets
