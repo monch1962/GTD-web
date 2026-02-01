@@ -271,7 +271,7 @@ describe('Dark Mode Feature - Comprehensive Tests', () => {
             // Mock system to prefer light mode
             Object.defineProperty(window, 'matchMedia', {
                 writable: true,
-                value: jest.fn().mockImplementation((query) => ({
+                value: jest.fn().mockImplementation((_query) => ({
                     matches: false,
                     addEventListener: jest.fn(),
                     removeEventListener: jest.fn()
@@ -509,7 +509,7 @@ describe('Dark Mode Feature - Comprehensive Tests', () => {
             // Mock system to prefer light mode
             Object.defineProperty(window, 'matchMedia', {
                 writable: true,
-                value: jest.fn().mockImplementation((query) => ({
+                value: jest.fn().mockImplementation((_query) => ({
                     matches: false,
                     addEventListener: jest.fn(),
                     removeEventListener: jest.fn()

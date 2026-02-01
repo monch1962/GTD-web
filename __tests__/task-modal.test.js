@@ -604,7 +604,7 @@ describe('TaskModalManager - Integration', () => {
         `
         document.body.appendChild(modal)
 
-        const _input = document.createElement('input')
+        const input = document.createElement('input')
         input.id = 'new-subtask-input'
         document.body.appendChild(input)
 
@@ -627,7 +627,7 @@ describe('TaskModalManager - Integration', () => {
     })
 
     test('should handle subtasks workflow', () => {
-        const _input = document.getElementById('new-subtask-input')
+        const input = document.getElementById('new-subtask-input')
         const _container = document.getElementById('subtasks-container')
 
         // Add subtasks

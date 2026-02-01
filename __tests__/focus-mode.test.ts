@@ -6,10 +6,10 @@
 // Mock dom-utils before importing
 import { FocusPomodoroManager } from '../js/modules/features/focus-pomodoro.ts'
 
-jest.mock('../js/dom-utils.js', () => ({
-    escapeHtml: (str) => str,
-    getElement: (id) => null,
-    setTextContent: (el, text) => {
+jest.mock('../js/dom-utils.ts', () => ({
+    escapeHtml: (str: string) => str,
+    getElement: (_id: string) => null,
+    setTextContent: (el: HTMLElement | null, text: string) => {
         if (el) el.textContent = text
     },
     announce: jest.fn()
@@ -37,7 +37,7 @@ const mockApp = {
     getSmartSuggestions: jest.fn().mockReturnValue([])
 }
 
-const mockState = {
+const mockState: any = {
     tasks: [],
     projects: []
 }
