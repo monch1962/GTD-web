@@ -3,11 +3,18 @@
  * Tests all Dependencies Visualization functionality before modularization
  */
 
-import { GTDApp } from '../js/app.ts'
-import { Task, Project } from '../js/models.ts'
+import { GTDApp } from '../js/app'
+import { Task, Project } from '../js/models'
+
+// Mock DOM elements for testing
+declare global {
+    interface Window {
+        jest: typeof jest
+    }
+}
 
 describe('Dependencies Visualization Feature - Comprehensive Tests', () => {
-    let app
+    let app: GTDApp
 
     beforeEach(() => {
         localStorage.clear()
@@ -78,7 +85,7 @@ describe('Dependencies Visualization Feature - Comprehensive Tests', () => {
     describe('setupDependenciesVisualization()', () => {
         test('should add click listener to dependencies button', () => {
             const addEventListenerSpy = jest.spyOn(
-                document.getElementById('btn-dependencies'),
+                document.getElementById('btn-dependencies')!,
                 'addEventListener'
             )
 
@@ -89,7 +96,7 @@ describe('Dependencies Visualization Feature - Comprehensive Tests', () => {
 
         test('should add click listener to close button', () => {
             const addEventListenerSpy = jest.spyOn(
-                document.getElementById('close-dependencies-modal'),
+                document.getElementById('close-dependencies-modal')!,
                 'addEventListener'
             )
 
@@ -100,15 +107,15 @@ describe('Dependencies Visualization Feature - Comprehensive Tests', () => {
 
         test('should add click listeners to view toggle buttons', () => {
             const graphBtnSpy = jest.spyOn(
-                document.getElementById('deps-view-graph'),
+                document.getElementById('deps-view-graph')!,
                 'addEventListener'
             )
             const chainsBtnSpy = jest.spyOn(
-                document.getElementById('deps-view-chains'),
+                document.getElementById('deps-view-chains')!,
                 'addEventListener'
             )
             const criticalBtnSpy = jest.spyOn(
-                document.getElementById('deps-view-critical'),
+                document.getElementById('deps-view-critical')!,
                 'addEventListener'
             )
 
@@ -121,7 +128,7 @@ describe('Dependencies Visualization Feature - Comprehensive Tests', () => {
 
         test('should add change listener to project filter', () => {
             const addEventListenerSpy = jest.spyOn(
-                document.getElementById('deps-filter-project'),
+                document.getElementById('deps-filter-project')!,
                 'addEventListener'
             )
 
@@ -137,8 +144,8 @@ describe('Dependencies Visualization Feature - Comprehensive Tests', () => {
         })
 
         test('should handle missing buttons gracefully', () => {
-            const btn = document.getElementById('btn-dependencies')
-            const closeBtn = document.getElementById('close-dependencies-modal')
+            const btn = document.getElementById('btn-dependencies')!
+            const closeBtn = document.getElementById('close-dependencies-modal')!
 
             btn.remove()
             closeBtn.remove()
@@ -156,7 +163,7 @@ describe('Dependencies Visualization Feature - Comprehensive Tests', () => {
 
             app.populateDepsProjectFilter()
 
-            const filter = document.getElementById('deps-filter-project')
+            const filter = document.getElementById('deps-filter-project')!
             expect(filter.innerHTML).toContain('All Projects')
             expect(filter.innerHTML).toContain('Project 1')
             expect(filter.innerHTML).toContain('Project 2')
@@ -164,7 +171,7 @@ describe('Dependencies Visualization Feature - Comprehensive Tests', () => {
         })
 
         test('should handle missing filter gracefully', () => {
-            const filter = document.getElementById('deps-filter-project')
+            const filter = document.getElementById('deps-filter-project')!
             filter.remove()
 
             expect(() => app.populateDepsProjectFilter()).not.toThrow()
@@ -173,7 +180,7 @@ describe('Dependencies Visualization Feature - Comprehensive Tests', () => {
         test('should handle empty projects list', () => {
             app.populateDepsProjectFilter()
 
-            const filter = document.getElementById('deps-filter-project')
+            const filter = document.getElementById('deps-filter-project')!
             expect(filter.innerHTML).toContain('All Projects')
         })
     })
@@ -182,7 +189,7 @@ describe('Dependencies Visualization Feature - Comprehensive Tests', () => {
         test('should display dependencies modal', () => {
             app.openDependenciesModal()
 
-            const modal = document.getElementById('dependencies-modal')
+            const modal = document.getElementById('dependencies-modal')!
             expect(modal.classList.contains('active')).toBe(true)
         })
 
@@ -203,7 +210,7 @@ describe('Dependencies Visualization Feature - Comprehensive Tests', () => {
         })
 
         test('should handle missing modal gracefully', () => {
-            const modal = document.getElementById('dependencies-modal')
+            const modal = document.getElementById('dependencies-modal')!
             modal.remove()
 
             expect(() => app.openDependenciesModal()).not.toThrow()
@@ -212,7 +219,7 @@ describe('Dependencies Visualization Feature - Comprehensive Tests', () => {
 
     describe('closeDependenciesModal()', () => {
         test('should hide dependencies modal', () => {
-            const modal = document.getElementById('dependencies-modal')
+            const modal = document.getElementById('dependencies-modal')!
             modal.classList.add('active')
 
             app.closeDependenciesModal()
@@ -221,7 +228,7 @@ describe('Dependencies Visualization Feature - Comprehensive Tests', () => {
         })
 
         test('should handle missing modal gracefully', () => {
-            const modal = document.getElementById('dependencies-modal')
+            const modal = document.getElementById('dependencies-modal')!
             modal.remove()
 
             expect(() => app.closeDependenciesModal()).not.toThrow()
@@ -231,9 +238,9 @@ describe('Dependencies Visualization Feature - Comprehensive Tests', () => {
     describe('updateDepsViewButtons()', () => {
         beforeEach(() => {
             // Set initial button classes
-            document.getElementById('deps-view-graph').className = 'btn btn-secondary'
-            document.getElementById('deps-view-chains').className = 'btn btn-secondary'
-            document.getElementById('deps-view-critical').className = 'btn btn-secondary'
+            document.getElementById('deps-view-graph')!.className = 'btn btn-secondary'
+            document.getElementById('deps-view-chains')!.className = 'btn btn-secondary'
+            document.getElementById('deps-view-critical')!.className = 'btn btn-secondary'
         })
 
         test('should update button classes for graph view', () => {
@@ -241,13 +248,13 @@ describe('Dependencies Visualization Feature - Comprehensive Tests', () => {
             app.updateDepsViewButtons()
 
             expect(
-                document.getElementById('deps-view-graph').classList.contains('btn-primary')
+                document.getElementById('deps-view-graph')!.classList.contains('btn-primary')
             ).toBe(true)
             expect(
-                document.getElementById('deps-view-chains').classList.contains('btn-secondary')
+                document.getElementById('deps-view-chains')!.classList.contains('btn-secondary')
             ).toBe(true)
             expect(
-                document.getElementById('deps-view-critical').classList.contains('btn-secondary')
+                document.getElementById('deps-view-critical')!.classList.contains('btn-secondary')
             ).toBe(true)
         })
 
@@ -256,13 +263,13 @@ describe('Dependencies Visualization Feature - Comprehensive Tests', () => {
             app.updateDepsViewButtons()
 
             expect(
-                document.getElementById('deps-view-graph').classList.contains('btn-secondary')
+                document.getElementById('deps-view-graph')!.classList.contains('btn-secondary')
             ).toBe(true)
             expect(
-                document.getElementById('deps-view-chains').classList.contains('btn-primary')
+                document.getElementById('deps-view-chains')!.classList.contains('btn-primary')
             ).toBe(true)
             expect(
-                document.getElementById('deps-view-critical').classList.contains('btn-secondary')
+                document.getElementById('deps-view-critical')!.classList.contains('btn-secondary')
             ).toBe(true)
         })
 
@@ -271,20 +278,20 @@ describe('Dependencies Visualization Feature - Comprehensive Tests', () => {
             app.updateDepsViewButtons()
 
             expect(
-                document.getElementById('deps-view-graph').classList.contains('btn-secondary')
+                document.getElementById('deps-view-graph')!.classList.contains('btn-secondary')
             ).toBe(true)
             expect(
-                document.getElementById('deps-view-chains').classList.contains('btn-secondary')
+                document.getElementById('deps-view-chains')!.classList.contains('btn-secondary')
             ).toBe(true)
             expect(
-                document.getElementById('deps-view-critical').classList.contains('btn-primary')
+                document.getElementById('deps-view-critical')!.classList.contains('btn-primary')
             ).toBe(true)
         })
 
         test('should handle missing buttons gracefully', () => {
-            app.depsCurrentView = 'graph'
+            app.dependencies.depsCurrentView = 'graph'
 
-            const graphBtn = document.getElementById('deps-view-graph')
+            const graphBtn = document.getElementById('deps-view-graph')!
             graphBtn.remove()
 
             expect(() => app.updateDepsViewButtons()).not.toThrow()
@@ -354,10 +361,10 @@ describe('Dependencies Visualization Feature - Comprehensive Tests', () => {
 
             app.updateDepsStats(app.tasks)
 
-            expect(document.getElementById('deps-total-tasks').textContent).toBe('3')
-            expect(document.getElementById('deps-with-deps').textContent).toBe('2')
-            expect(document.getElementById('deps-blocked').textContent).toBe('2')
-            expect(document.getElementById('deps-ready').textContent).toBe('1')
+            expect(document.getElementById('deps-total-tasks')!.textContent).toBe('3')
+            expect(document.getElementById('deps-with-deps')!.textContent).toBe('2')
+            expect(document.getElementById('deps-blocked')!.textContent).toBe('2')
+            expect(document.getElementById('deps-ready')!.textContent).toBe('1')
         })
 
         test('should handle tasks with no dependencies', () => {
@@ -366,10 +373,10 @@ describe('Dependencies Visualization Feature - Comprehensive Tests', () => {
 
             app.updateDepsStats(app.tasks)
 
-            expect(document.getElementById('deps-total-tasks').textContent).toBe('1')
-            expect(document.getElementById('deps-with-deps').textContent).toBe('0')
-            expect(document.getElementById('deps-blocked').textContent).toBe('0')
-            expect(document.getElementById('deps-ready').textContent).toBe('1')
+            expect(document.getElementById('deps-total-tasks')!.textContent).toBe('1')
+            expect(document.getElementById('deps-with-deps')!.textContent).toBe('0')
+            expect(document.getElementById('deps-blocked')!.textContent).toBe('0')
+            expect(document.getElementById('deps-ready')!.textContent).toBe('1')
         })
     })
 
@@ -519,7 +526,7 @@ describe('Dependencies Visualization Feature - Comprehensive Tests', () => {
         })
 
         test('should handle missing container gracefully', () => {
-            const container = document.getElementById('deps-content')
+            const container = document.getElementById('deps-content')!
             container.remove()
 
             expect(() => app.renderDependenciesView()).not.toThrow()
@@ -528,7 +535,7 @@ describe('Dependencies Visualization Feature - Comprehensive Tests', () => {
 
     describe('renderDependencyGraph()', () => {
         test('should render empty state when no tasks with dependencies', () => {
-            const container = document.getElementById('deps-content')
+            const container = document.getElementById('deps-content')!
 
             app.renderDependencyGraph([], container)
 
@@ -536,18 +543,13 @@ describe('Dependencies Visualization Feature - Comprehensive Tests', () => {
         })
 
         test('should render graph with nodes', () => {
-            const task1 = new Task({
-                id: 'task-1',
-                title: 'Task 1',
-                waitingForTaskIds: []
-            })
             const task2 = new Task({
                 id: 'task-2',
                 title: 'Task 2',
                 waitingForTaskIds: ['task-1']
             })
 
-            const container = document.getElementById('deps-content')
+            const container = document.getElementById('deps-content')!
 
             app.renderDependencyGraph([task2], container)
 
@@ -555,7 +557,7 @@ describe('Dependencies Visualization Feature - Comprehensive Tests', () => {
         })
 
         test('should handle empty tasks array', () => {
-            const container = document.getElementById('deps-content')
+            const container = document.getElementById('deps-content')!
 
             app.renderDependencyGraph([], container)
 
@@ -565,7 +567,7 @@ describe('Dependencies Visualization Feature - Comprehensive Tests', () => {
 
     describe('renderDependencyChains()', () => {
         test('should render empty state when no chains', () => {
-            const container = document.getElementById('deps-content')
+            const container = document.getElementById('deps-content')!
 
             app.renderDependencyChains([], container)
 
@@ -576,7 +578,7 @@ describe('Dependencies Visualization Feature - Comprehensive Tests', () => {
             const task1 = new Task({ id: 'task-1', title: 'Task 1', completed: true })
             const task2 = new Task({ id: 'task-2', title: 'Task 2', waitingForTaskIds: ['task-1'] })
 
-            const container = document.getElementById('deps-content')
+            const container = document.getElementById('deps-content')!
 
             app.renderDependencyChains([task1, task2], container)
 
@@ -586,7 +588,7 @@ describe('Dependencies Visualization Feature - Comprehensive Tests', () => {
 
     describe('renderCriticalPath()', () => {
         test('should render empty state when no critical path', () => {
-            const container = document.getElementById('deps-content')
+            const container = document.getElementById('deps-content')!
 
             app.renderCriticalPath([], container)
 
@@ -597,7 +599,7 @@ describe('Dependencies Visualization Feature - Comprehensive Tests', () => {
             const task1 = new Task({ id: 'task-1', title: 'Task 1', completed: true })
             const task2 = new Task({ id: 'task-2', title: 'Task 2', waitingForTaskIds: ['task-1'] })
 
-            const container = document.getElementById('deps-content')
+            const container = document.getElementById('deps-content')!
 
             app.renderCriticalPath([task1, task2], container)
 
@@ -609,9 +611,9 @@ describe('Dependencies Visualization Feature - Comprehensive Tests', () => {
         test('should switch views when buttons clicked', () => {
             app.setupDependenciesVisualization()
 
-            const graphBtn = document.getElementById('deps-view-graph')
-            const chainsBtn = document.getElementById('deps-view-chains')
-            const criticalBtn = document.getElementById('deps-view-critical')
+            const graphBtn = document.getElementById('deps-view-graph')!
+            const chainsBtn = document.getElementById('deps-view-chains')!
+            const criticalBtn = document.getElementById('deps-view-critical')!
 
             // Mock renderDependenciesView
             jest.spyOn(app.dependencies, 'renderDependenciesView')
@@ -662,7 +664,7 @@ describe('Dependencies Visualization Feature - Comprehensive Tests', () => {
         })
 
         test('should handle very deep dependency chains', () => {
-            const tasks = []
+            const tasks: Task[] = []
             for (let i = 0; i < 20; i++) {
                 const waitingFor = i > 0 ? [tasks[i - 1].id] : []
                 const task = new Task({
