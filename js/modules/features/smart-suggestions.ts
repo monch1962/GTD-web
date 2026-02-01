@@ -12,21 +12,11 @@
  * - Task suggestion rendering with reasoning
  * - User selection and task highlighting
  */
-import { Task, Project } from '../../models'
+import { Task } from '../../models'
 import { escapeHtml } from '../../dom-utils'
 import { getAllContexts } from '../../config/defaultContexts'
-// Define interfaces for state and app dependencies
-interface AppState {
-    tasks: Task[]
-    projects: Project[]
-    currentView: string
-}
-interface AppDependencies {
-    showToast?: (message: string, type?: string) => void
-    showSuccess?: (message: string) => void
-    showError?: (message: string) => void
-    selectSuggestedTask?: (taskId: string) => void
-}
+import type { AppState, AppDependencies } from '../../types'
+import type { Project } from '../../models'
 interface SuggestionPreferences {
     context?: string
     availableMinutes?: number | null
@@ -226,7 +216,7 @@ export class SmartSuggestionsManager {
             }
             // Factor 8: Project urgency (projects due soon get priority)
             if (task.projectId) {
-                const project = this.state.projects.find((p) => p.id === task.projectId)
+                const project = this.state.projects.find((p: Project) => p.id === task.projectId)
                 if (project && project.status === 'active') {
                     score += 10
                     reasons.push('Active project')

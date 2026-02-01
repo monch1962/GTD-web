@@ -18,42 +18,8 @@
 
 import { Task, TaskData, TaskStatus } from '../../models'
 import { createLogger } from '../utils/logger'
-
-// Define interfaces for state and app dependencies
-interface AppState {
-    tasks: Task[]
-    currentView: string
-    currentProjectId: string | null
-    trackTaskUsage: (task: Task) => void
-}
-
-interface ParserResult {
-    title?: string
-    contexts?: string[]
-    energy?: string
-    time?: number
-    dueDate?: string | null
-    recurrence?: string
-}
-
-interface AppParser {
-    parse: (title: string) => ParserResult
-}
-
-interface AppDependencies {
-    parser?: AppParser
-    saveState?: (description: string) => void
-    saveTasks?: () => Promise<void>
-    renderView?: () => void
-    updateCounts?: () => void
-    updateContextFilter?: () => void
-    renderProjectsDropdown?: () => void
-    showSuccess?: (message: string) => void
-    showWarning?: (message: string) => void
-    showError?: (message: string) => void
-    showToast?: (message: string) => void
-    showNotification?: (message: string) => void
-}
+import type { AppState, AppDependencies } from '../../types'
+import type { EnergyLevel } from '../../models'
 
 export class TaskOperations {
     private state: AppState
@@ -94,7 +60,7 @@ export class TaskOperations {
             status: status as TaskStatus,
             type: 'task',
             contexts: parsed.contexts,
-            energy: parsed.energy as any, // parsed.energy could be any string from parser
+            energy: parsed.energy as EnergyLevel, // parsed.energy could be any string from parser
             time: parsed.time,
             dueDate: parsed.dueDate,
             recurrence: parsed.recurrence,
@@ -105,7 +71,7 @@ export class TaskOperations {
         await this.app.saveTasks?.()
 
         // Track usage for smart defaults
-        this.state.trackTaskUsage(task)
+        this.state.trackTaskUsage?.(task)
 
         this.app.renderView?.()
         this.app.updateCounts?.()

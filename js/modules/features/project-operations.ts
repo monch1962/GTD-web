@@ -16,33 +16,19 @@
  */
 
 import { Project } from '../../models'
-import type { Task } from '../../models'
-
-interface State {
-    projects: Project[]
-    tasks: Task[]
-}
-
-interface App {
-    saveState?: (description: string) => void
-    saveProjects?: () => Promise<void> | void
-    saveTasks?: () => Promise<void> | void
-    renderView?: () => void
-    updateCounts?: () => void
-    renderProjectsDropdown?: () => void
-    showNotification?: (message: string) => void
-}
+import type { Task, ProjectData } from '../../models'
+import type { AppState, AppDependencies } from '../../types'
 
 export class ProjectOperations {
-    private state: State
-    private app: App
+    private state: AppState
+    private app: AppDependencies
 
     /**
      * Create a new ProjectOperations instance
      * @param state - Application state object
      * @param app - Application instance
      */
-    constructor (state: State, app: App) {
+    constructor (state: AppState, app: AppDependencies) {
         this.state = state
         this.app = app
     }
@@ -52,7 +38,7 @@ export class ProjectOperations {
      * @param projectData - Project data
      * @returns Created project
      */
-    createProject (projectData: Record<string, any>): Project {
+    createProject (projectData: ProjectData): Project {
         const project = new Project(projectData)
         this.state.projects.push(project)
         return project
@@ -71,10 +57,10 @@ export class ProjectOperations {
         this.app.saveState?.('Delete project')
 
         // Remove project
-        this.state.projects = this.state.projects.filter((p) => p.id !== projectId)
+        this.state.projects = this.state.projects.filter((p: Project) => p.id !== projectId)
 
         // Remove project reference from tasks
-        this.state.tasks.forEach((task) => {
+        this.state.tasks.forEach((task: Task) => {
             if (task.projectId === projectId) {
                 task.projectId = null
             }
@@ -93,7 +79,7 @@ export class ProjectOperations {
      * @param projectId - Project ID to archive
      */
     async archiveProject (projectId: string): Promise<void> {
-        const project = this.state.projects.find((p) => p.id === projectId)
+        const project = this.state.projects.find((p: Project) => p.id === projectId)
         if (!project) return
 
         if (
@@ -108,7 +94,7 @@ export class ProjectOperations {
         this.app.saveState?.('Archive project')
 
         // Mark project as archived
-        project.status = 'archived' as any
+        project.status = 'archived'
         project.updatedAt = new Date().toISOString()
 
         await this.app.saveProjects?.()
@@ -125,7 +111,7 @@ export class ProjectOperations {
      * @param projectId - Project ID to restore
      */
     async restoreProject (projectId: string): Promise<void> {
-        const project = this.state.projects.find((p) => p.id === projectId)
+        const project = this.state.projects.find((p: Project) => p.id === projectId)
         if (!project) return
 
         // Save state for undo
@@ -156,7 +142,7 @@ export class ProjectOperations {
         // Update position for each project based on its DOM order
         projectElements.forEach((element, index) => {
             const projectId = (element as HTMLElement).dataset.projectId
-            const project = this.state.projects.find((p) => p.id === projectId)
+            const project = this.state.projects.find((p: Project) => p.id === projectId)
             if (project) {
                 project.position = index
                 project.updatedAt = new Date().toISOString()
@@ -192,7 +178,7 @@ export class ProjectOperations {
      * @returns Array of archived projects
      */
     getArchivedProjects (): Project[] {
-        return this.state.projects.filter((p) => p.status === ('archived' as any))
+        return this.state.projects.filter((p) => p.status === 'archived')
     }
 
     /**
@@ -210,7 +196,7 @@ export class ProjectOperations {
      * @returns Array of tasks
      */
     getTasksForProject (projectId: string): Task[] {
-        return this.state.tasks.filter((t) => t.projectId === projectId)
+        return this.state.tasks.filter((t: Task) => t.projectId === projectId)
     }
 
     /**

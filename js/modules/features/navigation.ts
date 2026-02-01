@@ -12,31 +12,15 @@
  * - Project title lookup
  */
 
-import { Task, Project } from '../../models'
-
-/**
- * App interface for type safety
- */
-interface App {
-    renderView?: () => void
-    updateNavigation?: () => void
-}
-
-/**
- * State interface for navigation
- */
-interface State {
-    tasks: Task[]
-    projects: Project[]
-    currentView: string
-    currentProjectId: string | null
-}
+import { Task } from '../../models'
+import type { AppState, AppDependencies } from '../../types'
+import type { Project } from '../../models'
 
 export class NavigationManager {
-    private state: State
-    private app: App
+    private state: AppState
+    private app: AppDependencies
 
-    constructor (state: State, app: App) {
+    constructor (state: AppState, app: AppDependencies) {
         this.state = state
         this.app = app
     }
@@ -62,9 +46,9 @@ export class NavigationManager {
      */
     getGreetingMessage (): string {
         const greeting = this.getGreeting()
-        const totalTasks = this.state.tasks.filter((t) => !t.completed).length
+        const totalTasks = this.state.tasks.filter((t: Task) => !t.completed).length
         const completedToday = this.state.tasks.filter(
-            (t) =>
+            (t: Task) =>
                 t.completed &&
                 t.completedAt &&
                 new Date(t.completedAt) >= new Date(new Date().setHours(0, 0, 0, 0))
@@ -96,7 +80,7 @@ export class NavigationManager {
      * @returns {string} - Project title or 'Unknown Project'
      */
     getProjectTitle (projectId: string): string {
-        const project = this.state.projects.find((p) => p.id === projectId)
+        const project = this.state.projects.find((p: Project) => p.id === projectId)
         return project ? project.title : 'Unknown Project'
     }
 }

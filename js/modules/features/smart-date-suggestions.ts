@@ -12,18 +12,7 @@
  * - Multiple date patterns: relative dates, weekdays, month boundaries
  */
 
-import { Task, Project } from '../../models'
-
-// Define interfaces for state and app dependencies
-interface AppState {
-    tasks: Task[]
-    projects: Project[]
-}
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface AppDependencies {
-    // This module doesn't use any app methods
-}
+import type { AppState, AppDependencies } from '../../types'
 
 interface DateSuggestion {
     text: string
