@@ -309,7 +309,7 @@ describe('Archive System Feature - Comprehensive Tests', () => {
 
             // Restore task
             if (app.archive) {
-                app.archive.restoreFromArchive('task1')
+                await app.archive.restoreFromArchive('task1')
             }
 
             expect(app.storage?.removeFromArchive).toHaveBeenCalledWith('task1')

@@ -2,7 +2,6 @@
  * Comprehensive Tests for Project Operations Feature
  */
 
-import { GTDApp } from '../js/app.ts'
 import { Project } from '../js/models.ts'
 import { ProjectOperations } from '../js/modules/features/project-operations.ts'
 
@@ -658,7 +657,6 @@ describe('ProjectOperations - Get Tasks for Project', () => {
 describe('ProjectOperations - Project Statistics', () => {
     let manager
     let mockState
-    let mockApp
 
     beforeEach(() => {
         mockState = {
