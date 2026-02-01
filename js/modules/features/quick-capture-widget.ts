@@ -12,26 +12,13 @@
  * - Click outside to close functionality
  */
 
-/**
- * App interface for type safety
- */
-interface App {
-    quickAddTask?: (title: string) => Promise<void>
-    showNotification?: (message: string) => void
-}
-
-/**
- * State interface for quick capture
- */
-interface State {
-    defaultContexts: string[]
-}
+import type { AppState, AppDependencies } from '../../types'
 
 export class QuickCaptureWidgetManager {
-    private state: State
-    private app: App
+    private state: AppState
+    private app: AppDependencies
 
-    constructor (state: State, app: App) {
+    constructor (state: AppState, app: AppDependencies) {
         this.state = state
         this.app = app
     }
@@ -47,7 +34,7 @@ export class QuickCaptureWidgetManager {
         const toggleBtn = document.getElementById('quick-capture-toggle')
         const panel = document.getElementById('quick-capture-panel')
         const input = document.getElementById('quick-capture-input')
-        const contextsContainer = document.getElementById('quick-capture-contexts')
+        const _contextsContainer = document.getElementById('quick-capture-contexts')
 
         if (!toggleBtn || !panel || !input) return
 

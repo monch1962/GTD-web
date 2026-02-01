@@ -4,32 +4,14 @@
  */
 
 import { getAllContexts, getContextTaskCounts } from '../../config/defaultContexts'
-import { Task, Project } from '../../models'
-
-/**
- * App interface for type safety
- */
-interface App {
-    renderView?: () => void
-    showNotification?: (message: string) => void
-}
-
-/**
- * State interface for context filter
- */
-interface State {
-    tasks: Task[]
-    projects: Project[]
-    defaultContexts: string[]
-    selectedContextFilters: Set<string>
-}
+import type { AppState, AppDependencies } from '../../types'
 
 export class ContextFilterManager {
-    private state: State
-    private app: App
+    private state: AppState
+    private app: AppDependencies
     private clearContextFiltersHandler: (() => void) | null
 
-    constructor (state: State, app: App) {
+    constructor (state: AppState, app: AppDependencies) {
         this.state = state
         this.app = app
         this.clearContextFiltersHandler = null

@@ -9,20 +9,11 @@
  * - New project button click handler
  * - Opens task modal with project type pre-selected
  */
-import { Task } from '../../models'
-/**
- * App interface for type safety
- */
-interface App {
-    openTaskModal?: (
-        task: Task | null,
-        defaultProjectId?: string | null,
-        defaultData?: Record<string, unknown>
-    ) => void
-}
+import type { AppDependencies } from '../../types'
+
 export class NewProjectButtonManager {
-    private app: App
-    constructor (app: App) {
+    private app: AppDependencies
+    constructor (app: AppDependencies) {
         this.app = app
     }
 
@@ -37,7 +28,7 @@ export class NewProjectButtonManager {
         if (newProjectBtn) {
             newProjectBtn.addEventListener('click', () => {
                 // Open task modal with type pre-selected as 'project'
-                this.app.openTaskModal?.(null, null, { type: 'project' })
+                this.app.openTaskModal?.(null, undefined, { type: 'project' })
             })
         }
     }

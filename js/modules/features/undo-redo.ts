@@ -14,29 +14,7 @@
  */
 
 import { Task, Project } from '../../models'
-
-/**
- * App interface for type safety
- */
-interface App {
-    saveTasks?: () => Promise<void>
-    saveProjects?: () => Promise<void>
-    renderView?: () => void
-    updateCounts?: () => void
-    renderProjectsDropdown?: () => void
-    showNotification?: (message: string) => void
-}
-
-/**
- * State interface for undo/redo
- */
-interface State {
-    tasks: Task[]
-    projects: Project[]
-    history: HistoryState[]
-    historyIndex: number
-    maxHistorySize: number
-}
+import type { AppState, AppDependencies } from '../../types'
 
 /**
  * History state interface
@@ -49,10 +27,10 @@ interface HistoryState {
 }
 
 export class UndoRedoManager {
-    private state: State
-    private app: App
+    private state: AppState
+    private app: AppDependencies
 
-    constructor (state: State, app: App) {
+    constructor (state: AppState, app: AppDependencies) {
         this.state = state
         this.app = app
 
