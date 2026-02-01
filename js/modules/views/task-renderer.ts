@@ -8,30 +8,7 @@ import { escapeHtml } from '../../dom-utils'
 import { VirtualScrollManager } from '../ui/virtual-scroll'
 import { createLogger } from '../utils/logger'
 import { Task } from '../../models'
-
-// Define types for the app interface
-interface AppDependencies {
-    saveState?: (action: string) => void
-    showNotification?: (message: string, type: string) => void
-    openTaskModal?: (task: Task | null, defaultProjectId?: string | null, defaultData?: any) => void
-    deleteTask?: (taskId: string) => Promise<void>
-    toggleTaskStar?: (taskId: string) => Promise<void>
-    toggleTaskComplete?: (taskId: string) => Promise<void>
-    startTimer?: (taskId: string) => Promise<void>
-    stopTimer?: (taskId: string) => Promise<void>
-    updateBulkSelectButtonVisibility?: () => void
-    renderView?: () => void
-    updateCounts?: () => void
-    saveTasks?: () => Promise<void>
-    [key: string]: any // Allow for additional app methods
-}
-
-interface AppState {
-    tasks: Task[]
-    projects: any[]
-    selectedTaskIds: Set<string>
-    [key: string]: any // Allow for additional state properties
-}
+import type { AppState, AppDependencies } from '../../types'
 
 export class TaskRenderer {
     private state: AppState

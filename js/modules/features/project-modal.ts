@@ -9,22 +9,7 @@
  * projectModal.openGanttChart(existingProject); // Show Gantt chart
  */
 import { Project, Task, ProjectStatus } from '../../models'
-// Define interfaces for state and app dependencies
-interface AppState {
-    projects: Project[]
-}
-interface AppDependencies {
-    projects?: Project[]
-    tasks?: Task[]
-    showNotification?: (message: string, type?: string) => void
-    saveState?: (action: string) => void
-    saveProjects?: () => Promise<void>
-    renderView?: () => void
-    updateCounts?: () => void
-    renderProjectsDropdown?: () => void
-    updateContextFilter?: () => void
-    openTaskModal?: (task: Task | null, projectId?: string, pendingData?: any) => void
-}
+import type { AppState, AppDependencies } from '../../types'
 interface PendingTaskData {
     title?: string
     description?: string
@@ -208,7 +193,7 @@ export class ProjectModalManager {
         const container = document.getElementById('gantt-chart')
         if (!container) return
         // Get all tasks for this project (including completed ones)
-        const projectTasks = this.app.tasks?.filter((t) => t.projectId === project.id) || []
+        const projectTasks = this.state.tasks.filter((t: Task) => t.projectId === project.id)
         if (projectTasks.length === 0) {
             container.innerHTML = `
                 <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
@@ -223,16 +208,16 @@ export class ProjectModalManager {
         const taskLevels: Record<string, number> = {} // task.id -> level (0 = no dependencies)
         const maxIterations = projectTasks.length + 1
         // Initialize all tasks at level 0
-        projectTasks.forEach((task) => {
+        projectTasks.forEach((task: Task) => {
             taskLevels[task.id] = 0
         })
         // Calculate levels based on dependencies
         for (let iter = 0; iter < maxIterations; iter++) {
-            projectTasks.forEach((task) => {
+            projectTasks.forEach((task: Task) => {
                 if (task.waitingForTaskIds && task.waitingForTaskIds.length > 0) {
                     const maxDepLevel = Math.max(
                         0,
-                        ...task.waitingForTaskIds.map((depId) => taskLevels[depId] || 0)
+                        ...task.waitingForTaskIds.map((depId: string) => taskLevels[depId] || 0)
                     )
                     if (taskLevels[task.id] < maxDepLevel + 1) {
                         taskLevels[task.id] = maxDepLevel + 1
@@ -242,7 +227,7 @@ export class ProjectModalManager {
         }
         // Group tasks by level
         const levelGroups: Record<number, Task[]> = {}
-        projectTasks.forEach((task) => {
+        projectTasks.forEach((task: Task) => {
             const level = taskLevels[task.id]
             if (!levelGroups[level]) {
                 levelGroups[level] = []
@@ -309,11 +294,11 @@ export class ProjectModalManager {
                 yPos += taskHeight + verticalSpacing
             })
         // Render dependency arrows
-        projectTasks.forEach((task) => {
+        projectTasks.forEach((task: Task) => {
             if (task.waitingForTaskIds && task.waitingForTaskIds.length > 0) {
                 const targetPos = taskPositions[task.id]
                 if (!targetPos) return
-                task.waitingForTaskIds.forEach((depId) => {
+                task.waitingForTaskIds.forEach((depId: string) => {
                     const sourcePos = taskPositions[depId]
                     if (!sourcePos) return
                     const startX = sourcePos.x + sourcePos.width / 2

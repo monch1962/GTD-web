@@ -27,14 +27,16 @@ import {
     RecurrencePattern,
     ProjectStatus
 } from '../../models'
+import type { AppState, AppDependencies } from '../../types'
 
 // Constants for recurrence labels
-const RecurrenceLabels: Record<string, string> = {
+const RECURRENCE_LABELS: Record<string, string> = {
     daily: 'Daily',
     weekly: 'Weekly',
-    biweekly: 'Bi-weekly',
     monthly: 'Monthly',
-    yearly: 'Yearly'
+    yearly: 'Yearly',
+    biweekly: 'Every 2 weeks',
+    '': 'No recurrence'
 }
 
 const WeekdayNames: Record<number, string> = {
@@ -55,31 +57,9 @@ const NthWeekdayLabels: Record<number, string> = {
     5: 'Last'
 }
 
-interface AppState {
-    tasks: Task[]
-    projects: Project[]
-    currentView?: string
-    selectedContextFilters?: Set<string>
-}
-
-interface AppInterface {
-    saveTasks?: () => Promise<void>
-    saveProjects?: () => Promise<void>
-    saveState?: (action: string) => void
-    renderView?: () => void
-    updateCounts?: () => void
-    updateContextFilter?: () => void
-    renderProjectsDropdown?: () => void
-    showNotification?: (message: string, type: string) => void
-    showToast?: (message: string, type: string) => void
-    openProjectModal?: (project: Project | null, formData?: any) => void
-    normalizeContextName?: (context: string) => string
-    trackTaskUsage?: (task: Task) => void
-}
-
 export class TaskModalManager {
     state: AppState
-    app: AppInterface
+    app: AppDependencies
     pendingTaskData: any | null
 
     /**
@@ -97,7 +77,7 @@ export class TaskModalManager {
      * @param {Function} app.updateCounts - Update task counts
      * @param {Function} app.updateContextFilter - Update context filter UI
      */
-    constructor (state: AppState, app: AppInterface) {
+    constructor (state: AppState, app: AppDependencies) {
         this.state = state
         this.app = app
         this.pendingTaskData = null
@@ -493,12 +473,12 @@ export class TaskModalManager {
 
         // Handle old string format (backward compatibility)
         if (typeof recurrence === 'string') {
-            return RecurrenceLabels[recurrence] || recurrence
+            return RECURRENCE_LABELS[recurrence] || recurrence
         }
 
         // Handle new object format
         if (typeof recurrence === 'object' && recurrence.type) {
-            const baseLabel = RecurrenceLabels[recurrence.type] || recurrence.type
+            const baseLabel = RECURRENCE_LABELS[recurrence.type] || recurrence.type
 
             // Add details for complex recurrences
             const details: string[] = []

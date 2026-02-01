@@ -6,26 +6,8 @@ import { ViewLabels } from '../../constants'
 import { escapeHtml } from '../../dom-utils'
 import { TaskRenderer } from './task-renderer'
 import { ProjectRenderer } from './project-renderer'
-import type { Task, Project, Template } from '../../models'
-
-interface AppState {
-    tasks: Task[]
-    projects: Project[]
-    templates: Template[]
-    currentView: string
-    currentProjectId: string | null
-    showingArchivedProjects: boolean
-    selectedContextFilters: Set<string>
-    selectedTaskIds: Set<string>
-    filters: any
-}
-
-interface AppDependencies {
-    openGanttChart?: (project: Project) => void
-    updateBulkSelectButtonVisibility?: () => void
-    openReferenceModal?: (ref: Task) => void
-    deleteReference?: (id: string) => void
-}
+import type { Task } from '../../models'
+import type { AppState, AppDependencies } from '../../types'
 
 export class ViewManager {
     private state: AppState

@@ -5,29 +5,7 @@
 
 import { escapeHtml } from '../../dom-utils'
 import { Project } from '../../models'
-
-// Define types for the app interface
-interface AppDependencies {
-    saveState?: (action: string) => void
-    showNotification?: (message: string, type: string) => void
-    openProjectModal?: (project: Project | null) => void
-    deleteProject?: (projectId: string) => Promise<void>
-    archiveProject?: (projectId: string) => Promise<void>
-    unarchiveProject?: (projectId: string) => Promise<void>
-    renderView?: () => void
-    updateCounts?: () => void
-    saveProjects?: () => Promise<void>
-    [key: string]: any // Allow for additional app methods
-}
-
-interface AppState {
-    projects: Project[]
-    filters: {
-        context?: string
-    }
-    showingArchivedProjects?: boolean
-    [key: string]: any // Allow for additional state properties
-}
+import type { AppState, AppDependencies } from '../../types'
 
 export class ProjectRenderer {
     private state: AppState
