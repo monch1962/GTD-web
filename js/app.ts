@@ -391,7 +391,7 @@ class GTDApp {
 
     async init () {
         const initTimeout = setTimeout(() => {
-            this.showDebugBanner(
+            this.updateDebugBanner(
                 '✗ INIT TIMEOUT - Taking too long',
                 {
                     step: this._initStep || 'unknown',
@@ -449,7 +449,7 @@ class GTDApp {
                 })
             } catch (e) {
                 console.error('Storage init failed:', e)
-                this.showDebugBanner('✗ Storage Failed', { error: e.message }, 'error')
+                this.updateDebugBanner('✗ Storage Failed', { error: e.message }, 'error')
                 clearTimeout(initTimeout)
                 return
             }
@@ -465,7 +465,7 @@ class GTDApp {
                 })
             } catch (e) {
                 console.error('Load data failed:', e)
-                this.showDebugBanner('✗ Load Data Failed', { error: e.message }, 'error')
+                this.updateDebugBanner('✗ Load Data Failed', { error: e.message }, 'error')
                 clearTimeout(initTimeout)
                 return
             }
@@ -478,7 +478,7 @@ class GTDApp {
                 this.updateDebugBanner('Event listeners ✓', {})
             } catch (e) {
                 console.error('Setup event listeners failed:', e)
-                this.showDebugBanner('✗ Event Listeners Failed', { error: e.message }, 'error')
+                this.updateDebugBanner('✗ Event Listeners Failed', { error: e.message }, 'error')
                 clearTimeout(initTimeout)
                 return
             }
@@ -491,7 +491,7 @@ class GTDApp {
                 this.updateDebugBanner('User ID displayed', { success: true })
             } catch (e) {
                 console.error('Display user ID failed:', e)
-                this.showDebugBanner('✗ User ID Failed', { error: e.message }, 'error')
+                this.updateDebugBanner('✗ User ID Failed', { error: e.message }, 'error')
                 clearTimeout(initTimeout)
                 return
             }
@@ -524,7 +524,7 @@ class GTDApp {
                 this.updateContextFilter()
             } catch (e) {
                 console.error('Render failed:', e)
-                this.showDebugBanner('✗ Render Failed', { error: e.message }, 'error')
+                this.updateDebugBanner('✗ Render Failed', { error: e.message }, 'error')
                 clearTimeout(initTimeout)
                 return
             }
@@ -556,7 +556,7 @@ class GTDApp {
                 indicator.style.background = '#ff4444'
             }
 
-            this.showDebugBanner(
+            this.updateDebugBanner(
                 '✗ CRITICAL ERROR',
                 {
                     step: this._initStep,
@@ -760,7 +760,7 @@ class GTDApp {
     }
 
     updateQuickAddPlaceholder () {
-        const quickAddInput = document.getElementById('quick-add-input')
+        const quickAddInput = document.getElementById('quick-add-input') as HTMLInputElement
         if (!quickAddInput) return
 
         const defaults = this.getSmartDefaults()
@@ -1985,8 +1985,8 @@ class GTDApp {
         let mostFrequent = ''
 
         for (const [context, count] of Object.entries(this.usageStats.contexts)) {
-            if (count > maxCount) {
-                maxCount = count
+            if ((count as number) > maxCount) {
+                maxCount = count as number
                 mostFrequent = context
             }
         }
@@ -1999,8 +1999,8 @@ class GTDApp {
         let mostFrequent = 0
 
         for (const [time, count] of Object.entries(this.usageStats.times)) {
-            if (count > maxCount) {
-                maxCount = count
+            if ((count as number) > maxCount) {
+                maxCount = count as number
                 mostFrequent = parseInt(time)
             }
         }
@@ -3216,7 +3216,7 @@ class GTDApp {
         }
 
         references.forEach((ref) => {
-            const refElement = this.createTaskElement(ref)
+            const refElement = this.createTaskElement(ref, 0)
             container.appendChild(refElement)
         })
     }
