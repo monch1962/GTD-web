@@ -4,11 +4,32 @@
 
 import { GTDApp } from '../js/app.ts'
 import { TimeTrackingManager } from '../js/modules/features/time-tracking.ts'
+import type { Task } from '../js/models.ts'
+
+// Test interfaces based on the module's interfaces
+interface TestState {
+    tasks: Task[]
+    timerInterval: NodeJS.Timeout | null
+    currentTimerTask: string | null
+    timerStartTime: number | null
+}
+
+interface TestApp {
+    saveTasks?: () => Promise<void>
+    renderView?: () => void
+    showToast?: (message: string, type?: string) => void
+}
+
+// Test interface to access private properties
+interface TimeTrackingManagerTest {
+    state: TestState
+    app: TestApp
+}
 
 describe('TimeTrackingManager - Initialization', () => {
-    let manager
-    let mockState
-    let mockApp
+    let manager: TimeTrackingManager
+    let mockState: TestState
+    let mockApp: TestApp
 
     beforeEach(() => {
         localStorage.clear()
@@ -20,13 +41,13 @@ describe('TimeTrackingManager - Initialization', () => {
             timerStartTime: null
         }
 
-        mockApp = new GTDApp()
+        mockApp = new GTDApp() as TestApp
         manager = new TimeTrackingManager(mockState, mockApp)
     })
 
     test('should initialize successfully', () => {
         expect(manager).toBeDefined()
-        expect(manager.state).toBe(mockState)
+        expect((manager as unknown as TimeTrackingManagerTest).state).toBe(mockState)
     })
 
     test('should initialize timer state properties', () => {
@@ -37,9 +58,9 @@ describe('TimeTrackingManager - Initialization', () => {
 })
 
 describe('TimeTrackingManager - Start Timer', () => {
-    let manager
-    let mockState
-    let mockApp
+    let manager: TimeTrackingManager
+    let mockState: TestState
+    let mockApp: TestApp
 
     beforeEach(() => {
         localStorage.clear()
@@ -48,18 +69,19 @@ describe('TimeTrackingManager - Start Timer', () => {
 
         mockState = {
             tasks: [
-                { id: 'task1', title: 'Task 1', completed: false, timeSpent: 0 },
-                { id: 'task2', title: 'Task 2', completed: false, timeSpent: 30 }
+                { id: 'task1', title: 'Task 1', completed: false, timeSpent: 0 } as Task,
+                { id: 'task2', title: 'Task 2', completed: false, timeSpent: 30 } as Task
             ],
             timerInterval: null,
             currentTimerTask: null,
             timerStartTime: null
         }
 
-        mockApp = new GTDApp()
-        mockApp.saveTasks = jest.fn().mockResolvedValue(undefined)
-        mockApp.renderView = jest.fn()
-        mockApp.showToast = jest.fn()
+        mockApp = {
+            saveTasks: jest.fn().mockResolvedValue(undefined),
+            renderView: jest.fn(),
+            showToast: jest.fn()
+        } as TestApp
 
         manager = new TimeTrackingManager(mockState, mockApp)
     })
@@ -172,9 +194,9 @@ describe('TimeTrackingManager - Start Timer', () => {
 })
 
 describe('TimeTrackingManager - Stop Timer', () => {
-    let manager
-    let mockState
-    let mockApp
+    let manager: TimeTrackingManager
+    let mockState: TestState
+    let mockApp: TestApp
 
     beforeEach(() => {
         localStorage.clear()
@@ -182,16 +204,17 @@ describe('TimeTrackingManager - Stop Timer', () => {
         jest.useFakeTimers()
 
         mockState = {
-            tasks: [{ id: 'task1', title: 'Task 1', completed: false, timeSpent: 0 }],
+            tasks: [{ id: 'task1', title: 'Task 1', completed: false, timeSpent: 0 } as Task],
             timerInterval: null,
             currentTimerTask: null,
             timerStartTime: null
         }
 
-        mockApp = new GTDApp()
-        mockApp.saveTasks = jest.fn().mockResolvedValue(undefined)
-        mockApp.renderView = jest.fn()
-        mockApp.showToast = jest.fn()
+        mockApp = {
+            saveTasks: jest.fn().mockResolvedValue(undefined),
+            renderView: jest.fn(),
+            showToast: jest.fn()
+        } as TestApp
 
         manager = new TimeTrackingManager(mockState, mockApp)
     })
@@ -318,9 +341,9 @@ describe('TimeTrackingManager - Stop Timer', () => {
 })
 
 describe('TimeTrackingManager - Timer State Management', () => {
-    let manager
-    let mockState
-    let mockApp
+    let manager: TimeTrackingManager
+    let mockState: TestState
+    let mockApp: TestApp
 
     beforeEach(() => {
         localStorage.clear()
@@ -329,18 +352,19 @@ describe('TimeTrackingManager - Timer State Management', () => {
 
         mockState = {
             tasks: [
-                { id: 'task1', title: 'Task 1', completed: false, timeSpent: 0 },
-                { id: 'task2', title: 'Task 2', completed: false, timeSpent: 0 }
+                { id: 'task1', title: 'Task 1', completed: false, timeSpent: 0 } as Task,
+                { id: 'task2', title: 'Task 2', completed: false, timeSpent: 0 } as Task
             ],
             timerInterval: null,
             currentTimerTask: null,
             timerStartTime: null
         }
 
-        mockApp = new GTDApp()
-        mockApp.saveTasks = jest.fn().mockResolvedValue(undefined)
-        mockApp.renderView = jest.fn()
-        mockApp.showToast = jest.fn()
+        mockApp = {
+            saveTasks: jest.fn().mockResolvedValue(undefined),
+            renderView: jest.fn(),
+            showToast: jest.fn()
+        } as TestApp
 
         manager = new TimeTrackingManager(mockState, mockApp)
     })
@@ -400,9 +424,9 @@ describe('TimeTrackingManager - Timer State Management', () => {
 })
 
 describe('TimeTrackingManager - Edge Cases', () => {
-    let manager
-    let mockState
-    let mockApp
+    let manager: TimeTrackingManager
+    let mockState: TestState
+    let mockApp: TestApp
 
     beforeEach(() => {
         localStorage.clear()
@@ -410,16 +434,17 @@ describe('TimeTrackingManager - Edge Cases', () => {
         jest.useFakeTimers()
 
         mockState = {
-            tasks: [{ id: 'task1', title: 'Task 1', completed: false, timeSpent: 0 }],
+            tasks: [{ id: 'task1', title: 'Task 1', completed: false, timeSpent: 0 } as Task],
             timerInterval: null,
             currentTimerTask: null,
             timerStartTime: null
         }
 
-        mockApp = new GTDApp()
-        mockApp.saveTasks = jest.fn().mockResolvedValue(undefined)
-        mockApp.renderView = jest.fn()
-        mockApp.showToast = jest.fn()
+        mockApp = {
+            saveTasks: jest.fn().mockResolvedValue(undefined),
+            renderView: jest.fn(),
+            showToast: jest.fn()
+        } as TestApp
 
         manager = new TimeTrackingManager(mockState, mockApp)
     })
