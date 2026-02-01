@@ -1,20 +1,12 @@
 /**
- * Tests for js/app.js - GTDApp class
+ * Tests for js/app.ts - GTDApp class
  * Tests critical functionality to prevent regressions
  */
 
 import { GTDApp } from '../js/app.ts'
-/* eslint-disable */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Task, Project, Template } from '../js/models.ts'
-/* eslint-disable */
+import { Task, Project } from '../js/models.ts'
 import { Storage } from '../js/storage.ts'
-/* eslint-disable */
-import { TaskParser } from '../js/nlp-parser.js'
-/* eslint-disable */
-
-// Import after mocks are set up
+import { TaskParser } from '../js/nlp-parser.ts'
 
 // Mock localStorage
 const mockLocalStorage = {
@@ -22,62 +14,83 @@ const mockLocalStorage = {
     setItem: jest.fn(),
     removeItem: jest.fn(),
     clear: jest.fn(),
-    get length() {
+    get length () {
         return 0
     },
     key: jest.fn()
 }
 
-global.localStorage = mockLocalStorage
+Object.defineProperty(global, 'localStorage', {
+    value: mockLocalStorage,
+    writable: true
+})
 
 // Mock DOM elements
-global.document = {
-    getElementById: jest.fn((id) => {
-        const elements = {
-            'tasks-container': { innerHTML: '', style: {} },
-            'inbox-count': { textContent: '' },
-            'next-count': { textContent: '' },
-            'waiting-count': { textContent: '' },
-            'someday-count': { textContent: '' },
-            'projects-count': { textContent: '' },
-            'projects-dropdown': { innerHTML: '', classList: { add: jest.fn(), remove: jest.fn() } }
-        }
-        return (
-            elements[id] || {
-                value: '',
-                textContent: '',
-                addEventListener: jest.fn(),
-                classList: { add: jest.fn(), remove: jest.fn(), contains: jest.fn() },
-                style: {},
-                innerHTML: ''
+Object.defineProperty(global, 'document', {
+    value: {
+        getElementById: jest.fn((id: string) => {
+            const elements: Record<string, unknown> = {
+                'tasks-container': { innerHTML: '', style: {} },
+                'inbox-count': { textContent: '' },
+                'next-count': { textContent: '' },
+                'waiting-count': { textContent: '' },
+                'someday-count': { textContent: '' },
+                'projects-count': { textContent: '' },
+                'projects-dropdown': {
+                    innerHTML: '',
+                    classList: { add: jest.fn(), remove: jest.fn() }
+                },
+                announcer: {
+                    setAttribute: jest.fn(),
+                    textContent: '',
+                    style: {}
+                }
             }
-        )
-    }),
-    createElement: jest.fn((tag) => ({
-        tagName: tag,
-        style: {},
+            return (
+                elements[id] || {
+                    value: '',
+                    textContent: '',
+                    addEventListener: jest.fn(),
+                    classList: { add: jest.fn(), remove: jest.fn(), contains: jest.fn() },
+                    style: {},
+                    innerHTML: '',
+                    setAttribute: jest.fn()
+                }
+            )
+        }),
+        createElement: jest.fn((tag: string) => ({
+            tagName: tag,
+            style: {},
+            addEventListener: jest.fn(),
+            appendChild: jest.fn()
+        })),
+        querySelectorAll: jest.fn(() => []),
         addEventListener: jest.fn(),
-        appendChild: jest.fn()
-    })),
-    querySelectorAll: jest.fn(() => [])
-}
+        body: {
+            appendChild: jest.fn()
+        }
+    },
+    writable: true
+})
 
-global.window = {
-    location: { href: '' },
-    addEventListener: jest.fn()
-}
+Object.defineProperty(global, 'window', {
+    value: {
+        location: { href: '' },
+        addEventListener: jest.fn()
+    },
+    writable: true
+})
 
 describe('GTDApp Task and Project Saving', () => {
-    let app
-    let storage
+    let app: GTDApp
+    let storage: Storage
 
     beforeEach(() => {
         // Clear all mocks
         jest.clearAllMocks()
 
         // Create storage instance
-        storage = new Storage()
-        storage.userId = 'test_user_123'
+        storage = new Storage('test_user_123')
 
         // Create app instance
         app = new GTDApp()
@@ -103,7 +116,7 @@ describe('GTDApp Task and Project Saving', () => {
             app.tasks.push(task)
 
             // Mock saveTasks to track if it's called
-            const __saveTasksSpy = jest.spyOn(app, 'saveTasks').mockResolvedValue()
+            const saveTasksSpy = jest.spyOn(app, 'saveTasks').mockResolvedValue()
 
             // Act: Simulate updating the task (similar to what saveTaskFromForm does)
             const taskData = {
@@ -118,8 +131,7 @@ describe('GTDApp Task and Project Saving', () => {
             await app.saveTasks()
 
             // Assert: Verify saveTasks was called
-            // eslint-disable-next-line no-undef
-            expect(_saveTasksSpy).toHaveBeenCalledTimes(1)
+            expect(saveTasksSpy).toHaveBeenCalledTimes(1)
             expect(task.projectId).toBe('project_123')
             expect(task.status).toBe('next')
         })
@@ -133,16 +145,15 @@ describe('GTDApp Task and Project Saving', () => {
             app.tasks.push(task)
 
             // Mock storage.saveTasks
-            const __saveTasksSpy = jest.spyOn(app.storage, 'saveTasks').mockResolvedValue()
+            const saveTasksSpy = jest.spyOn(app.storage, 'saveTasks').mockResolvedValue()
 
             // Act: Update the task
             task.title = 'Updated Title'
             task.projectId = 'project_456'
             await app.saveTasks()
 
-            // eslint-disable-next-line no-undef
             // Assert: Verify it was saved
-            expect(_saveTasksSpy).toHaveBeenCalledWith(
+            expect(saveTasksSpy).toHaveBeenCalledWith(
                 expect.arrayContaining([
                     expect.objectContaining({
                         title: 'Updated Title',
@@ -224,8 +235,8 @@ describe('GTDApp Task and Project Saving', () => {
             app.projects.push(project)
 
             // Capture what gets saved
-            let savedTasks = null
-            jest.spyOn(app.storage, 'saveTasks').mockImplementation((tasks) => {
+            let savedTasks: Task[] | null = null
+            jest.spyOn(app.storage, 'saveTasks').mockImplementation((tasks: Task[]) => {
                 savedTasks = tasks
                 return Promise.resolve()
             })
@@ -242,8 +253,8 @@ describe('GTDApp Task and Project Saving', () => {
 
             // Verify saveTasks was called with updated data
             expect(savedTasks).toBeTruthy()
-            expect(savedTasks[0].projectId).toBe(project.id)
-            expect(savedTasks[0].status).toBe('next')
+            expect(savedTasks![0].projectId).toBe(project.id)
+            expect(savedTasks![0].status).toBe('next')
         })
     })
 
@@ -259,7 +270,7 @@ describe('GTDApp Task and Project Saving', () => {
             app.tasks.push(originalTask)
 
             // Mock the save methods
-            const __saveTasksSpy = jest.spyOn(app, 'saveTasks').mockResolvedValue()
+            const saveTasksSpy = jest.spyOn(app, 'saveTasks').mockResolvedValue()
 
             // Act: Simulate what happens when editing in the modal
             const updatedTask = {
@@ -275,10 +286,9 @@ describe('GTDApp Task and Project Saving', () => {
 
             // CRITICAL: This was the missing line!
             await app.saveTasks()
-            // eslint-disable-next-line no-undef
 
             // Assert: All changes should be saved
-            expect(_saveTasksSpy).toHaveBeenCalled()
+            expect(saveTasksSpy).toHaveBeenCalled()
             expect(originalTask.title).toBe('Modified Task')
             expect(originalTask.status).toBe('next')
             expect(originalTask.projectId).toBe('project_789')
@@ -291,7 +301,7 @@ describe('GTDApp Task and Project Saving', () => {
             const task2 = new Task({ title: 'Task 2' })
             app.tasks.push(task1, task2)
 
-            const __saveTasksSpy = jest.spyOn(app, 'saveTasks').mockResolvedValue()
+            const saveTasksSpy = jest.spyOn(app, 'saveTasks').mockResolvedValue()
 
             // Update first task
             task1.projectId = 'project_1'
@@ -299,11 +309,10 @@ describe('GTDApp Task and Project Saving', () => {
 
             // Update second task
             task2.status = 'waiting'
-            // eslint-disable-next-line no-undef
             await app.saveTasks()
 
             // Both updates should have been saved
-            expect(_saveTasksSpy).toHaveBeenCalledTimes(2)
+            expect(saveTasksSpy).toHaveBeenCalledTimes(2)
             expect(task1.projectId).toBe('project_1')
             expect(task2.status).toBe('waiting')
         })
@@ -335,11 +344,11 @@ describe('GTDApp Task and Project Saving', () => {
             app.selectedTaskIds = new Set([task1.id, task2.id])
 
             // Mock the methods
-            const __saveTasksSpy = jest.spyOn(app, 'saveTasks').mockResolvedValue()
+            const _saveTasksSpy = jest.spyOn(app, 'saveTasks').mockResolvedValue()
             const renderDropdownSpy = jest.spyOn(app, 'renderProjectsDropdown').mockReturnValue()
-            const __exitBulkSpy = jest.spyOn(app, 'exitBulkSelectionMode').mockReturnValue()
-            const __renderViewSpy = jest.spyOn(app, 'renderView').mockReturnValue()
-            const __updateCountsSpy = jest.spyOn(app, 'updateCounts').mockReturnValue()
+            const _exitBulkSpy = jest.spyOn(app, 'exitBulkSelectionMode').mockReturnValue()
+            const _renderViewSpy = jest.spyOn(app, 'renderView').mockReturnValue()
+            const _updateCountsSpy = jest.spyOn(app, 'updateCounts').mockReturnValue()
 
             // Act: Call bulkCompleteTasks
             await app.bulkCompleteTasks()
@@ -370,19 +379,18 @@ describe('GTDApp Task and Project Saving', () => {
             app.tasks.push(task)
 
             // Mock the methods
-            const __saveTasksSpy = jest.spyOn(app, 'saveTasks').mockResolvedValue()
-            const __renderViewSpy = jest.spyOn(app, 'renderView').mockReturnValue()
-            const __updateCountsSpy = jest.spyOn(app, 'updateCounts').mockReturnValue()
+            const _saveTasksSpy = jest.spyOn(app, 'saveTasks').mockResolvedValue()
+            const _renderViewSpy = jest.spyOn(app, 'renderView').mockReturnValue()
+            const updateCountsSpy = jest.spyOn(app, 'updateCounts').mockReturnValue()
 
             // Act: Assign task to project
             await app.assignTaskToProject(task.id, project.id)
 
-            // eslint-disable-next-line no-undef
             // Assert: Task should be assigned to project
             expect(task.projectId).toBe(project.id)
 
             // Assert: updateCounts should have been called to update the project task counts
-            expect(_updateCountsSpy).toHaveBeenCalled()
+            expect(updateCountsSpy).toHaveBeenCalled()
         })
     })
 

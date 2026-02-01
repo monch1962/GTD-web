@@ -2,14 +2,33 @@
  * Comprehensive Tests for Task Operations
  */
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Task, Project, Template } from '../js/models.ts'
+import { Task } from '../js/models.ts'
 import { TaskOperations } from '../js/modules/features/task-operations.ts'
 
 describe('TaskOperations', () => {
-    let taskOps
-    let mockState
-    let mockApp
+    let taskOps: TaskOperations
+    let mockState: {
+        tasks: Task[]
+        currentView: string
+        currentProjectId: string | null
+        trackTaskUsage: jest.Mock
+    }
+    let mockApp: {
+        parser: {
+            parse: jest.Mock
+        }
+        saveState: jest.Mock
+        saveTasks: jest.Mock
+        renderView: jest.Mock
+        updateCounts: jest.Mock
+        updateContextFilter: jest.Mock
+        renderProjectsDropdown: jest.Mock
+        showSuccess: jest.Mock
+        showWarning: jest.Mock
+        showError: jest.Mock
+        showToast: jest.Mock
+        showNotification: jest.Mock
+    }
 
     beforeEach(() => {
         localStorage.clear()
@@ -23,7 +42,7 @@ describe('TaskOperations', () => {
 
         mockApp = {
             parser: {
-                parse: jest.fn((title) => ({ title }))
+                parse: jest.fn((title: string) => ({ title }))
             },
             saveState: jest.fn(),
             saveTasks: jest.fn().mockResolvedValue(undefined),
@@ -38,7 +57,8 @@ describe('TaskOperations', () => {
             showNotification: jest.fn()
         }
 
-        taskOps = new TaskOperations(mockState, mockApp)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        taskOps = new TaskOperations(mockState as any, mockApp as any)
     })
 
     describe('quickAddTask()', () => {
@@ -189,16 +209,22 @@ describe('TaskOperations', () => {
                 id: 'task-1',
                 title: 'Daily standup',
                 status: 'next',
-                recurrence: { frequency: 'daily' }
+                recurrence: { type: 'daily' }
             })
             mockState.tasks.push(task)
-            task.isRecurring = jest.fn(() => true)
-            task.shouldRecurrenceEnd = jest.fn(() => false)
-            task.createNextInstance = jest.fn(() => new Task({ title: 'Daily standup (copy)' }))
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ;(task as any).isRecurring = jest.fn(() => true)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ;(task as any).shouldRecurrenceEnd = jest.fn(() => false)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ;(task as any).createNextInstance = jest.fn(
+                () => new Task({ title: 'Daily standup (copy)' })
+            )
 
             await taskOps.toggleTaskComplete('task-1')
 
-            expect(task.createNextInstance).toHaveBeenCalled()
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            expect((task as any).createNextInstance).toHaveBeenCalled()
         })
 
         test('should not create next instance if recurrence ends', async () => {
@@ -208,12 +234,15 @@ describe('TaskOperations', () => {
                 status: 'next'
             })
             mockState.tasks.push(task)
-            task.shouldRecurrenceEnd = jest.fn(() => true)
-            task.createNextInstance = jest.fn()
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ;(task as any).shouldRecurrenceEnd = jest.fn(() => true)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ;(task as any).createNextInstance = jest.fn()
 
             await taskOps.toggleTaskComplete('task-1')
 
-            expect(task.createNextInstance).not.toHaveBeenCalled()
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            expect((task as any).createNextInstance).not.toHaveBeenCalled()
         })
 
         test('should do nothing if task not found', async () => {
@@ -372,7 +401,8 @@ describe('TaskOperations', () => {
                 status: 'waiting',
                 deferDate: '2025-01-01'
             })
-            task.isAvailable = jest.fn(() => true)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ;(task as any).isAvailable = jest.fn(() => true)
             mockState.tasks.push(task)
 
             const moved = await taskOps.checkWaitingTasksDependencies()

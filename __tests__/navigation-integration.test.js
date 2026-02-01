@@ -8,7 +8,7 @@ import { GTDApp } from '../js/app.ts'
 
 jest.mock('../js/dom-utils.js', () => ({
     escapeHtml: (str) => str,
-    getElement: (id) => null,
+    getElement: (_id) => null,
     setTextContent: (el, text) => {
         if (el) el.textContent = text
     },
@@ -382,9 +382,8 @@ describe('Navigation Integration Tests', () => {
 
     describe('Helper Methods Work Correctly', () => {
         test('getGreeting should return correct greeting based on time', () => {
-            const originalHours = Date.prototype.getHours
-            Date.prototype.getHours = jest
-                .fn()
+            const mockGetHours = jest
+                .spyOn(Date.prototype, 'getHours')
                 .mockReturnValueOnce(8) // Morning
                 .mockReturnValueOnce(14) // Afternoon
                 .mockReturnValueOnce(19) // Evening
@@ -393,14 +392,11 @@ describe('Navigation Integration Tests', () => {
             expect(app.getGreeting()).toBe('Afternoon')
             expect(app.getGreeting()).toBe('Evening')
 
-            Date.prototype.getHours = originalHours
+            mockGetHours.mockRestore()
         })
 
         test('getGreetingMessage should return personalized message', () => {
-            const originalGetHours = Date.prototype.getHours
-            const originalFilter = Array.prototype.filter
-
-            Date.prototype.getHours = jest.fn().mockReturnValue(9) // Morning
+            const mockGetHours = jest.spyOn(Date.prototype, 'getHours').mockReturnValue(9) // Morning
 
             // Mock tasks with no completed tasks
             app.tasks = [
@@ -412,7 +408,7 @@ describe('Navigation Integration Tests', () => {
             expect(message).toContain('Morning')
             expect(message).toContain('2 tasks')
 
-            Date.prototype.getHours = originalGetHours
+            mockGetHours.mockRestore()
         })
 
         test('getProjectTitle should return project title or Unknown', () => {
