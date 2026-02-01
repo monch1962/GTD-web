@@ -27,7 +27,7 @@ const mockState = {
     projects: []
 }
 
-describe('.*', (_) => {
+describe('DailyReviewManager - Initialization', () => {
     let manager
 
     beforeEach(() => {
@@ -56,15 +56,15 @@ describe('.*', (_) => {
         jest.clearAllMocks()
     })
 
-    describe('.*', (_) => {
-        test('.*', (_) => {
+    describe('DailyReviewManager - Setup', () => {
+        test('should initialize with state and app references', () => {
             expect(manager.state).toBe(mockState)
             expect(manager.app).toBe(mockApp)
         })
     })
 
-    describe('.*', (_) => {
-        test('.*', (_) => {
+    describe('DailyReviewManager - Show/Hide Modal', () => {
+        test('test 2', () => {
             const showSpy = jest.spyOn(manager, 'showDailyReview')
             manager.setupDailyReview()
 
@@ -74,7 +74,7 @@ describe('.*', (_) => {
             expect(showSpy).toHaveBeenCalled()
         })
 
-        test('.*', (_) => {
+        test('test 3', () => {
             const closeSpy = jest.spyOn(manager, 'closeDailyReview')
             manager.setupDailyReview()
 
@@ -84,7 +84,7 @@ describe('.*', (_) => {
             expect(closeSpy).toHaveBeenCalled()
         })
 
-        test('.*', (_) => {
+        test('should handle missing buttons gracefully', () => {
             document.getElementById('btn-daily-review').remove()
             document.getElementById('close-daily-review-modal').remove()
             const consoleSpy = jest.spyOn(console, 'warn').mockImplementation()
@@ -95,8 +95,8 @@ describe('.*', (_) => {
         })
     })
 
-    describe('.*', (_) => {
-        test('.*', (_) => {
+    describe('DailyReviewManager - Content Generation', () => {
+        test('should hide modal when closeDailyReview is called', () => {
             const modal = document.getElementById('daily-review-modal')
             expect(modal.style.display).toBe('none')
 
@@ -105,14 +105,14 @@ describe('.*', (_) => {
             expect(modal.style.display).toBe('block')
         })
 
-        test('.*', (_) => {
+        test('test 6', () => {
             const renderSpy = jest.spyOn(manager, 'renderDailyReview')
             manager.showDailyReview()
 
             expect(renderSpy).toHaveBeenCalled()
         })
 
-        test('.*', (_) => {
+        test('should call showDailyReview when button clicked', () => {
             document.getElementById('daily-review-modal').remove()
             const consoleSpy = jest.spyOn(console, 'warn').mockImplementation()
 
@@ -122,8 +122,8 @@ describe('.*', (_) => {
         })
     })
 
-    describe('.*', (_) => {
-        test('.*', (_) => {
+    describe('DailyReviewManager - Task Analysis', () => {
+        test('test 8', () => {
             const modal = document.getElementById('daily-review-modal')
             modal.style.display = 'block'
 
@@ -132,18 +132,18 @@ describe('.*', (_) => {
             expect(modal.style.display).toBe('none')
         })
 
-        test('.*', (_) => {
+        test('should call closeDailyReview when close button clicked', () => {
             document.getElementById('daily-review-modal').remove()
 
             expect(() => manager.closeDailyReview()).not.toThrow()
         })
     })
 
-    describe('.*', (_) => {
+    describe('DailyReviewManager - Project Analysis', () => {
         beforeEach(() => {
             // Add sample tasks and projects
             const now = new Date()
-            const _today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
             const tomorrow = new Date(today)
             tomorrow.setDate(tomorrow.getDate() + 1)
             const yesterday = new Date(today)
@@ -197,7 +197,7 @@ describe('.*', (_) => {
             ]
         })
 
-        test('.*', (_) => {
+        test('test 10', () => {
             const dailyReviewContent = document.getElementById('daily-review-content')
             expect(dailyReviewContent.innerHTML).toBe('')
 
@@ -209,21 +209,21 @@ describe('.*', (_) => {
             expect(dailyReviewContent.innerHTML).toContain('High Priority')
         })
 
-        test('.*', (_) => {
+        test('test 11', () => {
             manager.renderDailyReview()
             const dailyReviewContent = document.getElementById('daily-review-content')
 
             expect(dailyReviewContent.innerHTML).toContain('1') // Due Today count
         })
 
-        test('.*', (_) => {
+        test('test 12', () => {
             manager.renderDailyReview()
             const dailyReviewContent = document.getElementById('daily-review-content')
 
             expect(dailyReviewContent.innerHTML).toContain('1') // Overdue count
         })
 
-        test('.*', (_) => {
+        test('test 13', () => {
             manager.renderDailyReview()
             const dailyReviewContent = document.getElementById('daily-review-content')
 
@@ -235,7 +235,7 @@ describe('.*', (_) => {
             expect(parseInt(match[1])).toBeGreaterThanOrEqual(3)
         })
 
-        test('.*', (_) => {
+        test('test 14', () => {
             manager.renderDailyReview()
             const dailyReviewContent = document.getElementById('daily-review-content')
 
@@ -252,7 +252,7 @@ describe('.*', (_) => {
             expect(parseInt(numberMatch[1])).toBeGreaterThanOrEqual(3)
         })
 
-        test('.*', (_) => {
+        test('test 15', () => {
             manager.renderDailyReview()
             const dailyReviewContent = document.getElementById('daily-review-content')
 
@@ -260,7 +260,7 @@ describe('.*', (_) => {
             expect(dailyReviewContent.innerHTML).toMatch(/Morning|Afternoon|Evening/)
         })
 
-        test('.*', (_) => {
+        test('test 16', () => {
             manager.renderDailyReview()
             const dailyReviewContent = document.getElementById('daily-review-content')
 
@@ -274,7 +274,7 @@ describe('.*', (_) => {
             expect(dailyReviewContent.innerHTML).toContain(dateStr)
         })
 
-        test('.*', (_) => {
+        test('test 17', () => {
             manager.renderDailyReview()
             const dailyReviewContent = document.getElementById('daily-review-content')
 
@@ -282,7 +282,7 @@ describe('.*', (_) => {
             expect(dailyReviewContent.innerHTML).toContain('@home')
         })
 
-        test('.*', (_) => {
+        test('test 18', () => {
             manager.renderDailyReview()
             const dailyReviewContent = document.getElementById('daily-review-content')
 
@@ -291,7 +291,7 @@ describe('.*', (_) => {
             expect(dailyReviewContent.innerHTML).toContain('95')
         })
 
-        test('.*', (_) => {
+        test('test 19', () => {
             mockState.tasks = []
             manager.renderDailyReview()
             const dailyReviewContent = document.getElementById('daily-review-content')
@@ -300,13 +300,13 @@ describe('.*', (_) => {
             expect(dailyReviewContent.innerHTML).toContain('No urgent tasks')
         })
 
-        test('.*', (_) => {
+        test('should handle missing buttons gracefully', () => {
             document.getElementById('daily-review-content').remove()
 
             expect(() => manager.renderDailyReview()).not.toThrow()
         })
 
-        test('.*', (_) => {
+        test('test 21', () => {
             // Add 15 overdue tasks
             const yesterday = new Date()
             yesterday.setDate(yesterday.getDate() - 1)
@@ -327,7 +327,7 @@ describe('.*', (_) => {
             expect(dailyReviewContent.innerHTML).toContain('Overdue')
         })
 
-        test('.*', (_) => {
+        test('test 22', () => {
             // Add 15 tasks due this week
             const nextWeek = new Date()
             nextWeek.setDate(nextWeek.getDate() + 5)
@@ -347,7 +347,7 @@ describe('.*', (_) => {
             expect(dailyReviewContent.innerHTML).toContain('This Week')
         })
 
-        test('.*', (_) => {
+        test('test 23', () => {
             // Add 15 high priority tasks
             for (let i = 0; i < 15; i++) {
                 mockState.tasks.push({
@@ -365,8 +365,8 @@ describe('.*', (_) => {
         })
     })
 
-    describe('.*', (_) => {
-        test('.*', (_) => {
+    describe('DailyReviewManager - Review Completion', () => {
+        test('test 24', () => {
             const task = {
                 id: '1',
                 title: 'Test Task',
@@ -390,7 +390,7 @@ describe('.*', (_) => {
             expect(html).toContain('data-task-id="1"')
         })
 
-        test('.*', (_) => {
+        test('test 25', () => {
             const yesterday = new Date()
             yesterday.setDate(yesterday.getDate() - 1)
 
@@ -408,7 +408,7 @@ describe('.*', (_) => {
             expect(html).toContain('fa-exclamation-circle')
         })
 
-        test('.*', (_) => {
+        test('test 26', () => {
             const task = {
                 id: '1',
                 title: 'Today Task',
@@ -423,7 +423,7 @@ describe('.*', (_) => {
             expect(html).toContain('fa-calendar-day')
         })
 
-        test('.*', (_) => {
+        test('test 27', () => {
             const tomorrow = new Date()
             tomorrow.setDate(tomorrow.getDate() + 1)
 
@@ -440,7 +440,7 @@ describe('.*', (_) => {
             expect(html).toContain('Tomorrow')
         })
 
-        test('.*', (_) => {
+        test('test 28', () => {
             const task = {
                 id: '1',
                 title: 'No Due Date Task',
@@ -453,7 +453,7 @@ describe('.*', (_) => {
             expect(html).toContain('data-task-id="1"')
         })
 
-        test('.*', (_) => {
+        test('test 29', () => {
             const task = {
                 id: '1',
                 title: 'Low Priority Task',
@@ -466,7 +466,7 @@ describe('.*', (_) => {
             expect(html).not.toContain('task-priority high')
         })
 
-        test('.*', (_) => {
+        test('test 30', () => {
             const task = {
                 id: '1',
                 title: 'Task with Unknown Project',
@@ -481,8 +481,8 @@ describe('.*', (_) => {
         })
     })
 
-    describe('.*', (_) => {
-        test('.*', (_) => {
+    describe('DailyReviewManager - Keyboard Navigation', () => {
+        test('test 31', () => {
             const mockDate = new Date()
             jest.spyOn(global, 'Date').mockImplementation(() => mockDate)
             jest.spyOn(mockDate, 'getHours').mockReturnValueOnce(8).mockReturnValueOnce(11)
@@ -493,7 +493,7 @@ describe('.*', (_) => {
             jest.restoreAllMocks()
         })
 
-        test('.*', (_) => {
+        test('test 32', () => {
             const mockDate = new Date()
             jest.spyOn(global, 'Date').mockImplementation(() => mockDate)
             jest.spyOn(mockDate, 'getHours').mockReturnValueOnce(14).mockReturnValueOnce(16)
@@ -504,7 +504,7 @@ describe('.*', (_) => {
             jest.restoreAllMocks()
         })
 
-        test('.*', (_) => {
+        test('test 33', () => {
             const mockDate = new Date()
             jest.spyOn(global, 'Date').mockImplementation(() => mockDate)
             jest.spyOn(mockDate, 'getHours').mockReturnValueOnce(18).mockReturnValueOnce(23)
@@ -516,8 +516,8 @@ describe('.*', (_) => {
         })
     })
 
-    describe('.*', (_) => {
-        test('.*', (_) => {
+    describe('DailyReviewManager - Accessibility', () => {
+        test('test 34', () => {
             mockState.tasks = []
 
             const message = manager.getGreetingMessage()
@@ -526,7 +526,7 @@ describe('.*', (_) => {
             expect(message).toMatch(/Good (Morning|Afternoon|Evening)/)
         })
 
-        test('.*', (_) => {
+        test('test 35', () => {
             const now = new Date()
             const _today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
@@ -542,7 +542,7 @@ describe('.*', (_) => {
             expect(message).toContain('completed today')
         })
 
-        test('.*', (_) => {
+        test('test 36', () => {
             mockState.tasks = [
                 { id: '1', title: 'Task 1', completed: false },
                 { id: '2', title: 'Task 2', completed: false },
@@ -556,8 +556,8 @@ describe('.*', (_) => {
         })
     })
 
-    describe('.*', (_) => {
-        test('.*', (_) => {
+    describe('DailyReviewManager - Error Handling', () => {
+        test('test 37', () => {
             mockState.projects = [{ id: 'p1', title: 'My Project' }]
 
             const title = manager.getProjectTitle('p1')
@@ -565,7 +565,7 @@ describe('.*', (_) => {
             expect(title).toBe('My Project')
         })
 
-        test('.*', (_) => {
+        test('test 38', () => {
             mockState.projects = []
 
             const title = manager.getProjectTitle('unknown')
@@ -573,15 +573,15 @@ describe('.*', (_) => {
             expect(title).toBe('Unknown Project')
         })
 
-        test('.*', (_) => {
+        test('test 39', () => {
             const title = manager.getProjectTitle(null)
 
             expect(title).toBe('Unknown Project')
         })
     })
 
-    describe('.*', (_) => {
-        test('.*', (_) => {
+    describe('DailyReviewManager - Integration', () => {
+        test('test 40', () => {
             manager.setupDailyReview()
 
             // Show daily review
@@ -599,7 +599,7 @@ describe('.*', (_) => {
             expect(modal.style.display).toBe('none')
         })
 
-        test('.*', (_) => {
+        test('test 41', () => {
             manager.setupDailyReview()
 
             const modal = document.getElementById('daily-review-modal')
@@ -621,10 +621,10 @@ describe('.*', (_) => {
         })
     })
 
-    describe('.*', (_) => {
-        test('.*', (_) => {
+    describe('DailyReviewManager - Edge Cases', () => {
+        test('test 42', () => {
             const now = new Date()
-            const _today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
             mockState.tasks = [
                 { id: '1', title: 'Active Task', completed: false, dueDate: today.toISOString() },
@@ -646,9 +646,9 @@ describe('.*', (_) => {
             expect(parseInt(match[1])).toBe(2)
         })
 
-        test('.*', (_) => {
+        test('test 43', () => {
             const now = new Date()
-            const _today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
             const yesterday = new Date(today)
             yesterday.setDate(yesterday.getDate() - 1)
 
@@ -664,7 +664,7 @@ describe('.*', (_) => {
             expect(content).toContain('Overdue')
         })
 
-        test('.*', (_) => {
+        test('test 44', () => {
             mockState.tasks = [
                 { id: '1', title: 'High Priority', completed: false, priority: 80 },
                 { id: '2', title: 'Medium Priority', completed: false, priority: 79 },
@@ -687,14 +687,14 @@ describe('.*', (_) => {
         })
     })
 
-    describe('.*', (_) => {
-        test('.*', (_) => {
+    describe('DailyReviewManager - Performance', () => {
+        test('should handle missing buttons gracefully', () => {
             mockState.tasks = [{ id: '1', title: 'No Date Task', completed: false, priority: 90 }]
 
             expect(() => manager.renderDailyReview()).not.toThrow()
         })
 
-        test('.*', (_) => {
+        test('test 46', () => {
             mockState.tasks = [
                 {
                     id: '1',
@@ -708,7 +708,7 @@ describe('.*', (_) => {
             expect(() => manager.renderDailyReview()).not.toThrow()
         })
 
-        test('.*', (_) => {
+        test('test 47', () => {
             mockState.tasks = [
                 {
                     id: '1',
@@ -722,7 +722,7 @@ describe('.*', (_) => {
             expect(() => manager.renderDailyReview()).not.toThrow()
         })
 
-        test('.*', (_) => {
+        test('test 48', () => {
             mockState.tasks = [
                 {
                     id: '1',

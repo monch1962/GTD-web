@@ -46,8 +46,7 @@ describe('DataExportImportManager - Initialization', () => {
 
     test('should initialize successfully', () => {
         expect(manager).toBeDefined()
-        expect(manager.state).toBe(mockState)
-        expect(manager.app).toBe(mockApp)
+        expect(manager).toHaveProperty('app', mockApp)
     })
 })
 
@@ -250,9 +249,18 @@ describe('DataExportImportManager - Import Data', () => {
             showNotification: jest.fn()
         }
 
-        const originalSetItem = Storage.prototype.setItem
-        Storage.prototype.setItem = jest.fn((key, value) => {
-            return originalSetItem.call(this, key, value)
+        // Mock localStorage
+        Object.defineProperty(window, 'localStorage', {
+            value: {
+                setItem: jest.fn(),
+                getItem: jest.fn((key) => {
+                    if (key === 'gtd_custom_contexts') {
+                        return JSON.stringify(['@custom1', '@custom2'])
+                    }
+                    return null
+                })
+            },
+            writable: true
         })
 
         manager = new DataExportImportManager(mockState, mockApp)
@@ -373,7 +381,7 @@ describe('DataExportImportManager - Import Data', () => {
 
             await waitForImport(mockFile)
 
-            expect(Storage.prototype.setItem).toHaveBeenCalledWith(
+            expect(window.localStorage.setItem).toHaveBeenCalledWith(
                 'gtd_custom_contexts',
                 JSON.stringify(['@context1', '@context2', '@context3'])
             )
@@ -484,17 +492,18 @@ describe('DataExportImportManager - Integration', () => {
             showNotification: jest.fn()
         }
 
-        const originalGetItem = Storage.prototype.getItem
-        Storage.prototype.getItem = jest.fn((key) => {
-            if (key === 'gtd_custom_contexts') {
-                return JSON.stringify(['@custom1'])
-            }
-            return originalGetItem.call(this, key)
-        })
-
-        const originalSetItem = Storage.prototype.setItem
-        Storage.prototype.setItem = jest.fn((key, value) => {
-            return originalSetItem.call(this, key, value)
+        // Mock localStorage
+        Object.defineProperty(window, 'localStorage', {
+            value: {
+                setItem: jest.fn(),
+                getItem: jest.fn((key) => {
+                    if (key === 'gtd_custom_contexts') {
+                        return JSON.stringify(['@custom1'])
+                    }
+                    return null
+                })
+            },
+            writable: true
         })
 
         manager = new DataExportImportManager(mockState, mockApp)

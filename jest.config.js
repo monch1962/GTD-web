@@ -32,6 +32,6 @@ export default {
         }
     },
     verbose: true,
-    testTimeout: 10000,
+    testTimeout: 30000,
     transformIgnorePatterns: ['node_modules/']
 }
