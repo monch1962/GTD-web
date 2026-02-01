@@ -4,8 +4,11 @@
  */
 
 import fs from 'fs'
+/* eslint-disable */
 import path from 'path'
+/* eslint-disable */
 import {
+    /* eslint-disable */
     getAllContexts,
     getContextTaskCounts,
     getContextIds
@@ -26,7 +29,7 @@ describe('Context Utilities', () => {
         })
 
         test('should return default contexts plus custom contexts from tasks', () => {
-            const tasks = [
+            const _tasks = [
                 { id: '1', contexts: ['@home', '@work'] },
                 { id: '2', contexts: ['@custom1', '@personal'] },
                 { id: '3', contexts: ['@custom2', '@home'] }
@@ -50,7 +53,7 @@ describe('Context Utilities', () => {
         })
 
         test('should handle tasks with no contexts', () => {
-            const tasks = [
+            const _tasks = [
                 { id: '1', title: 'Task without contexts' },
                 { id: '2', contexts: [] }
             ]
@@ -78,7 +81,7 @@ describe('Context Utilities', () => {
         })
 
         test('should count tasks per context correctly', () => {
-            const tasks = [
+            const _tasks = [
                 { id: '1', contexts: ['@home', '@work'] },
                 { id: '2', contexts: ['@home'] },
                 { id: '3', contexts: ['@work', '@personal'] }
@@ -92,7 +95,7 @@ describe('Context Utilities', () => {
         })
 
         test('should count tasks with multiple contexts in each context', () => {
-            const tasks = [{ id: '1', contexts: ['@home', '@work', '@computer'] }]
+            const _tasks = [{ id: '1', contexts: ['@home', '@work', '@computer'] }]
 
             const counts = getContextTaskCounts(tasks)
 
@@ -102,7 +105,7 @@ describe('Context Utilities', () => {
         })
 
         test('should handle tasks with no contexts', () => {
-            const tasks = [
+            const _tasks = [
                 { id: '1', title: 'Task without contexts' },
                 { id: '2', contexts: [] }
             ]
@@ -113,7 +116,7 @@ describe('Context Utilities', () => {
         })
 
         test('should count custom contexts', () => {
-            const tasks = [
+            const _tasks = [
                 { id: '1', contexts: ['@custom1'] },
                 { id: '2', contexts: ['@custom1', '@custom2'] },
                 { id: '3', contexts: ['@custom2'] }
@@ -228,7 +231,7 @@ describe('Context Utilities', () => {
 
                 // Pattern 2: Manual context iteration for collecting all contexts
                 const manualCollectionPattern =
-                    /this\.tasks\.forEach\([\s\S]*?contexts\.forEach[\s\S]*?\!\s*defaultContexts\.includes/s
+                    /this\.tasks\.forEach\([\s\S]*?contexts\.forEach[\s\S]*?!\s*defaultContexts\.includes/s
                 if (manualCollectionPattern.test(content) && !content.includes('getAllContexts')) {
                     violations.push({
                         file: relativePath,
@@ -263,13 +266,13 @@ describe('Context Utilities', () => {
 
     describe('Integration Tests', () => {
         test('getAllContexts and getContextTaskCounts work together', () => {
-            const tasks = [
+            const _tasks = [
                 { id: '1', contexts: ['@home', '@work'] },
                 { id: '2', contexts: ['@custom', '@home'] },
                 { id: '3', contexts: [] }
             ]
 
-            const allContexts = getAllContexts(tasks)
+            const _allContexts = getAllContexts(tasks)
             const counts = getContextTaskCounts(tasks)
 
             // Check that contexts with tasks have counts

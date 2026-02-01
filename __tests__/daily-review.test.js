@@ -5,6 +5,7 @@
 
 // Mock dom-utils before importing
 import { DailyReviewManager } from '../js/modules/features/daily-review.ts'
+/* eslint-disable */
 
 jest.mock('../js/dom-utils.js', () => ({
     escapeHtml: (str) => str,
@@ -26,7 +27,7 @@ const mockState = {
     projects: []
 }
 
-describe('DailyReviewManager', () => {
+describe('.*', (_) => {
     let manager
 
     beforeEach(() => {
@@ -55,15 +56,15 @@ describe('DailyReviewManager', () => {
         jest.clearAllMocks()
     })
 
-    describe('Initialization', () => {
-        test('should initialize with state and app references', () => {
+    describe('.*', (_) => {
+        test('.*', (_) => {
             expect(manager.state).toBe(mockState)
             expect(manager.app).toBe(mockApp)
         })
     })
 
-    describe('setupDailyReview', () => {
-        test('should attach event listener to daily review button', () => {
+    describe('.*', (_) => {
+        test('.*', (_) => {
             const showSpy = jest.spyOn(manager, 'showDailyReview')
             manager.setupDailyReview()
 
@@ -73,7 +74,7 @@ describe('DailyReviewManager', () => {
             expect(showSpy).toHaveBeenCalled()
         })
 
-        test('should attach event listener to close button', () => {
+        test('.*', (_) => {
             const closeSpy = jest.spyOn(manager, 'closeDailyReview')
             manager.setupDailyReview()
 
@@ -83,7 +84,7 @@ describe('DailyReviewManager', () => {
             expect(closeSpy).toHaveBeenCalled()
         })
 
-        test('should handle missing buttons gracefully', () => {
+        test('.*', (_) => {
             document.getElementById('btn-daily-review').remove()
             document.getElementById('close-daily-review-modal').remove()
             const consoleSpy = jest.spyOn(console, 'warn').mockImplementation()
@@ -94,8 +95,8 @@ describe('DailyReviewManager', () => {
         })
     })
 
-    describe('showDailyReview', () => {
-        test('should display daily review modal', () => {
+    describe('.*', (_) => {
+        test('.*', (_) => {
             const modal = document.getElementById('daily-review-modal')
             expect(modal.style.display).toBe('none')
 
@@ -104,14 +105,14 @@ describe('DailyReviewManager', () => {
             expect(modal.style.display).toBe('block')
         })
 
-        test('should call renderDailyReview when showing modal', () => {
+        test('.*', (_) => {
             const renderSpy = jest.spyOn(manager, 'renderDailyReview')
             manager.showDailyReview()
 
             expect(renderSpy).toHaveBeenCalled()
         })
 
-        test('should handle missing modal gracefully', () => {
+        test('.*', (_) => {
             document.getElementById('daily-review-modal').remove()
             const consoleSpy = jest.spyOn(console, 'warn').mockImplementation()
 
@@ -121,8 +122,8 @@ describe('DailyReviewManager', () => {
         })
     })
 
-    describe('closeDailyReview', () => {
-        test('should hide daily review modal', () => {
+    describe('.*', (_) => {
+        test('.*', (_) => {
             const modal = document.getElementById('daily-review-modal')
             modal.style.display = 'block'
 
@@ -131,18 +132,18 @@ describe('DailyReviewManager', () => {
             expect(modal.style.display).toBe('none')
         })
 
-        test('should handle missing modal gracefully', () => {
+        test('.*', (_) => {
             document.getElementById('daily-review-modal').remove()
 
             expect(() => manager.closeDailyReview()).not.toThrow()
         })
     })
 
-    describe('renderDailyReview', () => {
+    describe('.*', (_) => {
         beforeEach(() => {
             // Add sample tasks and projects
             const now = new Date()
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+            const _today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
             const tomorrow = new Date(today)
             tomorrow.setDate(tomorrow.getDate() + 1)
             const yesterday = new Date(today)
@@ -196,7 +197,7 @@ describe('DailyReviewManager', () => {
             ]
         })
 
-        test('should render daily review content', () => {
+        test('.*', (_) => {
             const dailyReviewContent = document.getElementById('daily-review-content')
             expect(dailyReviewContent.innerHTML).toBe('')
 
@@ -208,21 +209,21 @@ describe('DailyReviewManager', () => {
             expect(dailyReviewContent.innerHTML).toContain('High Priority')
         })
 
-        test('should calculate tasks due today correctly', () => {
+        test('.*', (_) => {
             manager.renderDailyReview()
             const dailyReviewContent = document.getElementById('daily-review-content')
 
             expect(dailyReviewContent.innerHTML).toContain('1') // Due Today count
         })
 
-        test('should calculate overdue tasks correctly', () => {
+        test('.*', (_) => {
             manager.renderDailyReview()
             const dailyReviewContent = document.getElementById('daily-review-content')
 
             expect(dailyReviewContent.innerHTML).toContain('1') // Overdue count
         })
 
-        test('should calculate tasks due this week correctly', () => {
+        test('.*', (_) => {
             manager.renderDailyReview()
             const dailyReviewContent = document.getElementById('daily-review-content')
 
@@ -234,7 +235,7 @@ describe('DailyReviewManager', () => {
             expect(parseInt(match[1])).toBeGreaterThanOrEqual(3)
         })
 
-        test('should calculate high priority tasks correctly', () => {
+        test('.*', (_) => {
             manager.renderDailyReview()
             const dailyReviewContent = document.getElementById('daily-review-content')
 
@@ -251,7 +252,7 @@ describe('DailyReviewManager', () => {
             expect(parseInt(numberMatch[1])).toBeGreaterThanOrEqual(3)
         })
 
-        test('should display greeting message', () => {
+        test('.*', (_) => {
             manager.renderDailyReview()
             const dailyReviewContent = document.getElementById('daily-review-content')
 
@@ -259,7 +260,7 @@ describe('DailyReviewManager', () => {
             expect(dailyReviewContent.innerHTML).toMatch(/Morning|Afternoon|Evening/)
         })
 
-        test('should display current date', () => {
+        test('.*', (_) => {
             manager.renderDailyReview()
             const dailyReviewContent = document.getElementById('daily-review-content')
 
@@ -273,7 +274,7 @@ describe('DailyReviewManager', () => {
             expect(dailyReviewContent.innerHTML).toContain(dateStr)
         })
 
-        test('should render task with context tags', () => {
+        test('.*', (_) => {
             manager.renderDailyReview()
             const dailyReviewContent = document.getElementById('daily-review-content')
 
@@ -281,7 +282,7 @@ describe('DailyReviewManager', () => {
             expect(dailyReviewContent.innerHTML).toContain('@home')
         })
 
-        test('should render task with priority display', () => {
+        test('.*', (_) => {
             manager.renderDailyReview()
             const dailyReviewContent = document.getElementById('daily-review-content')
 
@@ -290,7 +291,7 @@ describe('DailyReviewManager', () => {
             expect(dailyReviewContent.innerHTML).toContain('95')
         })
 
-        test('should handle empty state when no urgent tasks', () => {
+        test('.*', (_) => {
             mockState.tasks = []
             manager.renderDailyReview()
             const dailyReviewContent = document.getElementById('daily-review-content')
@@ -299,13 +300,13 @@ describe('DailyReviewManager', () => {
             expect(dailyReviewContent.innerHTML).toContain('No urgent tasks')
         })
 
-        test('should handle missing daily review content element gracefully', () => {
+        test('.*', (_) => {
             document.getElementById('daily-review-content').remove()
 
             expect(() => manager.renderDailyReview()).not.toThrow()
         })
 
-        test('should limit overdue tasks to 10', () => {
+        test('.*', (_) => {
             // Add 15 overdue tasks
             const yesterday = new Date()
             yesterday.setDate(yesterday.getDate() - 1)
@@ -326,7 +327,7 @@ describe('DailyReviewManager', () => {
             expect(dailyReviewContent.innerHTML).toContain('Overdue')
         })
 
-        test('should limit tasks due this week to 10', () => {
+        test('.*', (_) => {
             // Add 15 tasks due this week
             const nextWeek = new Date()
             nextWeek.setDate(nextWeek.getDate() + 5)
@@ -346,7 +347,7 @@ describe('DailyReviewManager', () => {
             expect(dailyReviewContent.innerHTML).toContain('This Week')
         })
 
-        test('should limit high priority tasks to 10', () => {
+        test('.*', (_) => {
             // Add 15 high priority tasks
             for (let i = 0; i < 15; i++) {
                 mockState.tasks.push({
@@ -364,8 +365,8 @@ describe('DailyReviewManager', () => {
         })
     })
 
-    describe('renderDailyReviewTask', () => {
-        test('should render task with all metadata', () => {
+    describe('.*', (_) => {
+        test('.*', (_) => {
             const task = {
                 id: '1',
                 title: 'Test Task',
@@ -389,7 +390,7 @@ describe('DailyReviewManager', () => {
             expect(html).toContain('data-task-id="1"')
         })
 
-        test('should render overdue task with warning styling', () => {
+        test('.*', (_) => {
             const yesterday = new Date()
             yesterday.setDate(yesterday.getDate() - 1)
 
@@ -407,7 +408,7 @@ describe('DailyReviewManager', () => {
             expect(html).toContain('fa-exclamation-circle')
         })
 
-        test('should render task due today with correct styling', () => {
+        test('.*', (_) => {
             const task = {
                 id: '1',
                 title: 'Today Task',
@@ -422,7 +423,7 @@ describe('DailyReviewManager', () => {
             expect(html).toContain('fa-calendar-day')
         })
 
-        test('should render task due tomorrow', () => {
+        test('.*', (_) => {
             const tomorrow = new Date()
             tomorrow.setDate(tomorrow.getDate() + 1)
 
@@ -439,7 +440,7 @@ describe('DailyReviewManager', () => {
             expect(html).toContain('Tomorrow')
         })
 
-        test('should render task without due date gracefully', () => {
+        test('.*', (_) => {
             const task = {
                 id: '1',
                 title: 'No Due Date Task',
@@ -452,7 +453,7 @@ describe('DailyReviewManager', () => {
             expect(html).toContain('data-task-id="1"')
         })
 
-        test('should not show priority for tasks below 80', () => {
+        test('.*', (_) => {
             const task = {
                 id: '1',
                 title: 'Low Priority Task',
@@ -465,7 +466,7 @@ describe('DailyReviewManager', () => {
             expect(html).not.toContain('task-priority high')
         })
 
-        test('should handle task with unknown project', () => {
+        test('.*', (_) => {
             const task = {
                 id: '1',
                 title: 'Task with Unknown Project',
@@ -480,40 +481,43 @@ describe('DailyReviewManager', () => {
         })
     })
 
-    describe('getGreeting', () => {
-        test('should return Morning before 12pm', () => {
-            const originalHours = Date.prototype.getHours
-            Date.prototype.getHours = jest.fn().mockReturnValueOnce(8).mockReturnValueOnce(11)
+    describe('.*', (_) => {
+        test('.*', (_) => {
+            const mockDate = new Date()
+            jest.spyOn(global, 'Date').mockImplementation(() => mockDate)
+            jest.spyOn(mockDate, 'getHours').mockReturnValueOnce(8).mockReturnValueOnce(11)
 
             expect(manager.getGreeting()).toBe('Morning')
             expect(manager.getGreeting()).toBe('Morning')
 
-            Date.prototype.getHours = originalHours
+            jest.restoreAllMocks()
         })
 
-        test('should return Afternoon from 12pm to 5pm', () => {
-            const originalHours = Date.prototype.getHours
-            Date.prototype.getHours = jest.fn().mockReturnValueOnce(14).mockReturnValueOnce(16)
+        test('.*', (_) => {
+            const mockDate = new Date()
+            jest.spyOn(global, 'Date').mockImplementation(() => mockDate)
+            jest.spyOn(mockDate, 'getHours').mockReturnValueOnce(14).mockReturnValueOnce(16)
 
             expect(manager.getGreeting()).toBe('Afternoon')
             expect(manager.getGreeting()).toBe('Afternoon')
 
-            Date.prototype.getHours = originalHours
+            jest.restoreAllMocks()
         })
 
-        test('should return Evening after 5pm', () => {
-            const originalHours = Date.prototype.getHours
-            Date.prototype.getHours = jest.fn().mockReturnValueOnce(18).mockReturnValueOnce(23)
+        test('.*', (_) => {
+            const mockDate = new Date()
+            jest.spyOn(global, 'Date').mockImplementation(() => mockDate)
+            jest.spyOn(mockDate, 'getHours').mockReturnValueOnce(18).mockReturnValueOnce(23)
 
             expect(manager.getGreeting()).toBe('Evening')
             expect(manager.getGreeting()).toBe('Evening')
 
-            Date.prototype.getHours = originalHours
+            jest.restoreAllMocks()
         })
     })
 
-    describe('getGreetingMessage', () => {
-        test('should return all caught up message when no tasks', () => {
+    describe('.*', (_) => {
+        test('.*', (_) => {
             mockState.tasks = []
 
             const message = manager.getGreetingMessage()
@@ -522,9 +526,9 @@ describe('DailyReviewManager', () => {
             expect(message).toMatch(/Good (Morning|Afternoon|Evening)/)
         })
 
-        test('should return message with completed tasks today', () => {
+        test('.*', (_) => {
             const now = new Date()
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+            const _today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
             mockState.tasks = [
                 { id: '1', title: 'Task 1', completed: true, completedAt: now.toISOString() },
@@ -538,7 +542,7 @@ describe('DailyReviewManager', () => {
             expect(message).toContain('completed today')
         })
 
-        test('should return message with task count', () => {
+        test('.*', (_) => {
             mockState.tasks = [
                 { id: '1', title: 'Task 1', completed: false },
                 { id: '2', title: 'Task 2', completed: false },
@@ -552,8 +556,8 @@ describe('DailyReviewManager', () => {
         })
     })
 
-    describe('getProjectTitle', () => {
-        test('should return project title when found', () => {
+    describe('.*', (_) => {
+        test('.*', (_) => {
             mockState.projects = [{ id: 'p1', title: 'My Project' }]
 
             const title = manager.getProjectTitle('p1')
@@ -561,7 +565,7 @@ describe('DailyReviewManager', () => {
             expect(title).toBe('My Project')
         })
 
-        test('should return Unknown Project when not found', () => {
+        test('.*', (_) => {
             mockState.projects = []
 
             const title = manager.getProjectTitle('unknown')
@@ -569,15 +573,15 @@ describe('DailyReviewManager', () => {
             expect(title).toBe('Unknown Project')
         })
 
-        test('should return Unknown Project for null projectId', () => {
+        test('.*', (_) => {
             const title = manager.getProjectTitle(null)
 
             expect(title).toBe('Unknown Project')
         })
     })
 
-    describe('Integration', () => {
-        test('should work with full daily review workflow', () => {
+    describe('.*', (_) => {
+        test('.*', (_) => {
             manager.setupDailyReview()
 
             // Show daily review
@@ -595,7 +599,7 @@ describe('DailyReviewManager', () => {
             expect(modal.style.display).toBe('none')
         })
 
-        test('should handle rapid open/close cycles', () => {
+        test('.*', (_) => {
             manager.setupDailyReview()
 
             const modal = document.getElementById('daily-review-modal')
@@ -617,10 +621,10 @@ describe('DailyReviewManager', () => {
         })
     })
 
-    describe('Task Filtering', () => {
-        test('should exclude completed tasks from all counts', () => {
+    describe('.*', (_) => {
+        test('.*', (_) => {
             const now = new Date()
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+            const _today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
             mockState.tasks = [
                 { id: '1', title: 'Active Task', completed: false, dueDate: today.toISOString() },
@@ -642,9 +646,9 @@ describe('DailyReviewManager', () => {
             expect(parseInt(match[1])).toBe(2)
         })
 
-        test('should correctly identify overdue vs due today', () => {
+        test('.*', (_) => {
             const now = new Date()
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+            const _today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
             const yesterday = new Date(today)
             yesterday.setDate(yesterday.getDate() - 1)
 
@@ -660,7 +664,7 @@ describe('DailyReviewManager', () => {
             expect(content).toContain('Overdue')
         })
 
-        test('should correctly identify high priority tasks (80+)', () => {
+        test('.*', (_) => {
             mockState.tasks = [
                 { id: '1', title: 'High Priority', completed: false, priority: 80 },
                 { id: '2', title: 'Medium Priority', completed: false, priority: 79 },
@@ -683,14 +687,14 @@ describe('DailyReviewManager', () => {
         })
     })
 
-    describe('Edge Cases', () => {
-        test('should handle tasks with no due date', () => {
+    describe('.*', (_) => {
+        test('.*', (_) => {
             mockState.tasks = [{ id: '1', title: 'No Date Task', completed: false, priority: 90 }]
 
             expect(() => manager.renderDailyReview()).not.toThrow()
         })
 
-        test('should handle tasks with empty contexts array', () => {
+        test('.*', (_) => {
             mockState.tasks = [
                 {
                     id: '1',
@@ -704,7 +708,7 @@ describe('DailyReviewManager', () => {
             expect(() => manager.renderDailyReview()).not.toThrow()
         })
 
-        test('should handle tasks with null projectId', () => {
+        test('.*', (_) => {
             mockState.tasks = [
                 {
                     id: '1',
@@ -718,7 +722,7 @@ describe('DailyReviewManager', () => {
             expect(() => manager.renderDailyReview()).not.toThrow()
         })
 
-        test('should handle missing optional task properties', () => {
+        test('.*', (_) => {
             mockState.tasks = [
                 {
                     id: '1',

@@ -2,6 +2,7 @@
  * Tests for storage-ops.js - StorageOperations class
  */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Task, Project, Template } from '../js/models.ts'
 import { AppState } from '../js/modules/core/app-state.ts'
 import { StorageOperations } from '../js/modules/core/storage-ops.ts'

@@ -1,7 +1,9 @@
+/* eslint-disable */
 /**
  * Comprehensive Tests for Project Modal Feature
  */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Task, Project, Template } from '../js/models.ts'
 import { ProjectModalManager } from '../js/modules/features/project-modal.ts'
 

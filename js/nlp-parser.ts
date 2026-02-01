@@ -57,7 +57,7 @@ export class TaskParser {
             nextWeek: /\b(next week)\b/i,
             inDays: /in (\d+) days?/i,
             inWeeks: /in (\d+) weeks?/i,
-            onDate: /on (\d{1,2}[\/\-]\d{1,2})(?:[\/\-](\d{2,4}))?/,
+            onDate: /on (\d{1,2}[/-]\d{1,2})(?:[/-](\d{2,4}))?/,
             weekday: /\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i,
             nextWeekday:
                 /\b(next monday|next tuesday|next wednesday|next thursday|next friday|next saturday|next sunday)\b/i
@@ -292,7 +292,7 @@ export class TaskParser {
     /**
      * Remove parsed contexts from title
      */
-    removeFromTitle (title: string, contexts: string[], pattern: RegExp): string {
+    removeFromTitle (title: string, contexts: string[], _pattern: RegExp): string {
         let cleanTitle = title
         contexts.forEach((context) => {
             // Remove with or without @

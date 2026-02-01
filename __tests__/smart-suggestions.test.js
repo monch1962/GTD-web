@@ -2,6 +2,7 @@
  * Comprehensive Tests for Smart Suggestions Manager
  */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Task, Project, Template } from '../js/models.ts'
 import { SmartSuggestionsManager } from '../js/modules/features/smart-suggestions.ts'
 

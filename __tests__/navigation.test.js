@@ -2,6 +2,7 @@
  * Comprehensive Tests for Navigation Manager
  */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Task, Project, Template } from '../js/models.ts'
 import { NavigationManager } from '../js/modules/features/navigation.ts'
 

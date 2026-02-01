@@ -274,7 +274,7 @@ export class VirtualScrollManager {
      * @param delay - Debounce delay in ms
      * @returns Debounced function
      */
-    private _debounce (func: Function, delay: number): () => void {
+    private _debounce (func: (...args: unknown[]) => void, delay: number): () => void {
         let timeoutId: ReturnType<typeof setTimeout>
         return function (this: any, ...args: any[]) {
             clearTimeout(timeoutId)
@@ -335,7 +335,7 @@ export class VirtualScrollManager {
         }
     }
 
-    _throttle (func: Function, limit: number): () => void {
+    _throttle (func: (...args: unknown[]) => void, limit: number): () => void {
         let inThrottle: boolean
         return function (this: any, ...args: any[]) {
             if (!inThrottle) {

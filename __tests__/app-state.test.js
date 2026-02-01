@@ -2,6 +2,8 @@
  * Comprehensive Tests for AppState (Centralized State Management)
  */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Task, Project, Template } from '../js/models.ts'
 import { AppState } from '../js/modules/core/app-state.ts'
 
@@ -667,7 +669,7 @@ describe('AppState', () => {
             expect(homeTask).toBeDefined()
 
             // Should have higher score due to usage
-            const baseScore = homeTask.score - (appState.usageStats.contexts['@home'] || 0) * 2
+            const _baseScore = homeTask.score - (appState.usageStats.contexts['@home'] || 0) * 2
             expect(appState.usageStats.contexts['@home'] * 2).toBeGreaterThan(0)
         })
 

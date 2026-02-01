@@ -2,6 +2,7 @@
  * Comprehensive Tests for Data Export/Import Feature
  */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Task, Project, Template } from '../js/models.ts'
 import { DataExportImportManager } from '../js/modules/features/data-export-import.ts'
 

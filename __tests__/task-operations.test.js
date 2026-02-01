@@ -2,6 +2,7 @@
  * Comprehensive Tests for Task Operations
  */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Task, Project, Template } from '../js/models.ts'
 import { TaskOperations } from '../js/modules/features/task-operations.ts'
 

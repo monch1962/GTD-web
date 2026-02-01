@@ -4,6 +4,7 @@
  */
 
 import { GTDApp } from '../js/app.ts'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Task, Project, Template } from '../js/models.ts'
 
 describe('Weekly Review Feature - Comprehensive Tests', () => {

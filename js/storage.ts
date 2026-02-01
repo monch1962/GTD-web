@@ -3,6 +3,7 @@
  */
 
 import { StorageConfig } from './constants'
+import { Task } from './models'
 
 interface StorageInfo {
     used: number
@@ -13,15 +14,15 @@ interface StorageInfo {
 }
 
 export interface ArchiveEntry {
-    task: any
+    task: Task
     archivedAt: string
     originalStatus: string
     originalProjectId: string | null
 }
 
 interface RemoteStorage {
-    getItem(key: string): Promise<any>
-    setItem(key: string, value: any): Promise<void>
+    getItem(key: string): Promise<unknown>
+    setItem(key: string, value: unknown): Promise<void>
     removeItem(key: string): Promise<void>
 }
 
@@ -75,7 +76,7 @@ export class Storage {
 
         // Calculate used space
         for (const key in localStorage) {
-            if (localStorage.hasOwnProperty(key)) {
+            if (Object.prototype.hasOwnProperty.call(localStorage, key)) {
                 used += key.length + localStorage[key].length
             }
         }

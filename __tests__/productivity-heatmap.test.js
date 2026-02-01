@@ -2,7 +2,9 @@
  * Comprehensive Tests for Productivity Heatmap Manager
  */
 
-import { Task, _Project, _Template } from '../js/models.ts'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { Task, Project, Template } from '../js/models.ts'
 import { ProductivityHeatmapManager } from '../js/modules/features/productivity-heatmap.ts'
 
 // Make Task available globally
