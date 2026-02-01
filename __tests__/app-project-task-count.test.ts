@@ -3,7 +3,7 @@
  * Verifies that project task counts update when tasks are assigned to projects
 
  * NOTE: Tests skipped due to modularization
- * These tests check for implementation patterns in app.js that were moved
+ * These tests check for implementation patterns in app.ts that were moved
  * to manager modules. The functionality is tested by the actual feature tests.
  * These pattern-checking tests are skipped to focus on behavior testing
  * rather than implementation detail checking.
@@ -14,7 +14,7 @@ import path from 'path'
 
 describe.skip('Project Task Count Updates', () => {
     test('saveTaskFromForm should call renderProjectsDropdown when task project assignment changes', () => {
-        const appJsPath = path.resolve(process.cwd(), 'js', 'app.js')
+        const appJsPath = path.resolve(process.cwd(), 'js', 'app.ts')
         const appJsContent = fs.readFileSync(appJsPath, 'utf-8')
 
         // Check that the code tracks old project ID
@@ -48,7 +48,7 @@ describe.skip('Project Task Count Updates', () => {
     })
 
     test('saveTaskFromForm should call renderProjectsDropdown when creating new task with project', () => {
-        const appJsPath = path.resolve(process.cwd(), 'js', 'app.js')
+        const appJsPath = path.resolve(process.cwd(), 'js', 'app.ts')
         const appJsContent = fs.readFileSync(appJsPath, 'utf-8')
 
         // Look for the condition that checks for new task with project
@@ -84,7 +84,7 @@ describe.skip('Project Task Count Updates', () => {
     })
 
     test('renderProjectsDropdown should calculate task count correctly', () => {
-        const appJsPath = path.resolve(process.cwd(), 'js', 'app.js')
+        const appJsPath = path.resolve(process.cwd(), 'js', 'app.ts')
         const appJsContent = fs.readFileSync(appJsPath, 'utf-8')
 
         // Check that renderProjectsDropdown filters by projectId and !completed

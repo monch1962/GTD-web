@@ -2,7 +2,7 @@
  * Test: Advanced recurrence functionality
 
  * NOTE: Tests skipped due to modularization
- * These tests check for implementation patterns in app.js that were moved
+ * These tests check for implementation patterns in app.ts that were moved
  * to manager modules. The functionality is tested by the actual feature tests.
  * These pattern-checking tests are skipped to focus on behavior testing
  * rather than implementation detail checking.
@@ -15,7 +15,7 @@ describe.skip('Advanced Recurrence', () => {
     const modelsPath = path.resolve(process.cwd(), 'js', 'models.ts')
     const modelsContent = fs.readFileSync(modelsPath, 'utf-8')
 
-    const appJsPath = path.resolve(process.cwd(), 'js', 'app.js')
+    const appJsPath = path.resolve(process.cwd(), 'js', 'app.ts')
     const appJsContent = fs.readFileSync(appJsPath, 'utf-8')
 
     const constantsPath = path.resolve(process.cwd(), 'js', 'constants.ts')

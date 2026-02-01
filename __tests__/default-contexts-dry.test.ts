@@ -3,7 +3,7 @@
  * Ensure default context definitions exist only in the configuration file
 
  * NOTE: Tests skipped due to modularization
- * These tests check for implementation patterns in app.js that were moved
+ * These tests check for implementation patterns in app.ts that were moved
  * to manager modules. The functionality is tested by the actual feature tests.
  * These pattern-checking tests are skipped to focus on behavior testing
  * rather than implementation detail checking.
@@ -125,8 +125,8 @@ describe.skip('Default Contexts DRY Compliance', () => {
         expect(constantsContent).not.toContain('[\'@home\'')
     })
 
-    test('app.js should import from config', () => {
-        const appPath = path.resolve(process.cwd(), 'js', 'app.js')
+    test('app.ts should import from config', () => {
+        const appPath = path.resolve(process.cwd(), 'js', 'app.ts')
         const appContent = fs.readFileSync(appPath, 'utf-8')
 
         // Should import from config
@@ -153,7 +153,7 @@ describe.skip('Default Contexts DRY Compliance', () => {
         const jsPath = path.join(__dirname, '..')
 
         // Files that should NOT contain hardcoded context definitions
-        const protectedFiles = ['js/app.js', 'js-proxy/constants.js']
+        const protectedFiles = ['js/app.ts', 'js-proxy/constants.js']
 
         protectedFiles.forEach((file) => {
             const filePath = path.join(jsPath, file)
@@ -169,7 +169,7 @@ describe.skip('Default Contexts DRY Compliance', () => {
     test('context filter should show all default contexts, not just used ones', () => {
         // The "Filter by Context" section in the sidebar should show ALL default contexts,
         // not just the ones currently used in tasks
-        const appPath = path.resolve(process.cwd(), 'js', 'app.js')
+        const appPath = path.resolve(process.cwd(), 'js', 'app.ts')
         const appContent = fs.readFileSync(appPath, 'utf-8')
 
         // Find the updateSidebarContextFilters method

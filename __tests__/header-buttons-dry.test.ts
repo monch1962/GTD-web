@@ -3,7 +3,7 @@
  * Ensure header button definitions exist only in the configuration file
 
  * NOTE: Tests skipped due to modularization
- * These tests check for implementation patterns in app.js that were moved
+ * These tests check for implementation patterns in app.ts that were moved
  * to manager modules. The functionality is tested by the actual feature tests.
  * These pattern-checking tests are skipped to focus on behavior testing
  * rather than implementation detail checking.
