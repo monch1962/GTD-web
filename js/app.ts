@@ -836,7 +836,7 @@ class GTDApp {
         const modal = document.getElementById(modalId)
         if (modal) {
             modal.addEventListener('click', (e) => {
-                if (e.target.id === modalId) {
+                if ((e.target as HTMLElement).id === modalId) {
                     closeHandler()
                 }
             })
@@ -854,7 +854,7 @@ class GTDApp {
         if (!filter) return
 
         filter.addEventListener('change', (e) => {
-            this.filters[filterKey] = e.target.value
+            this.filters[filterKey] = (e.target as HTMLSelectElement).value
             this.renderView()
         })
     }
@@ -897,7 +897,7 @@ class GTDApp {
         })
 
         document.getElementById('context-modal').addEventListener('click', (e) => {
-            if (e.target.id === 'context-modal') {
+            if ((e.target as HTMLElement).id === 'context-modal') {
                 this.closeTagModal()
             }
         })
@@ -913,7 +913,7 @@ class GTDApp {
         })
 
         document.getElementById('help-modal').addEventListener('click', (e) => {
-            if (e.target.id === 'help-modal') {
+            if ((e.target as HTMLElement).id === 'help-modal') {
                 document.getElementById('help-modal').classList.remove('active')
             }
         })
@@ -1005,7 +1005,7 @@ class GTDApp {
 
             // Handle template selection
             templatesList.addEventListener('click', (e) => {
-                const templateBtn = e.target.closest('.template-item')
+                const templateBtn = (e.target as HTMLElement).closest('.template-item')
                 if (templateBtn) {
                     const template = templateBtn.dataset.template
                     const quickAddInput = document.getElementById('quick-add-input')
@@ -1018,7 +1018,7 @@ class GTDApp {
 
             // Add hover effects for template items
             templatesList.addEventListener('mouseover', (e) => {
-                const templateBtn = e.target.closest('.template-item')
+                const templateBtn = (e.target as HTMLElement).closest('.template-item')
                 if (templateBtn) {
                     templateBtn.style.background = 'var(--bg-hover)'
                     templateBtn.style.borderColor = 'var(--accent-color)'
@@ -1026,7 +1026,7 @@ class GTDApp {
             })
 
             templatesList.addEventListener('mouseout', (e) => {
-                const templateBtn = e.target.closest('.template-item')
+                const templateBtn = (e.target as HTMLElement).closest('.template-item')
                 if (templateBtn) {
                     templateBtn.style.background = 'var(--bg-primary)'
                     templateBtn.style.borderColor = 'var(--border-color)'
@@ -2111,7 +2111,7 @@ class GTDApp {
                 btn.dataset.context = context
                 btn.addEventListener('click', (e) => {
                     // Don't trigger if clicking the delete button
-                    if (e.target.classList.contains('custom-context-delete')) return
+                    if ((e.target as HTMLElement).classList.contains('custom-context-delete')) return
 
                     const quickAddInput = document.getElementById('quick-add-input')
                     if (quickAddInput.value) {
@@ -2163,7 +2163,7 @@ class GTDApp {
                 btn.dataset.context = context
                 btn.addEventListener('click', (e) => {
                     // Don't trigger if clicking the delete button
-                    if (e.target.classList.contains('custom-context-delete')) return
+                    if ((e.target as HTMLElement).classList.contains('custom-context-delete')) return
 
                     const tagsInput = document.getElementById('task-contexts')
                     const currentValue = tagsInput.value.trim()
@@ -3502,7 +3502,7 @@ class GTDApp {
         projectSelect.addEventListener(
             'change',
             (e) => {
-                if (e.target.value === '__create_new__') {
+                if ((e.target as HTMLSelectElement).value === '__create_new__') {
                     // Remember the current form data
                     const formData = {
                         title: document.getElementById('task-title').value,
@@ -3899,8 +3899,8 @@ class GTDApp {
             // Click handler to view project tasks
             item.addEventListener('click', (e) => {
                 // Don't trigger if we just finished a drop operation
-                if (e.target.closest('.project-dropdown-item').dataset.preventClick === 'true') {
-                    e.target.closest('.project-dropdown-item').dataset.preventClick = 'false'
+                if ((e.target as HTMLElement).closest('.project-dropdown-item').dataset.preventClick === 'true') {
+                    (e.target as HTMLElement).closest('.project-dropdown-item').dataset.preventClick = 'false'
                     return
                 }
                 this.viewProjectTasks(project.id)
