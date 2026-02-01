@@ -91,6 +91,246 @@ import { Storage } from './storage'
 
 class GTDApp {
     // =========================================================================
+    // TYPE DEFINITIONS
+    // =========================================================================
+    storage: any
+    tasks: any[]
+    projects: any[]
+    templates: any[]
+    currentView: string
+    currentProjectId: string | null
+    filters: {
+        context: string
+        energy: string
+        time: string
+    }
+
+    pendingTaskData: any
+    parser: any
+    selectedTaskId: string | null
+    selectedTaskIds: Set<string>
+    bulkSelectionMode: boolean
+    undoStack: any[]
+    redoStack: any[]
+    errorLog: any[]
+    lastSaveTime: number
+    saveTimeout: any
+    isSaving: boolean
+    saveQueue: any[]
+    lastRenderTime: number
+    renderTimeout: any
+    isRendering: boolean
+    renderQueue: any[]
+    lastCountUpdateTime: number
+    countUpdateTimeout: any
+    isUpdatingCounts: boolean
+    countUpdateQueue: any[]
+    lastNotificationTime: number
+    notificationTimeout: any
+    isShowingNotification: boolean
+    notificationQueue: any[]
+    lastToastTime: number
+    toastTimeout: any
+    isShowingToast: boolean
+    toastQueue: any[]
+    lastStateSaveTime: number
+    stateSaveTimeout: any
+    isSavingState: boolean
+    stateSaveQueue: any[]
+    lastFocusTime: number
+    focusTimeout: any
+    isInFocusMode: boolean
+    focusQueue: any[]
+    lastPomodoroTime: number
+    pomodoroTimeout: any
+    isInPomodoro: boolean
+    pomodoroQueue: any[]
+    lastHeatmapTime: number
+    heatmapTimeout: any
+    isShowingHeatmap: boolean
+    heatmapQueue: any[]
+    lastPriorityTime: number
+    priorityTimeout: any
+    isCalculatingPriority: boolean
+    priorityQueue: any[]
+    lastDateSuggestionTime: number
+    dateSuggestionTimeout: any
+    isSuggestingDates: boolean
+    dateSuggestionQueue: any[]
+    lastUndoTime: number
+    undoTimestamp: any
+    isUndoing: boolean
+    undoQueue: any[]
+    lastRedoTime: number
+    redoTimestamp: any
+    isRedoing: boolean
+    redoQueue: any[]
+    lastMobileNavTime: number
+    mobileNavTimeout: any
+    isInMobileNav: boolean
+    mobileNavQueue: any[]
+    lastSubtaskTime: number
+    subtaskTimeout: any
+    isManagingSubtasks: boolean
+    subtaskQueue: any[]
+    lastModalTime: number
+    modalTimeout: any
+    isShowingModal: boolean
+    modalQueue: any[]
+    lastHelpTime: number
+    helpTimeout: any
+    isShowingHelp: boolean
+    helpQueue: any[]
+    lastAnalyticsTime: number
+    analyticsTimeout: any
+    isShowingAnalytics: boolean
+    analyticsQueue: any[]
+    lastExportTime: number
+    exportTimeout: any
+    isExporting: boolean
+    exportQueue: any[]
+    lastImportTime: number
+    importTimeout: any
+    isImporting: boolean
+    importQueue: any[]
+    lastArchiveTime: number
+    archiveTimeout: any
+    isArchiving: boolean
+    archiveQueue: any[]
+    lastTemplateTime: number
+    templateTimeout: any
+    isUsingTemplate: boolean
+    templateQueue: any[]
+    lastCalendarTime: number
+    calendarTimeout: any
+    isShowingCalendar: boolean
+    calendarQueue: any[]
+    lastReviewTime: number
+    reviewTimeout: any
+    isInReview: boolean
+    reviewQueue: any[]
+    lastDashboardTime: number
+    dashboardTimeout: any
+    isShowingDashboard: boolean
+    dashboardQueue: any[]
+    lastSearchTime: number
+    searchTimeout: any
+    isSearching: boolean
+    searchQueue: any[]
+    lastContextMenuTime: number
+    contextMenuTimeout: any
+    isShowingContextMenu: boolean
+    contextMenuQueue: any[]
+    lastDependencyTime: number
+    dependencyTimeout: any
+    isShowingDependencies: boolean
+    dependencyQueue: any[]
+    lastQuickCaptureTime: number
+    quickCaptureTimeout: any
+    isInQuickCapture: boolean
+    quickCaptureQueue: any[]
+    lastNavigationTime: number
+    navigationTimeout: any
+    isNavigating: boolean
+    navigationQueue: any[]
+    lastProjectModalTime: number
+    projectModalTimeout: any
+    isShowingProjectModal: boolean
+    projectModalQueue: any[]
+    lastTaskModalTime: number
+    taskModalTimeout: any
+    isShowingTaskModal: boolean
+    taskModalQueue: any[]
+    lastBulkOperationTime: number
+    bulkOperationTimeout: any
+    isInBulkOperation: boolean
+    bulkOperationQueue: any[]
+    lastKeyboardNavTime: number
+    keyboardNavTimeout: any
+    isInKeyboardNav: boolean
+    keyboardNavQueue: any[]
+    lastDarkModeTime: number
+    darkModeTimeout: any
+    isInDarkMode: boolean
+    darkModeQueue: any[]
+    lastTimeTrackingTime: number
+    timeTrackingTimeout: any
+    isTimeTracking: boolean
+    timeTrackingQueue: any[]
+    lastFocusPomodoroTime: number
+    focusPomodoroTimeout: any
+    isInFocusPomodoro: boolean
+    focusPomodoroQueue: any[]
+    lastGlobalQuickCaptureTime: number
+    globalQuickCaptureTimeout: any
+    isInGlobalQuickCapture: boolean
+    globalQuickCaptureQueue: any[]
+    lastPriorityScoringTime: number
+    priorityScoringTimeout: any
+    isCalculatingPriorityScore: boolean
+    priorityScoringQueue: any[]
+    lastProductivityHeatmapTime: number
+    productivityHeatmapTimeout: any
+    isShowingProductivityHeatmap: boolean
+    productivityHeatmapQueue: any[]
+
+    lastUndoRedoTime: number
+    undoRedoTimeout: any
+    isInUndoRedo: boolean
+    undoRedoQueue: any[]
+    lastMobileNavigationTime: number
+    mobileNavigationTimeout: any
+    isInMobileNavigation: boolean
+    mobileNavigationQueue: any[]
+
+    lastModalHelpersTime: number
+    modalHelpersTimeout: any
+    isUsingModalHelpers: boolean
+    modalHelpersQueue: any[]
+
+    // Missing properties from constructor
+    usageStats: any
+    defaultContexts: any
+    activeTimers: Map<string, any>
+    calendarView: string
+    calendarDate: Date
+    showingArchivedProjects: boolean
+    selectedContextFilters: Set<string>
+    _initStep: string
+
+    // Feature module properties
+    darkMode: any
+    calendar: any
+    archive: any
+    contextMenu: any
+    weeklyReview: any
+    dependencies: any
+    templatesManager: any
+    mobileNavigation: any
+    dashboard: any
+    focusPomodoro: any
+    dailyReview: any
+    smartSuggestions: any
+    priorityScoring: any
+    globalQuickCapture: any
+    productivityHeatmap: any
+    undoRedo: any
+    bulkOperations: any
+    timeTracking: any
+    subtasks: any
+    quickCaptureWidget: any
+    newProjectButton: any
+    navigation: any
+    smartDateSuggestions: any
+    search: any
+    taskOperations: any
+    contextFilter: any
+    projectOperations: any
+    taskModal: any
+    projectModal: any
+    dataExportImport: any
+
+    // =========================================================================
     // INITIALIZATION
     // =========================================================================
     constructor () {
@@ -124,7 +364,7 @@ class GTDApp {
         this.weeklyReview = new WeeklyReviewManager(this, this)
         this.dependencies = new DependenciesManager(this, this)
         this.templatesManager = new TemplatesManager(this, this)
-        this.mobileNavigation = new MobileNavigationManager(this, this)
+        this.mobileNavigation = new MobileNavigationManager(this as any, this as any)
         this.dashboard = new DashboardManager(this, this)
         this.focusPomodoro = new FocusPomodoroManager(this, this)
         this.dailyReview = new DailyReviewManager(this, this)
@@ -132,21 +372,21 @@ class GTDApp {
         this.priorityScoring = new PriorityScoringManager(this)
         this.globalQuickCapture = new GlobalQuickCaptureManager(this, this)
         this.productivityHeatmap = new ProductivityHeatmapManager(this, this)
-        this.undoRedo = new UndoRedoManager(this, this)
-        this.bulkOperations = new BulkOperationsManager(this, this)
-        this.timeTracking = new TimeTrackingManager(this, this)
+        this.undoRedo = new UndoRedoManager(this as any, this as any)
+        this.bulkOperations = new BulkOperationsManager(this as any, this as any)
+        this.timeTracking = new TimeTrackingManager(this as any, this as any)
         this.subtasks = new SubtasksManager(this, this)
-        this.quickCaptureWidget = new QuickCaptureWidgetManager(this, this)
-        this.newProjectButton = new NewProjectButtonManager(this)
-        this.navigation = new NavigationManager(this, this)
-        this.smartDateSuggestions = new SmartDateSuggestionsManager(this, this)
-        this.search = new SearchManager(this, this)
-        this.taskOperations = new TaskOperations(this, this)
-        this.contextFilter = new ContextFilterManager(this, this)
-        this.projectOperations = new ProjectOperations(this, this)
-        this.taskModal = new TaskModalManager(this, this)
-        this.projectModal = new ProjectModalManager(this, this)
-        this.dataExportImport = new DataExportImportManager(this, this)
+        this.quickCaptureWidget = new QuickCaptureWidgetManager(this as any, this as any)
+        this.newProjectButton = new NewProjectButtonManager(this as any)
+        this.navigation = new NavigationManager(this as any, this as any)
+        this.smartDateSuggestions = new SmartDateSuggestionsManager(this as any, this as any)
+        this.search = new SearchManager(this as any, this as any)
+        this.taskOperations = new TaskOperations(this as any, this as any)
+        this.contextFilter = new ContextFilterManager(this as any, this as any)
+        this.projectOperations = new ProjectOperations(this as any, this as any)
+        this.taskModal = new TaskModalManager(this as any, this as any)
+        this.projectModal = new ProjectModalManager(this as any, this as any)
+        this.dataExportImport = new DataExportImportManager(this as any, this as any)
     }
 
     async init () {
@@ -475,7 +715,7 @@ class GTDApp {
         document.querySelectorAll('.nav-item').forEach((item) => {
             item.addEventListener('click', (e) => {
                 e.preventDefault()
-                const view = item.dataset.view
+                const view = (item as HTMLElement).dataset.view
                 this.switchView(view)
             })
         })
@@ -508,9 +748,10 @@ class GTDApp {
         this.updateQuickAddPlaceholder()
 
         quickAddInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && quickAddInput.value.trim()) {
-                this.quickAddTask(quickAddInput.value.trim())
-                quickAddInput.value = ''
+            const input = quickAddInput as HTMLInputElement
+            if (e.key === 'Enter' && input.value.trim()) {
+                this.quickAddTask(input.value.trim())
+                input.value = ''
 
                 // Update placeholder after adding task (stats may have changed)
                 this.updateQuickAddPlaceholder()

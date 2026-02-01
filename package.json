@@ -2,7 +2,7 @@
   "name": "gtd-web",
   "version": "1.1.0",
   "description": "Getting Things Done web app with local persistence",
-  "main": "js/app.js",
+  "main": "js/app.ts",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

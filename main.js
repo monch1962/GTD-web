@@ -13,8 +13,8 @@ const updateMainJsIndicator = (msg) => {
 
 updateMainJsIndicator('main.js loaded, importing TypeScript app...')
 
-// Import TypeScript app wrapper (which imports the original app.js)
-import './js/app-ts.ts'
+// Import the main TypeScript app
+import './js/app.ts'
 import './css/styles.css'
 
 console.log('DEBUG: main.js imports complete')
