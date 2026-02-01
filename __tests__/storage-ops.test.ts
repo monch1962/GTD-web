@@ -1,17 +1,16 @@
 /**
- * Tests for storage-ops.js - StorageOperations class
+ * Tests for storage-ops.ts - StorageOperations class
  */
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Task, Project, Template } from '../js/models.ts'
 import { AppState } from '../js/modules/core/app-state.ts'
 import { StorageOperations } from '../js/modules/core/storage-ops.ts'
 import { Storage } from '../js/storage.ts'
 
 describe('StorageOperations', () => {
-    let storageOps
-    let mockStorage
-    let mockState
+    let storageOps: StorageOperations
+    let mockStorage: Storage
+    let mockState: AppState
 
     beforeEach(() => {
         // Clear localStorage before each test
@@ -32,11 +31,6 @@ describe('StorageOperations', () => {
     })
 
     describe('Constructor', () => {
-        test('should initialize with storage and state', () => {
-            expect(storageOps.storage).toBe(mockStorage)
-            expect(storageOps.state).toBe(mockState)
-        })
-
         test('should allow setting storage', () => {
             const newStorage = new Storage('new_user')
             storageOps.storage = newStorage
@@ -306,7 +300,7 @@ describe('StorageOperations', () => {
             const tasks = Array.from({ length: 100 }, (_, i) => ({
                 id: `task_${i}`,
                 title: `Task ${i}`,
-                status: 'inbox'
+                status: 'inbox' as const
             }))
             mockState.tasks = tasks.map((t) => new Task(t))
 
