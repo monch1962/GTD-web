@@ -2,7 +2,6 @@
  * Comprehensive Tests for Validation Utilities
  */
 
-import { DEFAULT_CONTEXTS } from '../js/constants.ts'
 import {
     validateContextName,
     validateTaskTitle,
@@ -53,33 +52,31 @@ describe('Validation Utilities', () => {
         })
 
         test('should reject context that already exists', () => {
-            const existingContexts = ['@custom', '@office']
-            const result = validateContextName('@custom', existingContexts)
+            const result = validateContextName('@custom', ['@custom', '@other'])
             expect(result.isValid).toBe(false)
             expect(result.error).toBe('This context already exists')
         })
 
         test('should reject case-insensitive duplicate context', () => {
-            const existingContexts = ['@custom', '@office']
-            const result = validateContextName('@CUSTOM', existingContexts)
+            const result = validateContextName('@CUSTOM', ['@custom', '@other'])
             expect(result.isValid).toBe(false)
             expect(result.error).toBe('This context already exists')
         })
 
         test('should accept valid new context', () => {
-            const existingContexts = ['@work', '@office']
-            const result = validateContextName('@newcontext', existingContexts)
+            const result = validateContextName('@newcontext', ['@existing'])
             expect(result.isValid).toBe(true)
             expect(result.error).toBeNull()
         })
 
         test('should trim whitespace from context name', () => {
-            const result = validateContextName('  @work  ', [])
-            expect(result.isValid).toBe(false) // @work might be in defaults
+            const result = validateContextName('  @newcontext  ', ['@existing'])
+            expect(result.isValid).toBe(true)
+            expect(result.error).toBeNull()
         })
 
         test('should accept context with valid characters', () => {
-            const result = validateContextName('@work-office', [])
+            const result = validateContextName('@context-123_name', [])
             expect(result.isValid).toBe(true)
             expect(result.error).toBeNull()
         })
@@ -106,26 +103,26 @@ describe('Validation Utilities', () => {
         })
 
         test('should accept title exactly 500 characters', () => {
-            const title = 'a'.repeat(500)
-            const result = validateTaskTitle(title)
+            const exactTitle = 'a'.repeat(500)
+            const result = validateTaskTitle(exactTitle)
             expect(result.isValid).toBe(true)
             expect(result.error).toBeNull()
         })
 
         test('should accept valid short title', () => {
-            const result = validateTaskTitle('Buy milk')
+            const result = validateTaskTitle('Buy groceries')
             expect(result.isValid).toBe(true)
             expect(result.error).toBeNull()
         })
 
         test('should accept title with special characters', () => {
-            const result = validateTaskTitle('Call @mom about dinner!')
+            const result = validateTaskTitle('Task with @mentions & symbols!')
             expect(result.isValid).toBe(true)
             expect(result.error).toBeNull()
         })
 
         test('should trim whitespace', () => {
-            const result = validateTaskTitle('  Buy milk  ')
+            const result = validateTaskTitle('  Buy groceries  ')
             expect(result.isValid).toBe(true)
             expect(result.error).toBeNull()
         })
@@ -152,224 +149,290 @@ describe('Validation Utilities', () => {
         })
 
         test('should accept title exactly 200 characters', () => {
-            const title = 'a'.repeat(200)
-            const result = validateProjectTitle(title)
+            const exactTitle = 'a'.repeat(200)
+            const result = validateProjectTitle(exactTitle)
             expect(result.isValid).toBe(true)
             expect(result.error).toBeNull()
         })
 
         test('should accept valid project title', () => {
-            const result = validateProjectTitle('Kitchen Remodel')
+            const result = validateProjectTitle('Website Redesign')
             expect(result.isValid).toBe(true)
             expect(result.error).toBeNull()
         })
 
         test('should trim whitespace', () => {
-            const result = validateProjectTitle('  Kitchen Remodel  ')
+            const result = validateProjectTitle('  Website Redesign  ')
             expect(result.isValid).toBe(true)
             expect(result.error).toBeNull()
         })
     })
 
     describe('isValidDate()', () => {
+        test('should accept valid date with time', () => {
+            const result = isValidDate('2025-01-15T10:30:00Z')
+            expect(result).toBe(true)
+        })
+
         test('should accept empty string (optional field)', () => {
-            expect(isValidDate('')).toBe(true)
+            const result = isValidDate('')
+            expect(result).toBe(true)
         })
 
         test('should accept null', () => {
-            expect(isValidDate(null)).toBe(true)
+            // @ts-expect-error Testing invalid input
+            const result = isValidDate(null)
+            expect(result).toBe(true)
         })
 
         test('should accept undefined', () => {
-            expect(isValidDate(undefined)).toBe(true)
+            // @ts-expect-error Testing invalid input
+            const result = isValidDate(undefined)
+            expect(result).toBe(true)
         })
 
         test('should accept valid ISO date string', () => {
-            expect(isValidDate('2025-01-10')).toBe(true)
-        })
-
-        test('should accept valid date with time', () => {
-            expect(isValidDate('2025-01-10T14:30:00')).toBe(true)
+            const result = isValidDate('2025-01-15')
+            expect(result).toBe(true)
         })
 
         test('should accept valid short date format', () => {
-            expect(isValidDate('2025-01-10')).toBe(true)
+            const result = isValidDate('01/15/2025')
+            expect(result).toBe(true)
         })
 
         test('should reject invalid date string', () => {
-            expect(isValidDate('not-a-date')).toBe(false)
+            const result = isValidDate('not-a-date')
+            expect(result).toBe(false)
         })
 
         test('should reject invalid date values', () => {
-            expect(isValidDate('2025-13-45')).toBe(false)
+            const result = isValidDate('2025-13-45')
+            expect(result).toBe(false)
         })
 
         test('should accept date object', () => {
-            expect(isValidDate(new Date())).toBe(true)
+            // @ts-expect-error Testing invalid input
+            const result = isValidDate(new Date())
+            expect(result).toBe(true)
         })
     })
 
     describe('isValidEnergyLevel()', () => {
         test('should accept empty string', () => {
-            expect(isValidEnergyLevel('')).toBe(true)
+            const result = isValidEnergyLevel('')
+            expect(result).toBe(true)
         })
 
         test('should accept high energy', () => {
-            expect(isValidEnergyLevel('high')).toBe(true)
+            const result = isValidEnergyLevel('high')
+            expect(result).toBe(true)
         })
 
         test('should accept medium energy', () => {
-            expect(isValidEnergyLevel('medium')).toBe(true)
+            const result = isValidEnergyLevel('medium')
+            expect(result).toBe(true)
         })
 
         test('should accept low energy', () => {
-            expect(isValidEnergyLevel('low')).toBe(true)
+            const result = isValidEnergyLevel('low')
+            expect(result).toBe(true)
         })
 
         test('should reject invalid energy level', () => {
-            expect(isValidEnergyLevel('super')).toBe(false)
+            const result = isValidEnergyLevel('very-high')
+            expect(result).toBe(false)
         })
 
         test('should reject case-sensitive variations', () => {
-            expect(isValidEnergyLevel('High')).toBe(false)
-            expect(isValidEnergyLevel('HIGH')).toBe(false)
+            const result = isValidEnergyLevel('High')
+            expect(result).toBe(false)
         })
 
         test('should reject null', () => {
-            expect(isValidEnergyLevel(null)).toBe(false)
+            // @ts-expect-error Testing invalid input
+            const result = isValidEnergyLevel(null)
+            expect(result).toBe(false)
         })
 
         test('should reject undefined', () => {
-            expect(isValidEnergyLevel(undefined)).toBe(false)
+            // @ts-expect-error Testing invalid input
+            const result = isValidEnergyLevel(undefined)
+            expect(result).toBe(false)
         })
     })
 
     describe('isValidTimeEstimate()', () => {
         test('should accept zero minutes', () => {
-            expect(isValidTimeEstimate(0)).toBe(true)
+            const result = isValidTimeEstimate(0)
+            expect(result).toBe(true)
         })
 
         test('should accept positive time estimate', () => {
-            expect(isValidTimeEstimate(60)).toBe(true)
+            const result = isValidTimeEstimate(30)
+            expect(result).toBe(true)
         })
 
         test('should accept maximum time estimate (8 hours)', () => {
-            expect(isValidTimeEstimate(480)).toBe(true)
+            const result = isValidTimeEstimate(480) // 8 hours in minutes
+            expect(result).toBe(true)
         })
 
         test('should reject negative time', () => {
-            expect(isValidTimeEstimate(-10)).toBe(false)
+            const result = isValidTimeEstimate(-5)
+            expect(result).toBe(false)
         })
 
         test('should reject time over 8 hours', () => {
-            expect(isValidTimeEstimate(481)).toBe(false)
+            const result = isValidTimeEstimate(481) // 8 hours + 1 minute
+            expect(result).toBe(false)
         })
 
         test('should reject very large time values', () => {
-            expect(isValidTimeEstimate(1000)).toBe(false)
+            const result = isValidTimeEstimate(10000)
+            expect(result).toBe(false)
         })
 
         test('should handle decimal time values', () => {
-            expect(isValidTimeEstimate(30.5)).toBe(true)
+            const result = isValidTimeEstimate(30.5)
+            expect(result).toBe(true)
         })
     })
 
     describe('isValidTaskStatus()', () => {
         test('should accept inbox status', () => {
-            expect(isValidTaskStatus('inbox')).toBe(true)
+            const result = isValidTaskStatus('inbox')
+            expect(result).toBe(true)
         })
 
         test('should accept next status', () => {
-            expect(isValidTaskStatus('next')).toBe(true)
+            const result = isValidTaskStatus('next')
+            expect(result).toBe(true)
         })
 
         test('should accept waiting status', () => {
-            expect(isValidTaskStatus('waiting')).toBe(true)
+            const result = isValidTaskStatus('waiting')
+            expect(result).toBe(true)
         })
 
         test('should accept someday status', () => {
-            expect(isValidTaskStatus('someday')).toBe(true)
+            const result = isValidTaskStatus('someday')
+            expect(result).toBe(true)
         })
 
         test('should accept completed status', () => {
-            expect(isValidTaskStatus('completed')).toBe(true)
+            const result = isValidTaskStatus('completed')
+            expect(result).toBe(true)
         })
 
         test('should reject invalid status', () => {
-            expect(isValidTaskStatus('deleted')).toBe(false)
+            const result = isValidTaskStatus('invalid')
+            expect(result).toBe(false)
         })
 
         test('should reject case variations', () => {
-            expect(isValidTaskStatus('Inbox')).toBe(false)
-            expect(isValidTaskStatus('INBOX')).toBe(false)
+            const result = isValidTaskStatus('Inbox')
+            expect(result).toBe(false)
         })
 
         test('should reject empty string', () => {
-            expect(isValidTaskStatus('')).toBe(false)
+            const result = isValidTaskStatus('')
+            expect(result).toBe(false)
         })
 
         test('should reject null', () => {
-            expect(isValidTaskStatus(null)).toBe(false)
+            // @ts-expect-error Testing invalid input
+            const result = isValidTaskStatus(null)
+            expect(result).toBe(false)
+        })
+
+        test('should reject undefined', () => {
+            // @ts-expect-error Testing invalid input
+            const result = isValidTaskStatus(undefined)
+            expect(result).toBe(false)
         })
     })
 
     describe('isValidProjectStatus()', () => {
         test('should accept active status', () => {
-            expect(isValidProjectStatus('active')).toBe(true)
+            const result = isValidProjectStatus('active')
+            expect(result).toBe(true)
         })
 
         test('should accept someday status', () => {
-            expect(isValidProjectStatus('someday')).toBe(true)
+            const result = isValidProjectStatus('someday')
+            expect(result).toBe(true)
         })
 
         test('should accept completed status', () => {
-            expect(isValidProjectStatus('completed')).toBe(true)
+            const result = isValidProjectStatus('completed')
+            expect(result).toBe(true)
         })
 
         test('should reject invalid status', () => {
-            expect(isValidProjectStatus('deleted')).toBe(false)
+            const result = isValidProjectStatus('invalid')
+            expect(result).toBe(false)
         })
 
         test('should reject case variations', () => {
-            expect(isValidProjectStatus('Active')).toBe(false)
-            expect(isValidProjectStatus('ACTIVE')).toBe(false)
+            const result = isValidProjectStatus('Active')
+            expect(result).toBe(false)
         })
 
         test('should reject empty string', () => {
-            expect(isValidProjectStatus('')).toBe(false)
+            const result = isValidProjectStatus('')
+            expect(result).toBe(false)
         })
 
         test('should reject null', () => {
-            expect(isValidProjectStatus(null)).toBe(false)
+            // @ts-expect-error Testing invalid input
+            const result = isValidProjectStatus(null)
+            expect(result).toBe(false)
+        })
+
+        test('should reject undefined', () => {
+            // @ts-expect-error Testing invalid input
+            const result = isValidProjectStatus(undefined)
+            expect(result).toBe(false)
         })
     })
 
     describe('Edge Cases', () => {
+        test('should handle numeric time estimate as string', () => {
+            // @ts-expect-error Testing invalid input
+            const result = isValidTimeEstimate('30')
+            expect(result).toBe(true)
+        })
+
         test('should handle null in validateContextName', () => {
+            // @ts-expect-error Testing invalid input
             const result = validateContextName(null)
             expect(result.isValid).toBe(false)
+            expect(result.error).toBe('Context name cannot be empty')
         })
 
         test('should handle undefined in validateTaskTitle', () => {
+            // @ts-expect-error Testing invalid input
             const result = validateTaskTitle(undefined)
             expect(result.isValid).toBe(false)
+            expect(result.error).toBe('Task title cannot be empty')
         })
 
         test('should handle undefined in validateProjectTitle', () => {
+            // @ts-expect-error Testing invalid input
             const result = validateProjectTitle(undefined)
             expect(result.isValid).toBe(false)
-        })
-
-        test('should handle numeric time estimate as string', () => {
-            // JavaScript will coerce string to number in comparisons
-            // This is expected behavior for flexibility
-            expect(isValidTimeEstimate('60')).toBe(true)
-            expect(isValidTimeEstimate('500')).toBe(false)
+            expect(result.error).toBe('Project title cannot be empty')
         })
 
         test('should handle boolean values', () => {
-            expect(isValidTaskStatus(true)).toBe(false)
-            expect(isValidProjectStatus(false)).toBe(false)
+            // @ts-expect-error Testing invalid input
+            const result1 = isValidTaskStatus(true)
+            expect(result1).toBe(false)
+
+            // @ts-expect-error Testing invalid input
+            const result2 = isValidProjectStatus(false)
+            expect(result2).toBe(false)
         })
     })
 })

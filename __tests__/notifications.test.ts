@@ -6,20 +6,29 @@ import { announce } from '../js/dom-utils.ts'
 import { NotificationManager } from '../js/modules/ui/notifications.ts'
 
 // Mock the announce function
-jest.mock('../js/dom-utils.js', () => ({
+jest.mock('../js/dom-utils.ts', () => ({
     announce: jest.fn()
 }))
 
+// Test interface to access private properties
+interface NotificationManagerTest {
+    toasts: HTMLElement[]
+    defaultDuration: number
+    _dismissToast: (toast: HTMLElement) => void
+    _createToast: (message: string, type: string) => HTMLElement
+}
+
 describe('NotificationManager', () => {
-    let notificationManager
-    let mockBody
+    let notificationManager: NotificationManager
+    let notificationManagerTest: NotificationManagerTest
+    let mockBody: HTMLElement
 
     beforeEach(() => {
         // Mock document.body
         mockBody = {
             appendChild: jest.fn(),
             removeChild: jest.fn()
-        }
+        } as unknown as HTMLElement
         Object.defineProperty(document, 'body', {
             value: mockBody,
             writable: true
@@ -27,6 +36,8 @@ describe('NotificationManager', () => {
 
         // Create NotificationManager instance
         notificationManager = new NotificationManager()
+        // Cast to test interface for accessing private properties
+        notificationManagerTest = notificationManager as unknown as NotificationManagerTest
 
         // Mock setTimeout
         jest.useFakeTimers()
@@ -39,11 +50,11 @@ describe('NotificationManager', () => {
 
     describe('Constructor', () => {
         test('should initialize with empty toasts array', () => {
-            expect(notificationManager.toasts).toEqual([])
+            expect(notificationManagerTest.toasts).toEqual([])
         })
 
         test('should initialize with default duration of 2000ms', () => {
-            expect(notificationManager.defaultDuration).toBe(2000)
+            expect(notificationManagerTest.defaultDuration).toBe(2000)
         })
     })
 
@@ -52,26 +63,26 @@ describe('NotificationManager', () => {
             notificationManager.showNotification('Test message')
 
             expect(mockBody.appendChild).toHaveBeenCalled()
-            const toast = mockBody.appendChild.mock.calls[0][0]
+            const toast = (mockBody.appendChild as jest.Mock).mock.calls[0][0]
             expect(toast.textContent).toBe('Test message')
         })
 
         test('should use info type by default', () => {
             notificationManager.showNotification('Test message')
 
-            const toast = mockBody.appendChild.mock.calls[0][0]
+            const toast = (mockBody.appendChild as jest.Mock).mock.calls[0][0]
             expect(toast.className).toContain('toast-info')
         })
 
         test('should use custom type when specified', () => {
             notificationManager.showNotification('Test message', 'success')
 
-            const toast = mockBody.appendChild.mock.calls[0][0]
+            const toast = (mockBody.appendChild as jest.Mock).mock.calls[0][0]
             expect(toast.className).toContain('toast-success')
         })
 
         test('should use custom duration when specified', () => {
-            const toastSpy = jest.spyOn(notificationManager, '_dismissToast')
+            const toastSpy = jest.spyOn(notificationManagerTest, '_dismissToast')
 
             notificationManager.showNotification('Test message', 'info', 5000)
 
@@ -82,7 +93,7 @@ describe('NotificationManager', () => {
         })
 
         test('should use default duration when not specified', () => {
-            const toastSpy = jest.spyOn(notificationManager, '_dismissToast')
+            const toastSpy = jest.spyOn(notificationManagerTest, '_dismissToast')
 
             notificationManager.showNotification('Test message')
 
@@ -101,13 +112,13 @@ describe('NotificationManager', () => {
         test('should add toast to toasts array', () => {
             notificationManager.showNotification('Test message')
 
-            expect(notificationManager.toasts).toHaveLength(1)
+            expect(notificationManagerTest.toasts).toHaveLength(1)
         })
 
         test('should apply correct CSS styles', () => {
             notificationManager.showNotification('Test message')
 
-            const toast = mockBody.appendChild.mock.calls[0][0]
+            const toast = (mockBody.appendChild as jest.Mock).mock.calls[0][0]
             expect(toast.style.position).toBe('fixed')
             expect(toast.style.bottom).toBe('20px')
             expect(toast.style.left).toBe('50%')
@@ -117,30 +128,29 @@ describe('NotificationManager', () => {
         test('should apply success type colors', () => {
             notificationManager.showNotification('Test message', 'success')
 
-            const toast = mockBody.appendChild.mock.calls[0][0]
+            const toast = (mockBody.appendChild as jest.Mock).mock.calls[0][0]
             expect(toast.className).toBe('toast-notification toast-success')
-            // Color styles are set via inline styles but may not be accessible in jsdom
         })
 
         test('should apply error type colors', () => {
             notificationManager.showNotification('Test message', 'error')
 
-            const toast = mockBody.appendChild.mock.calls[0][0]
+            const toast = (mockBody.appendChild as jest.Mock).mock.calls[0][0]
             expect(toast.className).toBe('toast-notification toast-error')
         })
 
         test('should apply warning type colors', () => {
             notificationManager.showNotification('Test message', 'warning')
 
-            const toast = mockBody.appendChild.mock.calls[0][0]
+            const toast = (mockBody.appendChild as jest.Mock).mock.calls[0][0]
             expect(toast.className).toBe('toast-notification toast-warning')
         })
 
         test('should add click listener to dismiss toast', () => {
             notificationManager.showNotification('Test message')
 
-            const toast = mockBody.appendChild.mock.calls[0][0]
-            const dismissSpy = jest.spyOn(notificationManager, '_dismissToast')
+            const toast = (mockBody.appendChild as jest.Mock).mock.calls[0][0]
+            const dismissSpy = jest.spyOn(notificationManagerTest, '_dismissToast')
 
             // Simulate click
             toast.click()
@@ -154,31 +164,31 @@ describe('NotificationManager', () => {
             notificationManager.showNotification('Message 3')
 
             expect(mockBody.appendChild).toHaveBeenCalledTimes(3)
-            expect(notificationManager.toasts).toHaveLength(3)
+            expect(notificationManagerTest.toasts).toHaveLength(3)
         })
     })
 
     describe('_createToast', () => {
         test('should create div element', () => {
-            const toast = notificationManager._createToast('Test', 'info')
+            const toast = notificationManagerTest._createToast('Test', 'info')
 
             expect(toast instanceof HTMLDivElement).toBe(true)
         })
 
         test('should set correct class names', () => {
-            const toast = notificationManager._createToast('Test', 'success')
+            const toast = notificationManagerTest._createToast('Test', 'success')
 
             expect(toast.className).toBe('toast-notification toast-success')
         })
 
         test('should set text content', () => {
-            const toast = notificationManager._createToast('My message', 'info')
+            const toast = notificationManagerTest._createToast('My message', 'info')
 
             expect(toast.textContent).toBe('My message')
         })
 
         test('should apply inline styles', () => {
-            const toast = notificationManager._createToast('Test', 'info')
+            const toast = notificationManagerTest._createToast('Test', 'info')
 
             expect(toast.style.cssText).toContain('position: fixed')
             expect(toast.style.cssText).toContain('z-index: 10000')
@@ -188,9 +198,9 @@ describe('NotificationManager', () => {
     describe('_dismissToast', () => {
         test('should set opacity to 0', () => {
             const toast = document.createElement('div')
-            notificationManager.toasts.push(toast)
+            notificationManagerTest.toasts.push(toast)
 
-            notificationManager._dismissToast(toast)
+            notificationManagerTest._dismissToast(toast)
 
             expect(toast.style.opacity).toBe('0')
         })
@@ -200,9 +210,9 @@ describe('NotificationManager', () => {
             // Add the transition style that _dismissToast expects
             toast.style.transition = 'opacity 0.3s ease, transform 0.3s ease'
             // Access private property for test
-            notificationManager.toasts.push(toast)
+            notificationManagerTest.toasts.push(toast)
 
-            notificationManager._dismissToast(toast)
+            notificationManagerTest._dismissToast(toast)
 
             // _dismissToast doesn't add transition, it uses existing one
             expect(toast.style.transition).toBe('opacity 0.3s ease, transform 0.3s ease')
@@ -219,9 +229,9 @@ describe('NotificationManager', () => {
                 configurable: true
             })
             // Access private property for test
-            notificationManager.toasts.push(toast)
+            notificationManagerTest.toasts.push(toast)
 
-            notificationManager._dismissToast(toast)
+            notificationManagerTest._dismissToast(toast)
 
             // Fast-forward past transition
             jest.advanceTimersByTime(300)
@@ -232,14 +242,14 @@ describe('NotificationManager', () => {
         test('should remove toast from toasts array', () => {
             const toast = document.createElement('div')
             toast.remove = jest.fn()
-            notificationManager.toasts.push(toast)
+            notificationManagerTest.toasts.push(toast)
 
-            notificationManager._dismissToast(toast)
+            notificationManagerTest._dismissToast(toast)
 
             // Fast-forward past transition
             jest.advanceTimersByTime(300)
 
-            expect(notificationManager.toasts).not.toContain(toast)
+            expect(notificationManagerTest.toasts).not.toContain(toast)
         })
 
         test('should handle toast not in array', () => {
@@ -253,7 +263,7 @@ describe('NotificationManager', () => {
                 configurable: true
             })
 
-            notificationManager._dismissToast(toast)
+            notificationManagerTest._dismissToast(toast)
 
             // Fast-forward past transition
             jest.advanceTimersByTime(300)
@@ -350,9 +360,9 @@ describe('NotificationManager', () => {
             const toast2 = document.createElement('div')
             const toast3 = document.createElement('div')
 
-            notificationManager.toasts = [toast1, toast2, toast3]
+            notificationManagerTest.toasts = [toast1, toast2, toast3]
 
-            const dismissSpy = jest.spyOn(notificationManager, '_dismissToast')
+            const dismissSpy = jest.spyOn(notificationManagerTest, '_dismissToast')
 
             notificationManager.dismissAll()
 
@@ -363,7 +373,7 @@ describe('NotificationManager', () => {
         })
 
         test('should handle empty toasts array', () => {
-            const dismissSpy = jest.spyOn(notificationManager, '_dismissToast')
+            const dismissSpy = jest.spyOn(notificationManagerTest, '_dismissToast')
 
             notificationManager.dismissAll()
 
@@ -377,7 +387,7 @@ describe('NotificationManager', () => {
         })
 
         test('should return correct count for multiple toasts', () => {
-            notificationManager.toasts = [
+            notificationManagerTest.toasts = [
                 document.createElement('div'),
                 document.createElement('div'),
                 document.createElement('div')
@@ -399,14 +409,14 @@ describe('NotificationManager', () => {
         test('should handle empty message', () => {
             notificationManager.showNotification('')
 
-            const toast = mockBody.appendChild.mock.calls[0][0]
+            const toast = (mockBody.appendChild as jest.Mock).mock.calls[0][0]
             expect(toast.textContent).toBe('')
         })
 
         test('should handle special characters in message', () => {
             notificationManager.showNotification('Test with "quotes" & <tags> and emoji 🎉')
 
-            const toast = mockBody.appendChild.mock.calls[0][0]
+            const toast = (mockBody.appendChild as jest.Mock).mock.calls[0][0]
             expect(toast.textContent).toBe('Test with "quotes" & <tags> and emoji 🎉')
         })
 
@@ -414,13 +424,13 @@ describe('NotificationManager', () => {
             const longMessage = 'A'.repeat(1000)
             notificationManager.showNotification(longMessage)
 
-            const toast = mockBody.appendChild.mock.calls[0][0]
+            const toast = (mockBody.appendChild as jest.Mock).mock.calls[0][0]
             expect(toast.textContent).toBe(longMessage)
         })
 
         test('should handle zero duration by using default', () => {
             // When duration is 0 (falsy), it uses defaultDuration (2000ms)
-            const toastSpy = jest.spyOn(notificationManager, '_dismissToast')
+            const toastSpy = jest.spyOn(notificationManagerTest, '_dismissToast')
 
             notificationManager.showNotification('Test', 'info', 0)
 
@@ -431,9 +441,10 @@ describe('NotificationManager', () => {
         })
 
         test('should handle unknown notification type', () => {
-            notificationManager.showNotification('Test', 'unknown_type')
+            // Use type assertion to test with invalid type
+            notificationManager.showNotification('Test', 'unknown_type' as any)
 
-            const toast = mockBody.appendChild.mock.calls[0][0]
+            const toast = (mockBody.appendChild as jest.Mock).mock.calls[0][0]
             // Unknown types fall through to default case (info)
             expect(toast.className).toBe('toast-notification toast-unknown_type')
         })
