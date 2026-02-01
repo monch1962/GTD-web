@@ -4,29 +4,14 @@
  */
 
 import { escapeHtml } from '../../dom-utils'
+import type { AppState, AppDependencies } from '../../types'
 import type { Task } from '../../models'
 
-interface State {
-    tasks: Task[]
-}
-
-interface App {
-    calendarDate: Date
-    showNotification?: (message: string, type?: string) => void
-    showInfo?: (message: string) => void
-    navigateCalendar?: (direction: number) => void
-    showTasksForDate?: (year: number, month: number, day: number) => void
-    openTaskModal?: (task: Task) => void
-    tasks?: Task[]
-    saveTasks?: () => Promise<void>
-    renderView?: () => void
-}
-
 export class CalendarManager {
-    private state: State
-    private app: App
+    private state: AppState
+    private app: AppDependencies
 
-    constructor (state: State, app: App) {
+    constructor (state: AppState, app: AppDependencies) {
         this.state = state
         this.app = app
 

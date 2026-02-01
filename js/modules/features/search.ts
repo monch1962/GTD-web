@@ -3,22 +3,8 @@
  * Handles search functionality, advanced filters, and saved searches
  */
 
-import { Task, Project } from '../../models'
-
-// Define interfaces for state and app dependencies
-interface AppState {
-    tasks: Task[]
-    projects: Project[]
-    defaultContexts: string[]
-    searchQuery?: string
-    advancedSearchFilters?: AdvancedSearchFilters
-    savedSearches?: SavedSearch[]
-}
-
-interface AppDependencies {
-    renderView?: () => void
-    showNotification?: (message: string, type?: string) => void
-}
+import type { AppState, AppDependencies } from '../../types'
+import type { Task } from '../../models'
 
 interface AdvancedSearchFilters {
     context: string
@@ -120,7 +106,9 @@ export class SearchManager {
         ;[searchContext, searchEnergy, searchStatus, searchDue].forEach((filter) => {
             if (filter) {
                 filter.addEventListener('change', () => {
-                    if (searchContext) { this.state.advancedSearchFilters!.context = searchContext.value }
+                    if (searchContext) {
+                        this.state.advancedSearchFilters!.context = searchContext.value
+                    }
                     if (searchEnergy) this.state.advancedSearchFilters!.energy = searchEnergy.value
                     if (searchStatus) this.state.advancedSearchFilters!.status = searchStatus.value
                     if (searchDue) this.state.advancedSearchFilters!.due = searchDue.value
@@ -198,14 +186,13 @@ export class SearchManager {
         }
 
         // Add sorted context options
-        Array.from(allContexts)
-            .sort()
-            .forEach((context) => {
-                const option = document.createElement('option')
-                option.value = context
-                option.textContent = context
-                selectElement.appendChild(option)
-            })
+        const contextsArray = Array.from(allContexts) as string[]
+        contextsArray.sort().forEach((context: string) => {
+            const option = document.createElement('option')
+            option.value = context
+            option.textContent = context
+            selectElement.appendChild(option)
+        })
     }
 
     /**
@@ -297,7 +284,7 @@ export class SearchManager {
      * Load a saved search
      */
     loadSavedSearch (searchId: string): void {
-        const search = this.state.savedSearches!.find((s) => s.id === searchId)
+        const search = this.state.savedSearches!.find((s: SavedSearch) => s.id === searchId)
         if (!search) return
 
         this.state.searchQuery = search.query || ''
@@ -336,7 +323,9 @@ export class SearchManager {
      * Delete a saved search
      */
     deleteSavedSearch (searchId: string): void {
-        this.state.savedSearches = this.state.savedSearches!.filter((s) => s.id !== searchId)
+        this.state.savedSearches = this.state.savedSearches!.filter(
+            (s: SavedSearch) => s.id !== searchId
+        )
         localStorage.setItem('gtd_saved_searches', JSON.stringify(this.state.savedSearches))
         this.renderSavedSearches()
 
@@ -369,7 +358,7 @@ export class SearchManager {
         }
 
         // Add saved searches
-        this.state.savedSearches!.forEach((search) => {
+        this.state.savedSearches!.forEach((search: SavedSearch) => {
             const option = document.createElement('option')
             option.value = search.id
             option.textContent = search.name
@@ -377,7 +366,10 @@ export class SearchManager {
         })
 
         // Restore selection if it still exists
-        if (currentValue && this.state.savedSearches!.find((s) => s.id === currentValue)) {
+        if (
+            currentValue &&
+            this.state.savedSearches!.find((s: SavedSearch) => s.id === currentValue)
+        ) {
             savedSearchesSelect.value = currentValue
         }
     }

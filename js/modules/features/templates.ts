@@ -16,28 +16,10 @@
  * await templates.createTaskFromTemplate('template-123');
  */
 
-import { Template, TemplateData, TemplateCategory, Task } from '../../models'
 import { escapeHtml } from '../../dom-utils'
-
-// Define interfaces for state and app dependencies
-interface AppState {
-    tasks: Task[]
-    templates: Template[]
-    defaultContexts: string[]
-}
-
-interface AppDependencies {
-    saveState?: (description: string) => void
-    saveTemplates?: () => Promise<void>
-    saveTasks?: () => Promise<void>
-    renderView?: () => void
-    updateCounts?: () => void
-    showNotification?: (message: string, type?: string) => void
-    editTemplate?: (templateId: string) => void
-    deleteTemplate?: (templateId: string) => Promise<void>
-    createTaskFromTemplate?: (templateId: string) => Promise<void>
-    removeTemplateSubtask?: (index: number) => void
-}
+import type { AppState, AppDependencies } from '../../types'
+import { Template } from '../../models'
+import type { TemplateData, TemplateCategory, EnergyLevel } from '../../models'
 
 interface TemplateCategoryInfo {
     label: string
@@ -214,7 +196,7 @@ export class TemplatesManager {
         const templateData: TemplateData = {
             title: titleInput ? titleInput.value : '',
             description: descInput ? descInput.value : '',
-            energy: energyInput ? (energyInput.value as any) : '',
+            energy: energyInput ? (energyInput.value as EnergyLevel) : '',
             time: timeInput ? parseInt(timeInput.value) || 0 : 0,
             category: categoryInput ? (categoryInput.value as TemplateCategory) : 'general',
             contexts: this.getSelectedTemplateContexts(),

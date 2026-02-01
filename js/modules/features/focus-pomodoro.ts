@@ -3,30 +3,9 @@
  * Handles focus mode for single-task concentration and Pomodoro timer
  */
 
-import { Task } from '../../models'
 import { escapeHtml } from '../../dom-utils'
-
-// Define interfaces for state and app dependencies
-interface AppState {
-    tasks: Task[]
-}
-
-interface AppDependencies {
-    getSmartSuggestions?: (options: {
-        maxSuggestions: number
-    }) => Array<{ task: Task; reasons: string[] }>
-    showWarning?: (message: string) => void
-    showError?: (message: string) => void
-    showNotification?: (message: string, type?: string) => void
-    showToast?: (message: string) => void
-    showSuccess?: (message: string) => void // For test compatibility
-    saveTasks?: () => Promise<void>
-    renderView?: () => void
-    updateCounts?: () => void
-    toggleSubtask?: (taskId: string, subtaskIndex: number) => Promise<void>
-    toggleTaskComplete?: (taskId: string) => Promise<void> // For test compatibility
-    openTaskModal?: (task: Task) => void // For test compatibility
-}
+import type { AppState, AppDependencies } from '../../types'
+import type { Task } from '../../models'
 
 export class FocusPomodoroManager {
     private state: AppState

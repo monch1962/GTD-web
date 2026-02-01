@@ -3,29 +3,10 @@
  * Handles task archiving and restoration
  */
 
-import { Task, Project } from '../../models'
 import { ArchiveEntry } from '../../storage'
 import { escapeHtml } from '../../dom-utils'
-
-// Define interfaces for state and app dependencies
-interface AppState {
-    tasks: Task[]
-    projects: Project[]
-}
-
-interface AppDependencies {
-    storage?: {
-        getArchivedTasks: () => ArchiveEntry[]
-        addToArchive: (tasks: any[]) => Promise<void>
-        removeFromArchive: (taskId: string) => Promise<void>
-    }
-    saveState?: (description: string) => void
-    saveTasks?: () => Promise<void>
-    renderView?: () => void
-    updateCounts?: () => void
-    showToast?: (message: string) => void
-    showNotification?: (message: string, type?: string) => void
-}
+import type { AppState, AppDependencies } from '../../types'
+import { Task, type TaskStatus } from '../../models'
 
 export class ArchiveManager {
     private state: AppState
@@ -191,14 +172,14 @@ export class ArchiveManager {
         if (!this.app.storage) return
 
         const archive = this.app.storage.getArchivedTasks()
-        const archiveEntry = archive.find((entry) => entry.task.id === taskId)
+        const archiveEntry = archive.find((entry: ArchiveEntry) => entry.task.id === taskId)
         if (!archiveEntry) return
 
         const taskData = archiveEntry.task
         const task = Task.fromJSON(taskData)
 
         // Restore original status and project
-        task.status = archiveEntry.originalStatus as any
+        task.status = archiveEntry.originalStatus as TaskStatus
         task.projectId = archiveEntry.originalProjectId
 
         if (
@@ -229,7 +210,7 @@ export class ArchiveManager {
         if (!this.app.storage) return
 
         const archive = this.app.storage.getArchivedTasks()
-        const archiveEntry = archive.find((entry) => entry.task.id === taskId)
+        const archiveEntry = archive.find((entry: ArchiveEntry) => entry.task.id === taskId)
         if (!archiveEntry) return
 
         if (
@@ -280,7 +261,7 @@ export class ArchiveManager {
         // Apply filters
         const projectFilterValue = projectFilter ? projectFilter.value : ''
 
-        const filteredArchive = archive.filter((entry) => {
+        const filteredArchive = archive.filter((entry: ArchiveEntry) => {
             const task = entry.task
 
             // Search filter
@@ -305,12 +286,13 @@ export class ArchiveManager {
 
         // Sort by archived date (newest first)
         filteredArchive.sort(
-            (a, b) => new Date(b.archivedAt).getTime() - new Date(a.archivedAt).getTime()
+            (a: ArchiveEntry, b: ArchiveEntry) =>
+                new Date(b.archivedAt).getTime() - new Date(a.archivedAt).getTime()
         )
 
         // Render archived tasks
         container.innerHTML = filteredArchive
-            .map((entry) => {
+            .map((entry: ArchiveEntry) => {
                 const task = entry.task
                 const archivedDate = new Date(entry.archivedAt)
                 const completedDate = task.completedAt ? new Date(task.completedAt) : null
@@ -346,7 +328,7 @@ export class ArchiveManager {
             .join('')
 
         // Attach event listeners to restore and delete buttons
-        filteredArchive.forEach((entry) => {
+        filteredArchive.forEach((entry: ArchiveEntry) => {
             const task = entry.task
             const taskCard = container.querySelector(`[data-task-id="${task.id}"]`)
             if (taskCard) {
@@ -384,9 +366,16 @@ export class ArchiveManager {
 
         // Get unique projects from archive
         const archive = this.app.storage.getArchivedTasks()
-        const projectIds = [
-            ...new Set(archive.map((entry) => entry.originalProjectId).filter(Boolean))
-        ]
+        const projectIds: string[] = []
+        const seenIds = new Set<string>()
+
+        archive.forEach((entry: ArchiveEntry) => {
+            const projectId = entry.originalProjectId
+            if (projectId && !seenIds.has(projectId)) {
+                seenIds.add(projectId)
+                projectIds.push(projectId)
+            }
+        })
 
         // Clear existing options (except first)
         while (select.options.length > 1) {
@@ -398,7 +387,7 @@ export class ArchiveManager {
             const project = this.state.projects.find((p) => p.id === projectId)
             if (project) {
                 const option = document.createElement('option')
-                option.value = projectId || ''
+                option.value = projectId ?? ''
                 option.textContent = project.title
                 select.appendChild(option)
             }
@@ -443,7 +432,7 @@ export class ArchiveManager {
         const archive = this.app.storage.getArchivedTasks()
         const lowerQuery = query.toLowerCase()
 
-        return archive.filter((entry) => {
+        return archive.filter((entry: ArchiveEntry) => {
             const task = entry.task
             const matchesTitle = task.title.toLowerCase().includes(lowerQuery)
             const matchesDesc =
