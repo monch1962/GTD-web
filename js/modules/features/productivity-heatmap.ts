@@ -20,20 +20,12 @@
  * heatmap.openHeatmapModal();
  * heatmap.renderProductivityHeatmap();
  */
-import { Task, Project } from '../../models'
-// Define interfaces for state and app dependencies
-interface AppState {
-    tasks: Task[]
-    projects: Project[]
-}
-// AppDependencies is not used in this module but kept for consistency
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface AppDependencies {
-    // No methods needed since app is not used
-}
+import type { AppState, AppDependencies } from '../../types'
+
 interface CompletionData {
     [dateKey: string]: number
 }
+
 export class ProductivityHeatmapManager {
     private state: AppState
     private _app: AppDependencies

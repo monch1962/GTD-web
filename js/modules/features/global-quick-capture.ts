@@ -16,28 +16,13 @@
 
 import { Task } from '../../models'
 import { escapeHtml } from '../../dom-utils'
-import type { Template } from '../../models'
-
-interface State {
-    tasks: Task[]
-    templates: Template[]
-    projects: Array<{ id: string; title: string }>
-}
-
-interface App {
-    saveTasks?: () => Promise<void> | void
-    renderView?: () => void
-    updateCounts?: () => void
-    showToast?: (message: string) => void
-    saveState?: (description: string) => void
-    selectTemplateForQuickCapture?: (templateId: string) => void
-}
+import type { AppState, AppDependencies } from '../../types'
 
 export class GlobalQuickCaptureManager {
-    private state: State
-    private app: App
+    private state: AppState
+    private app: AppDependencies
 
-    constructor (state: State, app: App) {
+    constructor (state: AppState, app: AppDependencies) {
         this.state = state
         this.app = app
     }

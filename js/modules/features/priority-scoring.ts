@@ -21,17 +21,12 @@
  * - Defer date (0-20 points penalty)
  * - Age of task (0-7 points)
  */
-import { Task, Project } from '../../models'
-/**
- * State interface for priority scoring
- */
-interface State {
-    tasks: Task[]
-    projects: Project[]
-}
+import { Task } from '../../models'
+import type { AppState } from '../../types'
+
 export class PriorityScoringManager {
-    private state: State
-    constructor (state: State) {
+    private state: AppState
+    constructor (state: AppState) {
         this.state = state
     }
 
