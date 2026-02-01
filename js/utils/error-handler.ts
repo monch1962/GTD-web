@@ -25,7 +25,7 @@ type ErrorSeverityType = (typeof ErrorSeverity)[keyof typeof ErrorSeverity]
 type ErrorCategoryType = (typeof ErrorCategory)[keyof typeof ErrorCategory]
 
 interface ErrorDetails {
-    [key: string]: any
+    [key: string]: unknown
 }
 
 /**
@@ -72,7 +72,16 @@ export class AppError extends Error {
     /**
      * Convert to plain object for serialization
      */
-    toJSON (): Record<string, any> {
+    toJSON (): {
+        name: string
+        message: string
+        category: ErrorCategoryType
+        severity: ErrorSeverityType
+        details: ErrorDetails
+        timestamp: string
+        userMessage: string
+        stack?: string
+        } {
         return {
             name: this.name,
             message: this.message,
@@ -95,7 +104,7 @@ interface ErrorHandlerOptions {
 
 interface ErrorReport {
     error: AppError
-    context: Record<string, any>
+    context: Record<string, unknown>
     timestamp: string
     recovered: boolean
 }
@@ -131,7 +140,7 @@ export class ErrorHandler {
     /**
      * Handle an error
      */
-    handle (error: Error | AppError, context: Record<string, any> = {}): boolean {
+    handle (error: Error | AppError, context: Record<string, unknown> = {}): boolean {
         const appError = error instanceof AppError ? error : this.wrapError(error)
         const report: ErrorReport = {
             error: appError,
@@ -193,7 +202,7 @@ export class ErrorHandler {
     /**
      * Log error to console with appropriate level
      */
-    private logToConsole (error: AppError, context: Record<string, any>): void {
+    private logToConsole (error: AppError, context: Record<string, unknown>): void {
         const logLevels: Record<ErrorSeverityType, 'log' | 'warn' | 'error'> = {
             [ErrorSeverity.LOW]: 'log',
             [ErrorSeverity.MEDIUM]: 'warn',
@@ -236,7 +245,7 @@ export class ErrorHandler {
     /**
      * Attempt to recover from error
      */
-    private attemptRecovery (error: AppError, context: Record<string, any>): boolean {
+    private attemptRecovery (error: AppError, context: Record<string, unknown>): boolean {
         switch (error.category) {
         case ErrorCategory.STORAGE:
             return this.recoverFromStorageError(error, context)
@@ -250,26 +259,26 @@ export class ErrorHandler {
     /**
      * Recover from storage errors
      */
-    private recoverFromStorageError (error: AppError, context: Record<string, any>): boolean {
+    private recoverFromStorageError (error: AppError, context: Record<string, unknown>): boolean {
         // Clear localStorage if quota exceeded
         if (error.message.includes('quota') || error.message.includes('full')) {
             try {
                 localStorage.clear()
                 console.log('Storage quota exceeded, cleared localStorage')
                 return true
-            } catch (e) {
+            } catch {
                 return false
             }
         }
 
         // Remove corrupted data
         if (error.message.includes('JSON') || error.message.includes('parse')) {
-            const key = context.key || 'gtd_data'
+            const key = typeof context.key === 'string' ? context.key : 'gtd_data'
             try {
                 localStorage.removeItem(key)
                 console.log(`Removed corrupted data from key: ${key}`)
                 return true
-            } catch (e) {
+            } catch {
                 return false
             }
         }
@@ -280,12 +289,14 @@ export class ErrorHandler {
     /**
      * Recover from network errors
      */
-    private recoverFromNetworkError (_error: AppError, context: Record<string, any>): boolean {
+    private recoverFromNetworkError (_error: AppError, context: Record<string, unknown>): boolean {
         // Network errors typically can't be auto-recovered
         // but we can retry the operation
-        if (context.retryCount && context.retryCount < 3) {
-            console.log(`Retrying network operation (attempt ${context.retryCount + 1})`)
-            return true // Signal that retry should be attempted
+        const retryCount = typeof context.retryCount === 'number' ? context.retryCount : 0
+        if (retryCount < 3) {
+            context.retryCount = retryCount + 1
+            console.log(`Retrying network operation (attempt ${context.retryCount})`)
+            return true
         }
 
         return false
@@ -308,8 +319,13 @@ export class ErrorHandler {
     /**
      * Get error statistics
      */
-    getErrorStats (): Record<string, any> {
-        const stats: Record<string, any> = {
+    getErrorStats (): {
+        total: number
+        recovered: number
+        byCategory: Record<ErrorCategoryType, number>
+        bySeverity: Record<ErrorSeverityType, number>
+        } {
+        const stats = {
             total: this.errors.length,
             recovered: this.errors.filter((e) => e.recovered).length,
             byCategory: {} as Record<ErrorCategoryType, number>,
