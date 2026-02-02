@@ -13,26 +13,7 @@
  */
 
 import { createLogger } from '../utils/logger'
-import { Task } from '../../models'
-
-/**
- * App interface for type safety
- */
-interface App {
-    saveTasks?: () => Promise<void>
-    renderView?: () => void
-    showToast?: (message: string, type?: string) => void
-}
-
-/**
- * State interface for time tracking
- */
-interface State {
-    tasks: Task[]
-    timerInterval: NodeJS.Timeout | null
-    currentTimerTask: string | null
-    timerStartTime: number | null
-}
+import type { AppState, AppDependencies } from '../../types'
 
 /**
  * Logger interface
@@ -42,11 +23,11 @@ interface Logger {
 }
 
 export class TimeTrackingManager {
-    private state: State
-    private app: App
+    private state: AppState
+    private app: AppDependencies
     private logger: Logger
 
-    constructor (state: State, app: App) {
+    constructor (state: AppState, app: AppDependencies) {
         this.state = state
         this.app = app
         this.logger = createLogger('TimeTracking')
@@ -109,7 +90,7 @@ export class TimeTrackingManager {
             }
         }, 1000)
 
-        this.app.showToast?.('Timer started', 'info')
+        this.app.showNotification?.('Timer started', 'info')
     }
 
     /**
@@ -142,6 +123,6 @@ export class TimeTrackingManager {
         this.state.currentTimerTask = null
         this.state.timerStartTime = null
 
-        this.app.showToast?.(`Timer stopped. Added ${elapsedMinutes} minutes.`, 'success')
+        this.app.showNotification?.(`Timer stopped. Added ${elapsedMinutes} minutes.`, 'success')
     }
 }

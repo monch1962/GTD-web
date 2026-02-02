@@ -9,15 +9,21 @@ import type { Task } from '../js/models.ts'
 // Test interfaces based on the module's interfaces
 interface TestState {
     tasks: Task[]
+    projects: any[]
+    templates: any[]
+    currentView: string
+    currentProjectId: string | null
     timerInterval: NodeJS.Timeout | null
     currentTimerTask: string | null
     timerStartTime: number | null
+    [key: string]: any
 }
 
 interface TestApp {
     saveTasks?: () => Promise<void>
     renderView?: () => void
-    showToast?: (message: string, type?: string) => void
+    showNotification?: (message: string, type?: string) => void
+    [key: string]: any
 }
 
 // Test interface to access private properties
@@ -36,6 +42,10 @@ describe('TimeTrackingManager - Initialization', () => {
 
         mockState = {
             tasks: [],
+            projects: [],
+            templates: [],
+            currentView: 'inbox',
+            currentProjectId: null,
             timerInterval: null,
             currentTimerTask: null,
             timerStartTime: null
@@ -72,6 +82,10 @@ describe('TimeTrackingManager - Start Timer', () => {
                 { id: 'task1', title: 'Task 1', completed: false, timeSpent: 0 } as Task,
                 { id: 'task2', title: 'Task 2', completed: false, timeSpent: 30 } as Task
             ],
+            projects: [],
+            templates: [],
+            currentView: 'inbox',
+            currentProjectId: null,
             timerInterval: null,
             currentTimerTask: null,
             timerStartTime: null
@@ -80,7 +94,7 @@ describe('TimeTrackingManager - Start Timer', () => {
         mockApp = {
             saveTasks: jest.fn().mockResolvedValue(undefined),
             renderView: jest.fn(),
-            showToast: jest.fn()
+            showNotification: jest.fn()
         } as TestApp
 
         manager = new TimeTrackingManager(mockState, mockApp)
@@ -188,7 +202,7 @@ describe('TimeTrackingManager - Start Timer', () => {
         test('should show toast notification', () => {
             manager.startTaskTimer('task1')
 
-            expect(mockApp.showToast).toHaveBeenCalledWith('Timer started', 'info')
+            expect(mockApp.showNotification).toHaveBeenCalledWith('Timer started', 'info')
         })
     })
 })
@@ -205,6 +219,10 @@ describe('TimeTrackingManager - Stop Timer', () => {
 
         mockState = {
             tasks: [{ id: 'task1', title: 'Task 1', completed: false, timeSpent: 0 } as Task],
+            projects: [],
+            templates: [],
+            currentView: 'inbox',
+            currentProjectId: null,
             timerInterval: null,
             currentTimerTask: null,
             timerStartTime: null
@@ -213,7 +231,7 @@ describe('TimeTrackingManager - Stop Timer', () => {
         mockApp = {
             saveTasks: jest.fn().mockResolvedValue(undefined),
             renderView: jest.fn(),
-            showToast: jest.fn()
+            showNotification: jest.fn()
         } as TestApp
 
         manager = new TimeTrackingManager(mockState, mockApp)
@@ -328,11 +346,11 @@ describe('TimeTrackingManager - Stop Timer', () => {
 
             await manager.stopTaskTimer()
 
-            expect(mockApp.showToast).toHaveBeenCalledWith(
+            expect(mockApp.showNotification).toHaveBeenCalledWith(
                 expect.stringContaining('Timer stopped'),
                 'success'
             )
-            expect(mockApp.showToast).toHaveBeenCalledWith(
+            expect(mockApp.showNotification).toHaveBeenCalledWith(
                 expect.stringContaining('minutes'),
                 'success'
             )
@@ -355,6 +373,10 @@ describe('TimeTrackingManager - Timer State Management', () => {
                 { id: 'task1', title: 'Task 1', completed: false, timeSpent: 0 } as Task,
                 { id: 'task2', title: 'Task 2', completed: false, timeSpent: 0 } as Task
             ],
+            projects: [],
+            templates: [],
+            currentView: 'inbox',
+            currentProjectId: null,
             timerInterval: null,
             currentTimerTask: null,
             timerStartTime: null
@@ -363,7 +385,7 @@ describe('TimeTrackingManager - Timer State Management', () => {
         mockApp = {
             saveTasks: jest.fn().mockResolvedValue(undefined),
             renderView: jest.fn(),
-            showToast: jest.fn()
+            showNotification: jest.fn()
         } as TestApp
 
         manager = new TimeTrackingManager(mockState, mockApp)
@@ -435,6 +457,10 @@ describe('TimeTrackingManager - Edge Cases', () => {
 
         mockState = {
             tasks: [{ id: 'task1', title: 'Task 1', completed: false, timeSpent: 0 } as Task],
+            projects: [],
+            templates: [],
+            currentView: 'inbox',
+            currentProjectId: null,
             timerInterval: null,
             currentTimerTask: null,
             timerStartTime: null
@@ -443,7 +469,7 @@ describe('TimeTrackingManager - Edge Cases', () => {
         mockApp = {
             saveTasks: jest.fn().mockResolvedValue(undefined),
             renderView: jest.fn(),
-            showToast: jest.fn()
+            showNotification: jest.fn()
         } as TestApp
 
         manager = new TimeTrackingManager(mockState, mockApp)

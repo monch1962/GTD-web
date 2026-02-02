@@ -24,7 +24,10 @@ const mockApp = {
 
 const mockState = {
     tasks: [],
-    projects: []
+    projects: [],
+    templates: [],
+    currentView: 'inbox',
+    currentProjectId: null
 }
 
 describe('DailyReviewManager - Initialization', () => {
@@ -48,7 +51,7 @@ describe('DailyReviewManager - Initialization', () => {
             <div id="announcer"></div>
         `
 
-        manager = new DailyReviewManager(mockState, mockApp)
+        manager = new DailyReviewManager(mockState)
     })
 
     afterEach(() => {
@@ -57,9 +60,8 @@ describe('DailyReviewManager - Initialization', () => {
     })
 
     describe('DailyReviewManager - Setup', () => {
-        test('should initialize with state and app references', () => {
+        test('should initialize with state reference', () => {
             expect(manager.state).toBe(mockState)
-            expect(manager.app).toBe(mockApp)
         })
     })
 

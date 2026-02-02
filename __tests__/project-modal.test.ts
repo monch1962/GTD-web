@@ -348,10 +348,6 @@ describe('ProjectModalManager - Gantt Chart', () => {
         document.body.appendChild(modal)
 
         mockState = {
-            projects: [{ id: '1', title: 'Test Project' }]
-        }
-
-        mockApp = {
             tasks: [
                 {
                     id: 't1',
@@ -369,8 +365,14 @@ describe('ProjectModalManager - Gantt Chart', () => {
                     status: 'next',
                     waitingForTaskIds: ['t1']
                 }
-            ]
+            ],
+            projects: [{ id: '1', title: 'Test Project' }],
+            templates: [],
+            currentView: 'inbox',
+            currentProjectId: null
         }
+
+        mockApp = {}
 
         manager = new ProjectModalManager(mockState, mockApp)
     })
@@ -404,7 +406,7 @@ describe('ProjectModalManager - Gantt Chart', () => {
 
     describe('renderGanttChart()', () => {
         test('should show empty state when no tasks', () => {
-            mockApp.tasks = []
+            mockState.tasks = []
             const project = mockState.projects[0]
 
             manager.renderGanttChart(project)
@@ -439,7 +441,13 @@ describe('ProjectModalManager - Escape HTML', () => {
     let mockApp: any
 
     beforeEach(() => {
-        mockState = { projects: [] }
+        mockState = {
+            tasks: [],
+            projects: [],
+            templates: [],
+            currentView: 'inbox',
+            currentProjectId: null
+        }
         mockApp = {}
 
         manager = new ProjectModalManager(mockState, mockApp)

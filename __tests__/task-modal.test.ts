@@ -998,7 +998,7 @@ describe('TaskModalManager - getRecurrenceLabel() Complete', () => {
     })
 
     test('should return label for biweekly string', () => {
-        expect(manager.getRecurrenceLabel('biweekly')).toBe('Bi-weekly')
+        expect(manager.getRecurrenceLabel('biweekly')).toBe('Every 2 weeks')
     })
 
     test('should return weekly with days label', () => {

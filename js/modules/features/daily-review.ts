@@ -16,19 +16,9 @@
  * const greeting = dailyReview.getGreetingMessage();
  */
 
-import { Task, Project } from '../../models'
+import { Task } from '../../models'
 import { escapeHtml } from '../../dom-utils'
-
-// Define interfaces for state and app dependencies
-interface AppState {
-    tasks: Task[]
-    projects: Project[]
-}
-
-interface AppDependencies {
-    showToast?: (message: string) => void
-    showNotification?: (message: string, type: string) => void
-}
+import type { AppState } from '../../types'
 
 // Extended Task interface to include optional priority property for tests
 interface TaskWithPriority extends Task {
@@ -37,15 +27,12 @@ interface TaskWithPriority extends Task {
 
 export class DailyReviewManager {
     private state: AppState
-    private app: AppDependencies
 
     /**
      * @param state - The application state object
-     * @param app - The main app instance for delegation
      */
-    constructor (state: AppState, app: AppDependencies) {
+    constructor (state: AppState) {
         this.state = state
-        this.app = app
     }
 
     /**

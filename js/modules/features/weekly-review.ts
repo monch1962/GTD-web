@@ -17,28 +17,8 @@
  * await weeklyReview.cleanupEmptyProjects();
  */
 
-import { Task, Project } from '../../models'
 import { escapeHtml } from '../../dom-utils'
-
-// Define interfaces for state and app dependencies
-interface AppState {
-    tasks: Task[]
-    projects: Project[]
-}
-
-interface AppDependencies {
-    saveProjects?: () => Promise<void>
-    saveTasks?: () => Promise<void>
-    renderView?: () => void
-    renderProjectsDropdown?: () => void
-    updateCounts?: () => void
-    showWarning?: (message: string) => void
-    showSuccess?: (message: string) => void
-    showNotification?: (message: string, type?: string) => void
-    cleanupEmptyProjects?: () => Promise<void>
-    cleanupOldCompletedTasks?: () => Promise<void>
-    markStaleProjectsSomeday?: () => Promise<void>
-}
+import type { AppState, AppDependencies } from '../../types'
 
 export class WeeklyReviewManager {
     private state: AppState
@@ -307,7 +287,11 @@ export class WeeklyReviewManager {
             return
         }
 
-        if (!confirm(`Archive ${oldCompletedTasks.length} tasks completed more than 90 days ago?`)) { return }
+        if (
+            !confirm(`Archive ${oldCompletedTasks.length} tasks completed more than 90 days ago?`)
+        ) {
+            return
+        }
 
         // Create an export of these tasks before deleting
         const archiveData = {

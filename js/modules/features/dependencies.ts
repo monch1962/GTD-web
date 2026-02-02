@@ -16,21 +16,9 @@
  * const stats = deps.getDependencyStats('project-123');
  */
 
-import { Task, Project } from '../../models'
+import { Task } from '../../models'
 import { escapeHtml } from '../../dom-utils'
-
-// Define interfaces for state and app dependencies
-interface AppState {
-    tasks: Task[]
-    projects: Project[]
-}
-
-interface AppDependencies {
-    saveTasks?: () => Promise<void>
-    renderView?: () => void
-    showNotification?: (message: string, type: string) => void
-    openTaskModal?: (task: Task) => void
-}
+import type { AppState, AppDependencies } from '../../types'
 
 interface NodePosition {
     x: number

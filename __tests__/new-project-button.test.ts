@@ -74,7 +74,7 @@ describe('NewProjectButtonManager - Basic Functionality', () => {
             const button = document.getElementById('btn-new-project')
             button!.click()
 
-            expect(mockApp.openTaskModal).toHaveBeenCalledWith(null, null, { type: 'project' })
+            expect(mockApp.openTaskModal).toHaveBeenCalledWith(null, undefined, { type: 'project' })
         })
 
         test('should pass null for task and defaultProjectId', () => {
@@ -85,7 +85,7 @@ describe('NewProjectButtonManager - Basic Functionality', () => {
 
             expect(mockApp.openTaskModal).toHaveBeenCalledWith(
                 null,
-                null,
+                undefined,
                 expect.objectContaining({ type: 'project' })
             )
         })
@@ -162,7 +162,7 @@ describe('NewProjectButtonManager - Basic Functionality', () => {
             // Verify the call was made with correct parameters
             expect(mockApp.openTaskModal).toHaveBeenCalledWith(
                 null,
-                null,
+                undefined,
                 expect.objectContaining({ type: 'project' })
             )
         })

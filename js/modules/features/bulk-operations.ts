@@ -13,25 +13,8 @@
  * - Selection of all visible tasks
  */
 
-import { Task, TaskStatus, EnergyLevel } from '../../models'
-
-// Define interfaces for state and app dependencies
-interface AppState {
-    tasks: Task[]
-    projects: any[]
-    bulkSelectionMode: boolean
-    selectedTaskIds: Set<string>
-}
-
-interface AppDependencies {
-    renderView?: () => void
-    renderProjectsDropdown?: () => void
-    updateCounts?: () => void
-    saveState?: (description: string) => void
-    saveTasks?: () => Promise<void>
-    showToast?: (message: string) => void
-    showNotification?: (message: string, type?: string) => void
-}
+import { TaskStatus, EnergyLevel } from '../../models'
+import type { AppState, AppDependencies } from '../../types'
 
 export class BulkOperationsManager {
     private state: AppState
@@ -55,12 +38,12 @@ export class BulkOperationsManager {
      */
     setupBulkSelection (): void {
         const bulkSelectBtn = document.getElementById('btn-bulk-select')
-        // @ts-ignore - used in other methods
-        const bulkActionsBar = document.getElementById('bulk-actions-bar')
+        // @ts-expect-error - used in other methods
+        const _bulkActionsBar = document.getElementById('bulk-actions-bar')
         const bulkCompleteBtn = document.getElementById('btn-bulk-complete')
         const bulkCancelBtn = document.getElementById('btn-bulk-cancel')
-        // @ts-ignore - used in other methods
-        const bulkSelectedCount = document.getElementById('bulk-selected-count')
+        // @ts-expect-error - used in other methods
+        const _bulkSelectedCount = document.getElementById('bulk-selected-count')
         const bulkSelectAllBtn = document.getElementById('btn-bulk-select-all')
         const bulkStatusBtn = document.getElementById('btn-bulk-status')
         const bulkEnergyBtn = document.getElementById('btn-bulk-energy')
@@ -168,7 +151,9 @@ export class BulkOperationsManager {
 
         if (this.state.bulkSelectionMode) {
             if (bulkActionsBar) bulkActionsBar.style.display = 'flex'
-            if (bulkSelectBtn) { bulkSelectBtn.innerHTML = '<i class="fas fa-times"></i> Exit Selection' }
+            if (bulkSelectBtn) {
+                bulkSelectBtn.innerHTML = '<i class="fas fa-times"></i> Exit Selection'
+            }
             this.app.renderView?.() // Re-render to show bulk checkboxes
         } else {
             this.exitBulkSelectionMode()

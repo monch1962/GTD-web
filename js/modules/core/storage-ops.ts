@@ -5,12 +5,7 @@
 
 import { Task, Project, Template } from '../../models'
 import type { Storage } from '../../storage'
-
-interface AppState {
-    tasks: Task[]
-    projects: Project[]
-    templates: Template[]
-}
+import type { AppState } from '../../types'
 
 export class StorageOperations {
     private _storage: Storage

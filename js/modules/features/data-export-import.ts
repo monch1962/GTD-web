@@ -9,38 +9,21 @@
  */
 import { Task, Project } from '../../models'
 import { createLogger } from '../utils/logger'
-interface State {
-    tasks: Task[]
-    projects: Project[]
-    usageStats?: Record<string, any>
-}
-interface App {
-    tasks?: Task[]
-    projects?: Project[]
-    usageStats?: Record<string, any>
-    showSuccess?: (message: string) => void
-    showError?: (message: string) => void
-    saveTasks?: () => Promise<void> | void
-    saveProjects?: () => Promise<void> | void
-    saveUsageStats?: () => Promise<void> | void
-    renderView?: () => void
-    updateCounts?: () => void
-    renderProjectsDropdown?: () => void
-    renderCustomContexts?: () => void
-    updateQuickAddPlaceholder?: () => void
-}
+import type { AppState, AppDependencies } from '../../types'
+
 interface Logger {
-    error: (message: string, error?: any) => void
+    error: (message: string, error?: unknown) => void
 }
+
 export class DataExportImportManager {
-    private app: App
+    private app: AppDependencies
     private logger: Logger
     /**
      * Create a new DataExportImportManager instance
-     * @param state - Application state object
+     * @param _state - Application state object (unused)
      * @param app - Application instance with utility methods
      */
-    constructor (state: State, app: App) {
+    constructor (_state: AppState, app: AppDependencies) {
         this.app = app
         this.logger = createLogger('DataExportImport')
     }
@@ -88,8 +71,8 @@ export class DataExportImportManager {
             const exportData = {
                 version: '1.0',
                 exportDate: new Date().toISOString(),
-                tasks: this.app.tasks?.map((task) => task.toJSON()) || [],
-                projects: this.app.projects?.map((project) => project.toJSON()) || [],
+                tasks: this.app.tasks?.map((task: Task) => task.toJSON()) || [],
+                projects: this.app.projects?.map((project: Project) => project.toJSON()) || [],
                 customContexts: JSON.parse(localStorage.getItem('gtd_custom_contexts') || '[]'),
                 usageStats: this.app.usageStats || {}
             }
@@ -162,11 +145,13 @@ export class DataExportImportManager {
                     if (this.app.tasks) this.app.tasks = []
                     if (this.app.projects) this.app.projects = []
                     // Import tasks
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     importData.tasks.forEach((taskData: any) => {
                         const task = new Task(taskData)
                         this.app.tasks?.push(task)
                     })
                     // Import projects
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     importData.projects.forEach((projectData: any) => {
                         const project = new Project(projectData)
                         this.app.projects?.push(project)
