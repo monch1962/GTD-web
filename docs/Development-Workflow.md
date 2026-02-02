@@ -1,5 +1,8 @@
 # Development Workflow Guide
 
+**Note**: The codebase has been fully migrated to TypeScript (February 2025).
+All development now uses TypeScript with strict type checking.
+
 This document explains the development workflow for the GTD-web application,
 including linting, testing, and CI/CD processes.
 

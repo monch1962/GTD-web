@@ -4,7 +4,7 @@
  */
 
 import { GTDApp } from '../js/app.ts'
-import { Task } from '../js/models.ts'
+import { Task, Project } from '../js/models.ts'
 
 describe('Archive System Feature - Comprehensive Tests', () => {
     let app: GTDApp
@@ -410,7 +410,7 @@ describe('Archive System Feature - Comprehensive Tests', () => {
                 completedAt: new Date().toISOString()
             })
 
-            ;(app as any).tasks.push(...oldTasks, recentTask)
+            app.tasks.push(...oldTasks, recentTask)
 
             // Run auto-archive
             if (app.archive) {
@@ -457,7 +457,7 @@ describe('Archive System Feature - Comprehensive Tests', () => {
                 completedAt: new Date().toISOString()
             })
 
-            ;(app as any).tasks.push(recentTask)
+            app.tasks.push(recentTask)
 
             if (app.archive) {
                 await app.archive.autoArchiveOldTasks()
@@ -561,9 +561,9 @@ describe('Archive System Feature - Comprehensive Tests', () => {
             ;(app.storage?.getArchivedTasks as jest.Mock).mockReturnValue(archivedTasks)
 
             // Add projects to app
-            ;(app as any).projects = [
-                { id: 'proj1', title: 'Project 1' },
-                { id: 'proj2', title: 'Project 2' }
+            app.projects = [
+                new Project({ id: 'proj1', title: 'Project 1' }),
+                new Project({ id: 'proj2', title: 'Project 2' })
             ]
 
             if (app.archive) {
@@ -676,7 +676,8 @@ describe('Archive System Feature - Comprehensive Tests', () => {
         })
 
         test('should handle restore when storage is not available', async () => {
-            ;(app as any).storage = undefined
+            // @ts-expect-error Testing error handling when storage is undefined
+            app.storage = undefined
 
             // Should not throw error
             await expect(async () => {
@@ -687,7 +688,8 @@ describe('Archive System Feature - Comprehensive Tests', () => {
         })
 
         test('should handle auto-archive when storage is not available', async () => {
-            ;(app as any).storage = undefined
+            // @ts-expect-error Testing error handling when storage is undefined
+            app.storage = undefined
 
             // Should not throw error
             await expect(async () => {

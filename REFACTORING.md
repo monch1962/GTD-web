@@ -1,110 +1,134 @@
 # GTD-Web Refactoring Guide
 
-This document provides guidance on refactoring GTD-web to use the new utility functions and reduce code duplication.
+**Note**: This document was created during the initial refactoring. The codebase
+has since been fully migrated to TypeScript (February 2025). All `.js` files
+mentioned are now `.ts` files with TypeScript types.
+
+This document provides guidance on refactoring GTD-web to use the new utility
+functions and reduce code duplication.
 
 ## Overview of New Utilities
 
 ### 1. Enhanced DOM Utilities (`js/dom-utils.js`)
 
 #### Modal Utilities
+
 ```javascript
 // OLD:
-const modal = document.getElementById('task-modal');
-modal.classList.add('active');
+const modal = document.getElementById('task-modal')
+modal.classList.add('active')
 
 // NEW:
-import { openModal, closeModal, toggleModal } from './dom-utils.js';
-openModal('task-modal', 'Edit Task');
-closeModal('task-modal');
+import { openModal, closeModal, toggleModal } from './dom-utils.js'
+openModal('task-modal', 'Edit Task')
+closeModal('task-modal')
 ```
 
 #### Form Utilities
+
 ```javascript
 // OLD:
-const form = document.getElementById('task-form');
-const formData = new FormData(form);
-const data = {};
+const form = document.getElementById('task-form')
+const formData = new FormData(form)
+const data = {}
 for (const [key, value] of formData.entries()) {
-    data[key] = value;
+    data[key] = value
 }
 
 // NEW:
-import { getFormData, resetForm, showFieldError, clearFormErrors } from './dom-utils.js';
-const data = getFormData(form);
-resetForm(form);
-showFieldError('task-title', 'Title is required');
+import {
+    getFormData,
+    resetForm,
+    showFieldError,
+    clearFormErrors
+} from './dom-utils.js'
+const data = getFormData(form)
+resetForm(form)
+showFieldError('task-title', 'Title is required')
 ```
 
 #### Date Utilities
+
 ```javascript
 // OLD:
-const today = new Date();
-today.setHours(0, 0, 0, 0);
-const checkDate = new Date(dateString);
-const diff = Math.ceil((checkDate - today) / (1000 * 60 * 60 * 24));
+const today = new Date()
+today.setHours(0, 0, 0, 0)
+const checkDate = new Date(dateString)
+const diff = Math.ceil((checkDate - today) / (1000 * 60 * 60 * 24))
 
 // NEW:
-import { formatDate, isToday, getDaysDiff } from './dom-utils.js';
-const formatted = formatDate(new Date());
-const isTodayDate = isToday(dateString);
-const daysDiff = getDaysDiff(date1, date2);
+import { formatDate, isToday, getDaysDiff } from './dom-utils.js'
+const formatted = formatDate(new Date())
+const isTodayDate = isToday(dateString)
+const daysDiff = getDaysDiff(date1, date2)
 ```
 
 ### 2. Extended Constants (`js/constants.js`)
 
 #### Pomodoro Configuration
+
 ```javascript
 // OLD:
-this.pomodoroTimeLeft = 25 * 60;
-this.pomodoroBreakTime = 5 * 60;
+this.pomodoroTimeLeft = 25 * 60
+this.pomodoroBreakTime = 5 * 60
 
 // NEW:
-import { PomodoroConfig } from './constants.js';
-this.pomodoroTimeLeft = PomodoroConfig.WORK_DURATION;
-this.pomodoroBreakTime = PomodoroConfig.BREAK_DURATION;
+import { PomodoroConfig } from './constants.js'
+this.pomodoroTimeLeft = PomodoroConfig.WORK_DURATION
+this.pomodoroBreakTime = PomodoroConfig.BREAK_DURATION
 ```
 
 #### Time Thresholds
+
 ```javascript
 // OLD:
-if (daysSinceCreated > 30) { score += 7; }
-else if (daysSinceCreated > 14) { score += 5; }
+if (daysSinceCreated > 30) {
+    score += 7
+} else if (daysSinceCreated > 14) {
+    score += 5
+}
 
 // NEW:
-import { TimeThresholds } from './constants.js';
-if (daysSinceCreated > TimeThresholds.TASK_AGING_PENALTY_DAYS) { score += 7; }
-else if (daysSinceCreated > TimeThresholds.TASK_AGING_HIGH_DAYS) { score += 5; }
+import { TimeThresholds } from './constants.js'
+if (daysSinceCreated > TimeThresholds.TASK_AGING_PENALTY_DAYS) {
+    score += 7
+} else if (daysSinceCreated > TimeThresholds.TASK_AGING_HIGH_DAYS) {
+    score += 5
+}
 ```
 
 #### Priority Weights
+
 ```javascript
 // OLD:
-if (isOverdue) score += 25;
-if (starred) score += 15;
-if (status === 'next') score += 10;
+if (isOverdue) score += 25
+if (starred) score += 15
+if (status === 'next') score += 10
 
 // NEW:
-import { PriorityWeights } from './constants.js';
-if (isOverdue) score += PriorityWeights.OVERDUE_BONUS;
-if (starred) score += PriorityWeights.STARRED_BONUS;
-if (status === 'next') score += PriorityWeights.NEXT_ACTION_BONUS;
+import { PriorityWeights } from './constants.js'
+if (isOverdue) score += PriorityWeights.OVERDUE_BONUS
+if (starred) score += PriorityWeights.STARRED_BONUS
+if (status === 'next') score += PriorityWeights.NEXT_ACTION_BONUS
 ```
 
 #### Toast Messages
+
 ```javascript
 // OLD:
-this.showToast(`${count} tasks completed`);
-this.showToast('Task updated');
+this.showToast(`${count} tasks completed`)
+this.showToast('Task updated')
 
 // NEW:
-import { ToastMessages } from './constants.js';
-this.showToast(ToastMessages.Task.completed(count));
-this.showToast(ToastMessages.Task.updated());
+import { ToastMessages } from './constants.js'
+this.showToast(ToastMessages.Task.completed(count))
+this.showToast(ToastMessages.Task.updated())
 ```
 
 ### 3. HTML Template Helpers (`js/template-helpers.js`)
 
 #### Task Rendering
+
 ```javascript
 // OLD (repeated 100+ lines of HTML building):
 div.innerHTML = `
@@ -112,14 +136,15 @@ div.innerHTML = `
         <div class="task-drag-handle"><i class="fas fa-grip-vertical"></i></div>
         ...
     </div>
-`;
+`
 
 // NEW:
-import { TaskTemplates } from './template-helpers.js';
-div.innerHTML = TaskTemplates.createTaskItem(task, { showPriority: true });
+import { TaskTemplates } from './template-helpers.js'
+div.innerHTML = TaskTemplates.createTaskItem(task, { showPriority: true })
 ```
 
 #### Modal Creation
+
 ```javascript
 // OLD:
 const modalHTML = `
@@ -134,14 +159,15 @@ const modalHTML = `
             </div>
         </div>
     </div>
-`;
+`
 
 // NEW:
-import { ModalTemplates } from './template-helpers.js';
-const modalHTML = ModalTemplates.createModal('new-modal', 'Title', content);
+import { ModalTemplates } from './template-helpers.js'
+const modalHTML = ModalTemplates.createModal('new-modal', 'Title', content)
 ```
 
 #### Statistics Cards
+
 ```javascript
 // OLD:
 html += `
@@ -149,11 +175,11 @@ html += `
         <div class="stat-value">${value}</div>
         <div class="stat-label">${label}</div>
     </div>
-`;
+`
 
 // NEW:
-import { StatisticsTemplates } from './template-helpers.js';
-html += StatisticsTemplates.createStatCard({ value, label, icon, color });
+import { StatisticsTemplates } from './template-helpers.js'
+html += StatisticsTemplates.createStatCard({ value, label, icon, color })
 ```
 
 ## Refactoring Priority List
@@ -161,56 +187,57 @@ html += StatisticsTemplates.createStatCard({ value, label, icon, color });
 ### High Priority (Do First)
 
 1. **Replace Magic Numbers with Constants**
-   - Search app.js for: `25 * 60`, `30`, `90`, `300`, etc.
-   - Replace with corresponding constants from `constants.js`
-   - Example: `25 * 60` → `PomodoroConfig.WORK_DURATION`
+    - Search app.js for: `25 * 60`, `30`, `90`, `300`, etc.
+    - Replace with corresponding constants from `constants.js`
+    - Example: `25 * 60` → `PomodoroConfig.WORK_DURATION`
 
 2. **Use Modal Utilities**
-   - Find all instances of: `document.getElementById('...').classList.add('active')`
-   - Replace with: `openModal('modal-id')`
-   - Estimated: 40+ instances throughout the code
+    - Find all instances of:
+      `document.getElementById('...').classList.add('active')`
+    - Replace with: `openModal('modal-id')`
+    - Estimated: 40+ instances throughout the code
 
 3. **Use Toast Message Templates**
-   - Find all instances of: `this.showToast('...')` with string concatenation
-   - Replace with: `this.showToast(ToastMessages.Task.completed(count))`
-   - Estimated: 50+ instances
+    - Find all instances of: `this.showToast('...')` with string concatenation
+    - Replace with: `this.showToast(ToastMessages.Task.completed(count))`
+    - Estimated: 50+ instances
 
 ### Medium Priority
 
 4. **Refactor Date Calculations**
-   - Find all date arithmetic: `date.setDate(date.getDate() - X)`
-   - Replace with: `getDaysDiff(date1, date2)`
-   - Improves code readability and reduces bugs
+    - Find all date arithmetic: `date.setDate(date.getDate() - X)`
+    - Replace with: `getDaysDiff(date1, date2)`
+    - Improves code readability and reduces bugs
 
 5. **Use Form Utilities**
-   - Find all form data extraction: `new FormData(form)`
-   - Replace with: `getFormData(form)`
-   - Add form validation helpers
+    - Find all form data extraction: `new FormData(form)`
+    - Replace with: `getFormData(form)`
+    - Add form validation helpers
 
 6. **Use Template Helpers**
-   - Identify repeated HTML generation patterns
-   - Replace with template helper functions
-   - Focus on: task cards, project cards, statistics
+    - Identify repeated HTML generation patterns
+    - Replace with template helper functions
+    - Focus on: task cards, project cards, statistics
 
 ### Low Priority (Nice to Have)
 
 7. **Extract Long Functions**
-   - `renderDashboard()` - Break into smaller sub-functions
-   - `renderTask()` - Simplify using template helpers
-   - `setup*()` methods - Consolidate repeated patterns
+    - `renderDashboard()` - Break into smaller sub-functions
+    - `renderTask()` - Simplify using template helpers
+    - `setup*()` methods - Consolidate repeated patterns
 
 8. **Consolidate Event Listeners**
-   - Use `setupModalListeners()` for all modals
-   - Create utility for bulk event listener setup
+    - Use `setupModalListeners()` for all modals
+    - Create utility for bulk event listener setup
 
 9. **Standardize Naming**
-   - Ensure all IDs use kebab-case
-   - Ensure all JS uses camelCase
-   - Add ElementIds constants for all DOM elements
+    - Ensure all IDs use kebab-case
+    - Ensure all JS uses camelCase
+    - Add ElementIds constants for all DOM elements
 
 ## Refactoring Checklist
 
-- [ ] Replace Pomodoro magic numbers (25 * 60, 5 * 60)
+- [ ] Replace Pomodoro magic numbers (25 _ 60, 5 _ 60)
 - [ ] Replace time threshold magic numbers (30, 90, etc.)
 - [ ] Replace priority score magic numbers
 - [ ] Use `openModal()` / `closeModal()` for all modals
@@ -229,6 +256,7 @@ html += StatisticsTemplates.createStatCard({ value, label, icon, color });
 ### Example 1: Refactoring Modal Setup
 
 **Before:**
+
 ```javascript
 setupHelpModal() {
     const modal = document.getElementById('help-modal');
@@ -242,6 +270,7 @@ setupHelpModal() {
 ```
 
 **After:**
+
 ```javascript
 setupHelpModal() {
     setupModalListeners('help-modal', ['close-help-modal']);
@@ -251,24 +280,27 @@ setupHelpModal() {
 ### Example 2: Refactoring Toast Messages
 
 **Before:**
+
 ```javascript
 if (tasksToArchive.length > 0) {
-    this.showToast(`Archived ${tasksToArchive.length} tasks`);
+    this.showToast(`Archived ${tasksToArchive.length} tasks`)
 }
 ```
 
 **After:**
+
 ```javascript
-import { ToastMessages } from './constants.js';
+import { ToastMessages } from './constants.js'
 
 if (tasksToArchive.length > 0) {
-    this.showToast(ToastMessages.Task.archived(tasksToArchive.length));
+    this.showToast(ToastMessages.Task.archived(tasksToArchive.length))
 }
 ```
 
 ### Example 3: Refactoring Priority Scoring
 
 **Before:**
+
 ```javascript
 calculatePriorityScore(task) {
     let score = 50;
@@ -289,6 +321,7 @@ calculatePriorityScore(task) {
 ```
 
 **After:**
+
 ```javascript
 import { PriorityWeights, PriorityThresholds, PriorityColors } from './constants.js';
 
@@ -316,17 +349,19 @@ calculatePriorityScore(task) {
 ### Example 4: Refactoring Date Utilities
 
 **Before:**
+
 ```javascript
-const today = new Date();
-today.setHours(0, 0, 0, 0);
-const dueDate = new Date(task.dueDate);
-const daysDiff = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+const today = new Date()
+today.setHours(0, 0, 0, 0)
+const dueDate = new Date(task.dueDate)
+const daysDiff = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24))
 ```
 
 **After:**
+
 ```javascript
-import { getDaysDiff } from './dom-utils.js';
-const daysDiff = getDaysDiff(new Date(), task.dueDate);
+import { getDaysDiff } from './dom-utils.js'
+const daysDiff = getDaysDiff(new Date(), task.dueDate)
 ```
 
 ## Testing Refactored Code
@@ -352,36 +387,37 @@ After refactoring any section, test the following:
 ## Migration Strategy
 
 1. **Phase 1**: Add utilities (✅ Completed)
-   - dom-utils.js enhancements
-   - constants.js additions
-   - template-helpers.js creation
+    - dom-utils.js enhancements
+    - constants.js additions
+    - template-helpers.js creation
 
 2. **Phase 2**: Refactor high-priority items
-   - Replace magic numbers with constants
-   - Use modal utilities
-   - Use toast message templates
+    - Replace magic numbers with constants
+    - Use modal utilities
+    - Use toast message templates
 
 3. **Phase 3**: Refactor medium-priority items
-   - Use date utilities
-   - Use form utilities
-   - Use template helpers for HTML generation
+    - Use date utilities
+    - Use form utilities
+    - Use template helpers for HTML generation
 
 4. **Phase 4**: Break down long functions
-   - Extract sub-functions
-   - Improve code organization
-   - Add comprehensive JSDoc comments
+    - Extract sub-functions
+    - Improve code organization
+    - Add comprehensive JSDoc comments
 
 5. **Phase 5**: Polish and optimize
-   - Performance improvements
-   - Additional utilities as needed
-   - Code style consistency
+    - Performance improvements
+    - Additional utilities as needed
+    - Code style consistency
 
 ## Resources
 
 - **dom-utils.js**: DOM manipulation, modal handling, forms, dates, validation
 - **constants.js**: All configuration, thresholds, weights, templates
 - **template-helpers.js**: HTML template generators for common UI elements
-- **Original Analysis**: See agent output from commit ab4e130 for detailed findings
+- **Original Analysis**: See agent output from commit ab4e130 for detailed
+  findings
 
 ## Next Steps
 

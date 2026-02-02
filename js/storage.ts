@@ -28,7 +28,7 @@ interface RemoteStorage {
 
 export class Storage {
     private _userId: string | null
-    private listeners: Map<string, Array<(value: any) => void>>
+    private listeners: Map<string, Array<(value: unknown) => void>>
     private QUOTA_WARNING_THRESHOLD: number
     private remoteStorage?: RemoteStorage
     private syncEnabled: boolean = false
