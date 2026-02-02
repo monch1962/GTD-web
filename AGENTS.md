@@ -15,11 +15,10 @@ npm run preview              # Preview production build
 ### Testing
 
 ```bash
-npm test                     # Run all Jest tests (51 test files)
+npm test                     # Run all Jest tests (60 test files)
 npm test:coverage            # Tests with coverage (>70% target)
 npm test:watch               # Watch mode for TDD
 npm test -- __tests__/filename.test.js  # Single test file
-npm run test:e2e             # Playwright E2E tests
 ```
 
 ### Code Quality
@@ -188,6 +187,9 @@ js/
 ├── storage.ts          # LocalStorage wrapper
 ├── constants.ts        # Configuration constants
 ├── dom-utils.ts        # DOM manipulation utilities
+├── config/             # Configuration files (DRY compliance)
+│   ├── headerButtons.ts    # Header button configurations
+│   └── defaultContexts.ts  # Default context configurations
 └── modules/
     ├── core/           # Core application logic
     ├── features/       # Feature-specific managers (41 modules, all TypeScript)
@@ -243,6 +245,58 @@ export class FeatureManager {
 - **PWA Support**: Service worker for offline functionality
 - **Virtual Scrolling**: Auto-activates for 50+ items
 - **Mobile First**: 44px touch targets, responsive design
+
+## Configuration System
+
+The application uses a centralized configuration system located in `js/config/`
+for DRY (Don't Repeat Yourself) compliance.
+
+### Header Buttons (`js/config/headerButtons.ts`)
+
+Defines all header menu button configurations in one place:
+
+- Button IDs, titles, accessibility labels, icon classes
+- Mobile visibility rules (essential vs. hidden on mobile)
+- Default states (disabled, hidden, conditionally shown)
+
+**Helper Functions**:
+
+- `getButtonById(id)` - Get single button configuration
+- `getEssentialMobileButtons()` - Buttons visible on mobile
+- `getButtonsHiddenOnMobile()` - Buttons hidden on mobile
+- `getButtonIds()` - All button IDs
+
+### Default Contexts (`js/config/defaultContexts.ts`)
+
+Defines all default context configurations:
+
+- Context IDs (e.g., @home, @work)
+- Display names, descriptions, icon classes, color codes
+- Categories: location, equipment, activity, or general
+
+**Default Contexts**:
+
+- `@home` - Tasks to do at home (location)
+- `@work` - Work-related tasks (location)
+- `@personal` - Personal tasks (general)
+- `@computer` - Tasks requiring computer (equipment)
+- `@phone` - Phone calls (equipment)
+- `@errand` - Tasks requiring going out (activity)
+
+**Helper Functions**:
+
+- `getContextIds()` - All context IDs
+- `getContextById(id)` - Single context configuration
+- `getContextsByCategory(category)` - Contexts by category
+- `isDefaultContext(contextId)` - Check if default context
+
+### Benefits
+
+1. **Single Source of Truth**: All definitions in one place
+2. **Type Safety**: Easy to see available items and properties
+3. **DRY Compliance**: Eliminates duplicate definitions
+4. **Easy Maintenance**: Changes require updates in only one file
+5. **Consistency**: Ensures consistent properties across application
 
 ## References
 
