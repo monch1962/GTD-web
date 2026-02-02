@@ -7,7 +7,7 @@ import { ElementIds } from './constants'
 import { Storage } from './storage'
 import { TaskParser } from './nlp-parser'
 import { escapeHtml } from './dom-utils'
-import { Task, Project, Reference, Template } from './models'
+import { Task, Project, Template } from './models'
 
 // Core modules
 import { AppState } from './modules/core/app-state'

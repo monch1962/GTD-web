@@ -11,11 +11,12 @@
 
 import fs from 'fs'
 import path from 'path'
-import {
-    headerButtons,
-    getMobileHiddenButtonIds,
-    getButtonIds
-} from '../js/config/headerButtons.ts'
+import { headerButtons } from '../js/config/headerButtons.ts'
+
+// Helper function since it's not exported from headerButtons.ts
+function getButtonIds (): string[] {
+    return headerButtons.map((btn) => btn.id)
+}
 
 describe.skip('Header Buttons DRY Compliance', () => {
     test('should have all header buttons defined in config', () => {

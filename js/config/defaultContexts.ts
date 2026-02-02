@@ -134,7 +134,7 @@ export function getAllContexts (tasks: any[] = []): Set<string> {
                 })
             }
         }
-    } catch (_e) {
+    } catch {
         // Ignore localStorage errors
     }
 

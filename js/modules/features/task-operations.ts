@@ -208,15 +208,13 @@ export class TaskOperations {
                         shouldMove = true
                         // reason = 'dependencies met'
                     }
-                }
-                // If no task dependencies, check if defer date has arrived
-                else if (!task.waitingForTaskIds || task.waitingForTaskIds.length === 0) {
+                } else if (!task.waitingForTaskIds || task.waitingForTaskIds.length === 0) {
+                    // If no task dependencies, check if defer date has arrived
                     if (task.deferDate && task.isAvailable()) {
                         shouldMove = true
                         // reason = 'defer date arrived'
-                    }
-                    // If no defer date and no description, it's just waiting - move it
-                    else if (!task.deferDate && !task.waitingForDescription) {
+                    } else if (!task.deferDate && !task.waitingForDescription) {
+                        // If no defer date and no description, it's just waiting - move it
                         shouldMove = true
                         // reason = 'no longer blocked'
                     }

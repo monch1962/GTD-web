@@ -257,9 +257,8 @@ export function setupModalListeners (
                     e.preventDefault()
                     lastFocusable.focus()
                 }
-            }
-            // Tab
-            else {
+            } else {
+                // Tab
                 if (document.activeElement === lastFocusable) {
                     e.preventDefault()
                     firstFocusable.focus()

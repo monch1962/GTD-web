@@ -108,7 +108,7 @@ describe('Archive System Feature - Comprehensive Tests', () => {
             getArchivedTasks: jest.fn().mockReturnValue([]),
             addToArchive: jest.fn().mockResolvedValue(undefined),
             removeFromArchive: jest.fn().mockResolvedValue(undefined)
-        } as any
+        } as unknown as typeof app.storage
 
         // Mock app methods
         app.saveTasks = jest.fn().mockResolvedValue(undefined)
@@ -313,7 +313,7 @@ describe('Archive System Feature - Comprehensive Tests', () => {
             }
 
             expect(app.storage?.removeFromArchive).toHaveBeenCalledWith('task1')
-            expect((app as any).tasks).toContainEqual(archivedTask)
+            expect((app as unknown as { tasks: unknown[] }).tasks).toContainEqual(archivedTask)
             expect(app.saveTasks).toHaveBeenCalled()
             expect(app.renderView).toHaveBeenCalled()
             expect(app.updateCounts).toHaveBeenCalled()

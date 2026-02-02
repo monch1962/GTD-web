@@ -6,10 +6,6 @@
 export class DarkModeManager {
     private storageKey: string = 'gtd_dark_mode'
 
-    constructor () {
-        // No initialization needed beyond property assignment
-    }
-
     /**
      * Initialize dark mode from saved or system preference
      */

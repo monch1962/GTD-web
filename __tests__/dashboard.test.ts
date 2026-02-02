@@ -8,7 +8,7 @@ import { DashboardManager } from '../js/modules/features/dashboard.ts'
 
 jest.mock('../js/dom-utils.js', () => ({
     escapeHtml: (str) => str,
-    getElement: (id) => null,
+    getElement: (_id) => null,
     setTextContent: (el, text) => {
         if (el) el.textContent = text
     },
