@@ -65,6 +65,65 @@ npm run lint:check           # Strict linting (fails on warnings)
 4. **INTEGRATE**: Import in `app.ts`, add to setup
 5. **DOCUMENT**: Update docs after feature complete
 
+### Git Branch Workflow (Mandatory)
+
+**NEVER work directly on the `main` branch.** Always use feature branches:
+
+1. **Create feature branch**:
+
+    ```bash
+    git checkout -b feature/description
+    # or
+    git checkout -b fix/issue-description
+    # or
+    git checkout -b refactor/component-name
+    ```
+
+2. **Follow TDD workflow** on the feature branch
+
+3. **Commit frequently** with descriptive messages:
+
+    ```bash
+    git add .
+    git commit -m "feat: add dark mode toggle"
+    git commit -m "fix: resolve linting errors in module"
+    git commit -m "test: add unit tests for validation"
+    ```
+
+4. **Push to remote**:
+
+    ```bash
+    git push -u origin feature/description
+    ```
+
+5. **Create Pull Request** on GitHub for code review
+
+6. **Merge only after**:
+    - All tests pass
+    - Code review completed
+    - Linting passes (0 errors)
+    - Build succeeds
+
+### AI Agent Workflow Guidelines
+
+**Important**: Based on recent experience (February 2025), AI agents MUST follow
+these rules:
+
+1. **Always use feature branches** - Never work directly on `main`
+2. **Follow TDD strictly** - Write tests first, then implementation
+3. **Fix linting errors immediately** - Don't leave errors for later
+4. **Run tests after every change** - Ensure no regressions
+5. **Commit with descriptive messages** - Explain the "why" not just "what"
+6. **Push to remote frequently** - Don't keep changes local only
+7. **Verify build works** - Run `npm run build` before considering work complete
+
+**Recent Lesson**: The interface consolidation project (February 2025) was
+completed successfully but revealed the importance of:
+
+- Working on feature branches (not `main`)
+- Fixing linting errors as they appear
+- Maintaining test coverage throughout changes
+
 ### Before Committing
 
 1. Run all tests: `npm test`
