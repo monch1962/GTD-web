@@ -11,16 +11,10 @@ export default {
         '^@tests/(.*)$': '<rootDir>/__tests__/$1'
     },
     testMatch: ['**/__tests__/**/*.(js|jsx|ts|tsx)', '**/?(*.)+(spec|test).(js|jsx|ts|tsx)'],
-    testPathIgnorePatterns: [
-        '/tests-e2e/',
-        '/tests/journeys/',
-        '/playwright-report/',
-        '/test-results/'
-    ],
+    testPathIgnorePatterns: ['/playwright-report/', '/test-results/'],
     collectCoverageFrom: [
         'js/**/*.(js|ts)',
         '!js/app.js', // Skip app.js as it's mostly DOM manipulation
-        '!js/app-refactored.ts',
         '!**/node_modules/**'
     ],
     coverageThreshold: {

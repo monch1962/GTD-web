@@ -1,1 +1,0 @@
-{"version":3,"file":"headerButtons.d.ts","sourceRoot":"","sources":["../../../js/config/headerButtons.ts"],"names":[],"mappings":"AAAA;;;GAGG;AAEH,MAAM,WAAW,YAAY;IACzB,EAAE,EAAE,MAAM,CAAA;IACV,KAAK,EAAE,MAAM,CAAA;IACb,SAAS,EAAE,MAAM,CAAA;IACjB,IAAI,EAAE,MAAM,CAAA;IACZ,iBAAiB,EAAE,OAAO,CAAA;IAC1B,aAAa,EAAE,OAAO,CAAA;CACzB;AAED,eAAO,MAAM,aAAa,EAAE,YAAY,EAyGvC,CAAA"}
